@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # ntuplemaker
 Purpose : Making flat ntuples from NanoAOD rootfiles
 
@@ -34,3 +35,6 @@ Making histogram from ntuple.
 *Usage*
 python histmaker.py input_ntuple.root
 ```
+=======
+temp
+>>>>>>> 35efca9a98e7be676714bb6e286eebc3ec865972
