@@ -64,9 +64,9 @@ void ntuplemaker(const char *inputFile)
     //auto h_nbJet_t = sel_Jets.Define("nbJet_t","Sum(Jet_btagDeepB>0.7527)").Histo1D({"h_nbJet_t","Tight bJets",7,0,7},"nbJet_t");
     auto h_goodMuon_pt = sel_Jets.Define("goodMuon_pt","Muon_pt[ (Muon_pt>30 && abs(Muon_eta)<2.4 && Muon_tightId) ]").Histo1D({"h_goodMuon_pt","Muon pt",20,0,400},"goodMuon_pt");
     auto h_goodJet_pt = sel_Jets.Define("goodJet_pt","Jet_pt[ (Jet_pt>30 && abs(Jet_eta)<2.4) ]").Histo1D({"h_goodJet_pt","Jet pt",20,0,400},"goodJet_pt");
-    auto h_goodTau_pt = sel_Jets.Define("goodTau_pt","Tau_pt[ (Tau_pt>50 && abs(Tau_eta)<2.3 && Tau_pt>50 && abs(Tau_eta)<2.3 && Tau_idDeepTau2017v2p1VSjet & 16 &&  Tau_idDeepTau2017v2p1VSe & 16 &&  Tau_idDeepTau2017v2p1VSmu & 16) ]").Histo1D({"h_goodTau_pt","Tau pt",20,0,400},"goodTau_pt");
+    auto h_goodTau_pt = sel_Jets.Define("goodTau_pt","Tau_pt[ (Tau_pt>50 && abs(Tau_eta)<2.3 && Tau_pt>50 && abs(Tau_eta)<2.3 && Tau_idDeepTau2017v2p1VSjet & 8 &&  Tau_idDeepTau2017v2p1VSe & 8 &&  Tau_idDeepTau2017v2p1VSmu & 8) ]").Histo1D({"h_goodTau_pt","Tau pt",20,0,400},"goodTau_pt");
     auto h_goodMuon_eta = sel_Jets.Define("goodMuon_eta","Muon_eta[ (Muon_pt>30 && abs(Muon_eta)<2.4 && Muon_tightId) ]").Histo1D({"h_goodMuon_eta","Muon eta",20,-4,4},"goodMuon_eta");
-    auto h_goodTau_eta = sel_Jets.Define("goodTau_eta","Tau_eta[ (Tau_pt>50 && abs(Tau_eta)<2.3 && Tau_pt>50 && abs(Tau_eta)<2.3 && Tau_idDeepTau2017v2p1VSjet & 16 &&  Tau_idDeepTau2017v2p1VSe & 16 &&  Tau_idDeepTau2017v2p1VSmu & 16) ]").Histo1D({"h_goodTau_eta","Tau eta",20,-4,4},"goodTau_eta");
+    auto h_goodTau_eta = sel_Jets.Define("goodTau_eta","Tau_eta[ (Tau_pt>50 && abs(Tau_eta)<2.3 && Tau_pt>50 && abs(Tau_eta)<2.3 && Tau_idDeepTau2017v2p1VSjet & 8 &&  Tau_idDeepTau2017v2p1VSe & 8 &&  Tau_idDeepTau2017v2p1VSmu & 8) ]").Histo1D({"h_goodTau_eta","Tau eta",20,-4,4},"goodTau_eta");
     auto h_goodJet_eta = sel_Jets.Define("goodJet_eta","Jet_eta[ (Jet_pt>30 && abs(Jet_eta)<2.4) ]").Histo1D({"h_goodJet_eta","Jet eta",20,-4,4},"goodJet_eta");
     
     cout<<"Total "<<nevt_total<<endl;
