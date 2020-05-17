@@ -11,4 +11,7 @@ Initial configuration file for LHE production and Pythia Hadornization.
 ```
 * crab_cfg_LQ_($year)($step).py *
 Different configuration for each year of run and steps.
+Order of steps : LHEGS -> GSR_S1 -> GSR_S2 -> MINI -> NANO
 ```
+### script
+Scripts for establishing work space and cmsRun configuration file output.
