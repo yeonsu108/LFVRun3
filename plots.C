@@ -23,8 +23,8 @@ void makePlot(TFile * f_s, TFile *f_b, TString name, TString ytitle, TString xti
   h_s->Draw("SameHIST");
 
   TLegend * l = new TLegend(x1,y1,x2,y2);
-  l->AddEntry(h_s,"new signal","L");
-  l->AddEntry(h_b,"old signal","L");
+  l->AddEntry(h_s,"LQ","L");
+  l->AddEntry(h_b,"ttbar","L");
   l->SetTextSize(0.04);
   l->SetFillColor(0);
   l->SetLineColor(0);
@@ -39,8 +39,8 @@ void plots(){
 
   setTDRStyle();
 
-  TFile * f_signal = new TFile("signal.root");
-  TFile * f_ttbar = new TFile("ttbar.root");
+  TFile * f_signal = new TFile("sig_2016.root");
+  TFile * f_ttbar = new TFile("bkg_2016.root");
 
   makePlot(f_signal, f_ttbar, "h_n_selmuon", "Normalized Entries","Muon Jet Multiplicity", 0.7, 0.75, 0.85, 0.9);
   makePlot(f_signal, f_ttbar, "h_n_seltau", "Normalized Entries","Tau Jet Multiplicity", 0.7, 0.75, 0.85, 0.9);
