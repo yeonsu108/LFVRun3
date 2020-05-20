@@ -30,56 +30,142 @@ vector<int> goodmuons_idx(rvec_i g){
   return out; 
 }
 
+int bJet_idx(rvec_i goodbJet, rvec_i goodcJet, rvec_f CvsB){
+  int idx = -1;
+  for( int i = 0; i<goodbJet.size(); i++){
+    if( goodbJet[i] && goodcJet[i] && CvsB[i] <= 0.5){
+      idx = i;
+      break;
+    }
+    else if( goodbJet[i] && !goodcJet[i]){
+      idx = i;
+      break;
+    }
+  }
+  return idx;
+}
+
+int cJet_idx(rvec_i goodbJet, rvec_i goodcJet, rvec_f CvsB){
+  int idx = -1;
+  for( int i = 0; i<goodbJet.size(); i++){
+    if( goodbJet[i] && goodcJet[i] && CvsB[i] > 0.5){
+      idx = i;
+      break;
+    }
+    else if( goodbJet[i] && !goodcJet[i]){
+      idx = i;
+      break;
+    }
+  }
+  return idx;
+}
+
+int leading_idx(rvec_i good){
+  int idx = good[0];
+  return idx;
+}
+
 void ana_lq(){
+    //ROOT::RDataFrame df("Events","/cms/ldap_home/ljw1015/public/LQ_Signals/LQ_2016_nano.root");
+    //ROOT::RDataFrame df("Events","/cms/ldap_home/ljw1015/public/LQ_Signals/LQ_2017_nano.root");
+    //ROOT::RDataFrame df("Events","/cms/ldap_home/ljw1015/public/LQ_Signals/LQ_2018_nano.root");
+  ROOT::RDataFrame df("Events",{"/xrootd/store/data/Run2018D/SingleMuon/NANOAOD/Nano25Oct2019-v1/100000/034659D3-DA7F-9C43-B604-FADBF92587EC.root","/xrootd/store/data/Run2018D/SingleMuon/NANOAOD/Nano25Oct2019-v1/100000/10F251FC-3AFA-E148-84F2-8908B099A9AB.root"});
+    //ROOT::RDataFrame df("Events","/xrootd/store/mc/RunIIAutumn18NanoAODv6/TTJets_TuneCP5_13TeV-madgraphMLM-pythia8/NANOAODSIM/Nano25Oct2019_102X_upgrade2018_realistic_v20-v1/240000/1ED47B8D-0658-5349-B0D3-56869F13661F.root");
+    //ROOT::RDataFrame df("Events", "/xrootd/store/user/ljw1015/LQ_Signals/LQ_2016_nano.root");
+  //ROOT::RDataFrame df("Events",{"/xrootd/store/data/Run2018D/Tau/NANOAOD/Nano25Oct2019_ver2-v1/20000/0B380AC5-1690-B949-80BC-E691767679BF.root","/xrootd/store/data/Run2018D/Tau/NANOAOD/Nano25Oct2019_ver2-v1/20000/10F1BB67-B510-9F45-B284-918914210D2D.root"});
 
-  //ROOT::RDataFrame df("Events", "/xrootd/store/data/Run2018B/SingleMuon/NANOAOD/Nano14Dec2018-v1/10000/BCC1B466-EF27-9D40-A0B7-9FE64F456E13.root");
-  //ROOT::RDataFrame df("Events", "signal_nano.root");
-  ROOT::RDataFrame df("Events", "/xrootd/store/user/ljw1015/LQ_Signals/LQ_2017_nano_v1.root");
-  //ROOT::RDataFrame df("Events","/xrootd/store/mc/RunIISummer16NanoAODv6/TT_TuneCUETP8M2T4_13TeV-powheg-pythia8/NANOAODSIM/PUMoriond17_Nano25Oct2019_102X_mcRun2_asymptotic_v7-v2/30000/A7753E9B-A80C-9547-8729-17F953C5B5DE.root");
-  //ROOT::RDataFrame df("Events", "/xrootd/store/user/ljw1015/LQ_Signals/LQ_2016_nano.root");
+  //int year = 2016;
 
-  //good muon selection
-  auto df_S1_muon = df.Filter("nMuon >= 1", "Events with one lepton")
-                      .Define("goodmuons","Muon_pt > 20  && abs(Muon_eta) < 2.4 && Muon_tightId && Muon_pfRelIso04_all < 0.15")
-                      .Define("goodtaus","Tau_pt > 30 && abs(Tau_eta) < 2.4 && Sum( Tau_idMVAoldDM > 1)");
-  auto df_S1_goodmuon = df_S1_muon.Filter("Sum( goodmuons ) >=1 ","Events with at least a goood muon")
-                                  .Define("goodmuons_idx",goodmuons_idx,{"goodmuons"});
-  auto df_S1_goodtau = df_S1_goodmuon.Filter("Sum( goodtaus ) >=1 ","Events with at least a goood tau")
-                                     .Define("CvsB","Jet_btagDeepC/(Jet_btagDeepC+Jet_btagDeepB)")
-                                     .Define("goodcjets","Jet_pt > 20 && abs(Jet_eta) < 2.4 && CvsB > 0.33")
-                                     .Define("goodbjets_l","Jet_pt > 20 && abs(Jet_eta) < 2.4 && Jet_btagDeepB > 0.0521")
-                                     .Define("goodbjets_m","Jet_pt > 20 && abs(Jet_eta) < 2.4 && Jet_btagDeepB > 0.3033")
-                                     .Define("goodbjets_t","Jet_pt > 20 && abs(Jet_eta) < 2.4 && Jet_btagDeepB > 0.7489");
-  auto df_S1_bjets = df_S1_goodtau.Filter("Sum( goodbjets_m ) >=1","Events with at least a b jet");
-  auto df_S1_ttb = df_S1_bjets.Filter("(genTtbarId/10)%10 == 5","ttb+bb event");
+  //**** HLT trigger ****//
+  // 2016      :  HLT_IsoMu24
+  // 2017 A-D  :  HLT_IsoMu27 or HLT_IsoMu24_eta2p1
+  // 2017 E-F  :  HLT_IsoMu27
+  // 2018      :  HLT_IsoMu24
 
+  auto df_s0_HLT = df.Filter("HLT_IsoMu24","SingleMuon Trigger");
+
+  //**** Muon Selection ( Tight muonId ) ****//
+  auto df_s1_Muon = df_s0_HLT.Define("goodMuon","Muon_pt > 20 && abs(Muon_eta) < 2.4 && Muon_tightId && Muon_pfRelIso04_all < 0.15")
+                             .Define("n_goodMuon","Sum(goodMuon)")
+                             .Filter("n_goodMuon >= 1","Muon Selection")
+                             .Define("Muon1_idx",leading_idx,{"goodMuon"});
+  
+  //**** Tau Selection ****//
+  auto df_s2_Tau = df_s1_Muon.Define("goodTau","Tau_pt > 20 && abs(Tau_eta) < 2.3")
+                             .Define("goodTau_Id","Tau_idDecayModeNewDMs && (Tau_idDeepTau2017v2p1VSe & 4) && (Tau_idDeepTau2017v2p1VSjet & 4) && (Tau_idDeepTau2017v2p1VSmu & 4)")
+                             .Define("goodTau_DM","Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 10 || Tau_decayMode == 11")
+                             .Define("goodTau_Total","goodTau && goodTau_Id && goodTau_DM")
+                             .Define("n_goodTau","Sum( goodTau_Total )")
+                             .Filter("n_goodTau == 1","Tau Selection")
+                             .Define("Tau1_idx",leading_idx,{"goodTau_Total"});
+  
+  //**** Jet Selection ( tightLepVeto ) ****//
+  auto df_s3_Jet = df_s2_Tau.Define("goodJet","Jet_pt > 20 && abs(Jet_eta) < 2.4 && Jet_jetId >=5")
+                            .Define("n_goodJet","Sum(goodJet)")
+                            .Filter("n_goodJet >= 3","Jet Selection");
+
+  //**** b Tagged Jet selection ( medium )****//
+  auto df_s4_bJet = df_s3_Jet.Define("goodbJet","goodJet && Jet_btagDeepFlavB > 0.3093")
+                             .Define("n_goodbJet","Sum(goodbJet)")
+                             .Filter("n_goodbJet >= 1","bJet Selection");
+
+  //**** b Tagged Jet selection ( medium )****//
+  auto df_s5_cJet = df_s4_bJet.Define("CvsL","Jet_btagDeepFlavC/(1-Jet_btagDeepFlavB)")
+                              .Define("CvsB","Jet_btagDeepFlavC/(Jet_btagDeepFlavB+Jet_btagDeepFlavC)")
+                              .Define("goodcJet","goodJet && CvsL > 0.085 && CvsB > 0.29")
+                              .Define("n_goodcJet","Sum(goodcJet)")
+                              .Filter("n_goodcJet >= 1","cJet Selection");
+
+//  // We need to select one b jet and one c jet
+//  auto df_s6_bcJet = df_s5_cJet.Define("bJet_idx",bJet_idx,{"goodbJet","goodcJet","CvsB"})
+//                               .Define("cJet_idx",cJet_idx,{"goodbJet","goodcJet","CvsB"})
+//                               .Filter("(bJet_idx != cJet_idx) && (bJet_idx != -1) && (cJet_idx != -1)","Number of b, c Jets Selection");
+
+  auto disp = df_s5_cJet.Display({"CvsB","CvsL","Jet_btagDeepFlavB","Jet_pt"},1000);
+  disp->Print();
+  
   //histograms 
-  auto h_muon_pt = df_S1_goodmuon.Define("muon_pt","Muon_pt[goodmuons][0]").Histo1D({"h_muon_pt", "h_muon_pt", 100, 0, 100}, "muon_pt");
-  auto h_n_selmuon = df_S1_goodmuon.Define("n_selmuon","Sum(goodmuons)").Histo1D({"h_n_selmuon", "h_n_selmuon", 5, 0, 5}, "n_selmuon");
-  auto h_n_tau = df_S1_goodmuon.Histo1D({"h_n_tau", "h_n_tau", 5, 0, 5}, "nTau");
-  auto h_n_seltau = df_S1_goodmuon.Define("ntaujets", "Sum(goodtaus)").Histo1D({"h_n_seltau", "h_n_seltau", 5, 0, 5}, "ntaujets");
-  auto h_ctag = df_S1_goodtau.Histo1D({"h_ctag", "h_ctag", 100, 0, 1}, "CvsB");
-  auto h_n_cjets = df_S1_goodtau.Define("ncjets","Sum( goodcjets )").Histo1D({"h_n_cjets", "h_n_cjets", 5, 0, 5}, "ncjets");
-  auto h_n_bjets_l = df_S1_goodtau.Define("nbjets_l","Sum( goodbjets_l )").Histo1D({"h_n_bjets_l", "h_n_bjets_l", 5, 0, 5}, "nbjets_l");
-  auto h_n_bjets_m = df_S1_goodtau.Define("nbjets_m","Sum( goodbjets_m )").Histo1D({"h_n_bjets_m", "h_n_bjets_m", 5, 0, 5}, "nbjets_m");
-  auto h_n_bjets_t = df_S1_goodtau.Define("nbjets_t","Sum( goodbjets_t )").Histo1D({"h_n_bjets_t", "h_n_bjets_t", 5, 0, 5}, "nbjets_t");
-                              
-  //df_S1_goodmuon.Snapshot("tree", "f.root");
-  TFile f("f.root", "recreate");
+  auto h_muon_pt = df_s5_cJet.Define("Muon1_pt","Muon_pt[Muon1_idx]").Histo1D({"h_muon_pt", "h_muon_pt", 40, 0, 200}, "Muon1_pt");
+  auto h_muon_eta = df_s5_cJet.Define("Muon1_eta","Muon_eta[Muon1_idx]").Histo1D({"h_muon_eta", "h_muon_eta", 50, -5, 5}, "Muon1_eta");
+  
+  auto h_tau_pt = df_s5_cJet.Define("Tau1_pt","Tau_pt[Tau1_idx]").Histo1D({"h_tau_pt", "h_tau_pt", 40, 0, 200}, "Tau1_pt");
+  auto h_tau_eta = df_s5_cJet.Define("Tau1_eta","Tau_eta[Tau1_idx]").Histo1D({"h_tau_eta", "h_tau_eta", 50, -5, 5}, "Tau1_eta");
+  
+  auto h_jet_pt = df_s5_cJet.Define("goodJet_pt","Jet_pt[goodJet]").Histo1D({"h_jet_pt", "h_jet_pt", 40, 0, 200}, "goodJet_pt");
+  auto h_jet_eta = df_s5_cJet.Define("goodJet_eta","Jet_eta[goodJet]").Histo1D({"h_jet_eta", "h_jet_eta", 50, -5, 5}, "goodJet_eta");
 
+  auto h_bjet_pt = df_s5_cJet.Define("bJet_pt","Jet_pt[goodbJet]").Histo1D({"h_bjet_pt", "h_bjet_pt", 40, 0, 200}, "bJet_pt");
+  auto h_bjet_eta = df_s5_cJet.Define("bJet_eta","Jet_eta[goodbJet]").Histo1D({"h_bjet_eta", "h_bjet_eta", 50, -5, 5}, "bJet_eta");
+
+  auto h_cjet_pt = df_s5_cJet.Define("cJet_pt","Jet_pt[goodcJet]").Histo1D({"h_cjet_pt", "h_cjet_pt", 40, 0, 200}, "cJet_pt");
+  auto h_cjet_eta = df_s5_cJet.Define("cJet_eta","Jet_eta[goodcJet]").Histo1D({"h_cjet_eta", "h_cjet_eta", 50, -5, 5}, "cJet_eta");
+  
+  auto h_nMuon = df_s5_cJet.Histo1D({"h_nMuon", "h_nMuon", 5, 0, 5}, "n_goodMuon");
+  auto h_nJet = df_s5_cJet.Histo1D({"h_nJet", "h_nJet", 10, 0, 10}, "n_goodJet");
+  auto h_nbJet = df_s5_cJet.Histo1D({"h_nbJet", "h_nbJet", 5, 0, 5}, "n_goodbJet");
+  auto h_ncJet = df_s5_cJet.Histo1D({"h_ncJet", "h_ncJet", 5, 0, 5}, "n_goodcJet");
+  
+  //df_S1_goodmuon.Snapshot("tree", "f.root");
+  TFile f("out.root", "recreate");
+  
   plot( h_muon_pt, "h_muon_pt");
-  plot( h_n_selmuon, "h_n_selmuon");
-  plot( h_n_tau, "h_n_tau");
-  plot( h_n_seltau, "h_n_seltau");
-  plot( h_ctag, "h_ctag");
-  plot( h_n_cjets, "h_n_cjets");
-  plot( h_n_bjets_l, "h_n_bjets_l");
-  plot( h_n_bjets_m, "h_n_bjets_m");
-  plot( h_n_bjets_t, "h_n_bjets_t");
+  plot( h_muon_eta, "h_muon_eta");
+  plot( h_tau_pt, "h_tau_pt");
+  plot( h_tau_eta, "h_tau_eta");
+  plot( h_jet_pt, "h_jet_pt");
+  plot( h_jet_eta, "h_jet_eta");
+  plot( h_bjet_pt, "h_bjet_pt");
+  plot( h_bjet_eta, "h_bjet_eta");
+  plot( h_cjet_pt, "h_cjet_pt");
+  plot( h_cjet_eta, "h_cjet_eta");
+  plot( h_nMuon, "h_nMuon");
+  plot( h_nJet, "h_nJet");
+  plot( h_nbJet, "h_nbJet");
+  plot( h_ncJet, "h_ncJet");
 
   f.Close();
 
-  auto report = df_S1_bjets.Report();
+  auto report = df_s5_cJet.Report();
   report->Print();
 
 }
