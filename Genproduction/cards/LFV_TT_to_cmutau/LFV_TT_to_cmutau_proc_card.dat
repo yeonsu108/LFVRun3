@@ -1,0 +1,6 @@
+import model /cms/ldap_home/ljw1015/Simulation/genproductions/bin/MadGraph5_aMCatNLO/SMEFT_2l2q_UFO_unitary
+define lep+ = mu+ ta+
+define lep- = mu- ta-
+generate p p > t t~, (t > b w+, w+ > j j), (t~ > c~ lep+ lep-)
+add process p p > t t~, (t > c lep+ lep-), (t~ > b~ w-, w- > j j)
+output LFV_TT_to_cmutau
