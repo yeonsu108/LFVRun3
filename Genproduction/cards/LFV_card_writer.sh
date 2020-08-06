@@ -27,25 +27,30 @@ for const in ${constants[*]}; do
         for t in ${types[*]}; do
             sed -i "304,384s/0.000000e+00 # ${const}${t}/1.000000e+00 # ${const}${t}/g" ./${folder}_${const}/${folder}_param_card.dat
         done
+
     elif [ $const = "Ceu" ]
     then
         for t in ${types[*]}; do
             sed -i "504,584s/0.000000e+00 # ${const}${t}/1.000000e+00 # ${const}${t}/g" ./${folder}_${const}/${folder}_param_card.dat
         done
+
     elif [ $const = "Clequ1" ]
     then
         for t in ${types[*]}; do
             sed -i "762,842s/0.000000e+00 # ${const}${t}/1.000000e+00 # ${const}${t}/g" ./${folder}_${const}/${folder}_param_card.dat
         done
+
     elif [ $const = "Clequ3" ]
     then
         for t in ${types[*]}; do
             sed -i "848,928s/0.000000e+00 # ${const}${t}/1.000000e+00 # ${const}${t}/g" ./${folder}_${const}/${folder}_param_card.dat
         done
+
     fi
 
-    rename ./${folder}_${const}/${folder} ./${folder}_${const}/${folder}_${const} ./${folder}_${const}/${folder}*
+    sed -i "s/${folder}/${folder}_${const}/g" ./${folder}_${const}/${folder}_proc_card.dat
 
+    rename ./${folder}_${const}/${folder} ./${folder}_${const}/${folder}_${const} ./${folder}_${const}/${folder}*
 
 done
 
