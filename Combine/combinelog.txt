@@ -1,0 +1,423 @@
+stc_s
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+
+ -- AsymptoticLimits ( CLs ) --
+Expected  2.5%: r < 1.2334
+Expected 16.0%: r < 1.6519
+Expected 50.0%: r < 2.3047
+Expected 84.0%: r < 3.2417
+Expected 97.5%: r < 4.3746
+
+Done in 0.00 min (cpu), 0.00 min (real)
+
+######################################
+
+stc_v
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(model_s) evaluation error, 
+ origin       : RooProdPdf::model_s[ modelObs_s * nuisancePdf ]
+ message      : getLogVal() top-level p.d.f evaluates to zero
+ server values: !pdfs=(modelObs_s = 0/1,nuisancePdf = 1)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = -0.00933181 +/- 1.63796,r = 10 +/- 13.749)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918982)
+
+ -- AsymptoticLimits ( CLs ) --
+Expected  2.5%: r < 0.2780
+Expected 16.0%: r < 0.3724
+Expected 50.0%: r < 0.5195
+Expected 84.0%: r < 0.7287
+Expected 97.5%: r < 0.9814
+
+Done in 0.00 min (cpu), 0.00 min (real)
+
+######################################
+
+stc_t
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(model_s) evaluation error, 
+ origin       : RooProdPdf::model_s[ pdf_binbin1 ]
+ message      : getLogVal() top-level p.d.f evaluates to zero
+ server values: !pdfs=(pdf_binbin1 = 0/1)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(n_exp_binbin1_proc_dy,n_exp_binbin1_proc_others,n_exp_binbin1_proc_st,n_exp_binbin1_proc_tt,n_exp_binbin1_proc_wjet,r) ]
+ message      : function value is NAN
+ server values: paramSet=(n_exp_binbin1_proc_dy = 31.2325,n_exp_binbin1_proc_others = 117.005,n_exp_binbin1_proc_st = 262.377,n_exp_binbin1_proc_tt = 2976.51,n_exp_binbin1_proc_wjet = 111.221,r = 10 +/- 18.7664)
+
+ -- AsymptoticLimits ( CLs ) --
+Expected  2.5%: r < 0.2222
+Expected 16.0%: r < 0.2964
+Expected 50.0%: r < 0.4121
+Expected 84.0%: r < 0.5747
+Expected 97.5%: r < 0.7682
+
+Done in 0.00 min (cpu), 0.00 min (real)
+
+######################################
+
+stu_s
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(model_s) evaluation error, 
+ origin       : RooProdPdf::model_s[ modelObs_s * nuisancePdf ]
+ message      : getLogVal() top-level p.d.f evaluates to zero
+ server values: !pdfs=(modelObs_s = 0/1,nuisancePdf = 1)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = -0.00147292 +/- 2.11388,r = 10 +/- 19.9887)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.91894)
+
+ -- AsymptoticLimits ( CLs ) --
+Expected  2.5%: r < 0.1061
+Expected 16.0%: r < 0.1414
+Expected 50.0%: r < 0.1982
+Expected 84.0%: r < 0.2781
+Expected 97.5%: r < 0.3732
+
+Done in 0.00 min (cpu), 0.00 min (real)
+
+######################################
+
+stu_v
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(model_s) evaluation error, 
+ origin       : RooProdPdf::model_s[ modelObs_s * nuisancePdf ]
+ message      : getLogVal() top-level p.d.f evaluates to zero
+ server values: !pdfs=(modelObs_s = 0/1,nuisancePdf = 1)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = -0.00129754 +/- 9.10539,r = 10 +/- 13.7725)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(model_s) evaluation error, 
+ origin       : RooProdPdf::model_s[ modelObs_s * nuisancePdf ]
+ message      : getLogVal() top-level p.d.f evaluates to zero
+ server values: !pdfs=(modelObs_s = 0/1,nuisancePdf = 1)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = -0.00129754 +/- 0,r = 1 +/- 13.7725)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+
+ -- AsymptoticLimits ( CLs ) --
+Expected  2.5%: r < 0.0247
+Expected 16.0%: r < 0.0330
+Expected 50.0%: r < 0.0459
+Expected 84.0%: r < 0.0646
+Expected 97.5%: r < 0.0868
+
+Done in 0.00 min (cpu), 0.00 min (real)
+
+######################################
+
+stu_t
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(model_s) evaluation error, 
+ origin       : RooProdPdf::model_s[ modelObs_s * nuisancePdf ]
+ message      : getLogVal() top-level p.d.f evaluates to zero
+ server values: !pdfs=(modelObs_s = 0/1,nuisancePdf = 1)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 0.2 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(model_s) evaluation error, 
+ origin       : RooProdPdf::model_s[ modelObs_s * nuisancePdf ]
+ message      : getLogVal() top-level p.d.f evaluates to zero
+ server values: !pdfs=(modelObs_s = 0/1,nuisancePdf = 1)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 10 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(model_s) evaluation error, 
+ origin       : RooProdPdf::model_s[ modelObs_s * nuisancePdf ]
+ message      : getLogVal() top-level p.d.f evaluates to zero
+ server values: !pdfs=(modelObs_s = 0/1,nuisancePdf = 1)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 1 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(model_s) evaluation error, 
+ origin       : RooProdPdf::model_s[ modelObs_s * nuisancePdf ]
+ message      : getLogVal() top-level p.d.f evaluates to zero
+ server values: !pdfs=(modelObs_s = 0/1,nuisancePdf = 1)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 0.5 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(model_s) evaluation error, 
+ origin       : RooProdPdf::model_s[ modelObs_s * nuisancePdf ]
+ message      : getLogVal() top-level p.d.f evaluates to zero
+ server values: !pdfs=(modelObs_s = 0/1,nuisancePdf = 1)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 0.25 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 0.125 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 0.0625 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 0.03125 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 0.015625 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 0.0078125 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 0.00390625 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 0.00195312 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset_) evaluation error, 
+ origin       : RooNLLVar::nll_model_s__Asymptotic_asimovDataset_[ paramSet=(lumieff18,r) ]
+ message      : function value is NAN
+ server values: paramSet=(lumieff18 = 0 +/- 0,r = 0.000976562 +/- 0)
+[#0] ERROR:Eval -- RooAbsReal::logEvalError(nll_model_s__Asymptotic_asimovDataset__with_constr) evaluation error, 
+ origin       : RooAddition::nll_model_s__Asymptotic_asimovDataset__with_constr[ nll_model_s__Asymptotic_asimovDataset_ + nll_model_s__Asymptotic_asimovDataset__constr ]
+ message      : function value is NAN
+ server values: !set=(nll_model_s__Asymptotic_asimovDataset_ = -nan,nll_model_s__Asymptotic_asimovDataset__constr = 0.918939)
+
+ -- AsymptoticLimits ( CLs ) --
+
+Done in 0.00 min (cpu), 0.00 min (real)
+
+######################################
+
+ttc_s
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+
+ -- AsymptoticLimits ( CLs ) --
+Expected  2.5%: r < 1647.2109
+Expected 16.0%: r < 2206.1128
+Expected 50.0%: r < 3078.0000
+Expected 84.0%: r < 4329.4419
+Expected 97.5%: r < 5842.4639
+
+Done in 0.01 min (cpu), 0.01 min (real)
+
+######################################
+
+ttc_v
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+
+ -- AsymptoticLimits ( CLs ) --
+Expected  2.5%: r < 259.5508
+Expected 16.0%: r < 347.6169
+Expected 50.0%: r < 485.0000
+Expected 84.0%: r < 680.2563
+Expected 97.5%: r < 919.2444
+
+Done in 0.00 min (cpu), 0.00 min (real)
+
+######################################
+
+ttc_t
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+
+ -- AsymptoticLimits ( CLs ) --
+Expected  2.5%: r < 48.2979
+Expected 16.0%: r < 64.6854
+Expected 50.0%: r < 90.2500
+Expected 84.0%: r < 126.5838
+Expected 97.5%: r < 171.0553
+
+Done in 0.00 min (cpu), 0.00 min (real)
+
+######################################
+
+ttu_s
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+
+ -- AsymptoticLimits ( CLs ) --
+Expected  2.5%: r < 1645.0703
+Expected 16.0%: r < 2203.2461
+Expected 50.0%: r < 3074.0000
+Expected 84.0%: r < 4323.8159
+Expected 97.5%: r < 5834.8716
+
+Done in 0.01 min (cpu), 0.01 min (real)
+
+######################################
+
+ttu_v
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+
+ -- AsymptoticLimits ( CLs ) --
+Expected  2.5%: r < 255.8047
+Expected 16.0%: r < 342.5997
+Expected 50.0%: r < 478.0000
+Expected 84.0%: r < 670.4382
+Expected 97.5%: r < 905.9770
+
+Done in 0.00 min (cpu), 0.00 min (real)
+
+######################################
+
+ttu_t
+ <<< Combine >>> 
+>>> random number generator seed is 123456
+Will use a-priori expected background instead of a-posteriori one.
+>>> method used is AsymptoticLimits
+
+ -- AsymptoticLimits ( CLs ) --
+Expected  2.5%: r < 42.6787
+Expected 16.0%: r < 57.1597
+Expected 50.0%: r < 79.7500
+Expected 84.0%: r < 111.8566
+Expected 97.5%: r < 150.6438
+
+Done in 0.00 min (cpu), 0.00 min (real)
+
+######################################
+

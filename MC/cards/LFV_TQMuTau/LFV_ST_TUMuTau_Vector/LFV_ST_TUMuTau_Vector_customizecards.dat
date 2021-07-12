@@ -1,0 +1,20 @@
+set param_card mass 6 172.5
+set param_card DECAY 6 auto
+set param_card DECAY 15 auto
+set param_card frblock 26 1.000e-06
+set param_card frblock10 2 3 1 3 1.00
+set param_card frblock10 2 3 3 1 1.00
+set param_card frblock10 3 2 1 3 1.00
+set param_card frblock10 3 2 3 1 1.00
+set param_card frblock12 2 3 1 3 1.00
+set param_card frblock12 2 3 3 1 1.00
+set param_card frblock12 3 2 1 3 1.00
+set param_card frblock12 3 2 3 1 1.00
+set param_card frblock5 2 3 1 3 1.00
+set param_card frblock5 2 3 3 1 1.00
+set param_card frblock5 3 2 1 3 1.00
+set param_card frblock5 3 2 3 1 1.00
+set param_card frblock13 1 3 2 3 1.00
+set param_card frblock13 1 3 3 2 1.00
+set param_card frblock13 3 1 2 3 1.00
+set param_card frblock13 3 1 3 2 1.00
