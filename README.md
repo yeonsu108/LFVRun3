@@ -25,7 +25,7 @@ cmsenv
 > 7. Run Combine
 
 ### 001. Compile
-```
+```bash
 cd nanoaodframe_STLFV
 make clean
 make -j 4
