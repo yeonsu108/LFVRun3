@@ -719,15 +719,18 @@ void NanoAODAnalyzerrdframe::removeOverlaps()
                    .Define("cleanjet4vecs", ::gen4vec, {"Sel2_jetpt", "Sel2_jeteta", "Sel2_jetphi", "Sel2_jetmass"})
                    .Define("Sel2_jetHT", "Sum(Sel2_jetpt)");
 
-        if(_isRun16){
-                //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
-                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.7221"); //l: 0.0614, m: 0.3093, t: 0.7221
+        if(_isRun16pre){
+                //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16preVFP
+                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.2598"); //l: 0.0508, m: 0.2598, t: 0.6502
+        }else if(_isRun16post){
+                //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16postVFP#AK4_b_tagging
+                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.2489"); //l: 0.0480, m: 0.2489, t: 0.6377
         }else if(_isRun17){
                 //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL17
-                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.7476"); //l: 0.0532, m: 0.3040, t: 0.7476
+                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.3040"); //l: 0.0532, m: 0.3040, t: 0.7476
         }else if(_isRun18){
                 //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL18
-                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.7100"); //l: 0.0490, m: 0.2783, t: 0.7100
+                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.2783"); //l: 0.0490, m: 0.2783, t: 0.7100
         }
 	
         _rlm = _rlm.Define("Sel2_bjetpt", "Sel2_jetpt[btagcuts]")
@@ -812,6 +815,7 @@ void NanoAODAnalyzerrdframe::calculateEvWeight()
                 double w = _btagcalibreader.eval_auto_bounds("central", hadfconv, fabs(etas[i]), pts[i], btags[i]);
                 bweight *= w;
             }
+            //auto outbweight = std::make_tuple(bweight, bweightup, bweightdown);
             return bweight;
         };
 
