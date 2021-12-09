@@ -209,27 +209,27 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                 // Loading Tau Scale Factor
                 cout<<"Loading Tau SF"<<endl;
                 if(_isRun16pre){
-                        _tauidSFjet = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSjet","Medium");
+                        _tauidSFjet = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSjet","VTight");
                         _tauidSFele = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSe","VLoose");
-                        //_tauidSFmu = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSmu","Tight");
+                        _tauidSFmu = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSmu","Tight");
                         _testool = new TauESTool("UL2016_preVFP","DeepTau2017v2p1VSjet");
                         _festool = new TauFESTool("UL2016_preVFP");
                 }else if(_isRun16post){
-                        _tauidSFjet = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSjet","Medium");
+                        _tauidSFjet = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSjet","VTight");
                         _tauidSFele = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSe","VLoose");
-                        //_tauidSFmu = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSmu","Tight");
+                        _tauidSFmu = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSmu","Tight");
                         _testool = new TauESTool("UL2016_postVFP","DeepTau2017v2p1VSjet");
                         _festool = new TauFESTool("UL2016_postVFP");
                 }else if(_isRun17){
-                        _tauidSFjet = new TauIDSFTool("UL2017","DeepTau2017v2p1VSjet","Medium");
+                        _tauidSFjet = new TauIDSFTool("UL2017","DeepTau2017v2p1VSjet","VTight");
                         _tauidSFele = new TauIDSFTool("UL2017","DeepTau2017v2p1VSe","VLoose");
-                        //_tauidSFmu = new TauIDSFTool("UL2017","DeepTau2017v2p1VSmu","Tight");
+                        _tauidSFmu = new TauIDSFTool("UL2017","DeepTau2017v2p1VSmu","Tight");
                         _testool = new TauESTool("UL2017","DeepTau2017v2p1VSjet");
                         _festool = new TauFESTool("UL2017");
                 }else if(_isRun18){
-                        _tauidSFjet = new TauIDSFTool("UL2018","DeepTau2017v2p1VSjet","Medium");
+                        _tauidSFjet = new TauIDSFTool("UL2018","DeepTau2017v2p1VSjet","VTight");
                         _tauidSFele = new TauIDSFTool("UL2018","DeepTau2017v2p1VSe","VLoose");
-                        //_tauidSFmu = new TauIDSFTool("UL2018","DeepTau2017v2p1VSmu","Tight");
+                        _tauidSFmu = new TauIDSFTool("UL2018","DeepTau2017v2p1VSmu","Tight");
                         _testool = new TauESTool("UL2018","DeepTau2017v2p1VSjet");
                         _festool = new TauFESTool("UL2018");
                 }
@@ -298,8 +298,7 @@ void NanoAODAnalyzerrdframe::setupAnalysis()
                                    .Define("pugenWeight", "unitGenWeight * puWeight");
                 }
         }else if(_isData){
-                _rlm = _rlm.Define("evWeight","one")
-                           .Define("evWeight_tauSF","one")
+                _rlm = _rlm.Define("evWeight_tauSF","one")
                            .Define("evWeight_muonSF","one")
                            .Define("evWeight_leptonSF","one")
                            .Define("btagWeight_DeepFlavBrecalc","one");
@@ -609,7 +608,7 @@ void NanoAODAnalyzerrdframe::selectJets()
                 _rlm = _rlm.Define("Sys_METpt","MET_pt");
                 _rlm = _rlm.Define("Sys_METphi","MET_phi");
         }
-	_rlm = _rlm.Define("jetcuts", "Sys_jetpt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId >= 6")
+	_rlm = _rlm.Define("jetcuts", "Sys_jetpt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6")
 			.Define("Sel_jetpt", "Sys_jetpt[jetcuts]")
 			.Define("Sel_jeteta", "Jet_eta[jetcuts]")
 			.Define("Sel_jetphi", "Jet_phi[jetcuts]")
@@ -690,31 +689,22 @@ void NanoAODAnalyzerrdframe::removeOverlaps()
                                 auto dr = ROOT::Math::VectorUtil::DeltaR(ajet, alepton);
                                 if (dr < mindr) mindr = dr;
                         }
-                        int out = mindr > 0.4 ? 1 : 0;
+                        int out = mindr >= 0.4 ? 1 : 0;
                         mindrlepton.emplace_back(out);
                 }
                 return mindrlepton;
         };
 
 	// Overlap removal with muon (used for btagging SF)
-        _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","muon4vecs"});
-	_rlm =	_rlm.Define("Selmu_jetpt", "Sel_jetpt[muonjetoverlap]")
-                    .Define("Selmu_jeteta", "Sel_jeteta[muonjetoverlap]")
-                    .Define("Selmu_jetphi", "Sel_jetphi[muonjetoverlap]")
-                    .Define("Selmu_jetmass", "Sel_jetmass[muonjetoverlap]")
-                    .Define("Selmu_jetbtag", "Sel_jetbtag[muonjetoverlap]")
-                    .Define("ncleanmuonjetspass", "int(Selmu_jetpt.size())")
-                    .Define("cleanmuonjet4vecs", ::gen4vec, {"Selmu_jetpt", "Selmu_jeteta", "Selmu_jetphi", "Selmu_jetmass"})
-                    .Define("Selmu_jetHT", "Sum(Selmu_jetpt)");
+        _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","muon4vecs"})
+                   .Define("taujetoverlap", checkoverlap, {"jet4vecs","cleantau4vecs"})
+                   .Define("jetoverlap","muonjetoverlap && taujetoverlap");
 
-
-        // Again overlap removal with hadronic tau
-        _rlm = _rlm.Define("taujetoverlap", checkoverlap, {"cleanmuonjet4vecs","cleantau4vecs"});
-        _rlm = _rlm.Define("Sel2_jetpt", "Selmu_jetpt[taujetoverlap]")
-                   .Define("Sel2_jeteta", "Selmu_jeteta[taujetoverlap]")
-                   .Define("Sel2_jetphi", "Selmu_jetphi[taujetoverlap]")
-                   .Define("Sel2_jetmass", "Selmu_jetmass[taujetoverlap]")
-                   .Define("Sel2_jetbtag", "Selmu_jetbtag[taujetoverlap]")
+        _rlm = _rlm.Define("Sel2_jetpt", "Sel_jetpt[jetoverlap]")
+                   .Define("Sel2_jeteta", "Sel_jeteta[jetoverlap]")
+                   .Define("Sel2_jetphi", "Sel_jetphi[jetoverlap]")
+                   .Define("Sel2_jetmass", "Sel_jetmass[jetoverlap]")
+                   .Define("Sel2_jetbtag", "Sel_jetbtag[jetoverlap]")
                    .Define("ncleanjetspass", "int(Sel2_jetpt.size())")
                    .Define("cleanjet4vecs", ::gen4vec, {"Sel2_jetpt", "Sel2_jeteta", "Sel2_jetphi", "Sel2_jetmass"})
                    .Define("Sel2_jetHT", "Sum(Sel2_jetpt)");
@@ -839,7 +829,7 @@ void NanoAODAnalyzerrdframe::calculateEvWeight()
 
         // B tagging SF
         _rlm = _rlm.Define("Sel_jethadflav","Jet_hadronFlavour[jetcuts]")
-                   .Define("Selmu_jethadflav","Sel_jethadflav[muonjetoverlap]");
+                   .Define("Sel2_jethadflav", "Sel_jethadflav[jetoverlap]");
 
         // function to calculate event weight for MC events based on DeepJet algorithm
         auto btagweightgenerator= [this](floats &pts, floats &etas, ints &hadflav, floats &btags)->float
@@ -851,8 +841,15 @@ void NanoAODAnalyzerrdframe::calculateEvWeight()
                 if (hadflav[i]==5) hadfconv=BTagEntry::FLAV_B;
                 else if (hadflav[i]==4) hadfconv=BTagEntry::FLAV_C;
                 else hadfconv=BTagEntry::FLAV_UDSG;
-
-                double w = _btagcalibreader.eval_auto_bounds("central", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+               
+                double w = 1.0;
+                if(_syst=="btagup_jes"){
+                    w = _btagcalibreader.eval_auto_bounds("up_jes", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_jes"){
+                    w = _btagcalibreader.eval_auto_bounds("down_jes", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else{
+                    w = _btagcalibreader.eval_auto_bounds("central", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }
                 bweight *= w;
             }
             //auto outbweight = std::make_tuple(bweight, bweightup, bweightdown);
@@ -860,8 +857,7 @@ void NanoAODAnalyzerrdframe::calculateEvWeight()
         };
 
         cout<<"Generate b-tagging weight"<<endl;
-        _rlm = _rlm.Define("btagWeight_DeepFlavBrecalc", btagweightgenerator, {"Selmu_jetpt", "Selmu_jeteta", "Selmu_jethadflav", "Selmu_jetbtag"});
-        _rlm = _rlm.Define("evWeight", "pugenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF");
+        _rlm = _rlm.Define("btagWeight_DeepFlavBrecalc", btagweightgenerator, {"Sel2_jetpt", "Sel2_jeteta", "Sel2_jethadflav", "Sel2_jetbtag"});
 }
 
 /*

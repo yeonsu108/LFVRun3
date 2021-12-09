@@ -13,58 +13,64 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from utils.plots import *
 
 root_dir = os.getcwd().replace("DNN","") # Upper directory
-# DNN structure
-epochs = 1000
-nodes = 20
-layers = 3
-sbratio = 1 # sig:bkg events ratio (1:1, 1:1.5, 1:2)
-#drop = 0.10
-inputvars = ["Sel_muon1pt","Sel_muon1eta","Sel_tau1pt","Sel_tau1eta",
-    "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt",
-    "Sel2_jet1eta","Sel2_jet2eta","Sel2_jet3eta",
-    "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag",
-    "MET_pt_corr","MET_phi_corr",
-    "chi2","chi2_lfvTop_mass","chi2_SMW_mass","chi2_SMTop_mass"]
+# MODIFY !!!
+processed = "nov_04_norm"
+processed = "dec_02_norm"
 class_names = ["sig", "bkg"]
-#for p in ["ST","TT"]:
-for p in ["TT"]:
+
+for p in ["ST","TT"]:
     print("Start "+p+" LFV Training")
+    epochs = 1000
+    nodes = 20
+    layers = 3
+    drop = -1.
     inputvars = []
     if p == "ST":
         inputvars = ["Sel_muon1pt","Sel_muon1eta","Sel_tau1pt","Sel_tau1eta",
             "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt",
             "Sel2_jet1eta","Sel2_jet2eta","Sel2_jet3eta",
             "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag",
-            "MET_pt_corr","MET_phi_corr",
+            "Sys_METpt","Sys_METphi",
             "chi2","chi2_SMW_mass","chi2_SMTop_mass"]
+        sbratio = 1 # sig:bkg = 1:2
+        nodes = 30
+        layers = 2
     elif p == "TT":
         inputvars = ["Sel_muon1pt","Sel_muon1eta","Sel_tau1pt","Sel_tau1eta",
-            "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt",
-            "Sel2_jet1eta","Sel2_jet2eta","Sel2_jet3eta",
-            "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag",
-            "MET_pt_corr","MET_phi_corr",
+            "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt","Sel2_jet4pt",
+            "Sel2_jet1eta","Sel2_jet2eta","Sel2_jet3eta","Sel2_jet4eta",
+            "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag","Sel2_jet4btag",
+            "Sys_METpt","Sys_METphi",
             "chi2","chi2_lfvTop_mass","chi2_SMW_mass","chi2_SMTop_mass"]
+        sbratio = 1 # sig:bkg = 1:1
+        nodes = 30
+        layers = 2
+        drop = 0.20
 
-    project_dir = "nanoaodframe_"+p+"LFV/nov_01_norm/"    # MODIFY!!!
-    sig1_filedir = root_dir+project_dir+"ST_LFV_norm.root"
-    sig2_filedir = root_dir+project_dir+"TT_LFV_norm.root"
+    project_dir = "nanoaodframe_"+p+"LFV/"+processed+"/"
+#    sig1_filedir = root_dir+project_dir+"ST_LFV_norm.root"
+#    sig2_filedir = root_dir+project_dir+"TT_LFV_norm.root"
+    sig_filedir = root_dir+project_dir+p+"_LFV_norm.root"
     bkg1_filedir = root_dir+project_dir+"TTTo2L2Nu_norm.root"
     bkg2_filedir = root_dir+project_dir+"TTToSemiLeptonic_norm.root"
-    train_outdir = "./"+p+"nov_01_"+"norm_"+str(nodes)+"nodes_"+str(layers)+"layers_s1b"+str(sbratio)
+    train_outdir = "./"+p+processed+"_"+str(nodes)+"nodes_"+str(layers)+"layers_s1b"+str(sbratio)
     os.makedirs(train_outdir, exist_ok=True)
 
-    sig1_tree = uproot.open(sig1_filedir)["outputTree2"]
-    sig2_tree = uproot.open(sig2_filedir)["outputTree2"]
+#    sig1_tree = uproot.open(sig1_filedir)["outputTree2"]
+#    sig2_tree = uproot.open(sig2_filedir)["outputTree2"]
+    sig_tree = uproot.open(sig_filedir)["outputTree2"]
     bkg1_tree = uproot.open(bkg1_filedir)["outputTree2"]
     bkg2_tree = uproot.open(bkg2_filedir)["outputTree2"]
 
-    df_sig1 = sig1_tree.arrays(inputvars,library="pd")
-    df_sig2 = sig2_tree.arrays(inputvars,library="pd")
+#    df_sig1 = sig1_tree.arrays(inputvars,library="pd")
+#    df_sig2 = sig2_tree.arrays(inputvars,library="pd")
+#    df_sig = pd.concat([df_sig1,df_sig2])
+    df_sig = sig_tree.arrays(inputvars,library="pd")
+
     df_bkg1 = bkg1_tree.arrays(inputvars,library="pd")
     df_bkg2 = bkg2_tree.arrays(inputvars,library="pd")
-
-    df_sig = pd.concat([df_sig1,df_sig2])
     df_bkg = pd.concat([df_bkg1,df_bkg2])
+
     ntotsig = len(df_sig)
     ntotbkg = len(df_bkg)
 
@@ -76,16 +82,12 @@ for p in ["TT"]:
             nsig = nbkg
         elif sbratio == 2:
             nsig = int(nbkg/2)
-        elif sbratio == 3:
-            nsig = int(nbkg/3)
     else:
         if sbratio == 1:
             nbkg = nsig
         elif nsig>=int(nbkg/2):
             if sbratio == 2:
                 nsig = int(nbkg/2)
-            elif sbratio == 3:
-                nsig = int(nbkg/3)
         else:
             "Error::Check the number of events!"
             sys.exit()
@@ -111,7 +113,7 @@ for p in ["TT"]:
     train_out  = np.array(pd_data.filter(items = ['category']))
 
     numbertr = len(train_out)
-    trainlen = int(0.8*numbertr) # Fraction used for training
+    trainlen = int(0.6*numbertr) # Fraction used for training
 
     # Splitting between training set and cross-validation set
     valid_data=train_data[trainlen:,0::]
@@ -120,14 +122,15 @@ for p in ["TT"]:
     train_data=train_data[:trainlen,0::]
     train_data_out=train_out[:trainlen]
 
-    es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=10)
+    es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=15)
     mc = ModelCheckpoint(train_outdir+'/best_model.h5', monitor='val_loss', mode='min', save_best_only=True)
     # model
     model = tf.keras.models.Sequential()
     model.add(tf.keras.layers.Flatten(input_shape = (train_data.shape[1],)))
     for i in range(layers):
         model.add(tf.keras.layers.BatchNormalization())
-        #model.add(tf.keras.layers.Dropout(drop))
+        if drop > 0:
+            model.add(tf.keras.layers.Dropout(drop))
         model.add(tf.keras.layers.Dense(nodes, activation=tf.nn.relu, kernel_regularizer='l2'))
     model.add(tf.keras.layers.Dense(2, activation=tf.nn.softmax))
     batch_size = 1024
