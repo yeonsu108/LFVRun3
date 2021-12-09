@@ -1,2 +1,3 @@
-DNN/utils/__pycache__/
+DNN/utils/__pycache__/*.pyc
+*.pyc
 nanoaodframe_*TLFV/src/*.o
