@@ -143,7 +143,7 @@ private:
 
         TauIDSFTool* _tauidSFjet;
         TauIDSFTool* _tauidSFele;
-        //TauIDSFTool* _tauidSFmu;
+        TauIDSFTool* _tauidSFmu;
         TauESTool* _testool;
         TauFESTool* _festool;
 };
