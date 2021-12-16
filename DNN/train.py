@@ -14,7 +14,6 @@ from utils.plots import *
 
 root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
-processed = "nov_04_norm"
 processed = "dec_02_norm"
 class_names = ["sig", "bkg"]
 

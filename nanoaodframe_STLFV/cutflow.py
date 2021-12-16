@@ -316,12 +316,19 @@ run2dataMC = np.divide(run2cutflow[21][0],run2cutflow[20][0]).tolist()
 run2dataMC_error = np.multiply(run2dataMC,np.divide(run2cutflow[20][1],run2cutflow[20][0])).tolist()
 run2dataMC = np.append(run2dataMC,run2dataMC_error).reshape(2,steps+1).tolist()
 run2cutflow[22] = run2dataMC
+
+for i in range(12):
+    run2cutflow[i+23] = np.divide(run2cutflow[i][0],np.sqrt(run2cutflow[20])).tolist()
+for i in range(12):
+    tmpacc = np.array([j/run2cutflow[i][0][0] for j in run2cutflow[i][0]])
+    tmpacc.resize(2,steps+1)
+    run2cutflow[i+35] = tmpacc.tolist()
 formattedcutflows.append(formatCutflow(run2cutflow))
 
 def texScript(run,formattedcutflow):
     h1 = "\\begin{table}[!hp]\n    \\tiny\n    \centering\n"
     h2 = "    \\renewcommand{\\arraystretch}{1.3}\n    \\begin{tabular}{c|r|r|r|r|r} \\hline\\hline \n"
-    h3 = "    \\textbf{"+run+" (%s~\\fbinv)} & \\textbf{One muon} & & \\textbf{One tau} & \\textbf{$m_{\\mu\\tau}>150\GeV$, OS} & \\textbf{nJets$\geq$3} & \\textbf{One b-tagged Jet} \\\\ \hline \n"%(lumi)
+    h3 = "    \\textbf{"+run+" (%s~\\fbinv)} & \\textbf{One muon} & \\textbf{One tau} & \\textbf{$m_{\\mu\\tau}>150\GeV$, OS} & \\textbf{nJets$\geq$3} & \\textbf{One b-tagged Jet} \\\\ \hline \n"%(lumi)
     s = "    LFV ST $tc\\mu\\tau$  " + " & {} $\\pm$ {}"*steps + " \\\\ \n\
     LFV ST $tu\\mu\\tau$  " + " & {} $\\pm$ {}"*steps + " \\\\ \n\
     LFV TT $tc\\mu\\tau$  " + " & {} $\\pm$ {}"*steps + " \\\\ \n\
@@ -341,10 +348,10 @@ def texScript(run,formattedcutflow):
     S/$\sqrt{{B}}$~(ST $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
     S/$\sqrt{{B}}$~(TT $tc\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
     S/$\sqrt{{B}}$~(TT $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \hline \n\
-    $\\varepsilon$~(ST $tc\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
-    $\\varepsilon$~(ST $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
-    $\\varepsilon$~(TT $tc\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
-    $\\varepsilon$~(TT $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \hline \hline\n"
+    Acceptance~(ST $tc\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
+    Acceptance~(ST $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
+    Acceptance~(TT $tc\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
+    Acceptance~(TT $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \hline \hline\n"
     s=s.format(*formattedcutflow)
     #QCD                 " + " & {} $\\pm$ {}"*steps + " \\\\ \n\
     b1 = "    \\end{tabular}\n"

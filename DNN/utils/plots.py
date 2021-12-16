@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import tensorflow as tf
 from sklearn.metrics import confusion_matrix
 from sklearn.utils.multiclass import unique_labels
 
@@ -124,3 +125,4 @@ def plot_corrMatrix(dataframe, savedir="./", outname=""):
     
     plt.savefig(os.path.join(savedir+'/correlation_'+outname+'.pdf'))
     plt.gcf().clear()
+

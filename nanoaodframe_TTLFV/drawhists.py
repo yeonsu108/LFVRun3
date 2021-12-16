@@ -11,12 +11,13 @@ parser.add_argument('-R', '--ratio', dest='ratio', action='store_true', default=
 parser.add_argument('-S', '--significance', dest='significance', action='store_true', default=False)
 parser.add_argument('-L', '--logstyle', dest='logstyle', action='store_true', default=False)
 parser.add_argument('-Y', '--year', dest='year', type=str, default="")
+parser.add_argument('-SYS', '--systematic', dest='systematic', type=str, default="norm")
 args = parser.parse_args()
 logstyle = args.logstyle
 ratio = args.ratio
 significance = args.significance
 year = args.year
-sys = "_norm"
+sys = "_"+args.systematic
 # Lumi ratio dictionary for integrated Run2
 rlumi={"16pre":1.,"16post":1.,"17":1.,"18":1.}
 runs=[]
@@ -57,27 +58,19 @@ else:
     s.addChannel(year+"/Run"+year+sys+".root", "data", 999, isMC=False)
 for run in runs:
     # LFV ( must be added before other MC )
-    s.addChannel(run+"/ST_LFV_TCMuTau_Vector_"+run+sys+".root", "LFV STc", 10, isMC=True, xsec=rlumi[run]*36.8, counterhistogramroot=run+"/ST_LFV_TCMuTau_Vector_"+run+sys+".root")
-    s.addChannel(run+"/ST_LFV_TUMuTau_Vector_"+run+sys+".root", "LFV STu", 11, isMC=True, xsec=rlumi[run]*393, counterhistogramroot=run+"/ST_LFV_TUMuTau_Vector_"+run+sys+".root")
-    s.addChannel(run+"/TT_LFV_TToCMuTau_Vector_"+run+sys+".root", "LFV TTc", 12, isMC=True, xsec=rlumi[run]*21.5, counterhistogramroot=run+"/TT_LFV_TToCMuTau_Vector_"+run+sys+".root")
-    s.addChannel(run+"/TT_LFV_TToUMuTau_Vector_"+run+sys+".root", "LFV TTu", 13, isMC=True, xsec=rlumi[run]*21.5, counterhistogramroot=run+"/TT_LFV_TToUMuTau_Vector_"+run+sys+".root")
+    s.addChannel(run+"/ST_LFV_TCMuTau_Vector_"+run+sys+".root", "LFV STc x50", 10, isMC=True, xsec=rlumi[run]*36.8*50, counterhistogramroot=run+"/ST_LFV_TCMuTau_Vector_"+run+sys+".root")
+    s.addChannel(run+"/ST_LFV_TUMuTau_Vector_"+run+sys+".root", "LFV STu x50", 11, isMC=True, xsec=rlumi[run]*393*50, counterhistogramroot=run+"/ST_LFV_TUMuTau_Vector_"+run+sys+".root")
+    s.addChannel(run+"/TT_LFV_TToCMuTau_Vector_"+run+sys+".root", "LFV TTc x50", 12, isMC=True, xsec=rlumi[run]*21.5*50, counterhistogramroot=run+"/TT_LFV_TToCMuTau_Vector_"+run+sys+".root")
+    s.addChannel(run+"/TT_LFV_TToUMuTau_Vector_"+run+sys+".root", "LFV TTu x50", 13, isMC=True, xsec=rlumi[run]*21.5*50, counterhistogramroot=run+"/TT_LFV_TToUMuTau_Vector_"+run+sys+".root")
     # MC ( reference twiki : https://twiki.cern.ch/twiki/bin/viewauth/CMS/SummaryTable1G25ns )
     # TTbar
     s.addChannel(run+"/TTTo2L2Nu_"+run+sys+".root", "TT-di", 0, isMC=True, xsec=rlumi[run]*88290.0, counterhistogramroot=run+"/TTTo2L2Nu_"+run+sys+".root")
     s.addChannel(run+"/TTToSemiLeptonic_"+run+sys+".root", "TT-semi", 1, isMC=True, xsec=rlumi[run]*365340.0, counterhistogramroot=run+"/TTToSemiLeptonic_"+run+sys+".root")
-    s.addChannel(run+"/TTToHadronic_"+run+sys+".root", "TT-had", 2, isMC=True, xsec=rlumi[run]*377960.0, counterhistogramroot=run+"/TTToHadronic_"+run+sys+".root")
 
     #s.addChannel(run+"/WJetsToLNu_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*61526700, counterhistogramroot=run+"/WJetsToLNu_"+run+sys+".root")
 
     # W+Jets
-    if run=="16pre":
-        s.addChannel(run+"/WJetsToLNu_inclHT100_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*61526700*0.9647, counterhistogramroot=run+"/WJetsToLNu_inclHT100_"+run+sys+".root")
-    elif run=="16post":
-        s.addChannel(run+"/WJetsToLNu_inclHT100_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*61526700*0.9647, counterhistogramroot=run+"/WJetsToLNu_inclHT100_"+run+sys+".root")
-    elif run=="17":
-        s.addChannel(run+"/WJetsToLNu_inclHT100_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*61526700*0.9645, counterhistogramroot=run+"/WJetsToLNu_inclHT100_"+run+sys+".root")
-    elif run=="18":
-        s.addChannel(run+"/WJetsToLNu_inclHT100_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*61526700*0.9645, counterhistogramroot=run+"/WJetsToLNu_inclHT100_"+run+sys+".root")
+    s.addChannel(run+"/WJetsToLNu_inclHT100_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*61526700*0.9645, counterhistogramroot=run+"/WJetsToLNu_inclHT100_"+run+sys+".root")
     s.addChannel(run+"/WJetsToLNu_HT-100To200_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*1345000.0*0.993, counterhistogramroot=run+"/WJetsToLNu_HT-100To200_"+run+sys+".root")
     s.addChannel(run+"/WJetsToLNu_HT-200To400_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*359700.0*1.002, counterhistogramroot=run+"/WJetsToLNu_HT-200To400_"+run+sys+".root")
     s.addChannel(run+"/WJetsToLNu_HT-400To600_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*48910.0*1.009, counterhistogramroot=run+"/WJetsToLNu_HT-400To600_"+run+sys+".root")
@@ -97,17 +90,17 @@ for run in runs:
     s.addChannel(run+"/ST_tW_top_"+run+sys+".root", "ST", 5, isMC=True, xsec=rlumi[run]*35850.0, counterhistogramroot=run+"/ST_tW_top_"+run+sys+".root")
     s.addChannel(run+"/ST_tW_antitop_"+run+sys+".root", "ST", 5, isMC=True, xsec=rlumi[run]*35850.0, counterhistogramroot=run+"/ST_tW_antitop_"+run+sys+".root")
 
-    # VV
-    s.addChannel(run+"/WW_"+run+sys+".root", "VV", 6, isMC=True, xsec=rlumi[run]*118700.0, counterhistogramroot=run+"/WW_"+run+sys+".root")
-    s.addChannel(run+"/WZ_"+run+sys+".root", "VV", 6, isMC=True, xsec=rlumi[run]*47130.0, counterhistogramroot=run+"/WZ_"+run+sys+".root")
-    s.addChannel(run+"/ZZ_"+run+sys+".root", "VV", 6, isMC=True, xsec=rlumi[run]*16523.0, counterhistogramroot=run+"/ZZ_"+run+sys+".root")
+    # Oth
+    s.addChannel(run+"/TTWJetsToLNu_"+run+sys+".root", "Oth", 6, isMC=True, xsec=rlumi[run]*204.3, counterhistogramroot=run+"/TTWJetsToLNu_"+run+sys+".root")
+    s.addChannel(run+"/TTWJetsToQQ_"+run+sys+".root", "Oth", 6, isMC=True, xsec=rlumi[run]*406.2, counterhistogramroot=run+"/TTWJetsToQQ_"+run+sys+".root")
+    s.addChannel(run+"/TTZToLLNuNu_"+run+sys+".root", "Oth", 6, isMC=True, xsec=rlumi[run]*252.9, counterhistogramroot=run+"/TTZToLLNuNu_"+run+sys+".root")
+    s.addChannel(run+"/TTZToQQ_"+run+sys+".root", "Oth", 6, isMC=True, xsec=rlumi[run]*529.7, counterhistogramroot=run+"/TTZToQQ_"+run+sys+".root")
+    s.addChannel(run+"/TTToHadronic_"+run+sys+".root", "Oth", 6, isMC=True, xsec=rlumi[run]*377960.0, counterhistogramroot=run+"/TTToHadronic_"+run+sys+".root")
 
-    # TTX
-    s.addChannel(run+"/TTWJetsToLNu_"+run+sys+".root", "TTX", 7, isMC=True, xsec=rlumi[run]*204.3, counterhistogramroot=run+"/TTWJetsToLNu_"+run+sys+".root")
-    s.addChannel(run+"/TTWJetsToQQ_"+run+sys+".root", "TTX", 7, isMC=True, xsec=rlumi[run]*406.2, counterhistogramroot=run+"/TTWJetsToQQ_"+run+sys+".root")
-    s.addChannel(run+"/TTZToLLNuNu_"+run+sys+".root", "TTX", 7, isMC=True, xsec=rlumi[run]*252.9, counterhistogramroot=run+"/TTZToLLNuNu_"+run+sys+".root")
-    s.addChannel(run+"/TTZToQQ_"+run+sys+".root", "TTX", 7, isMC=True, xsec=rlumi[run]*529.7, counterhistogramroot=run+"/TTZToQQ_"+run+sys+".root")
-
+    # Oth
+    s.addChannel(run+"/WW_"+run+sys+".root", "Oth", 6, isMC=True, xsec=rlumi[run]*118700.0, counterhistogramroot=run+"/WW_"+run+sys+".root")
+    s.addChannel(run+"/WZ_"+run+sys+".root", "Oth", 6, isMC=True, xsec=rlumi[run]*47130.0, counterhistogramroot=run+"/WZ_"+run+sys+".root")
+    s.addChannel(run+"/ZZ_"+run+sys+".root", "Oth", 6, isMC=True, xsec=rlumi[run]*16523.0, counterhistogramroot=run+"/ZZ_"+run+sys+".root")
     # QCD
 #    s.addChannel(run+"/QCD_Pt-15to20_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*1273190000000*0.003, counterhistogramroot=run+"/QCD_Pt-15to20_MuEnrichedPt5_"+run+sys+".root")
 #    s.addChannel(run+"/QCD_Pt-20to30_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*558528000000*0.0053, counterhistogramroot=run+"/QCD_Pt-20to30_MuEnrichedPt5_"+run+sys+".root")
@@ -156,11 +149,14 @@ s.addHistogram("h1ncleantaupass_cut0", "Number of Hadronic Tau", "Entries", draw
 s.addHistogram("h1ncleanjetspass_cut0", "Number of Jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("h1ncleanjetspass_cut00", "Number of Jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("h1ncleanjetspass_cut000", "Number of Jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-#s.addHistogram("hncleanjetspass_cut0000", "Number of Jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("h1ncleanjetspass_cut0000", "Number of Jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hncleanjetspass_cut00000", "Number of Jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hncleanjetspass_cut000000", "Number of Jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
 # bjet multiplicity
 s.addHistogram("h1ncleanbjetspass_cut0000", "Number of b-tagged jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-#s.addHistogram("hncleanbjetspass_cut0000", "Number of b-tagged jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hncleanbjetspass_cut00000", "Number of b-tagged jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hncleanbjetspass_cut000000", "Number of b-tagged jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
 # Jet Histograms
 # Leading Jet
@@ -172,15 +168,21 @@ s.addHistogram("hjet1pt_cut00000", "p_{T} of Leading Jet (GeV)", "Entries", draw
 s.addHistogram("hjet1eta_cut00000", "#eta of Leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("hjet1btag_cut00000", "b-tag discr. of Leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
+s.addHistogram("hjet1pt_cut000000", "p_{T} of Leading Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
+s.addHistogram("hjet1eta_cut000000", "#eta of Leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hjet1btag_cut000000", "b-tag discr. of Leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 # Sub-leading Jet
 s.addHistogram("h1jet2pt_cut0000", "p_{T} of Sub-leading Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("h1jet2eta_cut0000", "#eta of Sub-leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("h1jet2btag_cut0000", "b-tag discr. of Sub-leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
-s.addHistogram("hjet2pt_cut00000", "p_{T} of Sub-leading Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
-s.addHistogram("hjet2eta_cut00000", "#eta of Sub-leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hjet2btag_cut00000", "b-tag discr. of Sub-leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hjet2pt_cut00000", "p_{t} of sub-leading jet (gev)", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
+s.addHistogram("hjet2eta_cut00000", "#eta of sub-leading jet", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hjet2btag_cut00000", "b-tag discr. of sub-leading jet", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
+s.addHistogram("hjet2pt_cut000000", "p_{t} of sub-leading jet (gev)", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
+s.addHistogram("hjet2eta_cut000000", "#eta of sub-leading jet", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hjet2btag_cut000000", "b-tag discr. of sub-leading jet", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 # Third Jet
 s.addHistogram("h1jet3pt_cut0000", "p_{T} of Third Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("h1jet3eta_cut0000", "#eta of Third Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
@@ -190,19 +192,28 @@ s.addHistogram("hjet3pt_cut00000", "p_{T} of Third Jet (GeV)", "Entries", drawmo
 s.addHistogram("hjet3eta_cut00000", "#eta of Third Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("hjet3btag_cut00000", "b-tag discr. of Third Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
+s.addHistogram("hjet3pt_cut000000", "p_{T} of Third Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
+s.addHistogram("hjet3eta_cut000000", "#eta of Third Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hjet3btag_cut000000", "b-tag discr. of Third Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 # Fourth Jet
-s.addHistogram("h1jet4pt_cut0000", "p_{T} of Third Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("h1jet4eta_cut0000", "#eta of Third Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("h1jet4btag_cut0000", "b-tag discr. of Third Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("h1jet4pt_cut0000", "p_{T} of Fourth Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("h1jet4eta_cut0000", "#eta of Fourth Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("h1jet4btag_cut0000", "b-tag discr. of Fourth Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
-s.addHistogram("hjet4pt_cut00000", "p_{T} of Third Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
-s.addHistogram("hjet4eta_cut00000", "#eta of Third Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hjet4btag_cut00000", "b-tag discr. of Third Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hjet4pt_cut00000", "p_{T} of Fourth Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
+s.addHistogram("hjet4eta_cut00000", "#eta of Fourth Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hjet4btag_cut00000", "b-tag discr. of Fourth Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+
+s.addHistogram("hjet4pt_cut000000", "p_{T} of Fourth Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
+s.addHistogram("hjet4eta_cut000000", "#eta of Fourth Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hjet4btag_cut000000", "b-tag discr. of Fourth Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
 # bJet Histograms
 s.addHistogram("hbjet1pt_cut00000", "p_{T} of b-tagged Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
 s.addHistogram("hbjet1eta_cut00000", "#eta of b-tagged Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
+s.addHistogram("hbjet1pt_cut000000", "p_{T} of b-tagged Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
+s.addHistogram("hbjet1eta_cut000000", "#eta of b-tagged Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 # Muon Histograms
 s.addHistogram("h1muon1pt_cut0", "p_{T} of Muon (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=mutauptbins)
 s.addHistogram("h1muon1pt_cut00", "p_{T} of Muon (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=mutauptbins)
@@ -285,16 +296,8 @@ s.addHistogram("hmetphi_cut000000", "MET #phi", "Entries", drawmode=stackhists.S
 #s.addHistogram("hsumet_cut0000", "Sum E_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
 # Top mass reconstruction ( W hadronic )
-s.addHistogram("hchi2_cut00000", "#chi^{2} score", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hchi2_lfvTop_mass_cut00000", "SM Top mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hchi2_SMTop_mass_cut00000", "SM Top mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hchi2_SMW_mass_cut00000", "SM W mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hchi2_wqq_dEta_cut00000", "#it{#Delta#eta}_{wqq} from #chi^{2}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hchi2_wqq_dPhi_cut00000", "#it{#Delta#phi}_{wqq} from #chi^{2}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hchi2_wqq_dR_cut00000", "#DeltaR_{wqq}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-
 s.addHistogram("hchi2_cut000000", "#chi^{2} score", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hchi2_lfvTop_mass_cut000000", "SM Top mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hchi2_lfvTop_mass_cut000000", "LFV Top mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("hchi2_SMTop_mass_cut000000", "SM Top mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("hchi2_SMW_mass_cut000000", "SM W mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("hchi2_wqq_dEta_cut000000", "#it{#Delta#eta}_{wqq} from #chi^{2}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)

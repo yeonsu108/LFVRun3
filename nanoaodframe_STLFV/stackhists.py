@@ -217,8 +217,8 @@ class Stackhists:
         labellist = []
 
         # adding signal contribution 
-        signalhist = None
         signalhistlist = []
+        sighistgroup = {}
         mchistsum = None
 
         xbins = []
@@ -263,17 +263,24 @@ class Stackhists:
                     ahist.SetFillStyle(self.patternlist[self.mcpatternlist[ifile]])
                     #ahist.UseCurrentStyle()
                 else:
-                    signalhist = ahist
                     ahist.SetLineColor(self.colorlist[self.mccolorlist[ifile]])
-                    signalhistlist.append(ahist)
+                    if label not in sighistgroup:
+                        sighistgroup[label] = ahist
+                    else:
+                        sighistgroup[label].Add(ahist)
+                    signalhistlist = list(sighistgroup.values())
 
-        normevts = dict()
-        for label in labellist:
-            if not "LFV" in label:
-                normevts[label] = histgroup[label].Integral()
-        renormevts_list=sorted(normevts.items(),key=lambda x:x[1],reverse=True)
-        reordered_labellist = [i[0] for i in renormevts_list]
-        if isLogy: reordered_labellist.reverse()
+#        normevts = dict()
+#        for label in labellist:
+#            if not "LFV" in label:
+#                normevts[label] = histgroup[label].Integral()
+#        renormevts_list=sorted(normevts.items(),key=lambda x:x[1],reverse=True)
+#        reordered_labellist = [i[0] for i in renormevts_list]
+#        if isLogy: reordered_labellist.reverse()
+
+        reordered_labellist = []
+        reordered_labellist = labellist
+        if isLogy: reordered_labellist = list(reversed(labellist))
 
         for label in reordered_labellist:
             ahist = histgroup[label]
@@ -546,7 +553,7 @@ class Stackhists:
             path = "plot_snb_"+str(self.integrlumi)
             if not os.path.isdir(path):
                 os.mkdir(path)
-        outfile = ROOT.TFile("stackhist_"+str(self.integrlumi)+".root","UPDATE")
+        outfile = ROOT.TFile("stackhist_"+str(self.integrlumi)+".root","RECREATE")
         outfile.cd()
         if not self.datafilelist:
             if(isLogy):
