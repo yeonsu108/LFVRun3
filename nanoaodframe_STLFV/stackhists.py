@@ -217,7 +217,6 @@ class Stackhists:
         labellist = []
 
         # adding signal contribution 
-        signalhist = None
         signalhistlist = []
         sighistgroup = {}
         mchistsum = None
@@ -554,7 +553,7 @@ class Stackhists:
             path = "plot_snb_"+str(self.integrlumi)
             if not os.path.isdir(path):
                 os.mkdir(path)
-        outfile = ROOT.TFile("stackhist_"+str(self.integrlumi)+".root","UPDATE")
+        outfile = ROOT.TFile("stackhist_"+str(self.integrlumi)+".root","RECREATE")
         outfile.cd()
         if not self.datafilelist:
             if(isLogy):
