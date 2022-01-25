@@ -1,0 +1,22 @@
+Combination of run16APV=datacard_cat1_run16APV_c_v.txt  run16=datacard_cat1_run16_c_v.txt  run17=datacard_cat1_run17_c_v.txt  run18=datacard_cat1_run18_c_v.txt
+imax 4 number of bins
+jmax 6 number of processes minus 1
+kmax 4 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes *         run16     jan01/pred_run16_cat1.root $PROCESS $PROCESS_$SYSTEMATIC
+shapes *         run16APV  jan01/pred_run16APV_cat1.root $PROCESS $PROCESS_$SYSTEMATIC
+shapes *         run17     jan01/pred_run17_cat1.root $PROCESS $PROCESS_$SYSTEMATIC
+shapes *         run18     jan01/pred_run18_cat1.root $PROCESS $PROCESS_$SYSTEMATIC
+----------------------------------------------------------------------------------------------------------------------------------
+bin          run16APV  run16     run17     run18   
+observation  -1        -1        -1        -1      
+----------------------------------------------------------------------------------------------------------------------------------
+bin                               run16APV   run16APV   run16APV   run16APV   run16APV   run16APV   run16APV   run16      run16      run16      run16      run16      run16      run16      run17      run17      run17      run17      run17      run17      run17      run18      run18      run18      run18      run18      run18      run18    
+process                           LFV_TTc_v  LFV_STc_v  Oth        TT         ST         Wjets      DY         LFV_TTc_v  LFV_STc_v  Oth        TT         ST         Wjets      DY         LFV_TTc_v  LFV_STc_v  Oth        TT         ST         Wjets      DY         LFV_TTc_v  LFV_STc_v  Oth        TT         ST         Wjets      DY       
+process                           -1         0          1          2          3          4          5          -1         0          1          2          3          4          5          -1         0          1          2          3          4          5          -1         0          1          2          3          4          5        
+rate                              -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         0          -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1       
+----------------------------------------------------------------------------------------------------------------------------------
+btag_jes                shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
+jec                     shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
+lumi                    lnN       1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.023      1.023      1.023      1.023      1.023      1.023      1.023      1.025      1.025      1.025      1.025      1.025      1.025      1.025    
+pu                      shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      

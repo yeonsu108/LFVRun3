@@ -1,0 +1,20 @@
+Combination of cat1=datacard_cat1_run16APV_c_t.txt  cat2=datacard_cat2_run16APV_c_t.txt
+imax 2 number of bins
+jmax 6 number of processes minus 1
+kmax 4 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes *     cat1  jan01/pred_run16APV_cat1.root $PROCESS $PROCESS_$SYSTEMATIC
+shapes *     cat2  jan01/pred_run16APV_cat2.root $PROCESS $PROCESS_$SYSTEMATIC
+----------------------------------------------------------------------------------------------------------------------------------
+bin          cat1   cat2 
+observation  -1     -1   
+----------------------------------------------------------------------------------------------------------------------------------
+bin                               cat1       cat1       cat1       cat1       cat1       cat1       cat1       cat2       cat2       cat2       cat2       cat2       cat2       cat2     
+process                           LFV_STc_t  LFV_TTc_t  Oth        TT         Wjets      ST         DY         LFV_STc_t  LFV_TTc_t  Oth        TT         Wjets      ST         DY       
+process                           -1         0          1          2          3          4          5          -1         0          1          2          3          4          5        
+rate                              -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1       
+----------------------------------------------------------------------------------------------------------------------------------
+btag_jes                shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
+jec                     shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
+lumi                    lnN       1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012    
+pu                      shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
