@@ -23,7 +23,7 @@ using namespace std;
 
 NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
 :_rd(*atree),_jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0),_outrootfile(0), _rlm(_rd)
-	, _btagcalibreader(BTagEntry::OP_RESHAPING, "central", {"up_jes", "down_jes"})
+	, _btagcalibreader(BTagEntry::OP_RESHAPING, "central", {"up_jes", "down_jes", "up_hf","down_hf","up_lf","down_lf","up_hfstats1","down_hfstats1","up_hfstats2","down_hfstats2","up_lfstats1","down_lfstats1","up_lfstats2","down_lfstats2"})
 	, _rnt(&_rlm), currentnode(0), _jetCorrector(0), _jetCorrectionUncertainty(0)
 {
         // Skim switch
@@ -807,6 +807,30 @@ void NanoAODAnalyzerrdframe::calculateEvWeight()
                     w = _btagcalibreader.eval_auto_bounds("up_jes", hadfconv, fabs(etas[i]), pts[i], btags[i]);
                 }else if(_syst=="btagdown_jes"){
                     w = _btagcalibreader.eval_auto_bounds("down_jes", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_hf"){
+                    w = _btagcalibreader.eval_auto_bounds("up_hf", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_hf"){
+                    w = _btagcalibreader.eval_auto_bounds("down_hf", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_lf"){
+                    w = _btagcalibreader.eval_auto_bounds("up_lf", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_lf"){
+                    w = _btagcalibreader.eval_auto_bounds("down_lf", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_hfstats1"){
+                    w = _btagcalibreader.eval_auto_bounds("up_hfstats1", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_hfstats1"){
+                    w = _btagcalibreader.eval_auto_bounds("down_hfstats1", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_hfstats2"){
+                    w = _btagcalibreader.eval_auto_bounds("up_hfstats2", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_hfstats2"){
+                    w = _btagcalibreader.eval_auto_bounds("down_hfstats2", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_lfstats1"){
+                    w = _btagcalibreader.eval_auto_bounds("up_lfstats1", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_lfstats1"){
+                    w = _btagcalibreader.eval_auto_bounds("down_lfstats1", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_lfstats2"){
+                    w = _btagcalibreader.eval_auto_bounds("up_lfstats2", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_lfstats2"){
+                    w = _btagcalibreader.eval_auto_bounds("down_lfstats2", hadfconv, fabs(etas[i]), pts[i], btags[i]);
                 }else{
                     w = _btagcalibreader.eval_auto_bounds("central", hadfconv, fabs(etas[i]), pts[i], btags[i]);
                 }

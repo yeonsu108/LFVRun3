@@ -15,6 +15,7 @@ from utils.plots import *
 root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
 processed = "dec_02_norm"
+label = "jan01"
 class_names = ["sig", "bkg"]
 
 for p in ["ST","TT"]:
@@ -31,8 +32,8 @@ for p in ["ST","TT"]:
             "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag",
             "Sys_METpt","Sys_METphi",
             "chi2","chi2_SMW_mass","chi2_SMTop_mass"]
-        sbratio = 1 # sig:bkg = 1:2
-        nodes = 30
+        sbratio = 1 # sig:bkg = 1:1
+        nodes = 20
         layers = 2
     elif p == "TT":
         inputvars = ["Sel_muon1pt","Sel_muon1eta","Sel_tau1pt","Sel_tau1eta",
@@ -42,9 +43,9 @@ for p in ["ST","TT"]:
             "Sys_METpt","Sys_METphi",
             "chi2","chi2_lfvTop_mass","chi2_SMW_mass","chi2_SMTop_mass"]
         sbratio = 1 # sig:bkg = 1:1
-        nodes = 30
+        nodes = 15
         layers = 2
-        drop = 0.20
+        #drop = 0.05
 
     project_dir = "nanoaodframe_"+p+"LFV/"+processed+"/"
 #    sig1_filedir = root_dir+project_dir+"ST_LFV_norm.root"
@@ -52,7 +53,7 @@ for p in ["ST","TT"]:
     sig_filedir = root_dir+project_dir+p+"_LFV_norm.root"
     bkg1_filedir = root_dir+project_dir+"TTTo2L2Nu_norm.root"
     bkg2_filedir = root_dir+project_dir+"TTToSemiLeptonic_norm.root"
-    train_outdir = "./"+p+processed+"_"+str(nodes)+"nodes_"+str(layers)+"layers_s1b"+str(sbratio)
+    train_outdir = label+"/"+p+processed+"_"+str(nodes)+"nodes_"+str(layers)+"layers_s1b"+str(sbratio)+"_"+label
     os.makedirs(train_outdir, exist_ok=True)
 
 #    sig1_tree = uproot.open(sig1_filedir)["outputTree2"]
@@ -93,7 +94,6 @@ for p in ["ST","TT"]:
 
     print("LFV : "+str(nsig)+" events")
     print("TT  : "+str(nbkg)+" events")
-
     df_sig = df_sig.sample(n=nsig)
     df_bkg = df_bkg.sample(n=nbkg)
     df_sig["category"] = 1

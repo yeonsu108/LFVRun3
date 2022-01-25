@@ -8,11 +8,11 @@ else
     rm -rf Run2_${syst}_pred.root
     hadd Run2_${syst}_pred.root 1*/Run*.root
     rm -rf plot* stack*.root
-    #for i in run2 16pre 16post 17 18
-    for i in run2
+    for i in run2 16pre 16post 17 18
+    #for i in run2
     do
-        python ../../drawhists.py -SYS ${syst} -Y $i
-        python ../../drawhists.py -SYS ${syst} -Y $i -L
+        python ../../../drawhists.py -SYS ${syst} -Y $i
+        python ../../../drawhists.py -SYS ${syst} -Y $i -L
     done
-    cd ../../
+    cd -
 fi

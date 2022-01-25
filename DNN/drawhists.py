@@ -53,27 +53,14 @@ CMS_lumi.extraText = ""
 # DATA
 if year=="run2":
     s.addChannel("Run2"+syst+"_pred.root", "data", 999, isMC=False)
-    # LFV ( must be added before other MC )
-#    s.addChannel("18/ST_LFV_TCMuTau_Scalar_18"+syst+"_pred.root", "LFV STc s", 10, isMC=True, xsec=7.40, counterhistogramroot="18/ST_LFV_TCMuTau_Scalar_18"+syst+"_pred.root")
-#    s.addChannel("18/ST_LFV_TCMuTau_Vector_18"+syst+"_pred.root", "LFV STc v", 10, isMC=True, xsec=36.8, counterhistogramroot="18/ST_LFV_TCMuTau_Vector_18"+syst+"_pred.root")
-#    s.addChannel("18/ST_LFV_TCMuTau_Tensor_18"+syst+"_pred.root", "LFV STc t", 10, isMC=True, xsec=178.4, counterhistogramroot="18/ST_LFV_TCMuTau_Tensor_18"+syst+"_pred.root")
-#    s.addChannel("18/ST_LFV_TUMuTau_Scalar_18"+syst+"_pred.root", "LFV STu s", 11, isMC=True, xsec=83.8, counterhistogramroot="18/ST_LFV_TUMuTau_Scalar_18"+syst+"_pred.root")
-#    s.addChannel("18/ST_LFV_TUMuTau_Vector_18"+syst+"_pred.root", "LFV STu v", 11, isMC=True, xsec=393, counterhistogramroot="18/ST_LFV_TUMuTau_Vector_18"+syst+"_pred.root")
-#    s.addChannel("18/ST_LFV_TUMuTau_Tensor_18"+syst+"_pred.root", "LFV STu t", 11, isMC=True, xsec=1796, counterhistogramroot="18/ST_LFV_TUMuTau_Tensor_18"+syst+"_pred.root")
-#    s.addChannel("18/TT_LFV_TToCMuTau_Scalar_18"+syst+"_pred.root", "LFV TTc s", 12, isMC=True, xsec=2.69, counterhistogramroot="18/TT_LFV_TToCMuTau_Scalar_18"+syst+"_pred.root")
-#    s.addChannel("18/TT_LFV_TToCMuTau_Vector_18"+syst+"_pred.root", "LFV TTc v", 12, isMC=True, xsec=21.5, counterhistogramroot="18/TT_LFV_TToCMuTau_Vector_18"+syst+"_pred.root")
-#    s.addChannel("18/TT_LFV_TToCMuTau_Tensor_18"+syst+"_pred.root", "LFV TTc t", 12, isMC=True, xsec=129.0, counterhistogramroot="18/TT_LFV_TToCMuTau_Tensor_18"+syst+"_pred.root")
-#    s.addChannel("18/TT_LFV_TToUMuTau_Scalar_18"+syst+"_pred.root", "LFV TTu s", 13, isMC=True, xsec=2.69, counterhistogramroot="18/TT_LFV_TToUMuTau_Scalar_18"+syst+"_pred.root")
-#    s.addChannel("18/TT_LFV_TToUMuTau_Vector_18"+syst+"_pred.root", "LFV TTu v", 13, isMC=True, xsec=21.5, counterhistogramroot="18/TT_LFV_TToUMuTau_Vector_18"+syst+"_pred.root")
-#    s.addChannel("18/TT_LFV_TToUMuTau_Tensor_18"+syst+"_pred.root", "LFV TTu t", 13, isMC=True, xsec=129.0, counterhistogramroot="18/TT_LFV_TToUMuTau_Tensor_18"+syst+"_pred.root")
-#    s.addChannel("18/ST_LFV_TCMuTau_Vector_18"+syst+"_pred.root", "LFV STc ", 10, isMC=True, xsec=36.8, counterhistogramroot="18/ST_LFV_TCMuTau_Vector_18"+syst+"_pred.root")
-#    s.addChannel("18/ST_LFV_TUMuTau_Vector_18"+syst+"_pred.root", "LFV STu ", 11, isMC=True, xsec=393, counterhistogramroot="18/ST_LFV_TUMuTau_Vector_18"+syst+"_pred.root")
-#    s.addChannel("18/TT_LFV_TToUMuTau_Vector_18"+syst+"_pred.root", "LFV TTu ", 13, isMC=True, xsec=21.5, counterhistogramroot="18/TT_LFV_TToUMuTau_Vector_18"+syst+"_pred.root")
-#    s.addChannel("18/TT_LFV_TToCMuTau_Vector_18"+syst+"_pred.root", "LFV TTc ", 12, isMC=True, xsec=21.5, counterhistogramroot="18/TT_LFV_TToCMuTau_Vector_18"+syst+"_pred.root")
 else:
     s.addChannel(year+"/Run"+year+syst+"_pred.root", "data", 999, isMC=False)
 for run in runs:
     # LFV
+#    s.addChannel(run+"/ST_LFV_TCMuTau_Vector_"+run+syst+"_pred.root", "LFV STc", 10, isMC=True, xsec=rlumi[run]*36.8, counterhistogramroot=run+"/ST_LFV_TCMuTau_Vector_"+run+syst+"_pred.root")
+#    s.addChannel(run+"/ST_LFV_TUMuTau_Vector_"+run+syst+"_pred.root", "LFV STu", 11, isMC=True, xsec=rlumi[run]*393, counterhistogramroot=run+"/ST_LFV_TUMuTau_Vector_"+run+syst+"_pred.root")
+#    s.addChannel(run+"/TT_LFV_TToCMuTau_Vector_"+run+syst+"_pred.root", "LFV TTc", 12, isMC=True, xsec=rlumi[run]*21.5, counterhistogramroot=run+"/TT_LFV_TToCMuTau_Vector_"+run+syst+"_pred.root")
+#    s.addChannel(run+"/TT_LFV_TToUMuTau_Vector_"+run+syst+"_pred.root", "LFV TTu", 13, isMC=True, xsec=rlumi[run]*21.5, counterhistogramroot=run+"/TT_LFV_TToUMuTau_Vector_"+run+syst+"_pred.root")
     s.addChannel(run+"/ST_LFV_TCMuTau_Scalar_"+run+syst+"_pred.root", "LFV STc s", 10, isMC=True, xsec=rlumi[run]*7.40, counterhistogramroot=run+"/ST_LFV_TCMuTau_Scalar_"+run+syst+"_pred.root")
     s.addChannel(run+"/ST_LFV_TCMuTau_Vector_"+run+syst+"_pred.root", "LFV STc v", 10, isMC=True, xsec=rlumi[run]*36.8, counterhistogramroot=run+"/ST_LFV_TCMuTau_Vector_"+run+syst+"_pred.root")
     s.addChannel(run+"/ST_LFV_TCMuTau_Tensor_"+run+syst+"_pred.root", "LFV STc t", 10, isMC=True, xsec=rlumi[run]*178.4, counterhistogramroot=run+"/ST_LFV_TCMuTau_Tensor_"+run+syst+"_pred.root")

@@ -12,12 +12,14 @@ parser.add_argument('-S', '--significance', dest='significance', action='store_t
 parser.add_argument('-L', '--logstyle', dest='logstyle', action='store_true', default=False)
 parser.add_argument('-Y', '--year', dest='year', type=str, default="")
 parser.add_argument('-SYS', '--systematic', dest='systematic', type=str, default="norm")
+parser.add_argument('-B', '--blind', dest='isblind', action='store_true', default=False)
 args = parser.parse_args()
 logstyle = args.logstyle
 ratio = args.ratio
 significance = args.significance
 year = args.year
 sys = "_"+args.systematic
+isblind = args.isblind
 # Lumi ratio dictionary for integrated Run2
 rlumi={"16pre":1.,"16post":1.,"17":1.,"18":1.}
 runs=[]
@@ -52,10 +54,11 @@ CMS_lumi.extraText = ""
 #CMS_lumi.extraText = "Simulation"
 
 # DATA
-if year=="run2":
-    s.addChannel("Run2"+sys+".root", "data", 999, isMC=False)
-else:
-    s.addChannel(year+"/Run"+year+sys+".root", "data", 999, isMC=False)
+if not isblind:
+    if year=="run2":
+        s.addChannel("Run2"+sys+".root", "data", 999, isMC=False)
+    else:
+        s.addChannel(year+"/Run"+year+sys+".root", "data", 999, isMC=False)
 for run in runs:
     # LFV ( must be added before other MC )
     s.addChannel(run+"/ST_LFV_TCMuTau_Vector_"+run+sys+".root", "LFV STc", 10, isMC=True, xsec=rlumi[run]*36.8, counterhistogramroot=run+"/ST_LFV_TCMuTau_Vector_"+run+sys+".root")
@@ -151,8 +154,8 @@ s.addHistogram("h1ncleanjetspass_cut000", "Number of Jets", "Entries", drawmode=
 #s.addHistogram("hncleanjetspass_cut0000", "Number of Jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
 # bjet multiplicity
-s.addHistogram("h1ncleanbjetspass_cut0000", "Number of b-tagged jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-#s.addHistogram("hncleanbjetspass_cut0000", "Number of b-tagged jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+#s.addHistogram("h1ncleanbjetspass_cut0000", "Number of b-tagged jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hncleanbjetspass_cut0000", "Number of b-tagged jets", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
 # Jet Histograms
 # Leading Jet

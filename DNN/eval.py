@@ -12,6 +12,7 @@ from utils.hists import *
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
 processed = "dec_02"
+label = "jan01"
 syst = "norm"
 nodes = 20
 layers = 3
@@ -20,7 +21,7 @@ systs = ["norm","jecup","jecdown","puup","pudown","btagup_jes","btagdown_jes"]
 for syst in systs:
     for y in ["16pre","16post","17","18"]:
         for p in ["ST","TT"]:
-            print("Start "+p+" LFV Training")
+            print("Start "+p+" LFV Evaluation")
             epochs = 1000
             nodes = 20
             layers = 3
@@ -33,8 +34,8 @@ for syst in systs:
                     "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag",
                     "Sys_METpt","Sys_METphi",
                     "chi2","chi2_SMW_mass","chi2_SMTop_mass"]
-                sbratio = 1 # sig:bkg = 1:2
-                nodes = 30
+                sbratio = 1 # sig:bkg = 1:1
+                nodes = 20
                 layers = 2
             elif p == "TT":
                 inputvars = ["Sel_muon1pt","Sel_muon1eta","Sel_tau1pt","Sel_tau1eta",
@@ -44,21 +45,20 @@ for syst in systs:
                     "Sys_METpt","Sys_METphi",
                     "chi2","chi2_lfvTop_mass","chi2_SMW_mass","chi2_SMTop_mass"]
                 sbratio = 1 # sig:bkg = 1:1
-                nodes = 30
+                nodes = 15
                 layers = 2
-                drop = 0.20
 
             project_dir = "nanoaodframe_"+p+"LFV/"+processed+"_"+syst+"/"+y+"/"    # MODIFY!!!
             path = base_dir+project_dir
             flist = os.listdir(path)
             flist = [i for i in flist if ".root" in i]
             
-            train_dir = "./"+p+processed+"_norm_"+str(nodes)+"nodes_"+str(layers)+"layers_s1b"+str(sbratio)
+            train_dir = label+"/"+p+processed+"_norm_"+str(nodes)+"nodes_"+str(layers)+"layers_s1b"+str(sbratio)+"_"+label
             model_dir = train_dir+'/best_model.h5'
             model = tf.keras.models.load_model(model_dir)
             model.summary()
             
-            eval_dir = "./"+p+processed+"_"+syst+"_"+str(nodes)+"nodes_"+str(layers)+"layers_s1b"+str(sbratio)
+            eval_dir = label+"/"+p+processed+"_"+syst+"_"+str(nodes)+"nodes_"+str(layers)+"layers_s1b"+str(sbratio)+"_"+label
 
             weights = ["evWeight"]
             class_names = ["sig", "bkg"]

@@ -1,9 +1,10 @@
+#!/bin/bash
 pname=$1
 if [ -z "$1" ]
 then
     echo "No Input Argument"
 else
-    sys=jecdown
+    sys=$2
     cd ${pname}
     rm -rf *.out
     for i in 18 16post 16pre 17
