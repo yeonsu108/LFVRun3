@@ -12,12 +12,14 @@ parser.add_argument('-S', '--significance', dest='significance', action='store_t
 parser.add_argument('-L', '--logstyle', dest='logstyle', action='store_true', default=False)
 parser.add_argument('-Y', '--year', dest='year', type=str, default="")
 parser.add_argument('-SYS', '--systematic', dest='systematic', type=str, default="norm")
+parser.add_argument('-B', '--blind', dest='isblind', action='store_true', default=False)
 args = parser.parse_args()
 logstyle = args.logstyle
 ratio = args.ratio
 significance = args.significance
 year = args.year
 sys = "_"+args.systematic
+isblind = args.isblind
 # Lumi ratio dictionary for integrated Run2
 rlumi={"16pre":1.,"16post":1.,"17":1.,"18":1.}
 runs=[]
@@ -52,10 +54,11 @@ CMS_lumi.extraText = ""
 #CMS_lumi.extraText = "Simulation"
 
 # DATA
-if year=="run2":
-    s.addChannel("Run2"+sys+".root", "data", 999, isMC=False)
-else:
-    s.addChannel(year+"/Run"+year+sys+".root", "data", 999, isMC=False)
+if not isblind:
+    if year=="run2":
+        s.addChannel("Run2"+sys+".root", "data", 999, isMC=False)
+    else:
+        s.addChannel(year+"/Run"+year+sys+".root", "data", 999, isMC=False)
 for run in runs:
     # LFV ( must be added before other MC )
     s.addChannel(run+"/ST_LFV_TCMuTau_Vector_"+run+sys+".root", "LFV STc x50", 10, isMC=True, xsec=rlumi[run]*36.8*50, counterhistogramroot=run+"/ST_LFV_TCMuTau_Vector_"+run+sys+".root")
@@ -176,11 +179,11 @@ s.addHistogram("h1jet2pt_cut0000", "p_{T} of Sub-leading Jet (GeV)", "Entries", 
 s.addHistogram("h1jet2eta_cut0000", "#eta of Sub-leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("h1jet2btag_cut0000", "b-tag discr. of Sub-leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
-s.addHistogram("hjet2pt_cut00000", "p_{t} of sub-leading jet (gev)", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
-s.addHistogram("hjet2eta_cut00000", "#eta of sub-leading jet", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hjet2btag_cut00000", "b-tag discr. of sub-leading jet", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hjet2pt_cut00000", "p_{T} of Sub-leading Jet (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
+s.addHistogram("hjet2eta_cut00000", "#eta of Sub-leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hjet2btag_cut00000", "b-tag discr. of Sub-leading Jet", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
-s.addHistogram("hjet2pt_cut000000", "p_{t} of sub-leading jet (gev)", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
+s.addHistogram("hjet2pt_cut000000", "p_{T} of sub-leading jet (gev)", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=jetptbins)
 s.addHistogram("hjet2eta_cut000000", "#eta of sub-leading jet", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("hjet2btag_cut000000", "b-tag discr. of sub-leading jet", "entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 # Third Jet
