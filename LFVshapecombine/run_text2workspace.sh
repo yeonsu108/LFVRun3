@@ -28,18 +28,6 @@ for run in "${runs[@]}"; do
     done
 done
 
-for cat in "${cats[@]}"; do
-    for op in "${ops[@]}"; do
-        if [ ! -d workspace/combined/${cat} ]; then
-            mkdir -p workspace/combined/${cat}
-        fi
-        datacard=datacards/combined_run2_datacard_${cat}_${op}.txt
-        output=workspace/combined/${cat}/workspace_${op}.root
-        echo text2workspace.py ${datacard} -m 800 -o ${output}
-        text2workspace.py ${datacard} -m 800 -o ${output}
-    done
-done
-
 for op in "${ops[@]}"; do
     datacard=datacards/combined_run2_datacard_${op}.txt
     output=workspace/combined/workspace_${op}.root

@@ -17,3 +17,5 @@ bgnorm      lnN         1.0        1.0        1.0    1.0    1.0    1.0    1.0
 jec         shape       1          1          1      1      1      1      1 
 pu          shape       1          1          1      1      1      1      1 
 btag_jes    shape       1          1          1      1      1      1      1 
+btag_hf     shape       1          1          1      1      1      1      1 
+btag_lf     shape       1          1          1      1      1      1      1 

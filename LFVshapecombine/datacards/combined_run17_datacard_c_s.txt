@@ -1,7 +1,7 @@
 Combination of cat1=datacard_cat1_run17_c_s.txt  cat2=datacard_cat2_run17_c_s.txt
 imax 2 number of bins
 jmax 6 number of processes minus 1
-kmax 4 number of nuisance parameters
+kmax 6 number of nuisance parameters
 ----------------------------------------------------------------------------------------------------------------------------------
 shapes *     cat1  jan01/pred_run17_cat1.root $PROCESS $PROCESS_$SYSTEMATIC
 shapes *     cat2  jan01/pred_run17_cat2.root $PROCESS $PROCESS_$SYSTEMATIC
@@ -14,7 +14,9 @@ process                           LFV_TTc_s  LFV_STc_s  Oth        TT         ST
 process                           -1         0          1          2          3          4          5          -1         0          1          2          3          4          5        
 rate                              -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1         -1       
 ----------------------------------------------------------------------------------------------------------------------------------
+btag_hf                 shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
 btag_jes                shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
+btag_lf                 shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
 jec                     shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
 lumi                    lnN       1.023      1.023      1.023      1.023      1.023      1.023      1.023      1.023      1.023      1.023      1.023      1.023      1.023      1.023    
 pu                      shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
