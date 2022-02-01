@@ -23,7 +23,7 @@ using namespace std;
 
 NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
 :_rd(*atree),_jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0),_outrootfile(0), _rlm(_rd)
-	, _btagcalibreader(BTagEntry::OP_RESHAPING, "central", {"up_jes", "down_jes"})
+	, _btagcalibreader(BTagEntry::OP_RESHAPING, "central", {"up_jes", "down_jes", "up_hf","down_hf","up_lf","down_lf","up_hfstats1","down_hfstats1","up_hfstats2","down_hfstats2","up_lfstats1","down_lfstats1","up_lfstats2","down_lfstats2"})
 	, _rnt(&_rlm), currentnode(0), _jetCorrector(0), _jetCorrectionUncertainty(0)
 {
         // Skim switch
@@ -209,27 +209,27 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                 // Loading Tau Scale Factor
                 cout<<"Loading Tau SF"<<endl;
                 if(_isRun16pre){
-                        _tauidSFjet = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSjet","Medium");
+                        _tauidSFjet = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSjet","VTight");
                         _tauidSFele = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSe","VLoose");
-                        //_tauidSFmu = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSmu","Tight");
+                        _tauidSFmu = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSmu","Tight");
                         _testool = new TauESTool("UL2016_preVFP","DeepTau2017v2p1VSjet");
                         _festool = new TauFESTool("UL2016_preVFP");
                 }else if(_isRun16post){
-                        _tauidSFjet = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSjet","Medium");
+                        _tauidSFjet = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSjet","VTight");
                         _tauidSFele = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSe","VLoose");
-                        //_tauidSFmu = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSmu","Tight");
+                        _tauidSFmu = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSmu","Tight");
                         _testool = new TauESTool("UL2016_postVFP","DeepTau2017v2p1VSjet");
                         _festool = new TauFESTool("UL2016_postVFP");
                 }else if(_isRun17){
-                        _tauidSFjet = new TauIDSFTool("UL2017","DeepTau2017v2p1VSjet","Medium");
+                        _tauidSFjet = new TauIDSFTool("UL2017","DeepTau2017v2p1VSjet","VTight");
                         _tauidSFele = new TauIDSFTool("UL2017","DeepTau2017v2p1VSe","VLoose");
-                        //_tauidSFmu = new TauIDSFTool("UL2017","DeepTau2017v2p1VSmu","Tight");
+                        _tauidSFmu = new TauIDSFTool("UL2017","DeepTau2017v2p1VSmu","Tight");
                         _testool = new TauESTool("UL2017","DeepTau2017v2p1VSjet");
                         _festool = new TauFESTool("UL2017");
                 }else if(_isRun18){
-                        _tauidSFjet = new TauIDSFTool("UL2018","DeepTau2017v2p1VSjet","Medium");
+                        _tauidSFjet = new TauIDSFTool("UL2018","DeepTau2017v2p1VSjet","VTight");
                         _tauidSFele = new TauIDSFTool("UL2018","DeepTau2017v2p1VSe","VLoose");
-                        //_tauidSFmu = new TauIDSFTool("UL2018","DeepTau2017v2p1VSmu","Tight");
+                        _tauidSFmu = new TauIDSFTool("UL2018","DeepTau2017v2p1VSmu","Tight");
                         _testool = new TauESTool("UL2018","DeepTau2017v2p1VSjet");
                         _festool = new TauFESTool("UL2018");
                 }
@@ -298,8 +298,7 @@ void NanoAODAnalyzerrdframe::setupAnalysis()
                                    .Define("pugenWeight", "unitGenWeight * puWeight");
                 }
         }else if(_isData){
-                _rlm = _rlm.Define("evWeight","one")
-                           .Define("evWeight_tauSF","one")
+                _rlm = _rlm.Define("evWeight_tauSF","one")
                            .Define("evWeight_muonSF","one")
                            .Define("evWeight_leptonSF","one")
                            .Define("btagWeight_DeepFlavBrecalc","one");
@@ -317,7 +316,7 @@ void NanoAODAnalyzerrdframe::setupAnalysis()
         removeOverlaps();
         //selectFatJets();
         if(!_isData && !_isSkim){
-            matchGenReco();
+            //matchGenReco();
             calculateEvWeight();
         }
 	defineMoreVars();
@@ -609,7 +608,7 @@ void NanoAODAnalyzerrdframe::selectJets()
                 _rlm = _rlm.Define("Sys_METpt","MET_pt");
                 _rlm = _rlm.Define("Sys_METphi","MET_phi");
         }
-	_rlm = _rlm.Define("jetcuts", "Sys_jetpt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId >= 6")
+	_rlm = _rlm.Define("jetcuts", "Sys_jetpt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6")
 			.Define("Sel_jetpt", "Sys_jetpt[jetcuts]")
 			.Define("Sel_jeteta", "Jet_eta[jetcuts]")
 			.Define("Sel_jetphi", "Jet_phi[jetcuts]")
@@ -660,8 +659,8 @@ void NanoAODAnalyzerrdframe::selectTaus()
                    .Define("mutauoverlap", overlap_removal_mutau, {"muon4vecs","tau4vecs"});
 
         // Hadronic Tau Object Selections
-        _rlm = _rlm.Define("taucuts", "Scaled_taupt>50.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
-                   .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 16")
+        _rlm = _rlm.Define("taucuts", "Scaled_taupt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
+                   .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64")
                    .Define("seltaucuts","taucuts && deeptauidcuts && mutauoverlap");
 
         // Hadronic Tau Selection
@@ -690,44 +689,38 @@ void NanoAODAnalyzerrdframe::removeOverlaps()
                                 auto dr = ROOT::Math::VectorUtil::DeltaR(ajet, alepton);
                                 if (dr < mindr) mindr = dr;
                         }
-                        int out = mindr > 0.4 ? 1 : 0;
+                        int out = mindr >= 0.4 ? 1 : 0;
                         mindrlepton.emplace_back(out);
                 }
                 return mindrlepton;
         };
 
 	// Overlap removal with muon (used for btagging SF)
-        _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","muon4vecs"});
-	_rlm =	_rlm.Define("Selmu_jetpt", "Sel_jetpt[muonjetoverlap]")
-                    .Define("Selmu_jeteta", "Sel_jeteta[muonjetoverlap]")
-                    .Define("Selmu_jetphi", "Sel_jetphi[muonjetoverlap]")
-                    .Define("Selmu_jetmass", "Sel_jetmass[muonjetoverlap]")
-                    .Define("Selmu_jetbtag", "Sel_jetbtag[muonjetoverlap]")
-                    .Define("ncleanmuonjetspass", "int(Selmu_jetpt.size())")
-                    .Define("cleanmuonjet4vecs", ::gen4vec, {"Selmu_jetpt", "Selmu_jeteta", "Selmu_jetphi", "Selmu_jetmass"})
-                    .Define("Selmu_jetHT", "Sum(Selmu_jetpt)");
+        _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","muon4vecs"})
+                   .Define("taujetoverlap", checkoverlap, {"jet4vecs","cleantau4vecs"})
+                   .Define("jetoverlap","muonjetoverlap && taujetoverlap");
 
-
-        // Again overlap removal with hadronic tau
-        _rlm = _rlm.Define("taujetoverlap", checkoverlap, {"cleanmuonjet4vecs","cleantau4vecs"});
-        _rlm = _rlm.Define("Sel2_jetpt", "Selmu_jetpt[taujetoverlap]")
-                   .Define("Sel2_jeteta", "Selmu_jeteta[taujetoverlap]")
-                   .Define("Sel2_jetphi", "Selmu_jetphi[taujetoverlap]")
-                   .Define("Sel2_jetmass", "Selmu_jetmass[taujetoverlap]")
-                   .Define("Sel2_jetbtag", "Selmu_jetbtag[taujetoverlap]")
+        _rlm = _rlm.Define("Sel2_jetpt", "Sel_jetpt[jetoverlap]")
+                   .Define("Sel2_jeteta", "Sel_jeteta[jetoverlap]")
+                   .Define("Sel2_jetphi", "Sel_jetphi[jetoverlap]")
+                   .Define("Sel2_jetmass", "Sel_jetmass[jetoverlap]")
+                   .Define("Sel2_jetbtag", "Sel_jetbtag[jetoverlap]")
                    .Define("ncleanjetspass", "int(Sel2_jetpt.size())")
                    .Define("cleanjet4vecs", ::gen4vec, {"Sel2_jetpt", "Sel2_jeteta", "Sel2_jetphi", "Sel2_jetmass"})
                    .Define("Sel2_jetHT", "Sum(Sel2_jetpt)");
 
-        if(_isRun16){
-                //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation2016Legacy
-                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.7221"); //l: 0.0614, m: 0.3093, t: 0.7221
+        if(_isRun16pre){
+                //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16preVFP
+                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.2598"); //l: 0.0508, m: 0.2598, t: 0.6502
+        }else if(_isRun16post){
+                //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16postVFP#AK4_b_tagging
+                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.2489"); //l: 0.0480, m: 0.2489, t: 0.6377
         }else if(_isRun17){
                 //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL17
-                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.7476"); //l: 0.0532, m: 0.3040, t: 0.7476
+                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.3040"); //l: 0.0532, m: 0.3040, t: 0.7476
         }else if(_isRun18){
                 //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL18
-                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.7100"); //l: 0.0490, m: 0.2783, t: 0.7100
+                _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.2783"); //l: 0.0490, m: 0.2783, t: 0.7100
         }
 	
         _rlm = _rlm.Define("Sel2_bjetpt", "Sel2_jetpt[btagcuts]")
@@ -836,7 +829,7 @@ void NanoAODAnalyzerrdframe::calculateEvWeight()
 
         // B tagging SF
         _rlm = _rlm.Define("Sel_jethadflav","Jet_hadronFlavour[jetcuts]")
-                   .Define("Selmu_jethadflav","Sel_jethadflav[muonjetoverlap]");
+                   .Define("Sel2_jethadflav", "Sel_jethadflav[jetoverlap]");
 
         // function to calculate event weight for MC events based on DeepJet algorithm
         auto btagweightgenerator= [this](floats &pts, floats &etas, ints &hadflav, floats &btags)->float
@@ -849,15 +842,46 @@ void NanoAODAnalyzerrdframe::calculateEvWeight()
                 else if (hadflav[i]==4) hadfconv=BTagEntry::FLAV_C;
                 else hadfconv=BTagEntry::FLAV_UDSG;
 
-                double w = _btagcalibreader.eval_auto_bounds("central", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                double w = 1.0;
+                if(_syst=="btagup_jes"){
+                    w = _btagcalibreader.eval_auto_bounds("up_jes", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_jes"){
+                    w = _btagcalibreader.eval_auto_bounds("down_jes", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_hf"){
+                    w = _btagcalibreader.eval_auto_bounds("up_hf", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_hf"){
+                    w = _btagcalibreader.eval_auto_bounds("down_hf", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_lf"){
+                    w = _btagcalibreader.eval_auto_bounds("up_lf", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_lf"){
+                    w = _btagcalibreader.eval_auto_bounds("down_lf", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_hfstats1"){
+                    w = _btagcalibreader.eval_auto_bounds("up_hfstats1", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_hfstats1"){
+                    w = _btagcalibreader.eval_auto_bounds("down_hfstats1", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_hfstats2"){
+                    w = _btagcalibreader.eval_auto_bounds("up_hfstats2", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_hfstats2"){
+                    w = _btagcalibreader.eval_auto_bounds("down_hfstats2", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_lfstats1"){
+                    w = _btagcalibreader.eval_auto_bounds("up_lfstats1", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_lfstats1"){
+                    w = _btagcalibreader.eval_auto_bounds("down_lfstats1", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagup_lfstats2"){
+                    w = _btagcalibreader.eval_auto_bounds("up_lfstats2", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_syst=="btagdown_lfstats2"){
+                    w = _btagcalibreader.eval_auto_bounds("down_lfstats2", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else{
+                    w = _btagcalibreader.eval_auto_bounds("central", hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }
                 bweight *= w;
             }
+            //auto outbweight = std::make_tuple(bweight, bweightup, bweightdown);
             return bweight;
         };
 
         cout<<"Generate b-tagging weight"<<endl;
-        _rlm = _rlm.Define("btagWeight_DeepFlavBrecalc", btagweightgenerator, {"Selmu_jetpt", "Selmu_jeteta", "Selmu_jethadflav", "Selmu_jetbtag"});
-        _rlm = _rlm.Define("evWeight", "pugenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF");
+        _rlm = _rlm.Define("btagWeight_DeepFlavBrecalc", btagweightgenerator, {"Sel2_jetpt", "Sel2_jeteta", "Sel2_jethadflav", "Sel2_jetbtag"});
 }
 
 /*

@@ -21,7 +21,7 @@ for run in runs:
             flist[run].remove(j)
 
 # !! Check Selection Steps !!
-steps = 4
+steps = 5
 
 # Cross Sections (pb)
 Xsec_dict = {"DYJetsToLL_M-10to50" : 18610.00, 
@@ -142,10 +142,11 @@ def run(run):
                 nevts_entry.append(data.Get("hnevents_cut"+str(0)*(j+1)).GetEntries())
 
         # Rescale for conservation of event yields when btagging SF is applied.
-        prehist = data.Get("hnevents_pglep_cut000")
-        posthist = data.Get("hnevents_cut000")
+        prehist = data.Get("hnevents_pglep_cut0000")
+        posthist = data.Get("hnevents_cut0000")
         rescale = prehist.Integral() / posthist.Integral() if posthist.GetEntries() != 0 else 1.0
-        resflist = [1.0, 1.0, 1.0, rescale, rescale]
+        #resflist = [1.0, 1.0, 1.0, rescale, rescale, rescale]
+        resflist = [1.0, 1.0, 1.0, 1.0, 1.0, rescale]
         data.Close() # rootfile closed
 
         nevts_staterr=np.sqrt(np.array(nevts_entry)).tolist()
@@ -299,7 +300,7 @@ def formatCutflow(cutflow):
     out=np.concatenate((np.array(cut1).flatten(),np.array(cut2).flatten(),np.array(cut3).flatten(),np.array(cut4).flatten()))
     return out
 
-run2cutflow = np.zeros((47,2,5))
+run2cutflow = np.zeros((47,2,steps+1))
 cutflows = []           # Full Lists (shape (48,2,5))
 formattedcutflows = []  # Formatted for Cutflow Table (shape (1,))
 for year in runs:
@@ -315,12 +316,19 @@ run2dataMC = np.divide(run2cutflow[21][0],run2cutflow[20][0]).tolist()
 run2dataMC_error = np.multiply(run2dataMC,np.divide(run2cutflow[20][1],run2cutflow[20][0])).tolist()
 run2dataMC = np.append(run2dataMC,run2dataMC_error).reshape(2,steps+1).tolist()
 run2cutflow[22] = run2dataMC
+
+for i in range(12):
+    run2cutflow[i+23] = np.divide(run2cutflow[i][0],np.sqrt(run2cutflow[20])).tolist()
+for i in range(12):
+    tmpacc = np.array([j/run2cutflow[i][0][0] for j in run2cutflow[i][0]])
+    tmpacc.resize(2,steps+1)
+    run2cutflow[i+35] = tmpacc.tolist()
 formattedcutflows.append(formatCutflow(run2cutflow))
 
 def texScript(run,formattedcutflow):
     h1 = "\\begin{table}[!hp]\n    \\tiny\n    \centering\n"
-    h2 = "    \\renewcommand{\\arraystretch}{1.3}\n    \\begin{tabular}{c|r|r|r|r} \\hline\\hline \n"
-    h3 = "    \\textbf{"+run+" (%s~\\fbinv)} & \\textbf{One muon} & \\textbf{One tau, $m_{\\mu\\tau}>150\GeV$} & \\textbf{nJets$\geq$3} & \\textbf{One b-tagged Jet}\\\\ \hline \n"%(lumi)
+    h2 = "    \\renewcommand{\\arraystretch}{1.3}\n    \\begin{tabular}{c|r|r|r|r|r} \\hline\\hline \n"
+    h3 = "    \\textbf{"+run+" (%s~\\fbinv)} & \\textbf{One muon} & \\textbf{One tau} & \\textbf{$m_{\\mu\\tau}>150\GeV$, OS} & \\textbf{nJets$\geq$3} & \\textbf{One b-tagged Jet} \\\\ \hline \n"%(lumi)
     s = "    LFV ST $tc\\mu\\tau$  " + " & {} $\\pm$ {}"*steps + " \\\\ \n\
     LFV ST $tu\\mu\\tau$  " + " & {} $\\pm$ {}"*steps + " \\\\ \n\
     LFV TT $tc\\mu\\tau$  " + " & {} $\\pm$ {}"*steps + " \\\\ \n\
@@ -340,10 +348,10 @@ def texScript(run,formattedcutflow):
     S/$\sqrt{{B}}$~(ST $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
     S/$\sqrt{{B}}$~(TT $tc\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
     S/$\sqrt{{B}}$~(TT $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \hline \n\
-    $\\varepsilon$~(ST $tc\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
-    $\\varepsilon$~(ST $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
-    $\\varepsilon$~(TT $tc\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
-    $\\varepsilon$~(TT $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \hline \hline\n"
+    Acceptance~(ST $tc\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
+    Acceptance~(ST $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
+    Acceptance~(TT $tc\\mu\\tau$)" + " & {}"*steps+" \\\\ \n\
+    Acceptance~(TT $tu\\mu\\tau$)" + " & {}"*steps+" \\\\ \hline \hline\n"
     s=s.format(*formattedcutflow)
     #QCD                 " + " & {} $\\pm$ {}"*steps + " \\\\ \n\
     b1 = "    \\end{tabular}\n"
@@ -399,7 +407,7 @@ bin             bin1
 observation     {0:<12}
 ----------------------------------------------------------------------------------------------------
 bin             bin1        bin1        bin1        bin1        bin1        bin1        bin1
-process         lfv_st      lfv_tt      tt          dy          st          wjet        others
+process         lfv_st      lfv_tt      TT          DY          ST          Wjet        Oth
 process         0           -1          1           2           3           4           5
 rate            {1:<12.3f}{2:<12.3f}{3:<12.3f}{4:<12.3f}{5:<12.3f}{6:<12.3f}{7:<12.3f}
 ----------------------------------------------------------------------------------------------------

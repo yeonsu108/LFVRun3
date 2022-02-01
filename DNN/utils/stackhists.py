@@ -19,6 +19,7 @@ class Stackhists:
         self.datafilelist = [] # you can have more than one data file
         self.xseclist = []
         self.sflist = []
+        self.resflist = []
 
         self.mcrootfiles = []
         self.mccounterhistfiles = []
@@ -75,19 +76,22 @@ class Stackhists:
                 cfile = afile
             ctfile = ROOT.TFile(cfile)
             ahist = ctfile.Get("hcounter_nocut") # this should contain all entries before cuts
+            prehist = ctfile.Get("hnevents_pglep_cut0000")
+            posthist = ctfile.Get("hnevents_cut0000")
             if ahist == None and (prehist == None or posthist == None):
                 print("counter histogram doesn\'t exist, will proceed with histintegaral=1. Be sure to put 1/histintegral in the scalefactor!")
                 self.sflist[id] *= xsec * self.integrlumi 
+                self.resflist[id] *= 1.0
             else:
-                histintgral = ahist.Integral()
+                histintegral = ahist.Integral()
+                preevents = prehist.Integral()
+                postevents = posthist.Integral()
+                resf = preevents / postevents if postevents != 0 else 1.0
                 # all histograms should be scaled by this factor
-                if "WJetsToLNu_inclHT100_18" in cfile:
-                    histintegral = 67906914
-                elif "WJetsToLNu_inclHT100_17" in cfile:
-                    histintegral = 103786310
-                elif "WJetsToLNu_inclHT100_16" in cfile:
-                    histintegral = 83345650
-                self.sflist[id] *= xsec * self.integrlumi / histintgral
+                if "WJetsToLNu_inclHT100" in cfile:
+                    histintegral = histintegral*0.96
+                self.sflist[id] *= xsec * self.integrlumi / histintegral
+                self.resflist[id] *= resf
 
     def setupStyle(self, colorlist=None, patternlist=None, alpha=1.0):
         self.fillalpha = alpha
@@ -126,6 +130,7 @@ class Stackhists:
                 self.mcpatternlist.append(patternindex)
                 self.xseclist.append(xsec)
                 self.sflist.append(scalefactor)
+                self.resflist.append(scalefactor)
             else:
                 self.datafilelist.append(rootfile)
         else:
@@ -144,55 +149,6 @@ class Stackhists:
         self.ymin.append(ymin)
         self.ymax.append(ymax)
         self.binlists.append(binlist)
-
-    def MakeSoverB(self, BG_hist_stack, S_hist, label, S_peak_bin, below=None):
-        nbins = BG_hist_stack.GetNbinsX()
-        BG_peak_bin = BG_hist_stack.GetMaximumBin()
-
-        if below == None :
-            if S_peak_bin < BG_peak_bin : below = True
-            elif S_peak_bin > BG_peak_bin : below = False
-            elif S_peak_bin < nbins/2 : below = True
-            else : below = False
-
-        cutinfo = ""
-        if below : cutinfo = "x<cut"
-        else : cutinfo = "x>cut"
-
-        BG_int = self.MakeCumulative(BG_hist_stack, 1, nbins+1, below)
-        S_int = self.MakeCumulative(S_hist, 1, nbins+1, below)
-
-        s_over_b = BG_int.Clone()
-        s_over_b.Reset()
-
-        arr = label.split('x', 1)
-        M = 1.
-        if len(arr)>1:
-            M = float(arr[1])
-
-        for ix in range(1, nbins+1):
-            if BG_int.GetBinContent(ix) > 0 :
-                val = (S_int.GetBinContent(ix)/M)/math.sqrt(BG_int.GetBinContent(ix))
-            elif BG_int.GetBinContent(ix) < 0 :
-                print("BG integral <0")
-                val = 0
-            elif BG_int.GetBinContent(ix) == 0 : val = 0
-
-            s_over_b.SetBinContent(ix, val)
-
-        return s_over_b, cutinfo
-
-    def MakeCumulative(self, hist, low, high, below):
-        out = hist.Clone(hist.GetName()+'_cumul')
-        out.Reset()
-        prev = 0
-        if below : to_scan = range(low, high)
-        else : to_scan = range(high-1, low-1, -1)
-        for ix in to_scan :
-            val = prev + hist.GetBinContent(ix)
-            out.SetBinContent(ix, val)
-            prev = val
-        return out
 
     def draw(self, subplot):
         self.prepare()
@@ -214,25 +170,27 @@ class Stackhists:
         # adding signal contribution 
         signalhist = None
         signalhistlist = []
+        sighistgroup = {}
         mchistsum = None
 
         xbins = []
         if len(binlist)>0:
             xbins = array.array('d', binlist)
 
-#        if "cut000" in histname: print("Rescaled histogram : "+histname)
+#        if "cut0000" in histname: print("Rescaled histogram : "+histname)
         for ifile in range(len(self.mcfilelist)):
-            #afile = ROOT.TFile(self.mcfilelist[ifile])
-            #ahist = afile.Get(histname)
             ahist = self.mcrootfiles[ifile].Get(histname)
             ahist.SetBinContent(ahist.GetNbinsX(), ahist.GetBinContent(ahist.GetNbinsX()) + ahist.GetBinContent(ahist.GetNbinsX()+1))
 
             if ahist == None:
                 print("histogram %s not found in %s"%(histname, self.mcfilelist[ifile]))
                 print("quitting")
-                sys.exit(-1) 
+                sys.exit(-1)
             else:
-                ahist.Scale(self.sflist[ifile])
+                if "cut00000" in histname:
+                    ahist.Scale(self.sflist[ifile]*self.resflist[ifile])
+                else:
+                    ahist.Scale(self.sflist[ifile])
 
                 # group by labels
                 label = self.mclabellist[ifile]
@@ -254,15 +212,15 @@ class Stackhists:
                 else:
                     signalhist = ahist
                     ahist.SetLineColor(self.colorlist[self.mccolorlist[ifile]])
-                    signalhistlist.append(ahist)
+                    if label not in sighistgroup:
+                        sighistgroup[label] = ahist
+                    else:
+                        sighistgroup[label].Add(ahist)
+                    signalhistlist = list(sighistgroup.values())
 
-        normevts = dict()
-        for label in labellist:
-            if not "LFV" in label:
-                normevts[label] = histgroup[label].Integral()
-        renormevts_list=sorted(normevts.items(),key=lambda x:x[1],reverse=True)
-        reordered_labellist = [i[0] for i in renormevts_list]
-        if isLogy: reordered_labellist.reverse()
+        reordered_labellist = []
+        reordered_labellist = labellist
+        if isLogy: reordered_labellist = list(reversed(labellist))
 
         for label in reordered_labellist:
             ahist = histgroup[label]
@@ -273,12 +231,8 @@ class Stackhists:
                     normscale = ahistcopy.Integral()
                     ahistcopy.Scale(1.0/normscale)
                     hs.Add(ahistcopy)
-                    #tl.AddEntry(ahistcopy, label, "F")
                 else:
                     hs.Add(ahist)
-                    #tl.AddEntry(ahist, label, "F")
-            #else:
-                #tl.AddEntry(ahist, label, "L")
 
         finaldatahist = None
         if self.datafilelist:
@@ -294,15 +248,12 @@ class Stackhists:
                         finaldatahist = ahist.Clone("finaldata")
                     else:
                         finaldatahist.Add(ahist)
-            #print("Data : %i"%finaldatahist.Integral())
             if mode == NORMALIZED:
                 normscale = finaldatahist.Integral()
-                finaldatahist.Scale(1.0/normscale)
-        
+                finaldatahist.Scale(1.0/normscale) 
             # Legend add entry
             tl.AddEntry(finaldatahist, "Data", "P")
-        #inverse_labellist = reversed(labellist)
-        #for label in inverse_labellist:
+
         for label in labellist:
             if not 'LFV' in label:
                 ahist = histgroup[label]
@@ -311,23 +262,12 @@ class Stackhists:
             if 'LFV' in label:
                 ahist = histgroup[label]
                 tl.AddEntry(ahist, label, "F")
-#            if 'LFV' not in label:
-#                tl.AddEntry(ahist, label, "F")
-#            else:
-#                tl.AddEntry(ahist, label, "L")
 
         c1 = None
         if not self.datafilelist:
             c1 = ROOT.TCanvas("c1", "c1", 600, 600)
         else:
             c1 = ROOT.TCanvas("c1", "c1", 600, 700)
-
-        """
-        c1.SetLeftMargin(0.15)
-        c1.SetBottomMargin(0.15)
-        c1.SetTopMargin(0.06)
-        c1.SetRightMargin(0.10)
-        """
 
         c1_top = None
         if not self.datafilelist:
@@ -378,10 +318,6 @@ class Stackhists:
         else:
             hs.SetMaximum(total_max*1.65)
 
-        #if signalhist is not None:        
-        #    signalhist.SetLineWidth(3)
-        #    signalhist.Draw("same Hist")
-
         for sighist in signalhistlist:
             sighist.SetLineWidth(3)
             sighist.Draw("same Hist")
@@ -399,113 +335,48 @@ class Stackhists:
             ROOT.TGaxis.SetExponentOffset(-0.08,0.01,"y")
 
         if self.datafilelist:
-            # Ratio plot
-            if subplot == "R":
-                hstackhist = mchistsum
-                ratiohist = finaldatahist.Clone("ratiohist")
-                ratiohist.Divide(hstackhist)
-                for n in range(finaldatahist.GetNbinsX()):
-                    newerror=ratiohist.GetBinContent(n)/math.sqrt(finaldatahist.GetBinContent(n)) if finaldatahist.GetBinContent(n)!=0 else 0
-                    ratiohist.SetBinError(n,newerror)
-                ratiohist.SetMinimum(0.3)
-                ratiohist.SetMaximum(1.7)
+            hstackhist = mchistsum
+            ratiohist = finaldatahist.Clone("ratiohist")
+            ratiohist.Divide(hstackhist)
+            for n in range(finaldatahist.GetNbinsX()):
+                newerror=ratiohist.GetBinContent(n)/math.sqrt(finaldatahist.GetBinContent(n)) if finaldatahist.GetBinContent(n)!=0 else 0
+                ratiohist.SetBinError(n,newerror)
+            ratiohist.SetMinimum(0.3)
+            ratiohist.SetMaximum(1.7)
 
-                tl.Draw()
-                c1_top.Modified()
-                #CMS_lumi.CMS_lumi(c1_top, 4, 11)
-                CMS_lumi.CMS_lumi(c1_top, 4, 0)
-                c1_top.cd()
-                c1_top.Update()
-                c1_top.RedrawAxis()
+            tl.Draw()
+            c1_top.Modified()
+            #CMS_lumi.CMS_lumi(c1_top, 4, 11)
+            CMS_lumi.CMS_lumi(c1_top, 4, 0)
+            c1_top.cd()
+            c1_top.Update()
+            c1_top.RedrawAxis()
 
-                c1.cd()
-                c1_bottom = ROOT.TPad("c1_bottom", "bottom", 0.01, 0.01, 0.99, 0.32)
-                c1_bottom.Draw()
-                c1_bottom.cd()
-                c1_bottom.SetTopMargin(0.02)
-                c1_bottom.SetBottomMargin(0.3)
-                c1_bottom.SetRightMargin(0.1)
-                c1_bottom.SetGridx(1)
-                c1_bottom.SetGridy(1)
-                ratiohist.Draw("err")
+            c1.cd()
+            c1_bottom = ROOT.TPad("c1_bottom", "bottom", 0.01, 0.01, 0.99, 0.32)
+            c1_bottom.Draw()
+            c1_bottom.cd()
+            c1_bottom.SetTopMargin(0.02)
+            c1_bottom.SetBottomMargin(0.3)
+            c1_bottom.SetRightMargin(0.1)
+            c1_bottom.SetGridx(1)
+            c1_bottom.SetGridy(1)
+            ratiohist.Draw("err")
 
-                xaxis = ratiohist.GetXaxis()
-                xaxis.SetTitle(xtitle)
-                xaxis.SetNdivisions(6,5,0)
-                xaxis.SetTitleSize(0.12)
-                xaxis.SetLabelSize(0.10)
+            xaxis = ratiohist.GetXaxis()
+            xaxis.SetTitle(xtitle)
+            xaxis.SetNdivisions(6,5,0)
+            xaxis.SetTitleSize(0.12)
+            xaxis.SetLabelSize(0.10)
 
-                yaxis = ratiohist.GetYaxis()
-                yaxis.SetTitle("Data/Exp.")
-                yaxis.SetNdivisions(6,5,0)
-                yaxis.SetTitleSize(0.1)
-                yaxis.SetLabelSize(0.08)
-                yaxis.SetTitleOffset(0.7)
-                yaxis.SetLabelOffset(0.007)
+            yaxis = ratiohist.GetYaxis()
+            yaxis.SetTitle("Data/Exp.")
+            yaxis.SetNdivisions(6,5,0)
+            yaxis.SetTitleSize(0.1)
+            yaxis.SetLabelSize(0.08)
+            yaxis.SetTitleOffset(0.7)
+            yaxis.SetLabelOffset(0.007)
 
-            #Significance plot (SoverB hist)
-            elif subplot == "S":
-                soverbhistlist = []
-                M = -1
-                S_peak_bin = -1
-                for label in labellist :
-                    if 'LFV T' in label:
-                        Thist = histgroup[label]
-                        S_peak_bin = Thist.GetMaximumBin()
-                        break
-                for label in labellist :
-                    if 'LFV' in label:
-                        sighist = histgroup[label]
-                        soverbhist, cutinfo = self.MakeSoverB(mchistsum, sighist, label, S_peak_bin)
-                        soverbhistlist.append(soverbhist)
-                        tempM = soverbhist.GetMaximum()
-                        if M < tempM : M = tempM
-
-                tl.Draw()
-                c1_top.Modified()
-                #CMS_lumi.CMS_lumi(c1_top, 4, 11)
-                CMS_lumi.CMS_lumi(c1_top, 4, 0)
-                c1_top.cd()
-                c1_top.Update()
-                c1_top.RedrawAxis()
-
-                c1.cd()
-                c1_bottom = ROOT.TPad("c1_bottom", "bottom", 0.01, 0.01, 0.99, 0.32)
-                c1_bottom.Draw()
-                c1_bottom.cd()
-                c1_bottom.SetTopMargin(0.02)
-                c1_bottom.SetBottomMargin(0.3)
-                c1_bottom.SetRightMargin(0.1)
-                c1_bottom.SetGridx(1)
-                c1_bottom.SetGridy(1)
-
-
-                n = 0
-                for soverbh in soverbhistlist:
-                    soverbh.SetMinimum(0)
-                    soverbh.SetMaximum(M*1.2)
-                    soverbh.SetLineWidth(2)
-                    soverbh.SetLineColor(self.colorlist[self.mccolorlist[n]])
-                    n = n+1
-                    soverbh.Draw("same Hist")
-                    if n == 1 :
-                        soverbtitle = "S/#sqrt{B}"+" ( "+cutinfo+" )"
-                        xaxis = soverbh.GetXaxis()
-                        xaxis.SetTitle(xtitle)
-                        xaxis.SetNdivisions(6,5,0)
-                        xaxis.SetTitleSize(0.12)
-                        xaxis.SetLabelSize(0.10)
-
-                        yaxis = soverbh.GetYaxis()
-                        yaxis.SetTitle(soverbtitle)
-                        yaxis.SetNdivisions(6,5,0)
-                        yaxis.SetTitleSize(0.1)
-                        yaxis.SetLabelSize(0.08)
-                        yaxis.SetTitleOffset(0.7)
-                        yaxis.SetLabelOffset(0.007)
-
-            c1_bottom.Modified()
-            c1_bottom.RedrawAxis()
         else:
             hstackhist = mchistsum
 
@@ -530,7 +401,7 @@ class Stackhists:
             path = "plot_snb_"+str(self.integrlumi)
             if not os.path.isdir(path):
                 os.mkdir(path)
-        outfile = ROOT.TFile("stackhist_"+str(self.integrlumi)+".root","UPDATE")
+        outfile = ROOT.TFile("stackhist_"+str(self.integrlumi)+".root","RECREATE")
         outfile.cd()
         if not self.datafilelist:
             if(isLogy):
@@ -543,10 +414,14 @@ class Stackhists:
             else:
                 c1.SaveAs(path+"/"+histname+"_nology.pdf")
         c1.Close()
+        for key, value in histgroup.items():
+            pname = key.replace(" ","_")
+            tmphist_copy = histgroup[key].Clone(pname)
+            tmphist_copy.Write()
         mchistsum_copy = mchistsum.Clone("hstacked_mc_"+histname)
         mchistsum_copy.Write()
         if finaldatahist:
-            finaldatahist_copy = finaldatahist.Clone("hstacked_data_"+histname)
+            finaldatahist_copy = finaldatahist.Clone("data_obs")
             finaldatahist_copy.Write()
         outfile.Save()
         outfile.Close()

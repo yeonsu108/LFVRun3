@@ -18,8 +18,8 @@ class LQtopAnalyzer: public NanoAODAnalyzerrdframe
 		void defineMoreVars(); // define higher-level variables from
 		void bookHists();
         private:
-                std::string year;
-                std::string syst;
+                std::string _year;
+                std::string _syst;
 
 };
 
