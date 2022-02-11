@@ -11,11 +11,20 @@ hists = ["data_obs","hstacked_mc_h_dnn_pred",
         "LFV_TTc_s","LFV_TTc_v","LFV_TTc_t","LFV_TTu_s","LFV_TTu_v","LFV_TTu_t",
         "TT","ST","DY","Wjets","Oth"]
 
-systs = {"norm":"norm","jecup":"jecUp","jecdown":"jecDown","puup":"puUp","pudown":"puDown","btagup_jes":"btag_jesUp","btagdown_jes":"btag_jesDown"}
+systs = {"norm":"norm",
+        "jecup":"jecUp","jecdown":"jecDown",
+        "puup":"puUp","pudown":"puDown",
+        "btagup_jes":"btag_jesUp","btagdown_jes":"btag_jesDown",
+        "btagup_hf":"btag_hfUp","btagdown_hf":"btag_hfDown",
+        "btagup_lf":"btag_lfUp","btagdown_lf":"btag_lfDown",
+        }
+
 runs = ["run16APV","run16","run17","run18","run2"]
 outfolder = "./pred_"+label
+
 if not os.path.isdir(outfolder):
     os.makedirs(outfolder)
+
 for run in runs:
     rname = ""
     if run == "run16APV":
@@ -38,7 +47,7 @@ for run in runs:
             outfname = "pred_"+label+"/pred_"+run+"_cat2.root"
         outf = ROOT.TFile(outfname,"RECREATE")
         for key, value in systs.items():
-            infilename = label + "/"+lfvproc+projname+"_"+key+"_"+dnnname+"_"+label+"/pred_hists/"+rname
+            infilename = label+"_"+lfvproc+projname+"_"+dnnname+"/"+key+"/pred_hists/"+rname
             inf = ROOT.TFile(infilename)
             outf.cd()
             for h in hists:

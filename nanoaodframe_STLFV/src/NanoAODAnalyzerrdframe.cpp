@@ -479,13 +479,8 @@ void NanoAODAnalyzerrdframe::selectMuons()
                         .Define("Sel_muonidx", ::good_idx, {"muoncuts"})
 			.Define("nmuonpass", "int(Sel_muonpt.size())");
 	
-        _rlm = _rlm.Define("muoncuts_woIso", "Muon_pt>30.0 && abs(Muon_eta)<2.4 && Muon_tightId")
-                        .Define("nmuonpass_woIso","Sum(muoncuts_woIso)");
-
         _rlm = _rlm.Define("vetomuoncuts", "!muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25")
-                   .Define("vetomuoncuts_woIso", "!muoncuts_woIso && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25")
-                   .Define("nvetomuons","Sum(vetomuoncuts)")
-                   .Define("nvetomuons_woIso","Sum(vetomuoncuts_woIso)");
+                   .Define("nvetomuons","Sum(vetomuoncuts)");
 
         _rlm = _rlm.Define("muon4vecs", ::gen4vec, {"Sel_muonpt", "Sel_muoneta", "Sel_muonphi", "Sel_muonmass"});
 }

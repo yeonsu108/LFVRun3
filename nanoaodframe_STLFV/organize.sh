@@ -29,10 +29,10 @@ else
     rm -rf Run2_${sys}.root
     hadd Run2_${sys}.root 16pre/Run16pre_${sys}.root 16post/Run16post_${sys}.root 17/Run17_${sys}.root 18/Run18_${sys}.root
     rm -rf *LFV*.root
-    hadd ST_LFV_norm.root 18/ST_LFV*.root
-    hadd TT_LFV_norm.root 18/TT_LFV*.root
-    rm -rf TTTo2L2Nu_norm.root TTToSemiLeptonic_norm.root
-    hadd TTTo2L2Nu_norm.root 1*/TTTo2L2Nu*.root
-    hadd TTToSemiLeptonic_norm.root 1*/TTToSemiLeptonic*.root
+    hadd ST_LFV_${sys}.root 18/ST_LFV*.root
+    hadd TT_LFV_${sys}.root 18/TT_LFV*.root
+    rm -rf TTTo2L2Nu_${sys}.root TTToSemiLeptonic_${sys}.root
+    hadd TTTo2L2Nu_${sys}.root 1*/TTTo2L2Nu*.root
+    hadd TTToSemiLeptonic_${sys}.root 1*/TTToSemiLeptonic*.root
     cd ../
 fi

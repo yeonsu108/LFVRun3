@@ -21,21 +21,21 @@ void SkimEvents::defineCuts()
 	// These will be passed to Filter method of RDF
 	// check for good json event is defined earlier
         if(_year.find("wjet") != std::string::npos){
-                addCuts("LHE_HT <= 100","0");
+                addCuts("LHE_HT < 100","0");
                 if(_year.find("16") != std::string::npos){
-                        addCuts("Flag_filter && (HLT_IsoMu24 || HLT_IsoTkMu24) && nmuonpass_woIso == 1 && nvetoelepass == 0 && nvetomuons_woIso == 0","00");
+                        addCuts("Flag_filter && (HLT_IsoMu24 || HLT_IsoTkMu24) && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","00");
                 }else if(_year.find("17") != std::string::npos){
-                        addCuts("Flag_filter && HLT_IsoMu27 && nmuonpass_woIso == 1 && nvetoelepass == 0 && nvetomuons_woIso == 0","00");
+                        addCuts("Flag_filter && HLT_IsoMu27 && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","00");
                 }else if(_year.find("18") != std::string::npos){
-                        addCuts("Flag_filter && HLT_IsoMu24 && nmuonpass_woIso == 1 && nvetoelepass == 0 && nvetomuons_woIso == 0","00");
+                        addCuts("Flag_filter && HLT_IsoMu24 && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","00");
                 }
         }else{ 
                 if(_year.find("16") != std::string::npos){
-                        addCuts("Flag_filter && (HLT_IsoMu24 || HLT_IsoTkMu24) && nmuonpass_woIso == 1 && nvetoelepass == 0 && nvetomuons_woIso == 0","0");
+                        addCuts("Flag_filter && (HLT_IsoMu24 || HLT_IsoTkMu24) && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","0");
                 }else if(_year.find("17") != std::string::npos){
-                        addCuts("Flag_filter && HLT_IsoMu27 && nmuonpass_woIso == 1 && nvetoelepass == 0 && nvetomuons_woIso == 0","0");
+                        addCuts("Flag_filter && HLT_IsoMu27 && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","0");
                 }else if(_year.find("18") != std::string::npos){
-                        addCuts("Flag_filter && HLT_IsoMu24 && nmuonpass_woIso == 1 && nvetoelepass == 0 && nvetomuons_woIso == 0","0");
+                        addCuts("Flag_filter && HLT_IsoMu24 && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","0");
                 }
         }
 }
