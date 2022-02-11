@@ -14,7 +14,8 @@ from utils.plots import *
 
 root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
-processed = "dec_02_norm"
+processed = "dec_02"
+syst = "norm"
 label = "jan01"
 class_names = ["sig", "bkg"]
 
@@ -26,47 +27,49 @@ for p in ["ST","TT"]:
     drop = -1.
     inputvars = []
     if p == "ST":
-        inputvars = ["Sel_muon1pt","Sel_muon1eta","Sel_tau1pt","Sel_tau1eta",
+        inputvars = ["Sel_muon1pt","Sel_muon1eta","Sel_muon1mass",
+            "Sel_tau1pt","Sel_tau1eta","Sel_tau1mass",
             "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt",
             "Sel2_jet1eta","Sel2_jet2eta","Sel2_jet3eta",
+            "Sel2_jet1mass","Sel2_jet2mass","Sel2_jet3mass",
             "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag",
             "Sys_METpt","Sys_METphi",
-            "chi2","chi2_SMW_mass","chi2_SMTop_mass"]
+            "chi2","chi2_SMW_mass","chi2_SMTop_mass",
+            ]
         sbratio = 1 # sig:bkg = 1:1
         nodes = 20
         layers = 2
     elif p == "TT":
-        inputvars = ["Sel_muon1pt","Sel_muon1eta","Sel_tau1pt","Sel_tau1eta",
+        inputvars = ["Sel_muon1pt","Sel_muon1eta","Sel_muon1mass",
+            "Sel_tau1pt","Sel_tau1eta","Sel_tau1mass",
             "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt","Sel2_jet4pt",
             "Sel2_jet1eta","Sel2_jet2eta","Sel2_jet3eta","Sel2_jet4eta",
+            "Sel2_jet1mass","Sel2_jet2mass","Sel2_jet3mass","Sel2_jet4mass",
             "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag","Sel2_jet4btag",
             "Sys_METpt","Sys_METphi",
-            "chi2","chi2_lfvTop_mass","chi2_SMW_mass","chi2_SMTop_mass"]
+            "chi2","chi2_lfvTop_mass","chi2_SMW_mass","chi2_SMTop_mass",
+            "chi2_wqq_dEta","chi2_wqq_dPhi","chi2_wqq_dR",
+            "chi2_lfvjmu_dEta","chi2_lfvjmu_dPhi","chi2_lfvjmu_dR","chi2_lfvjmu_mass",
+            "chi2_lfvjtau_dEta","chi2_lfvjtau_dPhi","chi2_lfvjtau_dR","chi2_lfvjtau_mass",
+            "chi2_lfvjmutau_dEta","chi2_lfvjmutau_dPhi","chi2_lfvjmutau_dR","chi2_lfvjmutau_mass"
+            ]
         sbratio = 1 # sig:bkg = 1:1
         nodes = 15
         layers = 2
         #drop = 0.05
 
-    project_dir = "nanoaodframe_"+p+"LFV/"+processed+"/"
-#    sig1_filedir = root_dir+project_dir+"ST_LFV_norm.root"
-#    sig2_filedir = root_dir+project_dir+"TT_LFV_norm.root"
+    project_dir = "nanoaodframe_"+p+"LFV/"+processed+"_"+syst+"/"
     sig_filedir = root_dir+project_dir+p+"_LFV_norm.root"
     bkg1_filedir = root_dir+project_dir+"TTTo2L2Nu_norm.root"
     bkg2_filedir = root_dir+project_dir+"TTToSemiLeptonic_norm.root"
-    train_outdir = label+"/"+p+processed+"_"+str(nodes)+"nodes_"+str(layers)+"layers_s1b"+str(sbratio)+"_"+label
+    train_outdir = label+"_"+p+processed+"_"+str(nodes)+"nodes_"+str(layers)+"layers_s1b"+str(sbratio)+"/"+syst
     os.makedirs(train_outdir, exist_ok=True)
 
-#    sig1_tree = uproot.open(sig1_filedir)["outputTree2"]
-#    sig2_tree = uproot.open(sig2_filedir)["outputTree2"]
     sig_tree = uproot.open(sig_filedir)["outputTree2"]
     bkg1_tree = uproot.open(bkg1_filedir)["outputTree2"]
     bkg2_tree = uproot.open(bkg2_filedir)["outputTree2"]
 
-#    df_sig1 = sig1_tree.arrays(inputvars,library="pd")
-#    df_sig2 = sig2_tree.arrays(inputvars,library="pd")
-#    df_sig = pd.concat([df_sig1,df_sig2])
     df_sig = sig_tree.arrays(inputvars,library="pd")
-
     df_bkg1 = bkg1_tree.arrays(inputvars,library="pd")
     df_bkg2 = bkg2_tree.arrays(inputvars,library="pd")
     df_bkg = pd.concat([df_bkg1,df_bkg2])
@@ -112,7 +115,7 @@ for p in ["ST","TT"]:
     train_out  = np.array(pd_data.filter(items = ['category']))
 
     numbertr = len(train_out)
-    trainlen = int(0.6*numbertr) # Fraction used for training
+    trainlen = int(0.7*numbertr) # Fraction used for training
 
     # Splitting between training set and cross-validation set
     valid_data=train_data[trainlen:,0::]
