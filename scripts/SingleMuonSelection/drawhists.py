@@ -51,13 +51,12 @@ s.addChannel("QCD_Pt-300To470_MuEnrichedPt5.root", "QCD", 8, isMC=True, xsec=782
 s.addChannel("QCD_Pt-470To600_MuEnrichedPt5.root", "QCD", 8, isMC=True, xsec=645528*0.12242, counterhistogramroot="QCD_Pt-470To600_MuEnrichedPt5.root")
 s.addChannel("QCD_Pt-600To800_MuEnrichedPt5.root", "QCD", 8, isMC=True, xsec=187109*0.13412, counterhistogramroot="QCD_Pt-600To800_MuEnrichedPt5.root")
 s.addChannel("QCD_Pt-800To1000_MuEnrichedPt5.root", "QCD", 8, isMC=True, xsec=32348.6*0.14552, counterhistogramroot="QCD_Pt-800To1000_MuEnrichedPt5.root")
+s.addChannel("QCD_Pt-1000_MuEnrichedPt5.root", "QCD", 8, isMC=True, xsec=10430.5*0.15544, counterhistogramroot="QCD_Pt-1000_MuEnrichedPt5.root")
 
 # DY
 s.addChannel("DYJetsToLL_M-10to50.root", "Z+jets", 4, isMC=True, xsec=18610000.0, counterhistogramroot="DYJetsToLL_M-10to50.root")
-s.addChannel("DYJetsToLL_M-50_amcatnlo.root", "Z+jets", 4, isMC=True, xsec=6077220.0, counterhistogramroot="DYJetsToLL_M-50_amcatnlo.root")
-#s.addChannel("DYJetsToLL_M-50_madgraph.root", "Z+jets", 4, isMC=True, xsec=6077220.0, counterhistogramroot="DYJetsToLL_M-50_madgraph.root")
-
-s.addChannel("QCD_Pt-1000_MuEnrichedPt5.root", "QCD", 8, isMC=True, xsec=10430.5*0.15544, counterhistogramroot="QCD_Pt-1000_MuEnrichedPt5.root")
+#s.addChannel("DYJetsToLL_M-50_amcatnlo.root", "Z+jets", 4, isMC=True, xsec=6077220.0, counterhistogramroot="DYJetsToLL_M-50_amcatnlo.root")
+s.addChannel("DYJetsToLL_M-50_madgraph.root", "Z+jets", 4, isMC=True, xsec=6077220.0, counterhistogramroot="DYJetsToLL_M-50_madgraph.root")
 
 # ST
 s.addChannel("ST_t-channel_top.root", "ST", 5, isMC=True, xsec=136020.0, counterhistogramroot="ST_t-channel_top.root")
