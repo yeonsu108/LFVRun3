@@ -1,13 +1,9 @@
 #!/bin/basou
 #### SETTINGS ####
-version=skim_LFVv7
+version=skim_LFVv8
 njobs=25
 
 #### PATHs ####
-mcdir19ul16pre=/data1/common/NanoAOD/v8_UL/mc/RunIISummer19UL16NanoAODAPVv2
-mcdir19ul16post=/data1/common/NanoAOD/v8_UL/mc/RunIISummer19UL16NanoAODv2
-mcdir19ul17=/data1/common/NanoAOD/v8_UL/mc/RunIISummer19UL17NanoAODv2
-mcdir19ul18=/data1/common/NanoAOD/v8_UL/mc/RunIISummer19UL18NanoAODv2
 mcdir20ul16pre=/data1/common/NanoAOD/v8_UL/mc/RunIISummer20UL16NanoAODAPVv2
 mcdir20ul16post=/data1/common/NanoAOD/v8_UL/mc/RunIISummer20UL16NanoAODv2
 mcdir20ul17=/data1/common/NanoAOD/v8_UL/mc/RunIISummer20UL17NanoAODv2
@@ -19,7 +15,7 @@ mkdir -p ${tgdir}
 mkdir -p ${logdir}
 # 16pre
 #./skimnanoaod.py -F --split ${njobs} -Y skim16pre ${mcdir20ul16pre}/DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8 ${tgdir16pre}/DYJetsToLL_M-10to50 &> ${logdir}/DYJetsToLL_M-10to50_skim16pre.out
-#./skimnanoaod.py -F --split ${njobs} -Y skim16pre ${mcdir19ul16pre}/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8 ${tgdir16pre}/DYJetsToLL_M-50_amcatnlo  &> ${logdir}/DYJetsToLL_M-50_amcatnlo_skim16pre.out
+#./skimnanoaod.py -F --split ${njobs} -Y skim16pre ${mcdir20ul16pre}/DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8 ${tgdir16pre}/DYJetsToLL_M-50_amcatnlo  &> ${logdir}/DYJetsToLL_M-50_amcatnlo_skim16pre.out
 #./skimnanoaod.py -F --split ${njobs} -Y skim16pre ${mcdir20ul16pre}/DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8 ${tgdir16pre}/DYJetsToLL_M-50_madgraph &> ${logdir}/DYJetsToLL_M-50_madgraph_skim16pre.out
 #./skimnanoaod.py -F --split ${njobs} -Y skim16pre ${mcdir20ul16pre}/ST_t-channel_antitop_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8 ${tgdir16pre}/ST_t-channel_antitop &> ${logdir}/ST_t-channel_antitop_skim16pre.out
 #./skimnanoaod.py -F --split ${njobs} -Y skim16pre ${mcdir20ul16pre}/ST_t-channel_top_4f_InclusiveDecays_TuneCP5_13TeV-powheg-madspin-pythia8 ${tgdir16pre}/ST_t-channel_top &> ${logdir}/ST_t-channel_top_skim16pre.out

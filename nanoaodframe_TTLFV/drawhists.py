@@ -73,7 +73,7 @@ for run in runs:
     #s.addChannel(run+"/WJetsToLNu_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*61526700, counterhistogramroot=run+"/WJetsToLNu_"+run+sys+".root")
 
     # W+Jets
-    s.addChannel(run+"/WJetsToLNu_inclHT100_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*61526700*0.9645, counterhistogramroot=run+"/WJetsToLNu_inclHT100_"+run+sys+".root")
+    s.addChannel(run+"/WJetsToLNu_HT-0To100_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*61526700*0.9645, counterhistogramroot=run+"/WJetsToLNu_HT-0To100_"+run+sys+".root")
     s.addChannel(run+"/WJetsToLNu_HT-100To200_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*1345000.0*0.993, counterhistogramroot=run+"/WJetsToLNu_HT-100To200_"+run+sys+".root")
     s.addChannel(run+"/WJetsToLNu_HT-200To400_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*359700.0*1.002, counterhistogramroot=run+"/WJetsToLNu_HT-200To400_"+run+sys+".root")
     s.addChannel(run+"/WJetsToLNu_HT-400To600_"+run+sys+".root", "W+jets", 3, isMC=True, xsec=rlumi[run]*48910.0*1.009, counterhistogramroot=run+"/WJetsToLNu_HT-400To600_"+run+sys+".root")
@@ -84,8 +84,8 @@ for run in runs:
 
     # DY
     s.addChannel(run+"/DYJetsToLL_M-10to50_"+run+sys+".root", "Z+jets", 4, isMC=True, xsec=rlumi[run]*18610000.0, counterhistogramroot=run+"/DYJetsToLL_M-10to50_"+run+sys+".root")
-    #s.addChannel(run+"/DYJetsToLL_M-50_"+run+sys+".root", "Z+jets", 4, isMC=True, xsec=rlumi[run]*6077220.0, counterhistogramroot=run+"/DYJetsToLL_M-50-amcatnloFXFX_"+run+sys+".root")
-    s.addChannel(run+"/DYJetsToLL_M-50_madgraph_"+run+sys+".root", "Z+jets", 4, isMC=True, xsec=rlumi[run]*6077220.0, counterhistogramroot=run+"/DYJetsToLL_M-50_madgraph_"+run+sys+".root")
+    s.addChannel(run+"/DYJetsToLL_M-50_amcatnlo_"+run+sys+".root", "Z+jets", 4, isMC=True, xsec=rlumi[run]*6077220.0, counterhistogramroot=run+"/DYJetsToLL_M-50_amcatnlo_"+run+sys+".root")
+    #s.addChannel(run+"/DYJetsToLL_M-50_madgraph_"+run+sys+".root", "Z+jets", 4, isMC=True, xsec=rlumi[run]*6077220.0, counterhistogramroot=run+"/DYJetsToLL_M-50_madgraph_"+run+sys+".root")
 
     # ST
     s.addChannel(run+"/ST_t-channel_top_"+run+sys+".root", "ST", 5, isMC=True, xsec=rlumi[run]*136020.0, counterhistogramroot=run+"/ST_t-channel_top_"+run+sys+".root")
@@ -105,18 +105,18 @@ for run in runs:
     s.addChannel(run+"/WZ_"+run+sys+".root", "Oth", 6, isMC=True, xsec=rlumi[run]*47130.0, counterhistogramroot=run+"/WZ_"+run+sys+".root")
     s.addChannel(run+"/ZZ_"+run+sys+".root", "Oth", 6, isMC=True, xsec=rlumi[run]*16523.0, counterhistogramroot=run+"/ZZ_"+run+sys+".root")
     # QCD
-#    s.addChannel(run+"/QCD_Pt-15to20_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*1273190000000*0.003, counterhistogramroot=run+"/QCD_Pt-15to20_MuEnrichedPt5_"+run+sys+".root")
-#    s.addChannel(run+"/QCD_Pt-20to30_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*558528000000*0.0053, counterhistogramroot=run+"/QCD_Pt-20to30_MuEnrichedPt5_"+run+sys+".root")
-#    s.addChannel(run+"/QCD_Pt-30to50_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*139803000000*0.01182, counterhistogramroot=run+"/QCD_Pt-30to50_MuEnrichedPt5_"+run+sys+".root")
-#    s.addChannel(run+"/QCD_Pt-50to80_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*19222500000*0.02276, counterhistogramroot=run+"/QCD_Pt-50to80_MuEnrichedPt5_"+run+sys+".root")
-#    s.addChannel(run+"/QCD_Pt-80to120_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*2758420000*0.03844, counterhistogramroot=run+"/QCD_Pt-80to120_MuEnrichedPt5_"+run+sys+".root")
-#    s.addChannel(run+"/QCD_Pt-120to170_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*469797000*0.05362, counterhistogramroot=run+"/QCD_Pt-120to170_MuEnrichedPt5_"+run+sys+".root")
-#    s.addChannel(run+"/QCD_Pt-170to300_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*117989000*0.07335, counterhistogramroot=run+"/QCD_Pt-170to300_MuEnrichedPt5_"+run+sys+".root")
-#    s.addChannel(run+"/QCD_Pt-300to470_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*7820250*0.10196, counterhistogramroot=run+"/QCD_Pt-300to470_MuEnrichedPt5_"+run+sys+".root")
-#    s.addChannel(run+"/QCD_Pt-470to600_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*645528*0.12242, counterhistogramroot=run+"/QCD_Pt-470to600_MuEnrichedPt5_"+run+sys+".root")
-#    s.addChannel(run+"/QCD_Pt-600to800_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*187109*0.13412, counterhistogramroot=run+"/QCD_Pt-600to800_MuEnrichedPt5_"+run+sys+".root")
-#    s.addChannel(run+"/QCD_Pt-800to1000_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*32348.6*0.14552, counterhistogramroot=run+"/QCD_Pt-800to1000_MuEnrichedPt5_"+run+sys+".root")
-#    s.addChannel(run+"/QCD_Pt-1000toInf_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*10430.5*0.15544, counterhistogramroot=run+"/QCD_Pt-1000toInf_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-15To20_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*1273190000000*0.003, counterhistogramroot=run+"/QCD_Pt-15To20_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-20To30_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*558528000000*0.0053, counterhistogramroot=run+"/QCD_Pt-20To30_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-30To50_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*139803000000*0.01182, counterhistogramroot=run+"/QCD_Pt-30To50_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-50To80_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*19222500000*0.02276, counterhistogramroot=run+"/QCD_Pt-50To80_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-80To120_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*2758420000*0.03844, counterhistogramroot=run+"/QCD_Pt-80To120_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-120To170_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*469797000*0.05362, counterhistogramroot=run+"/QCD_Pt-120To170_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-170To300_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*117989000*0.07335, counterhistogramroot=run+"/QCD_Pt-170To300_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-300To470_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*7820250*0.10196, counterhistogramroot=run+"/QCD_Pt-300To470_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-470To600_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*645528*0.12242, counterhistogramroot=run+"/QCD_Pt-470To600_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-600To800_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*187109*0.13412, counterhistogramroot=run+"/QCD_Pt-600To800_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-800To1000_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*32348.6*0.14552, counterhistogramroot=run+"/QCD_Pt-800To1000_MuEnrichedPt5_"+run+sys+".root")
+    s.addChannel(run+"/QCD_Pt-1000_MuEnrichedPt5_"+run+sys+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*10430.5*0.15544, counterhistogramroot=run+"/QCD_Pt-1000_MuEnrichedPt5_"+run+sys+".root")
 
 # Bin lists for rebin
 metbins=[0,20,40,60,80,100,120,140,160,180,200,240,300,400]
