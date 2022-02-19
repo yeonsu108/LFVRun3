@@ -42,5 +42,5 @@ for hname in hnames:
     leg.AddEntry(h2,"madgraph")
     leg.Draw()
     
-    c1.Print("dycompare/h_DYcomparison_"+hname+".pdf")
+    c1.Print("h_DYcomparison_"+hname+".pdf")
     c1.Close()
