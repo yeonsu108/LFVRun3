@@ -14,18 +14,17 @@ else
         mv *${i}*${sys}*.root ${i}
         cd ${i}
         mv Run* tmp
-        mv TTToSemi* tmp
         rm -rf tmp/Run${i}_${sys}.root
         hadd Run${i}_${sys}.root tmp/Run${i}*_${sys}*.root
         if [ $i = 17 ] || [ $i == 18 ]
         then
+            mv TTToSemi* tmp
             rm -rf tmp/TTToSemiLeptonic_${i}_${sys}.root
             hadd TTToSemiLeptonic_${i}_${sys}.root tmp/TTToSemiLeptonic_${i}_${sys}_*.root
         fi
         mv tmp/Run20${i}_${sys}.root tmp/TTToSemiLeptonic_${i}_${sys}.root ./
         cd ../
     done
-
     rm -rf Run2_${sys}.root
     hadd Run2_${sys}.root 16pre/Run16pre_${sys}.root 16post/Run16post_${sys}.root 17/Run17_${sys}.root 18/Run18_${sys}.root
     rm -rf *LFV*.root
