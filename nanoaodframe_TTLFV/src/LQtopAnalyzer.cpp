@@ -144,6 +144,7 @@ void LQtopAnalyzer::defineMoreVars()
         addVartoStore("Sel2_jet4.*");
         addVartoStore("Sel2_bjet1.*");
         addVartoStore("Sel_tau1.*");
+        addVartoStore("mutau.*");
         addVartoStore("chi2.*");
         addVartoStore("btagWeight_DeepFlavBrecalc.*");
 }

@@ -2,7 +2,10 @@
 version=skim_LFVv7
 datapath=/data1/common/skimmed_NanoAOD/$version/data
 # Syst : norm, jecup, jecdown, puup, pudown, btagup_jes, btagdown_jes
-syst=puup
+syst=btagup_hf
+syst=btagdown_hf
+#syst=btagup_lf
+syst=btagdown_lf
 target=dec_02_${syst} # Arbitrary folder name
 mkdir -p ${target}
 ./processnanoaod.py --allinone -Y 16pre -S ${syst} --globaltag Summer19UL16APV_RunBCD_V7 --json=data/GoldenJSON/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt ${datapath}/SingleMuon2016B2 ${target}/Run16preB2_${syst}.root &> ${target}/Run16preB2_${syst}.out &

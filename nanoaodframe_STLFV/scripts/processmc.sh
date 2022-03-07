@@ -5,10 +5,13 @@ mc16post=/data1/common/skimmed_NanoAOD/$version/mc/16post
 mc17=/data1/common/skimmed_NanoAOD/$version/mc/17
 mc18=/data1/common/skimmed_NanoAOD/$version/mc/18
 # Sys : norm, jecup, jecdown, puup, pudown, btagup_jes, btagdown_jes
-sys=puup
+sys=btagup_hf
+sys=btagdown_hf
+sys=btagup_lf
+#sys=btagdown_lf
 target=dec_02_${sys} # Arbitrary folder name
 mkdir -p ${target}
-# 16pre
+## 16pre
 ./processnanoaod.py -A -Y 16pre -S ${sys} --globaltag Summer19UL16APV_V7 ${mc16pre}/DYJetsToLL_M-10to50 ${target}/DYJetsToLL_M-10to50_16pre_${sys}.root &> ${target}/DYJetsToLL_M-10to50_16pre_${sys}.out &
 ./processnanoaod.py -A -Y 16pre -S ${sys} --globaltag Summer19UL16APV_V7 ${mc16pre}/DYJetsToLL_M-50_amcatnlo ${target}/DYJetsToLL_M-50_amcatnlo_16pre_${sys}.root &> ${target}/DYJetsToLL_M-50_amcatnlo_16pre_${sys}.out &
 ./processnanoaod.py -A -Y 16pre -S ${sys} --globaltag Summer19UL16APV_V7 ${mc16pre}/DYJetsToLL_M-50_madgraph ${target}/DYJetsToLL_M-50_madgraph_16pre_${sys}.root &> ${target}/DYJetsToLL_M-50_madgraph_16pre_${sys}.out &
@@ -62,7 +65,7 @@ mkdir -p ${target}
 ./processnanoaod.py -A -Y 16post -S ${sys} --globaltag Summer19UL16_V7 ${mc16post}/WZ ${target}/WZ_16post_${sys}.root &> ${target}/WZ_16post_${sys}.out &
 ./processnanoaod.py -A -Y 16post -S ${sys} --globaltag Summer19UL16_V7 ${mc16post}/ZZ ${target}/ZZ_16post_${sys}.root &> ${target}/ZZ_16post_${sys}.out &
 
-sleep 50m
+sleep 1h
 # 17
 ./processnanoaod.py -A -Y 17 -S ${sys} --globaltag Summer19UL17_V5 ${mc17}/DYJetsToLL_M-10to50 ${target}/DYJetsToLL_M-10to50_17_${sys}.root &> ${target}/DYJetsToLL_M-10to50_17_${sys}.out &
 ./processnanoaod.py -A -Y 17 -S ${sys} --globaltag Summer19UL17_V5 ${mc17}/DYJetsToLL_M-50_amcatnlo ${target}/DYJetsToLL_M-50_amcatnlo_17_${sys}.root &> ${target}/DYJetsToLL_M-50_amcatnlo_17_${sys}.out &
@@ -91,7 +94,6 @@ sleep 50m
 ./processnanoaod.py -A -Y 17 -S ${sys} --globaltag Summer19UL17_V5 ${mc17}/WW ${target}/WW_17_${sys}.root &> ${target}/WW_17_${sys}.out &
 ./processnanoaod.py -A -Y 17 -S ${sys} --globaltag Summer19UL17_V5 ${mc17}/WZ ${target}/WZ_17_${sys}.root &> ${target}/WZ_17_${sys}.out &
 ./processnanoaod.py -A -Y 17 -S ${sys} --globaltag Summer19UL17_V5 ${mc17}/ZZ ${target}/ZZ_17_${sys}.root &> ${target}/ZZ_17_${sys}.out &
-
 # 18
 ./processnanoaod.py -A -Y 18 -S ${sys} --globaltag Summer19UL18_V5 ${mc18}/DYJetsToLL_M-10to50 ${target}/DYJetsToLL_M-10to50_18_${sys}.root &> ${target}/DYJetsToLL_M-10to50_18_${sys}.out &
 ./processnanoaod.py -A -Y 18 -S ${sys} --globaltag Summer19UL18_V5 ${mc18}/DYJetsToLL_M-50_amcatnlo ${target}/DYJetsToLL_M-50_amcatnlo_18_${sys}.root &> ${target}/DYJetsToLL_M-50_amcatnlo_18_${sys}.out &

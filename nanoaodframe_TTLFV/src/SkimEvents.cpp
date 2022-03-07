@@ -23,19 +23,19 @@ void SkimEvents::defineCuts()
         if(_year.find("wjet") != std::string::npos){
                 addCuts("LHE_HT < 100","0");
                 if(_year.find("16") != std::string::npos){
-                        addCuts("Flag_filter && (HLT_IsoMu24 || HLT_IsoTkMu24) && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","00");
+                        addCuts("Flag_filter && (HLT_IsoMu24 || HLT_IsoTkMu24) && nmuonpass == 1","00");
                 }else if(_year.find("17") != std::string::npos){
-                        addCuts("Flag_filter && HLT_IsoMu27 && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","00");
+                        addCuts("Flag_filter && HLT_IsoMu27 && nmuonpass == 1","00");
                 }else if(_year.find("18") != std::string::npos){
-                        addCuts("Flag_filter && HLT_IsoMu24 && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","00");
+                        addCuts("Flag_filter && HLT_IsoMu24 && nmuonpass == 1","00");
                 }
         }else{ 
                 if(_year.find("16") != std::string::npos){
-                        addCuts("Flag_filter && (HLT_IsoMu24 || HLT_IsoTkMu24) && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","0");
+                        addCuts("Flag_filter && (HLT_IsoMu24 || HLT_IsoTkMu24) && nmuonpass == 1","0");
                 }else if(_year.find("17") != std::string::npos){
-                        addCuts("Flag_filter && HLT_IsoMu27 && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","0");
+                        addCuts("Flag_filter && HLT_IsoMu27 && nmuonpass == 1","0");
                 }else if(_year.find("18") != std::string::npos){
-                        addCuts("Flag_filter && HLT_IsoMu24 && nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","0");
+                        addCuts("Flag_filter && HLT_IsoMu24 && nmuonpass == 1","0");
                 }
         }
 }
@@ -93,8 +93,8 @@ void SkimEvents::defineMoreVars()
         addVartoStore("MET_sumEt");
         addVartoStore("RawMET.*");
         addVartoStore("LHE_HT");
-        addVartoStore("PuppiMET.*");
-        addVartoStore("RawPuppiMET.*");
+        //addVartoStore("PuppiMET.*");
+        //addVartoStore("RawPuppiMET.*");
         addVartoStore("nElectron");
         addVartoStore("Electron_charge");
         addVartoStore("Electron_cutBased");
@@ -104,7 +104,6 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Electron_eta");
         addVartoStore("Electron_gen.*");
         addVartoStore("Electron_mass");
-        addVartoStore("Electron_mvaFall17V2.*");
         addVartoStore("Electron_pf.*");
         addVartoStore("Electron_phi");
         addVartoStore("Electron_pt");
@@ -120,6 +119,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Muon_phi");
         addVartoStore("Muon_pt.*");
         addVartoStore("Muon_tightId");
+        addVartoStore("Muon_mini.*");
         addVartoStore("PV.*");
         addVartoStore("fixedGridRhoFastjet.*");
 }

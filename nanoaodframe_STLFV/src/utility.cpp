@@ -183,7 +183,7 @@ floats top_reconstruction_whad(FourVectorVec &jets, FourVectorVec &bjets, FourVe
                     X_min_SMW_mass = SMW_mass;
                     X_min_SMtop_mass = SMtop_mass;
                     wj1_idx = float(j1);
-                    wj1_idx = float(j2);
+                    wj2_idx = float(j2);
                 }
             }
         }
