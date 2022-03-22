@@ -95,13 +95,13 @@ void LQtopAnalyzer::defineMoreVars()
 
         if(_syst=="puup"){
             addVar({"evWeight_pglep","unitGenWeight * puWeight_plus*evWeight_leptonSF"});
-            addVar({"evWeight", "unitGenWeight * puWeight_plus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
+            addVar({"evWeight", "re_unitGenWeight * re_puWeight_plus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
         }else if(_syst=="pudown"){
             addVar({"evWeight_pglep","unitGenWeight * puWeight_minus * evWeight_leptonSF"});
-            addVar({"evWeight", "unitGenWeight * puWeight_minus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
+            addVar({"evWeight", "re_unitGenWeight * re_puWeight_minus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
         }else{
             addVar({"evWeight_pglep","pugenWeight*evWeight_leptonSF"});
-            addVar({"evWeight", "pugenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
+            addVar({"evWeight", "re_pugenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
         }
 
         // define variables that you want to store
@@ -109,6 +109,7 @@ void LQtopAnalyzer::defineMoreVars()
 	addVartoStore("luminosityBlock");
 	addVartoStore("event");
 	addVartoStore("evWeight.*");
+        addVartoStore("re_.*");
         addVartoStore("nmuonpass");
 	addVartoStore("ncleanjetspass");
 	addVartoStore("ncleanbjetspass");

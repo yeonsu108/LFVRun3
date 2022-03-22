@@ -118,13 +118,13 @@ void LQtopAnalyzer::defineMoreVars()
 
         if(_syst=="puup"){
             addVar({"evWeight_pglep","unitGenWeight * puWeight_plus*evWeight_leptonSF"});
-            addVar({"evWeight", "unitGenWeight * puWeight_plus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
+            addVar({"evWeight", "re_unitGenWeight * re_puWeight_plus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
         }else if(_syst=="pudown"){
             addVar({"evWeight_pglep","unitGenWeight * puWeight_minus * evWeight_leptonSF"});
-            addVar({"evWeight", "unitGenWeight * puWeight_minus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
+            addVar({"evWeight", "re_unitGenWeight * re_puWeight_minus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
         }else{
             addVar({"evWeight_pglep","pugenWeight*evWeight_leptonSF"});
-            addVar({"evWeight", "pugenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
+            addVar({"evWeight", "re_pugenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
         }
 
         // define variables that you want to store
@@ -132,6 +132,7 @@ void LQtopAnalyzer::defineMoreVars()
 	addVartoStore("luminosityBlock");
 	addVartoStore("event");
 	addVartoStore("evWeight.*");
+        addVartoStore("re_.*");
         addVartoStore("nmuonpass");
 	addVartoStore("ncleanjetspass");
 	addVartoStore("ncleanbjetspass");
@@ -163,8 +164,7 @@ void LQtopAnalyzer::bookHists()
 	//add1DHist( {"hnvtx_raw", "Number of Primary Vertex", 200, 0.0, 200.0}, "PV_npvsGood", "one", "");
 	//add1DHist( {"hnvtx", "Number of Primary Vertex", 200, 0.0, 200.0}, "PV_npvsGood", "evWeight", "");
 
-        //=================== PUGEN * Lepton SF ===================
-        
+        //=================== PUGEN * Lepton SF =================== 
 	add1DHist( {"h1metpt", "MET pt", 20, 0, 400}, "Sys_METpt", "evWeight_pglep", "0");
 	add1DHist( {"h1sumet", "Sum ET", 50, 0.0, 5000.0}, "MET_sumEt", "evWeight_pglep", "0");
 	add1DHist( {"h1metphi", "MET phi", 20, -4.0, 4.0}, "Sys_METphi", "evWeight_pglep", "0");
