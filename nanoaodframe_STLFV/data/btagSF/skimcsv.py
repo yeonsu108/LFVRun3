@@ -11,4 +11,4 @@ for infile in infiles:
             'up_lfstats1','down_lfstats1','up_lfstats2','down_lfstats2']
     skimdf = df.loc[df['sysType'].isin(systs)]
     print(skimdf)
-    skimdf.to_csv('skimmed_'+infile)
+    skimdf.to_csv('skimmed_'+infile,index=False)
