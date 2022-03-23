@@ -240,7 +240,7 @@ class Stackhists:
                 print("quitting")
                 sys.exit(-1)
             else:
-                if "cut00000" in histname:
+                if ("cut00000" in histname) or ("bjet" in histname):
                     ahist.Scale(self.sflist[ifile]*self.resflist[ifile])
                 else:
                     ahist.Scale(self.sflist[ifile])
