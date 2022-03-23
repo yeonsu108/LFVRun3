@@ -1,9 +1,13 @@
 #!/bin/bash
-pname=$1
-if [ -z "$1" ]
-then
-    echo "No Input Argument"
+if [ -z "$1" ] || [ -z "$2" ];then
+    if [ -z "$1" ]; then
+        echo "!!! No Input Argument !!!"
+    elif [ -z "$2" ]; then
+        echo "!!! Please Specify Systematics !!!
+(norm/jecup/jecdown/puup/pudown/btagup_jes/btagdown_jes/...)"
+    fi
 else
+    pname=$1
     sys=$2
     cd ${pname}
     rm -rf *.out

@@ -10,5 +10,6 @@ for infile in infiles:
             'down_lf','up_hfstats1','down_hfstats1','up_hfstats2','down_hfstats2',
             'up_lfstats1','down_lfstats1','up_lfstats2','down_lfstats2']
     skimdf = df.loc[df['sysType'].isin(systs)]
+    skimdf.loc[df['OperatingPoint'] == 'shape','OperatingPoint'] = 3
     print(skimdf)
     skimdf.to_csv('skimmed_'+infile,index=False)
