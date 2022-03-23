@@ -88,7 +88,7 @@ class Stackhists:
                 postevents = posthist.Integral()
                 resf = preevents / postevents if postevents != 0 else 1.0
                 # all histograms should be scaled by this factor
-                if "WJetsToLNu_inclHT100" in cfile:
+                if ("WJetsToLNu_inclHT100" in cfile) or ("WJetsToLNu_HT-0To100" in cfile):
                     histintegral = histintegral*0.96
                 self.sflist[id] *= xsec * self.integrlumi / histintegral
                 self.resflist[id] *= resf
@@ -227,7 +227,7 @@ class Stackhists:
             xbins = array.array('d', binlist)
             nrebins=len(binlist)-1
 
-#        if "cut000" in histname: print("Rescaled histogram : "+histname)
+#        if "cut00000" in histname: print("Rescaled histogram : "+histname)
         for ifile in range(len(self.mcfilelist)):
             #afile = ROOT.TFile(self.mcfilelist[ifile])
             #ahist = afile.Get(histname)
@@ -240,7 +240,7 @@ class Stackhists:
                 print("quitting")
                 sys.exit(-1)
             else:
-                if "cut000" in histname:
+                if "cut00000" in histname:
                     ahist.Scale(self.sflist[ifile]*self.resflist[ifile])
                 else:
                     ahist.Scale(self.sflist[ifile])
