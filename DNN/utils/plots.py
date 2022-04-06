@@ -126,3 +126,12 @@ def plot_corrMatrix(dataframe, savedir="./", outname=""):
     plt.savefig(os.path.join(savedir+'/correlation_'+outname+'.pdf'))
     plt.gcf().clear()
 
+def plot_roc_curve(fpr,tpr,auc,savedir="./"): 
+    plt.plot(fpr,tpr) 
+    plt.axis([0,1,0,1])
+    plt.title('AUC = '+str(auc))
+    plt.xlabel('False Positive Rate') 
+    plt.ylabel('True Positive Rate')
+    plt.tight_layout()
+    plt.savefig(os.path.join(savedir+'/fig_roc.pdf'))
+    plt.gcf().clear()
