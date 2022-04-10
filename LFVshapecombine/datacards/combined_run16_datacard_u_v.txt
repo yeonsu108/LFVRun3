@@ -1,0 +1,22 @@
+Combination of cat1=datacard_cat1_run16_u_v.txt  cat2=datacard_cat2_run16_u_v.txt
+imax 2 number of bins
+jmax 6 number of processes minus 1
+kmax 6 number of nuisance parameters
+----------------------------------------------------------------------------------------------------------------------------------
+shapes *     cat1  jan01/pred_run16_cat1.root $PROCESS $PROCESS_$SYSTEMATIC
+shapes *     cat2  jan01/pred_run16_cat2.root $PROCESS $PROCESS_$SYSTEMATIC
+----------------------------------------------------------------------------------------------------------------------------------
+bin          cat1   cat2 
+observation  -1     -1   
+----------------------------------------------------------------------------------------------------------------------------------
+bin                               cat1       cat1       cat1       cat1       cat1       cat1       cat1       cat2       cat2       cat2       cat2       cat2       cat2       cat2     
+process                           LFV_TTu_v  LFV_STu_v  Oth        ST         Wjets      DY         TT         LFV_TTu_v  LFV_STu_v  Oth        ST         Wjets      DY         TT       
+process                           -1         0          1          2          3          4          5          -1         0          1          2          3          4          5        
+rate                              -1         -1         -1         -1         -1         0          -1         -1         -1         -1         -1         -1         -1         -1       
+----------------------------------------------------------------------------------------------------------------------------------
+btag_hf                 shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
+btag_jes                shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
+btag_lf                 shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
+jec                     shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      
+lumi                    lnN       1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012      1.012    
+pu                      shape     1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0        1.0      

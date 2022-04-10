@@ -75,6 +75,8 @@ float calculate_deltaR( FourVector &p1, FourVector &p2);
 
 float calculate_invMass( FourVector &p1, FourVector &p2);
 
+float calculate_MT( FourVectorVec &muons, float met, float metphi);
+
 FourVector sum_4vec( FourVector &p1, FourVector &p2);
 
 floats sort_discriminant( floats discr, floats obj );

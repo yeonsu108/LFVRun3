@@ -183,7 +183,7 @@ floats top_reconstruction_whad(FourVectorVec &jets, FourVectorVec &bjets, FourVe
                     X_min_SMW_mass = SMW_mass;
                     X_min_SMtop_mass = SMtop_mass;
                     wj1_idx = float(j1);
-                    wj1_idx = float(j2);
+                    wj2_idx = float(j2);
                 }
             }
         }
@@ -231,6 +231,19 @@ float calculate_deltaR( FourVector &p1, FourVector &p2){
 
 float calculate_invMass( FourVector &p1, FourVector &p2){
         return ROOT::Math::VectorUtil::InvariantMass(p1, p2);
+}
+
+float calculate_MT( FourVectorVec &muons, float met, float metphi){
+        FourVector muon;
+        muon = muons[0];
+        float dphi = muon.Phi() - metphi;
+        if ( dphi > M_PI ) {
+            dphi -= 2.0*M_PI;
+        } else if ( dphi <= -M_PI ) {
+            dphi += 2.0*M_PI;
+        }
+        float out = sqrt(2*muon.Pt()*met*(1-cos(dphi)));
+        return out;
 }
 
 FourVector sum_4vec( FourVector &p1, FourVector &p2){

@@ -1,0 +1,13 @@
+root -l -b -q ana_genLFV.C'("LFV_ST_TCMuTau_Scalar")' &
+root -l -b -q ana_genLFV.C'("LFV_ST_TCMuTau_Vector")' &
+root -l -b -q ana_genLFV.C'("LFV_ST_TCMuTau_Tensor")' &
+root -l -b -q ana_genLFV.C'("LFV_ST_TUMuTau_Scalar")' &
+root -l -b -q ana_genLFV.C'("LFV_ST_TUMuTau_Vector")' &
+root -l -b -q ana_genLFV.C'("LFV_ST_TUMuTau_Tensor")' &
+root -l -b -q ana_genLFV.C'("LFV_TT_TToCMuTau_Scalar")' &
+root -l -b -q ana_genLFV.C'("LFV_TT_TToCMuTau_Vector")' &
+root -l -b -q ana_genLFV.C'("LFV_TT_TToCMuTau_Tensor")' &
+root -l -b -q ana_genLFV.C'("LFV_TT_TToUMuTau_Scalar")' &
+root -l -b -q ana_genLFV.C'("LFV_TT_TToUMuTau_Vector")' &
+root -l -b -q ana_genLFV.C'("LFV_TT_TToUMuTau_Tensor")' &
+root -l -b -q ana_genLFV.C'("SM_ttbar")' &

@@ -22,7 +22,7 @@ void LQtopAnalyzer::defineCuts()
 	// check for good json event is defined earlier
         addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","0");
         addCuts("ncleantaupass == 1", "00");
-        addCuts("mutau_mass <= 150", "000");
+        addCuts("mutau_mass <= 150 && mutau_charge < 0", "000");
         addCuts("ncleanjetspass >= 4", "0000");
         addCuts("ncleanbjetspass == 1", "00000");
         addCuts("Sys_METpt > 10 && Sys_METpt < 70","000000");
@@ -42,39 +42,36 @@ void LQtopAnalyzer::defineMoreVars()
         defineVar("tauvec",::select_leadingvec,{"cleantau4vecs"});
         defineVar("mutau_mass",::calculate_invMass,{"muonvec","tauvec"});
         defineVar("mutau_dEta",::calculate_deltaEta,{"muonvec","tauvec"});
-        //addVar({"mutau_absdEta","abs(mutau_dEta)",""});
         defineVar("mutau_dPhi",::calculate_deltaPhi,{"muonvec","tauvec"});
-        //addVar({"mutau_absdPhi","abs(mutau_dPhi)",""});
         defineVar("mutau_dR",::calculate_deltaR,{"muonvec","tauvec"});
+        defineVar("muMET_mt",::calculate_MT,{"muon4vecs","Sys_METpt","Sys_METphi"});
 
         addVar({"Sel_muon1pt", "Sel_muonpt[0]", ""});
         addVar({"Sel_muon1eta", "Sel_muoneta[0]", ""});
-        //addVar({"Sel_muon1abseta", "abs(Sel_muon1eta)", ""});
         addVar({"Sel_muon1mass", "Sel_muonmass[0]", ""});
+        addVar({"Sel_muon1charge", "Sel_muoncharge[0]", ""});
 	
         addVar({"Sel_tau1pt", "Sel_taupt[0]", ""});
         addVar({"Sel_tau1eta", "Sel_taueta[0]", ""});
-        //addVar({"Sel_tau1abseta", "abs(Sel_tau1eta)", ""});
         addVar({"Sel_tau1mass", "Sel_taumass[0]", ""});
+        addVar({"Sel_tau1charge", "Sel_taucharge[0]", ""});
+
+        addVar({"mutau_charge", "Sel_muon1charge * Sel_tau1charge", ""});
 
         addVar({"Sel2_jet1pt", "(Sel2_jetpt.size()>0) ? Sel2_jetpt[0] : -1", ""});
         addVar({"Sel2_jet1eta", "Sel2_jeteta[0]", ""});
-        //addVar({"Sel2_jet1abseta", "abs(Sel2_jet1eta)", ""});
         addVar({"Sel2_jet1mass", "Sel2_jetmass[0]", ""});
 
         addVar({"Sel2_jet2pt", "Sel2_jetpt[1]", ""});
         addVar({"Sel2_jet2eta", "Sel2_jeteta[1]", ""});
-        //addVar({"Sel2_jet2abseta", "abs(Sel2_jet2eta)", ""});
         addVar({"Sel2_jet2mass", "Sel2_jetmass[1]", ""});
 
         addVar({"Sel2_jet3pt", "Sel2_jetpt[2]", ""});
         addVar({"Sel2_jet3eta", "Sel2_jeteta[2]", ""});
-        //addVar({"Sel2_jet3abseta", "abs(Sel2_jet3eta)", ""});
         addVar({"Sel2_jet3mass", "Sel2_jetmass[2]", ""});
 
         addVar({"Sel2_jet4pt", "Sel2_jetpt[3]", ""});
         addVar({"Sel2_jet4eta", "Sel2_jeteta[3]", ""});
-        //addVar({"Sel2_jet4abseta", "abs(Sel2_jet4eta)", ""});
         addVar({"Sel2_jet4mass", "Sel2_jetmass[3]", ""});
 
         addVar({"Sel2_jet1btag","Sel2_jetbtag[0]",""});
@@ -84,7 +81,6 @@ void LQtopAnalyzer::defineMoreVars()
 
         addVar({"Sel2_bjet1pt", "Sel2_bjetpt[0]", ""});
         addVar({"Sel2_bjet1eta", "Sel2_bjeteta[0]", ""});
-        //addVar({"Sel2_bjet1abseta", "abs(Sel2_bjet1eta)", ""});
         addVar({"Sel2_bjet1mass", "Sel2_bjetmass[0]", ""});
 
         defineVar("top_reco_whad", ::top_reconstruction_whad, {"cleanjet4vecs","cleanbjet4vecs","muon4vecs","cleantau4vecs"});
@@ -101,40 +97,42 @@ void LQtopAnalyzer::defineMoreVars()
 
         defineVar("top_reco_prod", ::top_reco_products, {"cleanjet4vecs","muon4vecs","cleantau4vecs","top_reco_whad"});
         addVar({"chi2_wqq_dEta","top_reco_prod[0]",""});
-        //addVar({"chi2_wqq_absdEta","abs(chi2_wqq_dEta)",""});
         addVar({"chi2_wqq_dPhi","top_reco_prod[1]",""});
-        //addVar({"chi2_wqq_absdPhi","abs(chi2_wqq_dPhi)",""});
         addVar({"chi2_wqq_dR","top_reco_prod[2]",""});
 
         addVar({"chi2_lfvjmu_dEta","top_reco_prod[3]",""});
-        //addVar({"chi2_lfvjmu_absdEta","abs(chi2_lfvjmu_dEta)",""});
         addVar({"chi2_lfvjmu_dPhi","top_reco_prod[4]",""});
-        //addVar({"chi2_lfvjmu_absdPhi","abs(chi2_lfvjmu_dPhi)",""});
         addVar({"chi2_lfvjmu_dR","top_reco_prod[5]",""});
         addVar({"chi2_lfvjmu_mass","top_reco_prod[6]",""});
         
         addVar({"chi2_lfvjtau_dEta","top_reco_prod[7]",""});
-        //addVar({"chi2_lfvjtau_absdEta","abs(chi2_lfvjtau_dEta)",""});
         addVar({"chi2_lfvjtau_dPhi","top_reco_prod[8]",""});
-        //addVar({"chi2_lfvjtau_absdPhi","abs(chi2_lfvjtau_dPhi)",""});
         addVar({"chi2_lfvjtau_dR","top_reco_prod[9]",""});
         addVar({"chi2_lfvjtau_mass","top_reco_prod[10]",""});
 
         addVar({"chi2_lfvjmutau_dEta","top_reco_prod[11]",""});
-        //addVar({"chi2_lfvjmutau_absdEta","abs(chi2_lfvjmutau_dEta)",""});
         addVar({"chi2_lfvjmutau_dPhi","top_reco_prod[12]",""});
-        //addVar({"chi2_lfvjmutau_absdPhi","abs(chi2_lfvjmutau_dPhi)",""});
         addVar({"chi2_lfvjmutau_dR","top_reco_prod[13]",""});
         addVar({"chi2_lfvjmutau_mass","top_reco_prod[14]",""});
         //addVar({"Jet_rawpt","Jet_pt*(1-Jet_rawFactor)"});
 
-        addVar({"evWeight_pglep","pugenWeight*evWeight_leptonSF"});
+        if(_syst=="puup"){
+            addVar({"evWeight_pglep","unitGenWeight * puWeight_plus*evWeight_leptonSF"});
+            addVar({"evWeight", "re_unitGenWeight * re_puWeight_plus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
+        }else if(_syst=="pudown"){
+            addVar({"evWeight_pglep","unitGenWeight * puWeight_minus * evWeight_leptonSF"});
+            addVar({"evWeight", "re_unitGenWeight * re_puWeight_minus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
+        }else{
+            addVar({"evWeight_pglep","pugenWeight*evWeight_leptonSF"});
+            addVar({"evWeight", "re_pugenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
+        }
 
         // define variables that you want to store
 	addVartoStore("run");
 	addVartoStore("luminosityBlock");
 	addVartoStore("event");
 	addVartoStore("evWeight.*");
+        addVartoStore("re_.*");
         addVartoStore("nmuonpass");
 	addVartoStore("ncleanjetspass");
 	addVartoStore("ncleanbjetspass");
@@ -147,6 +145,7 @@ void LQtopAnalyzer::defineMoreVars()
         addVartoStore("Sel2_jet4.*");
         addVartoStore("Sel2_bjet1.*");
         addVartoStore("Sel_tau1.*");
+        addVartoStore("mutau.*");
         addVartoStore("chi2.*");
         addVartoStore("btagWeight_DeepFlavBrecalc.*");
 }
@@ -165,7 +164,7 @@ void LQtopAnalyzer::bookHists()
 	//add1DHist( {"hnvtx_raw", "Number of Primary Vertex", 200, 0.0, 200.0}, "PV_npvsGood", "one", "");
 	//add1DHist( {"hnvtx", "Number of Primary Vertex", 200, 0.0, 200.0}, "PV_npvsGood", "evWeight", "");
 
-        //=================== PUGEN * Lepton SF ===================
+        //=================== PUGEN * Lepton SF =================== 
 	add1DHist( {"h1metpt", "MET pt", 20, 0, 400}, "Sys_METpt", "evWeight_pglep", "0");
 	add1DHist( {"h1sumet", "Sum ET", 50, 0.0, 5000.0}, "MET_sumEt", "evWeight_pglep", "0");
 	add1DHist( {"h1metphi", "MET phi", 20, -4.0, 4.0}, "Sys_METphi", "evWeight_pglep", "0");
@@ -182,6 +181,7 @@ void LQtopAnalyzer::bookHists()
         add1DHist( {"h1muon1pt", "Muon pt", 20, 0, 400}, "Sel_muon1pt", "evWeight_pglep", "0");
         add1DHist( {"h1muon1eta", "Muon eta", 18, -2.7, 2.7}, "Sel_muon1eta", "evWeight_pglep", "0");
         add1DHist( {"h1muon1mass", "Muon mass", 20, 0, 100}, "Sel_muon1mass", "evWeight_pglep", "0");
+        add1DHist( {"h1muMETmt", "Muon met mt", 20, 0, 200}, "muMET_mt", "evWeight_pglep", "0");
     
         add1DHist( {"h1tau1pt", "Tau pt", 20, 0, 400}, "Sel_tau1pt", "evWeight_pglep", "00");
         add1DHist( {"h1tau1eta", "Tau eta", 18, -2.7, 2.7}, "Sel_tau1eta", "evWeight_pglep", "00");
@@ -193,17 +193,20 @@ void LQtopAnalyzer::bookHists()
         add1DHist( {"h1mutau_mass", "Mass of muon and tau", 30, 0, 600}, "mutau_mass", "evWeight_pglep","00");
 
         add1DHist( {"h1jet1pt", "leading jet pt", 20, 0, 400}, "Sel2_jet1pt", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet1eta", "leading jet eta", 18, -2.7, 2.7}, "Sel2_jet1eta", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet1mass", "leading jet mass", 20, 0, 100}, "Sel2_jet1mass", "evWeight_pglep", "0000");
         add1DHist( {"h1jet2pt", "sub-leading jet pt", 20, 0, 400}, "Sel2_jet2pt", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet2eta", "sub-leading jet eta", 18, -2.7, 2.7}, "Sel2_jet2eta", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet2mass", "sub-leading jet mass", 20, 0, 100}, "Sel2_jet2mass", "evWeight_pglep", "0000");
         add1DHist( {"h1jet3pt", "third jet pt", 20, 0, 400}, "Sel2_jet3pt", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet3eta", "third jet eta", 18, -2.7, 2.7}, "Sel2_jet3eta", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet3mass", "third jet mass", 20, 0, 100}, "Sel2_jet3mass", "evWeight_pglep", "0000");
         add1DHist( {"h1jet4pt", "fourth jet pt", 20, 0, 400}, "Sel2_jet4pt", "evWeight_pglep", "0000");
+
+        add1DHist( {"h1jet1eta", "leading jet eta", 18, -2.7, 2.7}, "Sel2_jet1eta", "evWeight_pglep", "0000");
+        add1DHist( {"h1jet2eta", "sub-leading jet eta", 18, -2.7, 2.7}, "Sel2_jet2eta", "evWeight_pglep", "0000");
+        add1DHist( {"h1jet3eta", "third jet eta", 18, -2.7, 2.7}, "Sel2_jet3eta", "evWeight_pglep", "0000");
         add1DHist( {"h1jet4eta", "fourth jet eta", 18, -2.7, 2.7}, "Sel2_jet4eta", "evWeight_pglep", "0000");
+
+        add1DHist( {"h1jet1mass", "leading jet mass", 20, 0, 100}, "Sel2_jet1mass", "evWeight_pglep", "0000");
+        add1DHist( {"h1jet2mass", "sub-leading jet mass", 20, 0, 100}, "Sel2_jet2mass", "evWeight_pglep", "0000");
+        add1DHist( {"h1jet3mass", "third jet mass", 20, 0, 100}, "Sel2_jet3mass", "evWeight_pglep", "0000");
         add1DHist( {"h1jet4mass", "fourth jet mass", 20, 0, 100}, "Sel2_jet4mass", "evWeight_pglep", "0000");
+
         add1DHist( {"h1bjet1pt", "b jet pt", 20, 0, 400}, "Sel2_bjet1pt", "evWeight_pglep", "0000");
         add1DHist( {"h1bjet1eta", "b jet eta", 18, -2.7, 2.7}, "Sel2_bjet1eta", "evWeight_pglep", "0000");
         add1DHist( {"h1bjet1mass", "b jet mass", 20, 0, 100}, "Sel2_bjet1mass", "evWeight_pglep", "0000");
@@ -213,6 +216,7 @@ void LQtopAnalyzer::bookHists()
         add1DHist( {"h1jet3btag","btag discr of third jet", 20, 0, 1.0}, "Sel2_jet3btag", "evWeight_pglep", "0000");
         add1DHist( {"h1jet4btag","btag discr of fourth jet", 20, 0, 1.0}, "Sel2_jet4btag", "evWeight_pglep", "0000");
 
+
         //=================== Fully weighted ===================
 	add1DHist( {"hmetpt", "MET pt", 20, 0, 400}, "Sys_METpt", "evWeight", "00000");
 	add1DHist( {"hsumet", "Sum ET", 50, 0.0, 5000.0}, "MET_sumEt", "evWeight", "00000");
@@ -221,11 +225,12 @@ void LQtopAnalyzer::bookHists()
 	add1DHist( {"hnmuonpass", "Passing muoncuts", 5, 0.0, 5.0}, "nmuonpass", "evWeight", "00000");
 	add1DHist( {"hncleantaupass", "Passing taucuts", 5, 0.0, 5.0}, "ncleantaupass", "evWeight", "00000");
 	add1DHist( {"hncleanjetspass", "Passing jetcuts", 10, 0.0, 10.0}, "ncleanjetspass", "evWeight", "00000");
-        add1DHist( {"hncleanbjetspass", "Passing bjetcuts", 5, 0.0, 5.0}, "ncleanbjetspass", "evWeight", "00000");
+        add1DHist( {"hncleanbjetspass", "Passing bjetcuts", 5, 0.0, 5.0}, "ncleanbjetspass", "evWeight", "0000");
 
         add1DHist( {"hmuon1pt", "Muon pt", 20, 0, 400}, "Sel_muon1pt", "evWeight", "00000");
         add1DHist( {"hmuon1eta", "Muon eta", 18, -2.7, 2.7}, "Sel_muon1eta", "evWeight", "00000");
         add1DHist( {"hmuon1mass", "Muon mass", 20, 0, 100}, "Sel_muon1mass", "evWeight", "00000");
+        add1DHist( {"hmuMETmt", "Muon met mt", 20, 0, 200}, "muMET_mt", "evWeight", "00000");
     
         add1DHist( {"htau1pt", "Tau pt", 20, 0, 400}, "Sel_tau1pt", "evWeight", "00000");
         add1DHist( {"htau1eta", "Tau eta", 18, -2.7, 2.7}, "Sel_tau1eta", "evWeight", "00000");
@@ -237,16 +242,18 @@ void LQtopAnalyzer::bookHists()
         add1DHist( {"hmutau_mass", "Mass of muon and tau", 30, 0, 600}, "mutau_mass", "evWeight","00000");
 
         add1DHist( {"hjet1pt", "leading jet pt", 20, 0, 400}, "Sel2_jet1pt", "evWeight", "00000");
-        add1DHist( {"hjet1eta", "leading jet eta", 18, -2.7, 2.7}, "Sel2_jet1eta", "evWeight", "00000");
-        add1DHist( {"hjet1mass", "leading jet mass", 20, 0, 100}, "Sel2_jet1mass", "evWeight", "00000");
         add1DHist( {"hjet2pt", "sub-leading jet pt", 20, 0, 400}, "Sel2_jet2pt", "evWeight", "00000");
-        add1DHist( {"hjet2eta", "sub-leading jet eta", 18, -2.7, 2.7}, "Sel2_jet2eta", "evWeight", "00000");
-        add1DHist( {"hjet2mass", "sub-leading jet mass", 20, 0, 100}, "Sel2_jet2mass", "evWeight", "00000");
         add1DHist( {"hjet3pt", "third jet pt", 20, 0, 400}, "Sel2_jet3pt", "evWeight", "00000");
-        add1DHist( {"hjet3eta", "third jet eta", 18, -2.7, 2.7}, "Sel2_jet3eta", "evWeight", "00000");
-        add1DHist( {"hjet3mass", "third jet mass", 20, 0, 100}, "Sel2_jet3mass", "evWeight", "00000");        
         add1DHist( {"hjet4pt", "fourth jet pt", 20, 0, 400}, "Sel2_jet4pt", "evWeight", "00000");
+
+        add1DHist( {"hjet1eta", "leading jet eta", 18, -2.7, 2.7}, "Sel2_jet1eta", "evWeight", "00000");
+        add1DHist( {"hjet2eta", "sub-leading jet eta", 18, -2.7, 2.7}, "Sel2_jet2eta", "evWeight", "00000");
+        add1DHist( {"hjet3eta", "third jet eta", 18, -2.7, 2.7}, "Sel2_jet3eta", "evWeight", "00000");
         add1DHist( {"hjet4eta", "fourth jet eta", 18, -2.7, 2.7}, "Sel2_jet4eta", "evWeight", "00000");
+
+        add1DHist( {"hjet1mass", "leading jet mass", 20, 0, 100}, "Sel2_jet1mass", "evWeight", "00000");
+        add1DHist( {"hjet2mass", "sub-leading jet mass", 20, 0, 100}, "Sel2_jet2mass", "evWeight", "00000");
+        add1DHist( {"hjet3mass", "third jet mass", 20, 0, 100}, "Sel2_jet3mass", "evWeight", "00000");
         add1DHist( {"hjet4mass", "fourth jet mass", 20, 0, 100}, "Sel2_jet4mass", "evWeight", "00000");
 
         add1DHist( {"hbjet1pt", "b jet pt", 20, 0, 400}, "Sel2_bjet1pt", "evWeight", "00000");
@@ -258,7 +265,7 @@ void LQtopAnalyzer::bookHists()
         add1DHist( {"hjet3btag","btag discr of third jet", 20, 0, 1.0}, "Sel2_jet3btag", "evWeight", "00000");
         add1DHist( {"hjet4btag","btag discr of fourth jet", 20, 0, 1.0}, "Sel2_jet4btag", "evWeight", "00000");
         
-        add1DHist( {"hchi2", "Minimum chi2 for hadronic W", 20, 0, 4000}, "chi2", "evWeight","00000");
+        add1DHist( {"hchi2", "Minimum chi2 for hadronic W", 20, 0, 600}, "chi2", "evWeight","00000");
         add1DHist( {"hchi2_SMTop_mass", "chi2 SM Top mass", 20, 0, 400}, "chi2_SMTop_mass", "evWeight","00000");
         add1DHist( {"hchi2_SMW_mass", "chi2 SM W mass", 20, 0, 400}, "chi2_SMW_mass", "evWeight","00000");
         add1DHist( {"hchi2_lfvTop_mass", "chi2 LFV Top mass", 20, 0, 400}, "chi2_lfvTop_mass", "evWeight","00000");

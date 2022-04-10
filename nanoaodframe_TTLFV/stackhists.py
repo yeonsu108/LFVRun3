@@ -76,8 +76,8 @@ class Stackhists:
                 cfile = afile
             ctfile = ROOT.TFile(cfile)
             ahist = ctfile.Get("hcounter_nocut") # this should contain all entries before cuts
-            prehist = ctfile.Get("hnevents_pglep_cut000")
-            posthist = ctfile.Get("hnevents_cut000")
+            prehist = ctfile.Get("hnevents_pglep_cut0000")
+            posthist = ctfile.Get("hnevents_cut0000")
             if ahist == None and (prehist == None or posthist == None):
                 print("counter histogram doesn\'t exist, will proceed with histintegaral=1. Be sure to put 1/histintegral in the scalefactor!")
                 self.sflist[id] *= xsec * self.integrlumi 
@@ -88,9 +88,9 @@ class Stackhists:
                 postevents = posthist.Integral()
                 resf = preevents / postevents if postevents != 0 else 1.0
                 # all histograms should be scaled by this factor
-                if "WJetsToLNu_inclHT100" in cfile:
+                if ("WJetsToLNu_inclHT100" in cfile) or ("WJetsToLNu_HT-0To100" in cfile):
                     histintegral = histintegral*0.96
-                self.sflist[id] *= xsec * self.integrlumi / histintgral
+                self.sflist[id] *= xsec * self.integrlumi / histintegral
                 self.resflist[id] *= resf
 
     def setupStyle(self, colorlist=None, patternlist=None, alpha=1.0):
@@ -217,8 +217,8 @@ class Stackhists:
         labellist = []
 
         # adding signal contribution 
-        signalhist = None
         signalhistlist = []
+        sighistgroup = {}
         mchistsum = None
 
         xbins = []
@@ -227,7 +227,7 @@ class Stackhists:
             xbins = array.array('d', binlist)
             nrebins=len(binlist)-1
 
-#        if "cut000" in histname: print("Rescaled histogram : "+histname)
+#        if "cut00000" in histname: print("Rescaled histogram : "+histname)
         for ifile in range(len(self.mcfilelist)):
             #afile = ROOT.TFile(self.mcfilelist[ifile])
             #ahist = afile.Get(histname)
@@ -240,7 +240,7 @@ class Stackhists:
                 print("quitting")
                 sys.exit(-1)
             else:
-                if "cut000" in histname:
+                if ("cut00000" in histname) or ("bjet" in histname):
                     ahist.Scale(self.sflist[ifile]*self.resflist[ifile])
                 else:
                     ahist.Scale(self.sflist[ifile])
@@ -263,17 +263,24 @@ class Stackhists:
                     ahist.SetFillStyle(self.patternlist[self.mcpatternlist[ifile]])
                     #ahist.UseCurrentStyle()
                 else:
-                    signalhist = ahist
                     ahist.SetLineColor(self.colorlist[self.mccolorlist[ifile]])
-                    signalhistlist.append(ahist)
+                    if label not in sighistgroup:
+                        sighistgroup[label] = ahist
+                    else:
+                        sighistgroup[label].Add(ahist)
+                    signalhistlist = list(sighistgroup.values())
 
-        normevts = dict()
-        for label in labellist:
-            if not "LFV" in label:
-                normevts[label] = histgroup[label].Integral()
-        renormevts_list=sorted(normevts.items(),key=lambda x:x[1],reverse=True)
-        reordered_labellist = [i[0] for i in renormevts_list]
-        if isLogy: reordered_labellist.reverse()
+#        normevts = dict()
+#        for label in labellist:
+#            if not "LFV" in label:
+#                normevts[label] = histgroup[label].Integral()
+#        renormevts_list=sorted(normevts.items(),key=lambda x:x[1],reverse=True)
+#        reordered_labellist = [i[0] for i in renormevts_list]
+#        if isLogy: reordered_labellist.reverse()
+
+        reordered_labellist = []
+        reordered_labellist = labellist
+        if isLogy: reordered_labellist = list(reversed(labellist))
 
         for label in reordered_labellist:
             ahist = histgroup[label]
@@ -467,7 +474,11 @@ class Stackhists:
                         break
                 for label in labellist :
                     if 'LFV' in label:
-                        sighist = histgroup[label]
+                        sighist = None
+                        if sighist is None:
+                            sighist = histgroup[label]
+                        else:
+                            sighist = sighist.Add(histgroup[label])
                         soverbhist, cutinfo = self.MakeSoverB(mchistsum, sighist, label, S_peak_bin)
                         soverbhistlist.append(soverbhist)
                         tempM = soverbhist.GetMaximum()
@@ -542,6 +553,8 @@ class Stackhists:
             path = "plot_snb_"+str(self.integrlumi)
             if not os.path.isdir(path):
                 os.mkdir(path)
+        outfile = ROOT.TFile("stackhist_"+str(self.integrlumi)+".root","RECREATE")
+        outfile.cd()
         if not self.datafilelist:
             if(isLogy):
                 c1_top.SaveAs(path+"/"+histname+"_logy.pdf")
@@ -553,4 +566,15 @@ class Stackhists:
             else:
                 c1.SaveAs(path+"/"+histname+"_nology.pdf")
         c1.Close()
+        for key, value in histgroup.items():
+            pname = key.replace(" ","_")
+            tmphist_copy = histgroup[key].Clone(histname+"_"+pname)
+            tmphist_copy.Write()
+        mchistsum_copy = mchistsum.Clone("hstacked_mc_"+histname)
+        mchistsum_copy.Write()
+        if finaldatahist:
+            finaldatahist_copy = finaldatahist.Clone("hstacked_data_"+histname)
+            finaldatahist_copy.Write()
+        outfile.Save()
+        outfile.Close()
         pass
