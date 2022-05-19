@@ -23,41 +23,44 @@ import ROOT
 
 def batchScript(cmd):
 
-   script = """#!/bin/bash
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64
-export LD_PRELOAD=/usr/lib64/libXrdPosixPreload.so
-export XROOTD_VMP=cms-se.sdfarm.kr:1094:/xrootd=/xrd
+    script = """#!/bin/bash
+#export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib64
+#export LD_PRELOAD=/usr/lib64/libXrdPosixPreload.so
+#export XROOTD_VMP=cms-se.sdfarm.kr:1094:/xrootd=/xrd
 
 # Your nanoaodrdframe location
 #cd /cms/ldap_home/tjkim/work/run2/LQ/nanoaodrdframe
-cd /cms/ldap_home/ljw1015/work/nanoaodrdframe
+#cd /cms/ldap_home/ljw1015/work/nanoaodrdframe
+cd /cms/ldap_home/ljw1015/LFVRun2/nanoaodframe_STLFV
 
 %s
 """ % cmd
 
-   return script
+    return script
 
-def condorScript(scriptFileName, outputdirectory, withoutext):
+def condorScript(scriptFileName, inputdirectory, outputdirectory, withoutext):
+    tmp = inputdirectory.replace("/","_")
+    jobname = tmp.replace(".txt","")
 
-   script = """executable = %s/Log/%s
+    script = """executable = {0}/Log/{1}
 universe  = vanilla
 
-JobBatchName = CMS_$(cluster)
+JobBatchName = {3}
 should_transfer_files   = YES
 when_to_transfer_output = ON_EXIT
-transfer_input_files    = %s/Log/%s
+transfer_input_files    = {0}/Log/{1}
 getenv     = True
 
 Accounting_Group        = group_cms
 
-output = %s/Log/skim_%s.out
-error = %s/Log/skim_%s.error
-log = %s/Log/skim_%s.log
+output = {0}/Log/skim_{2}.out
+error = {0}/Log/skim_{2}.error
+log = {0}/Log/skim_{2}.log
 
 queue
-""" % (outputdirectory, scriptFileName, outputdirectory, scriptFileName, outputdirectory, withoutext, outputdirectory, withoutext, outputdirectory, withoutext)
+""".format(outputdirectory, scriptFileName, withoutext, jobname)
 
-   return script
+    return script
 
 def function_calling_PostProcessor(outdir, rootfileshere, outtreename, intreeename, year, syst, json, saveallbranches, globaltag):
     for afile in rootfileshere:
@@ -93,8 +96,11 @@ class Nanoaodprocessor:
         self.globaltag = globaltag
         # check whether input directory exists
         if not os.path.exists(self.indir):
-            print ('Path '+indir+' does not exist')
-            exit(1)
+            if ".txt" in self.indir:
+                print("Input sample lists are provided in +"+indir)
+            else:
+                print ('Path '+indir+' does not exist')
+                exit(1)
         pass
 
     def process(self):
@@ -105,7 +111,10 @@ class Nanoaodprocessor:
     def _processROOTfiles(self, inputdirectory, outputdirectory):
         # list currect directory
         flist=[]
-        if self.flat:
+        if self.batch or (".txt" in inputdirectory):
+            with open(inputdirectory) as f:
+                flist = f.read().splitlines()
+        elif self.flat:
             print("Flat splitted jobs")
             for root, dirs, files in os.walk(inputdirectory):
                 for onefile in files:
@@ -125,15 +134,17 @@ class Nanoaodprocessor:
         #    os.mkdir(outputdirectory)
         # loop through the list
         # pick root files but not those that match  _analyzed.root 
-        for fname in flist:
-            fullname = os.path.join(inputdirectory, fname)
-            if re.match('.*\.root', fname) and not re.match('.*_analyzed\.root', fname) and os.path.isfile(fullname): # if it has .root file extension
-                rootfileshere.append(fullname) 
-            elif os.path.isdir(fullname):  # if it's a directory name
-                subdirs.append(fullname)
-                outsubdirs.append(outputdirectory+'/'+fname)
-        
-        print("files found in directory "+inputdirectory)
+        if (".txt" in inputdirectory) or self.batch:
+            rootfileshere = flist
+        else:
+            for fname in flist:
+                fullname = os.path.join(inputdirectory, fname)
+                if re.match('.*\.root', fname) and not re.match('.*_analyzed\.root', fname) and os.path.isfile(fullname): # if it has .root file extension
+                    rootfileshere.append(fullname)
+                elif os.path.isdir(fullname):  # if it's a directory name
+                    subdirs.append(fullname)
+                    outsubdirs.append(outputdirectory+'/'+fname)
+            print("files found in directory "+inputdirectory)
         print(rootfileshere)
         
         # run
@@ -187,7 +198,9 @@ class Nanoaodprocessor:
                 #function_calling_PostProcessor(outputdirectory, rootfileshere, self.json, self.isdata)
                 aproc = None
                 for afile in rootfileshere:
-                    afile = afile.replace("/xrootd","root://cms-xrdr.private.lo:2094//xrd") # Set xrootd URL (2094 for internal, 1094 for public)
+                    #afile = afile.replace("/xrootd","root://cms-xrdr.private.lo:2094//xrd") # Set xrootd URL (2094 for internal, 1094 for public)
+                    #afile = "root://cms-xrdr.private.lo:2094//xrd" + afile # Set xrootd URL for KR_T3_KISTI
+                    afile = "root://cms-t2-se01.sdfarm.kr:1096/" + afile # Set xrootd URL for KR_T2_KISTI
                     rootfname = re.split('\/', afile)[-1]
                     withoutext = re.split('\.root', rootfname)[0]
                     outfname = outputdirectory +'/'+ withoutext + '_analyzed.root'
@@ -195,8 +208,8 @@ class Nanoaodprocessor:
                     if not self.batch :  
                         subprocess.call(["./skimonefile.py", "--year=%s"%self.year, "--syst=%s"%self.syst, "--json=%s"%self.json, "--globaltag=%s"%self.globaltag, afile, outfname, self.intreeename, self.outtreename])
                     else: #if batch, submit jobs in condor@kisti
-                        cmd = "./skimonefile.py"+ " --json="+self.json + " --globaltag="+self.globaltag+" "+afile+" "+outfname+" "+self.intreeename+" "+self.outtreename
-
+                        cmd = "./skimonefile.py"+" --year="+self.year+" --syst="+self.syst+" --json="+self.json + " --globaltag="+self.globaltag+" "+afile+" "+outfname+" "+self.intreeename+" "+self.outtreename
+                        print(cmd)
                     	logDir = outputdirectory+'/Log'
                     	if not os.path.exists(logDir):
                        	    os.mkdir(logDir)
@@ -210,7 +223,7 @@ class Nanoaodprocessor:
 
                     	jobFileName = 'job_'+withoutext+'.sub'
                     	jobFile = open(jobFileName,'w')
-                    	jobFile.write( condorScript(scriptFileName, outputdirectory, withoutext))
+                        jobFile.write( condorScript(scriptFileName, inputdirectory, outputdirectory, withoutext))
                     	jobFile.close()
                     	os.system('mv %s %s/Log' % (jobFileName, outputdirectory) )
 
