@@ -288,22 +288,30 @@ void NanoAODAnalyzerrdframe::setupAnalysis()
 	// Event weight for data it's always one. For MC, it depends on the sign
 
 	_rlm = _rlm.Define("one", "1.0");
-        if(!_isSkim){
+        if(_isSkim){
+            if(_isData){
+                _rlm = _rlm.Define("unitGenWeight","one");
+            } else{
+                _rlm = _rlm.Define("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0");
+            }
+        } else{
                 if(_isData){
-                        _rlm = _rlm.Define("re_unitGenWeight","one")
-                                   .Define("re_pugenWeight","one")
-                                   .Define("re_puWeight_plus","one")
-                                   .Define("re_puWeight_minus","one")
-                                   .Define("evWeight_tauSF","one")
-                                   .Define("evWeight_muonSF","one")
-                                   .Define("evWeight_leptonSF","one")
-                                   .Define("btagWeight_DeepFlavBrecalc","one");
+                    _rlm = _rlm.Define("re_unitGenWeight","one")
+                               .Define("re_pugenWeight","one")
+                               .Define("evWeight_tauSF","one")
+                               .Define("evWeight_muonSF","one")
+                               .Define("evWeight_leptonSF","one")
+                               .Define("btagWeight_DeepFlavBrecalc","one");
                 }else{
-                        _rlm = _rlm.Define("re_unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
-                                   .Define("re_puWeight",[this](float x) {return _puweightcalc->getWeight(x);}, {"Pileup_nTrueInt"})
-                                   .Define("re_puWeight_plus",[this](float x) {return _puweightcalc_plus->getWeight(x);}, {"Pileup_nTrueInt"})
-                                   .Define("re_puWeight_minus",[this](float x) {return _puweightcalc_minus->getWeight(x);}, {"Pileup_nTrueInt"})
-                                   .Define("re_pugenWeight", "unitGenWeight * re_puWeight");
+                    if(_syst == "puup"){
+                        _rlm = _rlm.Define("re_puWeight",[this](float x) {return _puweightcalc_plus->getWeight(x);}, {"Pileup_nTrueInt"});
+                    }else if(_syst == "pudown"){
+                        _rlm = _rlm.Define("re_puWeight",[this](float x) {return _puweightcalc_minus->getWeight(x);}, {"Pileup_nTrueInt"});
+                    }else{
+                        _rlm = _rlm.Define("re_puWeight",[this](float x) {return _puweightcalc->getWeight(x);}, {"Pileup_nTrueInt"});
+                    }
+                    _rlm = _rlm.Define("re_unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
+                               .Define("re_pugenWeight", "re_unitGenWeight * re_puWeight");
                 }
         }
 

@@ -91,15 +91,15 @@ for run in runs:
     s.addChannel(run+"/ST_tW_top_"+run+syst+".root", "ST", 5, isMC=True, xsec=rlumi[run]*35850.0, counterhistogramroot=run+"/ST_tW_top_"+run+syst+".root")
     s.addChannel(run+"/ST_tW_antitop_"+run+syst+".root", "ST", 5, isMC=True, xsec=rlumi[run]*35850.0, counterhistogramroot=run+"/ST_tW_antitop_"+run+syst+".root")
 
-    # Other
-    s.addChannel(run+"/TTWJetsToLNu_"+run+syst+".root", "Other", 6, isMC=True, xsec=rlumi[run]*204.3, counterhistogramroot=run+"/TTWJetsToLNu_"+run+syst+".root")
-    s.addChannel(run+"/TTWJetsToQQ_"+run+syst+".root", "Other", 6, isMC=True, xsec=rlumi[run]*406.2, counterhistogramroot=run+"/TTWJetsToQQ_"+run+syst+".root")
-    s.addChannel(run+"/TTZToLLNuNu_"+run+syst+".root", "Other", 6, isMC=True, xsec=rlumi[run]*252.9, counterhistogramroot=run+"/TTZToLLNuNu_"+run+syst+".root")
-    s.addChannel(run+"/TTZToQQ_"+run+syst+".root", "Other", 6, isMC=True, xsec=rlumi[run]*529.7, counterhistogramroot=run+"/TTZToQQ_"+run+syst+".root")
-    s.addChannel(run+"/TTToHadronic_"+run+syst+".root", "Other", 6, isMC=True, xsec=rlumi[run]*377960.0, counterhistogramroot=run+"/TTToHadronic_"+run+syst+".root")
-    s.addChannel(run+"/WW_"+run+syst+".root", "Other", 6, isMC=True, xsec=rlumi[run]*118700.0, counterhistogramroot=run+"/WW_"+run+syst+".root")
-    s.addChannel(run+"/WZ_"+run+syst+".root", "Other", 6, isMC=True, xsec=rlumi[run]*47130.0, counterhistogramroot=run+"/WZ_"+run+syst+".root")
-    s.addChannel(run+"/ZZ_"+run+syst+".root", "Other", 6, isMC=True, xsec=rlumi[run]*16523.0, counterhistogramroot=run+"/ZZ_"+run+syst+".root")
+    # Others
+    s.addChannel(run+"/TTWJetsToLNu_"+run+syst+".root", "Others", 6, isMC=True, xsec=rlumi[run]*204.3, counterhistogramroot=run+"/TTWJetsToLNu_"+run+syst+".root")
+    s.addChannel(run+"/TTWJetsToQQ_"+run+syst+".root", "Others", 6, isMC=True, xsec=rlumi[run]*406.2, counterhistogramroot=run+"/TTWJetsToQQ_"+run+syst+".root")
+    s.addChannel(run+"/TTZToLLNuNu_"+run+syst+".root", "Others", 6, isMC=True, xsec=rlumi[run]*252.9, counterhistogramroot=run+"/TTZToLLNuNu_"+run+syst+".root")
+    s.addChannel(run+"/TTZToQQ_"+run+syst+".root", "Others", 6, isMC=True, xsec=rlumi[run]*529.7, counterhistogramroot=run+"/TTZToQQ_"+run+syst+".root")
+    s.addChannel(run+"/TTToHadronic_"+run+syst+".root", "Others", 6, isMC=True, xsec=rlumi[run]*377960.0, counterhistogramroot=run+"/TTToHadronic_"+run+syst+".root")
+    s.addChannel(run+"/WW_"+run+syst+".root", "Others", 6, isMC=True, xsec=rlumi[run]*118700.0, counterhistogramroot=run+"/WW_"+run+syst+".root")
+    s.addChannel(run+"/WZ_"+run+syst+".root", "Others", 6, isMC=True, xsec=rlumi[run]*47130.0, counterhistogramroot=run+"/WZ_"+run+syst+".root")
+    s.addChannel(run+"/ZZ_"+run+syst+".root", "Others", 6, isMC=True, xsec=rlumi[run]*16523.0, counterhistogramroot=run+"/ZZ_"+run+syst+".root")
 
     # QCD
     s.addChannel(run+"/QCD_Pt-15To20_"+run+syst+".root", "QCD", 8, isMC=True, xsec=rlumi[run]*1273190000000*0.003, counterhistogramroot=run+"/QCD_Pt-15To20_"+run+syst+".root")
@@ -229,12 +229,12 @@ s.addHistogram("h1muon1eta_cut0000", "#eta of Muon", "Entries", drawmode=stackhi
 s.addHistogram("hmuon1eta_cut00000", "#eta of Muon", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("hmuon1eta_cut000000", "#eta of Muon", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 
-s.addHistogram("h1muMETmt_cut0", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("h1muMETmt_cut00", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("h1muMETmt_cut000", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("h1muMETmt_cut0000", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hmuMETmt_cut00000", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hmuMETmt_cut000000", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("h1muMETmt_cut0", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[14,99])
+s.addHistogram("h1muMETmt_cut00", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[14,99])
+s.addHistogram("h1muMETmt_cut000", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[14,99])
+s.addHistogram("h1muMETmt_cut0000", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[14,99])
+s.addHistogram("hmuMETmt_cut00000", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[14,99])
+s.addHistogram("hmuMETmt_cut000000", "m_{T} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[14,99])
 
 # Tau Histograms
 s.addHistogram("h1tau1pt_cut00", "p_{T} of Hadronic Tau (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=mutauptbins)
@@ -251,27 +251,27 @@ s.addHistogram("htau1eta_cut000000", "#eta of Hadronic Tau", "Entries", drawmode
 
 s.addHistogram("h1mutau_dEta_cut00", "#it{#Delta#eta}_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("h1mutau_dPhi_cut00", "#it{#Delta#phi}_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("h1mutau_dR_cut00", "#DeltaR_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("h1mutau_mass_cut00", "M_{#mu,#tau} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=mutaumassbins)
+s.addHistogram("h1mutau_dR_cut00", "#DeltaR_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[0,8])
+s.addHistogram("h1mutau_mass_cut00", "M_{#mu,#tau} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=mutaumassbins, blind=[9,99])
 
 s.addHistogram("h1mutau_dEta_cut000", "#it{#Delta#eta}_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("h1mutau_dPhi_cut000", "#it{#Delta#phi}_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("h1mutau_dR_cut000", "#DeltaR_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("h1mutau_mass_cut000", "M_{#mu,#tau} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=mutaumassbins)
+s.addHistogram("h1mutau_dR_cut000", "#DeltaR_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[0,8])
+s.addHistogram("h1mutau_mass_cut000", "M_{#mu,#tau} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=mutaumassbins, blind=[9,99])
 
 s.addHistogram("h1mutau_dEta_cut0000", "#it{#Delta#eta}_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("h1mutau_dPhi_cut0000", "#it{#Delta#phi}_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("h1mutau_dR_cut0000", "#DeltaR_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("h1mutau_mass_cut0000", "M_{#mu,#tau} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=mutaumassbins)
+s.addHistogram("h1mutau_dR_cut0000", "#DeltaR_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[0,8])
+s.addHistogram("h1mutau_mass_cut0000", "M_{#mu,#tau} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=mutaumassbins, blind=[9,99])
 
 s.addHistogram("hmutau_dEta_cut00000", "#it{#Delta#eta}_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("hmutau_dPhi_cut00000", "#it{#Delta#phi}_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hmutau_dR_cut00000", "#DeltaR_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hmutau_dR_cut00000", "#DeltaR_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[0,8])
 s.addHistogram("hmutau_mass_cut00000", "M_{#mu,#tau} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=mutaumassbins)
 
 s.addHistogram("hmutau_dEta_cut000000", "#it{#Delta#eta}_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("hmutau_dPhi_cut000000", "#it{#Delta#phi}_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hmutau_dR_cut000000", "#DeltaR_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hmutau_dR_cut000000", "#DeltaR_{#mu,#tau}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[0,8])
 s.addHistogram("hmutau_mass_cut000000", "M_{#mu,#tau} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, binlist=mutaumassbins)
 
 # MET
@@ -297,9 +297,9 @@ s.addHistogram("hmetphi_cut000000", "MET #phi", "Entries", drawmode=stackhists.S
 
 # Top mass reconstruction ( W hadronic )
 s.addHistogram("hchi2_cut000000", "#chi^{2} score", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hchi2_lfvTop_mass_cut000000", "LFV Top mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hchi2_SMTop_mass_cut000000", "SM Top mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
-s.addHistogram("hchi2_SMW_mass_cut000000", "SM W mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
+s.addHistogram("hchi2_lfvTop_mass_cut000000", "LFV Top mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[0,13])
+s.addHistogram("hchi2_SMTop_mass_cut000000", "SM Top mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[0,11])
+s.addHistogram("hchi2_SMW_mass_cut000000", "SM W mass from #chi^{2} (GeV)", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1, blind=[0,10])
 s.addHistogram("hchi2_wqq_dEta_cut000000", "#it{#Delta#eta}_{wqq} from #chi^{2}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("hchi2_wqq_dPhi_cut000000", "#it{#Delta#phi}_{wqq} from #chi^{2}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)
 s.addHistogram("hchi2_wqq_dR_cut000000", "#DeltaR_{wqq}", "Entries", drawmode=stackhists.STACKED, drawoption="hist", isLogy=logstyle, ymin=0.1)

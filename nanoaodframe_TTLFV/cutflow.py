@@ -3,6 +3,7 @@ import os
 import csv
 import numpy as np
 import sys
+import math
 
 path = sys.argv[1]
 pname = path.replace("/","")
@@ -137,19 +138,19 @@ def run(run):
         resflist = [1.0, 1.0, 1.0, 1.0, 1.0, rescale, rescale]
         data.Close() # rootfile closed
 
-        nevts_staterr=np.sqrt(np.array(nevts_entry)).tolist()
+        nevts_squarestaterr=nevts_entry
         if not "Run" in rfile:
             rfilename = rfile.split('.')[0]
             dictname = rfilename.split('_'+run)[0]
             norm_nevts = [ Xsec_dict[dictname] * (10**3) * lumi * i / nevts_integral[0] for i in nevts_integral ]
-            norm_staterr = [ Xsec_dict[dictname] * (10**3) * lumi * i / nevts_integral[0] for i in nevts_staterr ]
+            norm_squarestaterr = [ math.pow(Xsec_dict[dictname] * (10**3) * lumi / nevts_integral[0], 2) * i for i in nevts_squarestaterr ]
             norm_nevts = np.multiply(norm_nevts, resflist).tolist()
         else:
             norm_nevts = nevts_integral
-            norm_staterr = nevts_staterr
+            norm_squarestaterr = nevts_squarestaterr
         tmp_proc = []
         tmp_proc.append(norm_nevts)
-        tmp_proc.append(norm_staterr)
+        tmp_proc.append(norm_squarestaterr)
         
         if "ST_LFV_TC" in rname:
             if "Scalar" in rname:
@@ -205,7 +206,7 @@ def run(run):
     totalMC = np.add(np.add(np.add(np.add(np.add(np.add(np.add(np.add(ttdi,ttsemi),tthad),DY),ST),TTX),VV),WJets),QCD).tolist()
     #totalMC = np.add(np.add(np.add(np.add(np.add(np.add(np.add(ttdi,ttsemi),tthad),DY),ST),TTX),VV),WJets)
     dataMC = np.divide(DATA[0],totalMC[0]).tolist()
-    dataMC_error = np.multiply(dataMC,np.divide(totalMC[1],totalMC[0])).tolist()
+    dataMC_error = np.divide(np.sqrt(totalMC[1]),DATA[0]).tolist()
     dataMC = np.append(dataMC,dataMC_error).reshape(2,steps+1).tolist()
     snb = [0 for _ in range(len(LFV))]
     acc = [0 for _ in range(len(LFV))]
@@ -267,7 +268,7 @@ def formatCutflow(cutflow, nsig, nbkg):
         l=[]
         for i in range(len(p[0][1:])):
             j = p[0][i+1]
-            k = p[1][i+1]
+            k = math.sqrt(p[1][i+1])
             if(len(cut1)<nmc):
                 l.append( '{:,.3g}'.format(j) if j < 100 else '{:,.0f}'.format(j) )
                 l.append( '{:,.3f}'.format(k) if k < 1 else '{:,.3g}'.format(k) if k<100 else '{:,.0f}'.format(k) )
@@ -280,6 +281,7 @@ def formatCutflow(cutflow, nsig, nbkg):
         cut1.append(l)
 
     cut2=[ '{:,.3g}'.format(j) if j < 100 else '{:,.0f}'.format(j) for j in cutflow[nmc][0][1:] ]
+
     for i in range(len(cutflow[nmc+1][0][1:])):
         j = cutflow[nmc+1][0][i+1]
         k = cutflow[nmc+1][1][i+1]
@@ -306,7 +308,7 @@ cutflows.append(run2cutflow)
 nmc = nsig + nbkg
 # Calculation data/mc ratio for Integrated Run II
 run2dataMC = np.divide(run2cutflow[nmc][0],run2cutflow[nmc-1][0]).tolist()
-run2dataMC_error = np.multiply(run2dataMC,np.divide(run2cutflow[nmc-1][1],run2cutflow[nmc-1][0])).tolist()
+run2dataMC_error = np.divide(np.sqrt(run2cutflow[nmc-1][1]),run2cutflow[nmc][0]).tolist()
 run2dataMC = np.append(run2dataMC,run2dataMC_error).reshape(2,steps+1).tolist()
 run2cutflow[nmc+1] = run2dataMC
 

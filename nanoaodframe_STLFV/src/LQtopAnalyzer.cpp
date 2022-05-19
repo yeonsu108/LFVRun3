@@ -24,7 +24,10 @@ void LQtopAnalyzer::defineCuts()
         addCuts("ncleantaupass == 1", "00");
         addCuts("mutau_mass > 150 && mutau_charge < 0", "000");
         addCuts("ncleanjetspass >= 3", "0000");
+        // Signal Region
         addCuts("ncleanbjetspass == 1", "00000");
+        // Control Region
+        //addCuts("ncleanbjetspass > 1", "00000");
 }
 /*
 template <typename T>
@@ -93,16 +96,8 @@ void LQtopAnalyzer::defineMoreVars()
 
         //addVar({"Jet_rawpt","Jet_pt*(1-Jet_rawFactor)"});
 
-        if(_syst=="puup"){
-            addVar({"evWeight_pglep","unitGenWeight * puWeight_plus*evWeight_leptonSF"});
-            addVar({"evWeight", "re_unitGenWeight * re_puWeight_plus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
-        }else if(_syst=="pudown"){
-            addVar({"evWeight_pglep","unitGenWeight * puWeight_minus * evWeight_leptonSF"});
-            addVar({"evWeight", "re_unitGenWeight * re_puWeight_minus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
-        }else{
-            addVar({"evWeight_pglep","pugenWeight*evWeight_leptonSF"});
-            addVar({"evWeight", "re_pugenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
-        }
+        addVar({"evWeight_pglep","re_pugenWeight * evWeight_leptonSF"});
+        addVar({"evWeight", "re_pugenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
 
         // define variables that you want to store
 	addVartoStore("run");
