@@ -1,6 +1,6 @@
 #!/bin/bash
 runs=( "run16APV" "run16" "run17" "run18" )
-label="jan01"
+label="pred_mar_02"
 cats=( "cat1" "cat2" )
 ops=( "c_s" "c_v" "c_t" "u_s" "u_v" "u_t" )
 for cat in "${cats[@]}"; do
@@ -11,6 +11,9 @@ for cat in "${cats[@]}"; do
             sed 's/rootfilehere/'${label}'\/'${rfile}'/' src/datacard_${run}.txt > ${target}
             sed -i 's/opt/'${op}'/g' ${target}
             # No DY events for cat1 run16
+            if [ ${run} == run16APV ]; then
+                sed -i 's/rate                    -1         -1         -1     -1     -1/rate                    -1         -1         -1     -1     0/' ${target}
+            fi
             if [ ${cat}${run} == cat1run16 ]; then
                 sed -i 's/rate                    -1         -1         -1     -1     -1/rate                    -1         -1         -1     -1     0/' ${target}
             fi
