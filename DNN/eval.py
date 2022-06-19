@@ -12,13 +12,10 @@ from utils.hists import *
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
 processed = "mar_02"
-label = "optimized"
-systs = ["norm",
-        "jesup","jesdown",
-        "puup","pudown",
-        "btagup_jes","btagdown_jes",
-        "btagup_hf","btagdown_hf",
-        "btagup_lf","btagdown_lf",
+label = "rerun"
+systs = ["norm","jesup","jesdown",
+        "puup","pudown","btagup_jes","btagdown_jes",
+        "btagup_hf","btagdown_hf","btagup_lf","btagdown_lf",
         ]
 #systs = ["jesup","jesdown",
 #systs = ["norm","jesup","jesdown","puup","pudown",]
@@ -80,8 +77,13 @@ for syst in systs:
                 infile = uproot.open(f_dir)
                 tree = infile["outputTree2"]
                 hnocut = infile["hcounter_nocut"]
-                hpglep = infile["hnevents_pglep_cut0000"]
-                htot = infile["hnevents_cut0000"]
+                hpglepweight = infile["hnevents_pglep_cut0000"]
+                hfullweight = infile["hnevents_cut0000"]
+                hfinal = None
+                if p == "ST":
+                    hfinal = infile["hnevents_cut00000"]
+                elif p == "TT":
+                    hfinal = infile["hnevents_cut000000"]
                 if len(tree) == 0:
                     print("No events : "+f)
                     continue
@@ -95,8 +97,11 @@ for syst in systs:
                 binedges = [0,0.1,0.3,0.7,0.9,1.0]
                 #dnnhist = np.histogram(pred,20,(0.0,1.0),weights=pd_weight,density=False)
                 dnnhist = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
+                dnnhist_entries = np.histogram(pred,bins=binedges,density=False)
                 with uproot.recreate(outf_dir) as outf:
                     outf["h_dnn_pred"] = dnnhist
+                    outf["h_dnn_entries"] = dnnhist_entries
                     outf["hcounter_nocut"] = hnocut
-                    outf["hnevents_pglep_cut0000"] = hpglep
-                    outf["hnevents_cut0000"] = htot
+                    outf["hnevents_pglep_cut0000"] = hpglepweight
+                    outf["hnevents_cut0000"] = hfullweight
+                    outf["hnevents_final"] = hfinal

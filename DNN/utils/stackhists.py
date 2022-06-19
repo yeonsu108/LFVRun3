@@ -78,19 +78,21 @@ class Stackhists:
             ahist = ctfile.Get("hcounter_nocut") # this should contain all entries before cuts
             prehist = ctfile.Get("hnevents_pglep_cut0000")
             posthist = ctfile.Get("hnevents_cut0000")
+            finalhist = ctfile.Get("hnevents_final")
             if ahist == None and (prehist == None or posthist == None):
                 print("counter histogram doesn\'t exist, will proceed with histintegaral=1. Be sure to put 1/histintegral in the scalefactor!")
                 self.sflist[id] *= xsec * self.integrlumi 
                 self.resflist[id] *= 1.0
             else:
-                histintegral = ahist.Integral()
+                nocutevents = ahist.Integral()
                 preevents = prehist.Integral()
                 postevents = posthist.Integral()
+                finalevents = finalhist.Integral()
                 resf = preevents / postevents if postevents != 0 else 1.0
                 # all histograms should be scaled by this factor
-                if "WJetsToLNu_inclHT100" in cfile:
-                    histintegral = histintegral*0.96
-                self.sflist[id] *= xsec * self.integrlumi / histintegral
+                if ("WJetsToLNu_inclHT100" in cfile) or ("WJetsToLNu_HT-0To100" in cfile):
+                    nocutevents = nocutevents*0.96
+                self.sflist[id] *= finalevents * xsec * self.integrlumi / nocutevents
                 self.resflist[id] *= resf
 
     def setupStyle(self, colorlist=None, patternlist=None, alpha=1.0):
@@ -187,10 +189,7 @@ class Stackhists:
                 print("quitting")
                 sys.exit(-1)
             else:
-                if "cut00000" in histname:
-                    ahist.Scale(self.sflist[ifile]*self.resflist[ifile])
-                else:
-                    ahist.Scale(self.sflist[ifile])
+                ahist.Scale(self.sflist[ifile]*self.resflist[ifile]/ahist.Integral())
 
                 # group by labels
                 label = self.mclabellist[ifile]

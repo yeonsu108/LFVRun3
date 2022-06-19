@@ -19,7 +19,7 @@ root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
 processed = "mar_02"
 syst = "norm"
-label = "optimized"
+label = "rerun"
 class_names = ["sig", "bkg"]
 
 # Calculating AUC (metric function)
