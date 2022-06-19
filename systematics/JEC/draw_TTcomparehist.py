@@ -8,21 +8,22 @@ gStyle.SetOptStat(0)
 gStyle.SetOptTitle(0)
 
 base_dir = os.getcwd().replace("systematics/JEC","") # LFVRun2 repo. base dir
-project = "dec_01"
+project = "mar_02"
 
 hists_path = "./plots/"+project+"_TT"
 if not os.path.isdir(hists_path):
     os.makedirs(hists_path)
 
-rpath_norm = base_dir+"nanoaodframe_TTLFV/plot_TTLFV_v2/"+project+"_norm/stackhist_137.65.root"
-rpath_up = base_dir+"nanoaodframe_TTLFV/plot_TTLFV_v2/"+project+"_jecup/stackhist_137.65.root"
-rpath_down = base_dir+"nanoaodframe_TTLFV/plot_TTLFV_v2/"+project+"_jecdown/stackhist_137.65.root"
+rpath_norm = base_dir+"nanoaodframe_TTLFV/plot_TTLFV/"+project+"_norm/noblind/stackhist_137.65.root"
+rpath_up = base_dir+"nanoaodframe_TTLFV/plot_TTLFV/"+project+"_jesup/noblind/stackhist_137.65.root"
+rpath_down = base_dir+"nanoaodframe_TTLFV/plot_TTLFV/"+project+"_jesdown/noblind/stackhist_137.65.root"
 
 f1 = TFile(rpath_norm)
 f2 = TFile(rpath_up)
 f3 = TFile(rpath_down)
 
-hists = {"hncleanjetspass":"Number of Jets",
+hists = {
+        #"hncleanjetspass":"Number of Jets",
         "hncleanbjetspass":"Number of b-tagged Jets",
         "hjet1pt"       :"p_{T} of Leading Jet (GeV)",
         "hjet2pt"       :"p_{T} of Sub-leading Jet (GeV)",
@@ -40,39 +41,41 @@ hists = {"hncleanjetspass":"Number of Jets",
         "hbjet1eta"     :"#eta of b-tagged Jet",
         "hmuon1pt"      :"p_{T} of Muon (GeV)",
         "hmuon1eta"     :"#eta of Muon",
-        "hmuon1mass"    :"Mass of Muon (GeV)",
         "hmuMETmt"      :"m_{T} (GeV)",
         "htau1pt"       :"p_{T} of Hadronic Tau (GeV)",
         "htau1eta"      :"#eta of Hadronic Tau",
-        "htau1mass"     :"Mass of Hadronic Tau (GeV)",
+        #"htau1mass"     :"Mass of Hadronic Tau (GeV)",
         "hmutau_dEta"   :"d#eta_{#mu#tau}",
         "hmutau_dPhi"   :"d#phi_{#mu#tau}",
         "hmutau_dR"     :"dR_{#mu#tau}",
         "hmutau_mass"   :"m_{#mu#tau} (GeV)",
         "hmetpt"        :"MET (GeV)",
         "hmetphi"       :"#phi_{MET}",
-        "hchi2"         :"#chi^{2}",
-        "hchi2_SMTop_mass"      :"SM Top mass (GeV)",
-        "hchi2_SMW_mass"        :"SM W mass (GeV)",
-        "hchi2_lfvTop_mass"     :"LFV Top mass (GeV)",
-        "hchi2_wqq_dEta"        :"#it{#Delta#eta}_{wqq}",
-        "hchi2_wqq_dPhi"        :"#it{#Delta#phi}_{wqq}",
-        "hchi2_wqq_dR"          :"#DeltaR_{wqq}",
-        "hchi2_lfvjmu_dEta"     :"#it{#Delta#eta}_{LFVj,#mu}",
-        "hchi2_lfvjmu_dPhi"     :"#it{#Delta#phi}_{LFVj,#mu}",
-        "hchi2_lfvjmu_dR"       :"#DeltaR_{LFVj,#mu}",
-        "hchi2_lfvjmu_mass"     :"m_{LFVj,#mu} (GeV)",
-        "hchi2_lfvjtau_dEta"    :"#it{#Delta#eta}_{LFVj,#tau}",
-        "hchi2_lfvjtau_dPhi"    :"#it{#Delta#phi}_{LFVj,#tau}",
-        "hchi2_lfvjtau_dR"      :"#DeltaR_{LFVj,#tau}",
-        "hchi2_lfvjtau_mass"    :"m_{LFVj,#tau} (GeV)",
-        "hchi2_lfvjmutau_dEta"  :"#it{#Delta#eta}_{LFVj,#mu#tau}",
-        "hchi2_lfvjmutau_dPhi"  :"#it{#Delta#phi}_{LFVj,#mu#tau}",
-        "hchi2_lfvjmutau_dR"    :"#DeltaR_{LFVj,#mu#tau}"}
+#        "hchi2"         :"#chi^{2}",
+#        "hchi2_SMTop_mass"      :"SM Top mass (GeV)",
+#        "hchi2_SMW_mass"        :"SM W mass (GeV)",
+#        "hchi2_lfvTop_mass"     :"LFV Top mass (GeV)",
+#        "hchi2_wqq_dEta"        :"#it{#Delta#eta}_{wqq}",
+#        "hchi2_wqq_dPhi"        :"#it{#Delta#phi}_{wqq}",
+#        "hchi2_wqq_dR"          :"#DeltaR_{wqq}",
+#        "hchi2_lfvjmu_dEta"     :"#it{#Delta#eta}_{LFVj,#mu}",
+#        "hchi2_lfvjmu_dPhi"     :"#it{#Delta#phi}_{LFVj,#mu}",
+#        "hchi2_lfvjmu_dR"       :"#DeltaR_{LFVj,#mu}",
+#        "hchi2_lfvjmu_mass"     :"m_{LFVj,#mu} (GeV)",
+#        "hchi2_lfvjtau_dEta"    :"#it{#Delta#eta}_{LFVj,#tau}",
+#        "hchi2_lfvjtau_dPhi"    :"#it{#Delta#phi}_{LFVj,#tau}",
+#        "hchi2_lfvjtau_dR"      :"#DeltaR_{LFVj,#tau}",
+#        "hchi2_lfvjtau_mass"    :"m_{LFVj,#tau} (GeV)",
+#        "hchi2_lfvjmutau_dEta"  :"#it{#Delta#eta}_{LFVj,#mu#tau}",
+#        "hchi2_lfvjmutau_dPhi"  :"#it{#Delta#phi}_{LFVj,#mu#tau}",
+#        "hchi2_lfvjmutau_dR"    :"#DeltaR_{LFVj,#mu#tau}"
+        }
 mcdata = ["mc","data"]
+mcdata = ["mc"]
 for d in mcdata:
     for key, value in hists.items():
         hname = "hstacked_"+d+"_"+key+"_cut000000"
+        print(hname)
         h1 = f1.Get(hname)
         h2 = f2.Get(hname)
         h3 = f3.Get(hname)
@@ -109,11 +112,11 @@ for d in mcdata:
         gStyle.SetLegendTextSize(0.04)
         leg.SetBorderSize(0)
         leg.AddEntry(h1,"Nominal")
-        leg.AddEntry(h2,"JECup")
-        leg.AddEntry(h3,"JECdown")
+        leg.AddEntry(h2,"JESup")
+        leg.AddEntry(h3,"JESdown")
         leg.Draw()
         
-        c1.Print(hists_path+"/hJEC_"+d+"_"+key+".pdf")
+        c1.Print(hists_path+"/hJES_"+d+"_"+key+".pdf")
         c1.Close()
 f1.Close()
 f2.Close()

@@ -125,7 +125,7 @@ void ana_genLFV(const char * pname){
     }else if(strcmp(pname,"LFV_TT_TToUMuTau_Tensor")==0){
         p="/data1/common/NanoAOD/v8_UL/mc/RunIISummer20UL16NanoAODv2/TT_LFV_TToUMuTau_Tensor_TuneCP5_13TeV-madgraph-pythia8/NANOAODSIM/106X_mcRun2_asymptotic_v15-v2/270000/*.root";
     }else if(strcmp(pname,"SM_ttbar")==0){
-        p="/data1/common/NanoAOD/v8_UL/mc/RunIISummer20UL18NanoAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v15_L1v1-v1/50000/*.root";
+        p="/data1/common/NanoAOD/v8_UL/mc/RunIISummer20UL18NanoAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v15_L1v1-v1/280000/*.root";
     }
     cout<<p<<endl;
     ROOT::RDataFrame df("Events",p);
@@ -158,17 +158,17 @@ void ana_genLFV(const char * pname){
     //auto disp = df_selevent.Display({"ngoodjet","ngoodgenjet","ngoodgenbjet","ngoodbjet","good_genjet_hadronFlavour","good_genjet_partonFlavour"},100);
     //auto disp = df_genvar.Display({"nJet","LFVorigins"},10);
     //disp->Print();
-    auto h_mupt = df_genvar.Histo1D({"h_mupt","h_mupt",40,0,1000},"mupt");
-    auto h_taupt = df_genvar.Histo1D({"h_taupt","h_taupt",40,0,1000},"taupt");
-    auto h_bpt = df_genvar.Histo1D({"h_bpt","h_bpt",40,0,1000},"bpt");
+    auto h_mupt = df_genvar.Histo1D({"h_mupt","h_mupt",30,0,300},"mupt");
+    auto h_taupt = df_genvar.Histo1D({"h_taupt","h_taupt",30,0,300},"taupt");
+    auto h_bpt = df_genvar.Histo1D({"h_bpt","h_bpt",30,0,300},"bpt");
     auto h_mueta = df_genvar.Histo1D({"h_mueta","h_mueta",20,-4.0,4.0},"mueta");
     auto h_taueta = df_genvar.Histo1D({"h_taueta","h_taueta",20,-4.0,4.0},"taueta");
     auto h_beta = df_genvar.Histo1D({"h_beta","h_beta",20,-4.0,4.0},"beta");
-    auto h_lepdR = df_genvar.Histo1D({"h_lepdR","h_mupt",15,0,6.0},"lepdR");
-    auto h_lepmass = df_genvar.Histo1D({"h_lepmass","h_lepmass",40,0,1600},"lepmass");
+    auto h_lepdR = df_genvar.Histo1D({"h_lepdR","h_mupt",12,0,6.0},"lepdR");
+    auto h_lepmass = df_genvar.Histo1D({"h_lepmass","h_lepmass",20,0,400},"lepmass");
     
     TString name(pname);
-    TFile f(Form("genLFV/%s.root",name.Data()), "recreate");
+    TFile f(Form("%s.root",name.Data()), "recreate");
     h_mupt->Write();
     h_taupt->Write();
     h_bpt->Write();

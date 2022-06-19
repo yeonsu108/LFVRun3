@@ -5,12 +5,13 @@ import sys
 projname = "mar_02"
 #projname = "test"
 label = "optimized"
+label = "rerun"
 lfvprocs = ["ST","TT"]
 #lfvprocs = ["TT"]
 hists = ["data_obs","hstacked_mc_h_dnn_pred",
         "LFV_STc_s","LFV_STc_v","LFV_STc_t","LFV_STu_s","LFV_STu_v","LFV_STu_t",
         "LFV_TTc_s","LFV_TTc_v","LFV_TTc_t","LFV_TTu_s","LFV_TTu_v","LFV_TTu_t",
-        "TT","ST","Wjets","Others"]
+        "TT_di","TT_semi","ST","Wjets","Others"]
 
 systs = {"norm":"norm",
         "jesup":"jesUp","jesdown":"jesDown",
