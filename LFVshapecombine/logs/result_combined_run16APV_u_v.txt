@@ -1,14 +1,15 @@
+combine --run blind -M AsymptoticLimits workspace/combined/run16APV/workspace_u_v.root -n Combinedrun16APVu_v
  <<< Combine >>> 
 >>> random number generator seed is 123456
 Will use a-priori expected background instead of a-posteriori one.
 >>> method used is AsymptoticLimits
-SimNLL created with 2 channels, 0 generic constraints, 6 fast gaussian constraints, 0 fast poisson constraints, 0 fast group constraints, 
+SimNLL created with 2 channels, 0 generic constraints, 7 fast gaussian constraints, 0 fast poisson constraints, 0 fast group constraints, 
 
  -- AsymptoticLimits ( CLs ) --
-Expected  2.5%: r < 0.0053
-Expected 16.0%: r < 0.0075
-Expected 50.0%: r < 0.0112
-Expected 84.0%: r < 0.0180
-Expected 97.5%: r < 0.0268
+Expected  2.5%: r < 0.0062
+Expected 16.0%: r < 0.0084
+Expected 50.0%: r < 0.0132
+Expected 84.0%: r < 0.0195
+Expected 97.5%: r < 0.0288
 
 Done in 0.00 min (cpu), 0.00 min (real)

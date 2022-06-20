@@ -1,14 +1,15 @@
+combine --run blind -M AsymptoticLimits workspace/cat1/run16/workspace_u_v.root -n run16cat1u_v
  <<< Combine >>> 
 >>> random number generator seed is 123456
 Will use a-priori expected background instead of a-posteriori one.
 >>> method used is AsymptoticLimits
-SimNLL created with 1 channels, 0 generic constraints, 6 fast gaussian constraints, 0 fast poisson constraints, 0 fast group constraints, 
+SimNLL created with 1 channels, 0 generic constraints, 7 fast gaussian constraints, 0 fast poisson constraints, 0 fast group constraints, 
 
  -- AsymptoticLimits ( CLs ) --
-Expected  2.5%: r < 0.0062
-Expected 16.0%: r < 0.0084
-Expected 50.0%: r < 0.0132
-Expected 84.0%: r < 0.0203
-Expected 97.5%: r < 0.0305
+Expected  2.5%: r < 0.0057
+Expected 16.0%: r < 0.0086
+Expected 50.0%: r < 0.0122
+Expected 84.0%: r < 0.0196
+Expected 97.5%: r < 0.0292
 
 Done in 0.00 min (cpu), 0.00 min (real)
