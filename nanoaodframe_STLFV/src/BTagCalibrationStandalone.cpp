@@ -81,9 +81,9 @@ std::cerr << "ERROR in BTagCalibration: "
 throw std::exception();
   }
   unsigned jf = stoi(vec[3]);
-  if (jf > 2) {
+  if (jf > 5) {
 std::cerr << "ERROR in BTagCalibration: "
-          << "Invalid csv line; JetFlavor > 2: "
+          << "Invalid csv line; JetFlavor > 5: "
           << csvLine;
 throw std::exception();
   }

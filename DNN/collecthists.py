@@ -2,20 +2,35 @@ import ROOT
 import os
 import sys
 
-projname = "dec_02"
-dnnname = "30nodes_2layers_s1b1"
-label = "jan01"
+projname = "mar_02"
+#projname = "test"
+label = "optimized"
+label = "rerun"
 lfvprocs = ["ST","TT"]
+#lfvprocs = ["TT"]
 hists = ["data_obs","hstacked_mc_h_dnn_pred",
         "LFV_STc_s","LFV_STc_v","LFV_STc_t","LFV_STu_s","LFV_STu_v","LFV_STu_t",
         "LFV_TTc_s","LFV_TTc_v","LFV_TTc_t","LFV_TTu_s","LFV_TTu_v","LFV_TTu_t",
-        "TT","ST","DY","Wjets","Oth"]
+        "TT_di","TT_semi","ST","Wjets","Others"]
 
-systs = {"norm":"norm","jecup":"jecUp","jecdown":"jecDown","puup":"puUp","pudown":"puDown","btagup_jes":"btag_jesUp","btagdown_jes":"btag_jesDown"}
+systs = {"norm":"norm",
+        "jesup":"jesUp","jesdown":"jesDown",
+        "puup":"puUp","pudown":"puDown",
+        "btagup_jes":"btag_jesUp","btagdown_jes":"btag_jesDown",
+        "btagup_hf":"btag_hfUp","btagdown_hf":"btag_hfDown",
+        "btagup_lf":"btag_lfUp","btagdown_lf":"btag_lfDown",
+        }
+
+#systs = {"norm":"norm",
+#        "jesup":"jesUp","jesdown":"jesDown",
+#        "puup":"puUp","pudown":"puDown",
+#        }
 runs = ["run16APV","run16","run17","run18","run2"]
-outfolder = "./pred_"+label
+outfolder = "./pred_"+projname
+
 if not os.path.isdir(outfolder):
     os.makedirs(outfolder)
+
 for run in runs:
     rname = ""
     if run == "run16APV":
@@ -31,14 +46,12 @@ for run in runs:
     for lfvproc in lfvprocs:
         outfname = ""
         if lfvproc == "ST":
-            dnnname = "20nodes_2layers_s1b1"
-            outfname = "pred_"+label+"/pred_"+run+"_cat1.root"
+            outfname = outfolder+"/pred_"+run+"_cat1.root"
         elif lfvproc == "TT":
-            dnnname = "15nodes_2layers_s1b1"
-            outfname = "pred_"+label+"/pred_"+run+"_cat2.root"
+            outfname = outfolder+"/pred_"+run+"_cat2.root"
         outf = ROOT.TFile(outfname,"RECREATE")
         for key, value in systs.items():
-            infilename = label + "/"+lfvproc+projname+"_"+key+"_"+dnnname+"_"+label+"/pred_hists/"+rname
+            infilename = label+"_"+lfvproc+projname+"/"+key+"/pred_hists/noblind/"+rname
             inf = ROOT.TFile(infilename)
             outf.cd()
             for h in hists:

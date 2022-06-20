@@ -24,7 +24,10 @@ void LQtopAnalyzer::defineCuts()
         addCuts("ncleantaupass == 1", "00");
         addCuts("mutau_mass <= 150 && mutau_charge < 0", "000");
         addCuts("ncleanjetspass >= 4", "0000");
+        // Signal Region
         addCuts("ncleanbjetspass == 1", "00000");
+        // Control Region
+        //addCuts("ncleanbjetspass > 1", "00000");
         addCuts("Sys_METpt > 10 && Sys_METpt < 70","000000");
 }
 /*
@@ -116,22 +119,15 @@ void LQtopAnalyzer::defineMoreVars()
         addVar({"chi2_lfvjmutau_mass","top_reco_prod[14]",""});
         //addVar({"Jet_rawpt","Jet_pt*(1-Jet_rawFactor)"});
 
-        if(_syst=="puup"){
-            addVar({"evWeight_pglep","unitGenWeight * puWeight_plus*evWeight_leptonSF"});
-            addVar({"evWeight", "unitGenWeight * puWeight_plus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
-        }else if(_syst=="pudown"){
-            addVar({"evWeight_pglep","unitGenWeight * puWeight_minus * evWeight_leptonSF"});
-            addVar({"evWeight", "unitGenWeight * puWeight_minus * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
-        }else{
-            addVar({"evWeight_pglep","pugenWeight*evWeight_leptonSF"});
-            addVar({"evWeight", "pugenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
-        }
+        addVar({"evWeight_pglep","re_pugenWeight * evWeight_leptonSF"});
+        addVar({"evWeight", "re_pugenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
 
         // define variables that you want to store
 	addVartoStore("run");
 	addVartoStore("luminosityBlock");
 	addVartoStore("event");
 	addVartoStore("evWeight.*");
+        addVartoStore("re_.*");
         addVartoStore("nmuonpass");
 	addVartoStore("ncleanjetspass");
 	addVartoStore("ncleanbjetspass");
@@ -144,6 +140,7 @@ void LQtopAnalyzer::defineMoreVars()
         addVartoStore("Sel2_jet4.*");
         addVartoStore("Sel2_bjet1.*");
         addVartoStore("Sel_tau1.*");
+        addVartoStore("mutau.*");
         addVartoStore("chi2.*");
         addVartoStore("btagWeight_DeepFlavBrecalc.*");
 }
@@ -162,8 +159,7 @@ void LQtopAnalyzer::bookHists()
 	//add1DHist( {"hnvtx_raw", "Number of Primary Vertex", 200, 0.0, 200.0}, "PV_npvsGood", "one", "");
 	//add1DHist( {"hnvtx", "Number of Primary Vertex", 200, 0.0, 200.0}, "PV_npvsGood", "evWeight", "");
 
-        //=================== PUGEN * Lepton SF ===================
-        
+        //=================== PUGEN * Lepton SF =================== 
 	add1DHist( {"h1metpt", "MET pt", 20, 0, 400}, "Sys_METpt", "evWeight_pglep", "0");
 	add1DHist( {"h1sumet", "Sum ET", 50, 0.0, 5000.0}, "MET_sumEt", "evWeight_pglep", "0");
 	add1DHist( {"h1metphi", "MET phi", 20, -4.0, 4.0}, "Sys_METphi", "evWeight_pglep", "0");

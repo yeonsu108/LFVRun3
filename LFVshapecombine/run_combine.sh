@@ -12,13 +12,14 @@ for run in "${runs[@]}"; do
         fi
         for op in "${ops[@]}"; do
             workroot=workspace/${cat}/${run}/workspace_${op}.root
-            echo combine --run blind -M AsymptoticLimits ${workroot} -m 800 -n ${run}${cat}${op}
-            if [ ${run}${cat}${op} == run18_cat1_u_t ]; then
-                combine --run blind -M AsymptoticLimits ${workroot} -m 800 -n ${run}${cat}${op} --rMax 0.001 > logs/result_${cat}_${run}_${op}.txt
+            if [ ${cat}${op} == cat1u_t ]; then
+                echo combine --run blind -M AsymptoticLimits ${workroot} -n ${run}${cat}${op} --rMin 0.001 --rMax 0.1 > logs/result_${cat}_${run}_${op}.txt
+                combine --run blind -M AsymptoticLimits ${workroot} -n ${run}${cat}${op} --rMin 0.001 --rMax 0.1 >> logs/result_${cat}_${run}_${op}.txt
             else
-                combine --run blind -M AsymptoticLimits ${workroot} -m 800 -n ${run}${cat}${op} > logs/result_${cat}_${run}_${op}.txt
+                echo combine --run blind -M AsymptoticLimits ${workroot} -n ${run}${cat}${op} > logs/result_${cat}_${run}_${op}.txt
+                combine --run blind -M AsymptoticLimits ${workroot} -n ${run}${cat}${op} >> logs/result_${cat}_${run}_${op}.txt
             fi
-            mv higgsCombine${run}${cat}${op}.AsymptoticLimits.mH800.root results/${cat}/${run}
+            mv higgsCombine${run}${cat}${op}.AsymptoticLimits.mH120.root results/${cat}/${run}
         done
     done
 done
@@ -29,15 +30,28 @@ for run in "${runs[@]}"; do
     fi
     for op in "${ops[@]}"; do
         workroot=workspace/combined/${run}/workspace_${op}.root
-        echo combine --run blind -M AsymptoticLimits ${workroot} -m 800 -n Combined${run}${op}
-        combine --run blind -M AsymptoticLimits ${workroot} -m 800 -n Combined${run}${op} > logs/result_combined_${run}_${op}.txt
-        mv higgsCombineCombined${run}${op}.AsymptoticLimits.mH800.root results/combined/${run}
+        if [ ${run}${op} == run18u_t ]; then
+            echo combine --run blind -M AsymptoticLimits ${workroot} -n Combined${run}${op} --rMax 0.1 --rMin 0.00001 > logs/result_combined_${run}_${op}.txt
+            combine --run blind -M AsymptoticLimits ${workroot} -n Combined${run}${op} --rMax 0.1 --rMin 0.00001 >> logs/result_combined_${run}_${op}.txt
+        elif [ ${op} == u_t ]; then
+            echo combine --run blind -M AsymptoticLimits ${workroot} -n Combined${run}${op} --rMax 0.01 --rMin 0.001 > logs/result_combined_${run}_${op}.txt
+            combine --run blind -M AsymptoticLimits ${workroot} -n Combined${run}${op} --rMax 0.01 --rMin 0.001 >> logs/result_combined_${run}_${op}.txt
+        else
+            echo combine --run blind -M AsymptoticLimits ${workroot} -n Combined${run}${op} > logs/result_combined_${run}_${op}.txt
+            combine --run blind -M AsymptoticLimits ${workroot} -n Combined${run}${op} >> logs/result_combined_${run}_${op}.txt
+        fi
+        mv higgsCombineCombined${run}${op}.AsymptoticLimits.mH120.root results/combined/${run}
     done
 done
 
 for op in "${ops[@]}"; do
     workroot=workspace/combined/workspace_${op}.root
-    echo combine --run blind -M AsymptoticLimits ${workroot} -m 800 -n Combinedrun2${op}
-    combine --run blind -M AsymptoticLimits ${workroot} -m 800 -n Combinedrun2${op} > logs/result_combined_run2_${op}.txt
-    mv higgsCombineCombinedrun2${op}.AsymptoticLimits.mH800.root results/combined/
+    if [ ${op} == u_t ]; then
+        echo combine --run blind -M AsymptoticLimits ${workroot} -n Combinedrun2${op} --rMin 0.0002 > logs/result_combined_run2_${op}.txt
+        combine --run blind -M AsymptoticLimits ${workroot} -n Combinedrun2${op} --rMin 0.0002 >> logs/result_combined_run2_${op}.txt
+    else
+        echo combine --run blind -M AsymptoticLimits ${workroot} -n Combinedrun2${op} > logs/result_combined_run2_${op}.txt
+        combine --run blind -M AsymptoticLimits ${workroot} -n Combinedrun2${op} >> logs/result_combined_run2_${op}.txt
+    fi
+    mv higgsCombineCombinedrun2${op}.AsymptoticLimits.mH120.root results/combined/
 done

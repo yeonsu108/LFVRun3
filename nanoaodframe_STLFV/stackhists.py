@@ -42,6 +42,7 @@ class Stackhists:
         self.ymin = [] # histogram minimum values
         self.ymax = [] # histogram maximum values
         self.binlists = []
+        self.blinds = []
         self.tdrStyle=tdrstyle.setTDRStyle()
         ROOT.gROOT.SetStyle("tdrStyle")
         pass
@@ -88,7 +89,7 @@ class Stackhists:
                 postevents = posthist.Integral()
                 resf = preevents / postevents if postevents != 0 else 1.0
                 # all histograms should be scaled by this factor
-                if "WJetsToLNu_inclHT100" in cfile:
+                if ("WJetsToLNu_inclHT100" in cfile) or ("WJetsToLNu_HT-0To100" in cfile):
                     histintegral = histintegral*0.96
                 self.sflist[id] *= xsec * self.integrlumi / histintegral
                 self.resflist[id] *= resf
@@ -139,7 +140,7 @@ class Stackhists:
             #sys.exit(-1)
         pass
 
-    def addHistogram(self, histname, xtitle="", ytitle="", drawmode=STACKED, drawoption="", isLogy=False, ymin=-1111, ymax=-1111, binlist=[]):
+    def addHistogram(self, histname, xtitle="", ytitle="", drawmode=STACKED, drawoption="", isLogy=False, ymin=-1111, ymax=-1111, binlist=[], blind=[]):
         self.histogramlist.append(histname)
         self.xtitles.append(xtitle)
         self.ytitles.append(ytitle)
@@ -149,6 +150,7 @@ class Stackhists:
         self.ymin.append(ymin)
         self.ymax.append(ymax)
         self.binlists.append(binlist)
+        self.blinds.append(blind)
 
     def MakeSoverB(self, BG_hist_stack, S_hist, label, S_peak_bin, below=None):
         nbins = BG_hist_stack.GetNbinsX()
@@ -201,10 +203,10 @@ class Stackhists:
 
     def draw(self, subplot):
         self.prepare()
-        for histname, xtitle, ytitle, mode, drawoption, isLogy, ymin, ymax, binlist in zip(self.histogramlist, self.xtitles, self.ytitles, self.drawmodes, self.drawoptions, self.isLogy, self.ymin, self.ymax, self.binlists):
-            self.createStacks(histname, xtitle, ytitle, mode, drawoption, isLogy, ymin, ymax, binlist, subplot)
+        for histname, xtitle, ytitle, mode, drawoption, isLogy, ymin, ymax, binlist, blind in zip(self.histogramlist, self.xtitles, self.ytitles, self.drawmodes, self.drawoptions, self.isLogy, self.ymin, self.ymax, self.binlists, self.blinds):
+            self.createStacks(histname, xtitle, ytitle, mode, drawoption, isLogy, ymin, ymax, binlist, blind, subplot)
 
-    def createStacks(self, histname, xtitle, ytitle, mode, option="", isLogy=False, ymin=-1111, ymax=-1111, binlist=[], subplot='R'):
+    def createStacks(self, histname, xtitle, ytitle, mode, option="", isLogy=False, ymin=-1111, ymax=-1111, binlist=[], blind=[], subplot='R'):
         # now stack
         
         hs = ROOT.THStack()
@@ -227,7 +229,7 @@ class Stackhists:
             xbins = array.array('d', binlist)
             nrebins=len(binlist)-1
 
-#        if "cut000" in histname: print("Rescaled histogram : "+histname)
+#        if "cut00000" in histname: print("Rescaled histogram : "+histname)
         for ifile in range(len(self.mcfilelist)):
             #afile = ROOT.TFile(self.mcfilelist[ifile])
             #ahist = afile.Get(histname)
@@ -240,7 +242,7 @@ class Stackhists:
                 print("quitting")
                 sys.exit(-1)
             else:
-                if "cut000" in histname:
+                if ("cut00000" in histname) or ("bjet" in histname):
                     ahist.Scale(self.sflist[ifile]*self.resflist[ifile])
                 else:
                     ahist.Scale(self.sflist[ifile])
@@ -317,7 +319,13 @@ class Stackhists:
             if mode == NORMALIZED:
                 normscale = finaldatahist.Integral()
                 finaldatahist.Scale(1.0/normscale)
-        
+            nmaxbin = finaldatahist.GetNbinsX()
+            if blind:
+                if nmaxbin < blind[1]:
+                    blind[1] = nmaxbin
+                for i in range(blind[0],blind[1]+1):
+                    finaldatahist.SetBinContent(i,0)
+                    finaldatahist.SetBinError(i,0)
             # Legend add entry
             tl.AddEntry(finaldatahist, "Data", "P")
         #inverse_labellist = reversed(labellist)
@@ -553,7 +561,7 @@ class Stackhists:
             path = "plot_snb_"+str(self.integrlumi)
             if not os.path.isdir(path):
                 os.mkdir(path)
-        outfile = ROOT.TFile("stackhist_"+str(self.integrlumi)+".root","RECREATE")
+        outfile = ROOT.TFile("stackhist_"+str(self.integrlumi)+".root","UPDATE")
         outfile.cd()
         if not self.datafilelist:
             if(isLogy):

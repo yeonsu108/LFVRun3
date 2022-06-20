@@ -11,8 +11,8 @@ for run in "${runs[@]}"; do
         for op in "${ops[@]}"; do
             datacard=datacards/datacard_${cat}_${run}_${op}.txt
             output=workspace/${cat}/${run}/workspace_${op}.root
-            echo text2workspace.py ${datacard} -m 800 -o ${output}
-            text2workspace.py ${datacard} -m 800 -o ${output}
+            echo text2workspace.py ${datacard} -o ${output}
+            text2workspace.py ${datacard} -o ${output}
         done
     done
 done
@@ -23,14 +23,14 @@ for run in "${runs[@]}"; do
     for op in "${ops[@]}"; do
         datacard=datacards/combined_${run}_datacard_${op}.txt
         output=workspace/combined/${run}/workspace_${op}.root
-        echo text2workspace.py ${datacard} -m 800 -o ${output}
-        text2workspace.py ${datacard} -m 800 -o ${output}
+        echo text2workspace.py ${datacard} -o ${output}
+        text2workspace.py ${datacard} -o ${output}
     done
 done
 
 for op in "${ops[@]}"; do
     datacard=datacards/combined_run2_datacard_${op}.txt
     output=workspace/combined/workspace_${op}.root
-    echo text2workspace.py ${datacard} -m 800 -o ${output}
-    text2workspace.py ${datacard} -m 800 -o ${output}
+    echo text2workspace.py ${datacard} -o ${output}
+    text2workspace.py ${datacard} -o ${output}
 done
