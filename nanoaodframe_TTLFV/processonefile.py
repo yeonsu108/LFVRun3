@@ -15,7 +15,7 @@ import ROOT
 if __name__=='__main__':
     from optparse import OptionParser
     parser = OptionParser(usage="%prog [options] inputDir outputDir")
-    parser.add_option("-Y", "--year",  dest="json", type="string", default="", help="Select 2016, 2017, 2018 year of runs")
+    parser.add_option("-Y", "--year",  dest="year", type="string", default="", help="Select 2016, 2017, 2018 year of runs")
     parser.add_option("-S", "--syst",  dest="syst", type="string", default="", help="Systematic sources")
     parser.add_option("-J", "--json",  dest="json", type="string", default="", help="Select events using this JSON file, meaningful only for data")
     parser.add_option("--saveallbranches", dest="saveallbranches", action="store_true", default=False, help="Save all branches. False by default")
