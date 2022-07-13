@@ -9,19 +9,20 @@ if [ -z "$1" ] || [ -z "$2" ];then
 else
     pname=$1
     sys=$2
+    original_pwd=$(pwd)
     cd ${pname}
+    
+    # Remove Log files.
     rm -rf *.out
-    for i in 18 16post 16pre 17
-    do
+    for i in 18 16post 16pre 17; do
         echo Setup ${i} samples
         mkdir -p ${i}/tmp
-        mv *${i}*${sys}*.root ${i}
+        mv *${i}_${sys}.root ${i}
         cd ${i}
         mv Run* tmp
         rm -rf tmp/Run${i}_${sys}.root
         hadd Run${i}_${sys}.root tmp/Run${i}*_${sys}*.root
-        if [ $i = 17 ] || [ $i == 18 ]
-        then
+        if [ $i = 17 ] || [ $i == 18 ]; then
             mv TTToSemi* tmp
             rm -rf tmp/TTToSemiLeptonic_${i}_${sys}.root
             hadd TTToSemiLeptonic_${i}_${sys}.root tmp/TTToSemiLeptonic_${i}_${sys}_*.root
@@ -36,5 +37,5 @@ else
     rm -rf TTTo2L2Nu_${sys}.root TTToSemiLeptonic_${sys}.root
     hadd TTTo2L2Nu_${sys}.root 1*/TTTo2L2Nu*.root
     hadd TTToSemiLeptonic_${sys}.root 1*/TTToSemiLeptonic*.root
-    cd ../
+    cd ${original_pwd}
 fi

@@ -5,8 +5,8 @@ from ROOT import *
 import numpy as np
 
 base_path = './'
-label = 'mar_02'
-nom_path = base_path + label + '_norm'
+label = 'jul_22_01'
+nom_path = base_path + label + '/nom/'
 if not os.path.exists(nom_path):
     print("Folder '{}' does not exists.".format(nom_path))
 else:
@@ -17,13 +17,13 @@ runs = ['16pre', '16post', '17', '18']
 #runs = ['18']
 
 # Set output folders
-out_path = base_path + label + '_postprocess'
+out_path = base_path + label + '/postprocess'
 if not os.path.exists(out_path):
     for run in runs:
         os.makedirs(out_path + '/' + run)
 
 # Systematic Sources => All systematics in one file.
-systs = ['norm','jesup','jesdown','puup','pudown',
+systs = ['nom','jesup','jesdown','puup','pudown',
 'btagup_jes','btagdown_jes',
 'btagup_hf','btagdown_hf','btagup_lf','btagdown_lf',
 'btagup_hfstats1','btagdown_hfstats1',
@@ -32,6 +32,7 @@ systs = ['norm','jesup','jesdown','puup','pudown',
 'btagup_lfstats2','btagdown_lfstats2',
 'btagup_cferr1','btagdown_cferr1',
 'btagup_cferr2','btagdown_cferr2',]
+systs = ['nom']
 
 # Produce dictionary for file lists.
 file_list = {}
@@ -40,12 +41,12 @@ for run in runs:
 
 def collect_systhists(outfile,fname,hlists,syst):
     fname = fname.replace(fname.split('_')[-1],'')
-    syst_path = base_path+label+'_'+syst
+    syst_path = base_path+label+'/'+syst
     tmpf = TFile.Open(os.path.join(syst_path,run,fname+syst+'.root'), 'READ')
     for histname in hlists:
         tmpf.cd()
         tmphist = tmpf.Get(histname)
-        if (syst == "norm") or ("Run" in fname):
+        if (syst == "nom") or ("Run" in fname):
             newtmphist = tmphist
         else:
             newsyst = syst
@@ -76,12 +77,14 @@ for run in runs:
         # Get ratio for rescaling with b-tagSF.
         ratio = get_bSFratio(infile)
         outfname = fname.replace("_"+run+"_"+fname.split("_")[-1],"")
+        if "Run" in fname:
+            outfname = fname.replace("_"+fname.split("_")[-1],"")
         print("Saving histograms at {}/{}/hist_{}.root".format(out_path,run,outfname))
         # Collecting Histograms in outfile.
         outfile = TFile.Open(os.path.join(out_path,run,"hist_"+outfname+'.root'), 'RECREATE')
         # Looping over all systematics.
         for syst in systs:
-            if ("Run" in fname) and (syst != "norm"): continue  # Skip DATA
+            if ("Run" in fname) and (syst != "nom"): continue  # Skip DATA
             collect_systhists(outfile,fname,hlists,syst)
         outhlists = [ h.GetName() for h in outfile.GetListOfKeys() if 'cut' in h.GetName() ]
         for h in outhlists:
@@ -94,6 +97,7 @@ for run in runs:
             if ('cut00000' in h) or ('hncleanbjetspass' in h):
                 outfile.cd()
                 newhist = outfile.Get(h)
+                ratio = 1
                 newhist.Scale(1/ratio)
                 newhist.Write()
         infile.Close()
