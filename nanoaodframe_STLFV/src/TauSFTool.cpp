@@ -297,7 +297,7 @@ TauFESTool::TauFESTool(const std::string&year, const std::string& id): ID(id){
     }
 
     TFile* file = ensureTFile(Form("%s/TauFES_eta-dm_%s_%s.root",datapath.data(),ID.data(),year_fes.data()), verbose);
-    graph = file->Get("fes");
+    graph = (TGraphAsymmErrors*)file->Get("fes");
     DMs = {0,1};
     regions = {"barrel","endcap"};
     int i = 0;

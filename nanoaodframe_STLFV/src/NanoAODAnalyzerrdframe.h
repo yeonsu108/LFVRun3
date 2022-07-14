@@ -82,6 +82,8 @@ private:
 	bool _jsonOK;
 	std::string _outfilename;
         std::string _year;
+        bool _isSTLFVcat = false;
+        bool _isTTLFVcat = false;
         bool _isRun16pre = false;
         bool _isRun16post = false;
         bool _isRun16 = false;
@@ -90,6 +92,9 @@ private:
         std::string _syst;
 	std::string _jsonfname;
 	std::string _globaltag;
+        std::string tauid_vsjet = "";
+        std::string tauid_vse = "";
+        std::string tauid_vsmu = "";
 	TFile *_inrootfile;
 	TFile *_outrootfile;
 	std::vector<std::string> _outrootfilenames;

@@ -51,6 +51,17 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
         }
         _isRun16 = _isRun16pre || _isRun16post;
 
+
+        // ST LFV and TT LFV switch
+        if(_year.find("stlfv") != std::string::npos){
+            _isSTLFVcat = true;
+            cout << "ST LFV region" << endl;
+        }
+        if(_year.find("ttlfv") != std::string::npos){
+            _isTTLFVcat = true;
+            cout << "TT LFV region" << endl;
+        }
+
 	// Data/mc switch
 	if(atree->GetBranch("genWeight") == nullptr){
 		_isData = true;
@@ -210,30 +221,37 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                 }
                 // Loading Tau Scale Factor
                 cout<<"Loading Tau SF"<<endl;
+                std::string tauid_vse = "VLoose";
+                std::string tauid_vsmu = "Tight";
+                if(_isSTLFVcat){
+                    std::string tauid_vsjet = "VTight";
+                }else if(_isTTLFVcat){
+                    std::string tauid_vsjet = "Medium";
+                }
                 if(_isRun16pre){
-                        _tauidSFjet = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSjet","VTight");
-                        _tauidSFele = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSe","VLoose");
-                        _tauidSFmu = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSmu","Tight");
-                        _testool = new TauESTool("UL2016_preVFP","DeepTau2017v2p1VSjet");
-                        _festool = new TauFESTool("UL2016_preVFP");
+                    _tauidSFjet = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSjet",tauid_vsjet);
+                    _tauidSFele = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSe",tauid_vse);
+                    _tauidSFmu = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSmu",tauid_vsmu);
+                    _testool = new TauESTool("UL2016_preVFP","DeepTau2017v2p1VSjet");
+                    _festool = new TauFESTool("UL2016_preVFP");
                 }else if(_isRun16post){
-                        _tauidSFjet = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSjet","VTight");
-                        _tauidSFele = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSe","VLoose");
-                        _tauidSFmu = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSmu","Tight");
-                        _testool = new TauESTool("UL2016_postVFP","DeepTau2017v2p1VSjet");
-                        _festool = new TauFESTool("UL2016_postVFP");
+                    _tauidSFjet = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSjet",tauid_vsjet);
+                    _tauidSFele = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSe",tauid_vse);
+                    _tauidSFmu = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSmu",tauid_vsmu);
+                    _testool = new TauESTool("UL2016_postVFP","DeepTau2017v2p1VSjet");
+                    _festool = new TauFESTool("UL2016_postVFP");
                 }else if(_isRun17){
-                        _tauidSFjet = new TauIDSFTool("UL2017","DeepTau2017v2p1VSjet","VTight");
-                        _tauidSFele = new TauIDSFTool("UL2017","DeepTau2017v2p1VSe","VLoose");
-                        _tauidSFmu = new TauIDSFTool("UL2017","DeepTau2017v2p1VSmu","Tight");
-                        _testool = new TauESTool("UL2017","DeepTau2017v2p1VSjet");
-                        _festool = new TauFESTool("UL2017");
+                    _tauidSFjet = new TauIDSFTool("UL2017","DeepTau2017v2p1VSjet",tauid_vsjet);
+                    _tauidSFele = new TauIDSFTool("UL2017","DeepTau2017v2p1VSe",tauid_vse);
+                    _tauidSFmu = new TauIDSFTool("UL2017","DeepTau2017v2p1VSmu",tauid_vsmu);
+                    _testool = new TauESTool("UL2017","DeepTau2017v2p1VSjet");
+                    _festool = new TauFESTool("UL2017");
                 }else if(_isRun18){
-                        _tauidSFjet = new TauIDSFTool("UL2018","DeepTau2017v2p1VSjet","VTight");
-                        _tauidSFele = new TauIDSFTool("UL2018","DeepTau2017v2p1VSe","VLoose");
-                        _tauidSFmu = new TauIDSFTool("UL2018","DeepTau2017v2p1VSmu","Tight");
-                        _testool = new TauESTool("UL2018","DeepTau2017v2p1VSjet");
-                        _festool = new TauFESTool("UL2018");
+                    _tauidSFjet = new TauIDSFTool("UL2018","DeepTau2017v2p1VSjet",tauid_vsjet);
+                    _tauidSFele = new TauIDSFTool("UL2018","DeepTau2017v2p1VSe",tauid_vse);
+                    _tauidSFmu = new TauIDSFTool("UL2018","DeepTau2017v2p1VSmu",tauid_vsmu);
+                    _testool = new TauESTool("UL2018","DeepTau2017v2p1VSjet");
+                    _festool = new TauFESTool("UL2018");
                 }
             }
         }
@@ -288,7 +306,13 @@ void NanoAODAnalyzerrdframe::setupAnalysis()
 	// Event weight for data it's always one. For MC, it depends on the sign
 
 	_rlm = _rlm.Define("one", "1.0");
-        if(!_isSkim){
+        if(_isSkim){
+            if(_isData){
+                _rlm = _rlm.Define("unitGenWeight","one");
+            } else{
+                _rlm = _rlm.Define("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0");
+            }
+        } else{
                 if(_isData){
                     _rlm = _rlm.Define("re_unitGenWeight","one")
                                .Define("re_pugenWeight","one")
@@ -458,35 +482,41 @@ void NanoAODAnalyzerrdframe::selectElectrons()
         // Run II recommendation: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaRunIIRecommendations
         // Run II recomendation - cutbased: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2
         // Temporary elecuts (Not to be used!)
-	_rlm = _rlm.Define("elecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1 && ((abs(Electron_deltaEtaSC<=1.479) && abs(Electron_dxy) < 0.05 && abs(Electron_dz) < 0.10 ) || (abs(Electron_deltaEtaSC>1.479) && abs(Electron_dxy) < 0.10 && abs(Electron_dz) < 0.20))");
-	_rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1");
-        _rlm = _rlm.Define("Sel_elept", "Electron_pt[elecuts]") // define new variables
-			.Define("Sel_eleta", "Electron_eta[elecuts]")
-			.Define("Sel_elephi", "Electron_phi[elecuts]")
-			.Define("Sel_elemass", "Electron_mass[elecuts]")
-                        .Define("Sel_eleidx", ::good_idx, {"elecuts"})
-			.Define("nelepass", "int(Sel_elept.size())")
-                        .Define("nvetoelepass","Sum(vetoelecuts)");
+	// _rlm = _rlm.Define("elecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1 && ((abs(Electron_deltaEtaSC<=1.479) && abs(Electron_dxy) < 0.05 && abs(Electron_dz) < 0.10 ) || (abs(Electron_deltaEtaSC>1.479) && abs(Electron_dxy) < 0.10 && abs(Electron_dz) < 0.20))")
+//                      .Define("Sel_elept", "Electron_pt[elecuts]") // define new variables
+//                      .Define("Sel_eleta", "Electron_eta[elecuts]")
+//                      .Define("Sel_elephi", "Electron_phi[elecuts]")
+//                      .Define("Sel_elemass", "Electron_mass[elecuts]")
+//                      .Define("Sel_eleidx", ::good_idx, {"elecuts"})
+//                      .Define("nelepass", "int(Sel_elept.size())")
+//                      .Define("ele4vecs", ::gen4vec, {"Sel_elept", "Sel_eleta", "Sel_elephi", "Sel_elemass"});
 
-	_rlm = _rlm.Define("ele4vecs", ::gen4vec, {"Sel_elept", "Sel_eleta", "Sel_elephi", "Sel_elemass"});
+        _rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
+                   .Define("nvetoelepass","Sum(vetoelecuts)");
 }
 
 void NanoAODAnalyzerrdframe::selectMuons()
 {
+        if(_isSTLFVcat){
+	    _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
+        }else if(_isTTLFVcat){
+            _rlm = _rlm.Define("muoncuts", "Muon_pt>30.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
+        }else{
+            // Prevention from not defined.
+            _rlm = _rlm.Define("muoncuts", "Muon_pt>30.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
+        }
 	//cout << "select muons" << endl;
-	_rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
 	_rlm = _rlm.Define("Sel_muonpt", "Muon_pt[muoncuts]") // define new variables
-			.Define("Sel_muoneta", "Muon_eta[muoncuts]")
-			.Define("Sel_muonphi", "Muon_phi[muoncuts]")
-			.Define("Sel_muonmass", "Muon_mass[muoncuts]")
-                        .Define("Sel_muoncharge", "Muon_charge[muoncuts]")
-                        .Define("Sel_muonidx", ::good_idx, {"muoncuts"})
-			.Define("nmuonpass", "int(Sel_muonpt.size())");
-	
+                   .Define("Sel_muoneta", "Muon_eta[muoncuts]")
+                   .Define("Sel_muonphi", "Muon_phi[muoncuts]")
+                   .Define("Sel_muonmass", "Muon_mass[muoncuts]")
+                   .Define("Sel_muoncharge", "Muon_charge[muoncuts]")
+                   .Define("Sel_muonidx", ::good_idx, {"muoncuts"})
+                   .Define("nmuonpass", "int(Sel_muonpt.size())")
+                   .Define("muon4vecs", ::gen4vec, {"Sel_muonpt", "Sel_muoneta", "Sel_muonphi", "Sel_muonmass"});
+
         _rlm = _rlm.Define("vetomuoncuts", "!muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25")
                    .Define("nvetomuons","Sum(vetomuoncuts)");
-
-        _rlm = _rlm.Define("muon4vecs", ::gen4vec, {"Sel_muonpt", "Sel_muoneta", "Sel_muonphi", "Sel_muonmass"});
 }
 
 /*
@@ -607,14 +637,21 @@ void NanoAODAnalyzerrdframe::selectJets()
                 _rlm = _rlm.Define("Sys_METpt","MET_pt");
                 _rlm = _rlm.Define("Sys_METphi","MET_phi");
         }
-	_rlm = _rlm.Define("jetcuts", "Sys_jetpt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6")
-			.Define("Sel_jetpt", "Sys_jetpt[jetcuts]")
-			.Define("Sel_jeteta", "Jet_eta[jetcuts]")
-			.Define("Sel_jetphi", "Jet_phi[jetcuts]")
-			.Define("Sel_jetmass", "Jet_mass[jetcuts]")
-			.Define("Sel_jetbtag", "Jet_btagDeepFlavB[jetcuts]")
-			.Define("njetspass", "int(Sel_jetpt.size())")
-			.Define("jet4vecs", ::gen4vec, {"Sel_jetpt", "Sel_jeteta", "Sel_jetphi", "Sel_jetmass"});
+        if(_isSTLFVcat){
+            _rlm = _rlm.Define("jetcuts", "Sys_jetpt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
+        }else if(_isTTLFVcat){
+            _rlm = _rlm.Define("jetcuts", "Sys_jetpt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
+        }else{
+            // Prevention from not defined.
+            _rlm = _rlm.Define("jetcuts", "Sys_jetpt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
+        }
+        _rlm = _rlm.Define("Sel_jetpt", "Sys_jetpt[jetcuts]")
+                   .Define("Sel_jeteta", "Jet_eta[jetcuts]")
+                   .Define("Sel_jetphi", "Jet_phi[jetcuts]")
+                   .Define("Sel_jetmass", "Jet_mass[jetcuts]")
+                   .Define("Sel_jetbtag", "Jet_btagDeepFlavB[jetcuts]")
+                   .Define("njetspass", "int(Sel_jetpt.size())")
+                   .Define("jet4vecs", ::gen4vec, {"Sel_jetpt", "Sel_jeteta", "Sel_jetphi", "Sel_jetmass"});
 }
 
 void NanoAODAnalyzerrdframe::selectTaus()
@@ -658,12 +695,21 @@ void NanoAODAnalyzerrdframe::selectTaus()
                    .Define("mutauoverlap", overlap_removal_mutau, {"muon4vecs","tau4vecs"});
 
         // Hadronic Tau Object Selections
-        _rlm = _rlm.Define("taucuts", "Scaled_taupt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
-                   .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64")
-                   .Define("seltaucuts","taucuts && deeptauidcuts && mutauoverlap");
+        if(_isSTLFVcat){
+            _rlm = _rlm.Define("taucuts", "Scaled_taupt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
+                       .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64");
+        }else if(_isTTLFVcat){
+            _rlm = _rlm.Define("taucuts", "Scaled_taupt>30.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
+                       .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 16");
+        }else{
+            // Prevention from not defined.
+            _rlm = _rlm.Define("taucuts", "Scaled_taupt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
+                       .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64");
+        }
 
         // Hadronic Tau Selection
-        _rlm = _rlm.Define("Sel_taupt", "Scaled_taupt[seltaucuts]")
+        _rlm = _rlm.Define("seltaucuts","taucuts && deeptauidcuts && mutauoverlap")
+                   .Define("Sel_taupt", "Scaled_taupt[seltaucuts]")
                    .Define("Sel_taueta", "Tau_eta[seltaucuts]")
                    .Define("Sel_tauphi", "Tau_phi[seltaucuts]")
                    .Define("Sel_taumass", "Scaled_taumass[seltaucuts]")
@@ -787,8 +833,7 @@ void NanoAODAnalyzerrdframe::selectFatJets()
 
 // This function is newly added for getting event weight with selected objects
 void NanoAODAnalyzerrdframe::calculateEvWeight()
-{
-        
+{        
         // Muon SF
         cout<<"Getting Muon Scale Factors"<<endl;
         auto muonSF = [this](floats &pt, floats &eta)->float {
@@ -814,9 +859,8 @@ void NanoAODAnalyzerrdframe::calculateEvWeight()
                 for(unsigned int i=0; i<pt.size(); i++){
                     float tauidsfVSjet = _tauidSFjet->getSFvsPT(pt[i],int(genid[i]));
                     float tauidsfVSele = _tauidSFele->getSFvsEta(eta[i],int(genid[i]));
-                    //float tauidsfVSmu = _tauidSFmu->getSFvsEta(eta[i],int(genid[i]));
-                    //weight *= tauidsfVSjet*tauidsfVSele*tauidsfVSmu;
-                    weight *= tauidsfVSjet*tauidsfVSele;
+                    float tauidsfVSmu = _tauidSFmu->getSFvsEta(eta[i],int(genid[i]));
+                    weight *= tauidsfVSjet*tauidsfVSele*tauidsfVSmu;
                 }
             }
             return weight;

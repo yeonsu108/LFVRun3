@@ -196,7 +196,8 @@ def Nanoaodprocessor_singledir(outputroot, indir, outtree, intree, year, syst, j
     t = ROOT.TChain(intree)
     for afile in rootfilestoprocess:
         t.Add(afile)
-    aproc = ROOT.LQtopAnalyzer(t, outputroot, year, syst, json, globaltag, split)
+    #aproc = ROOT.LQtopAnalyzer(t, outputroot, year, syst, json, globaltag, split)
+    aproc = ROOT.TopSTlfvAnalyzer(t, outputroot, year+"stlfv", syst, json, globaltag, split)
     aproc.setupAnalysis()
     aproc.run(saveallbranches, outtree)
 
