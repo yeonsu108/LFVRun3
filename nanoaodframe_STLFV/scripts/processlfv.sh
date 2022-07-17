@@ -4,9 +4,13 @@ mc16pre=/data1/common/skimmed_NanoAOD/$version/mc/16pre
 mc16post=/data1/common/skimmed_NanoAOD/$version/mc/16post
 mc17=/data1/common/skimmed_NanoAOD/$version/mc/17
 mc18=/data1/common/skimmed_NanoAOD/$version/mc/18
-# syst : norm, jecup, jecdown, puup, pudown, btagup_jes, btagdown_jes
-syst=btagdown_lf
-target=mar_02_${syst} # Arbitrary folder name
+# syst
+# norm, jecup, jecdown, puup, pudown, btagup_jes, btagdown_jes
+# btagup_hf, btagdown_hf, btagup_lf, btagdown_lf
+# btag
+label=jul22_ST # Arbitrary strings
+syst=nom
+target=${label}/${syst} # Arbitrary folder name
 mkdir -p ${target}
 # 16pre
 ./processnanoaod.py -A -Y 16pre -S ${syst} --globaltag Summer19UL16APV_V7 ${mc16pre}/ST_LFV_TCMuTau_Scalar ${target}/ST_LFV_TCMuTau_Scalar_16pre_${syst}.root &> ${target}/ST_LFV_TCMuTau_Scalar_16pre_${syst}.out &

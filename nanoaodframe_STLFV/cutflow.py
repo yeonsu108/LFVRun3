@@ -9,9 +9,10 @@ path = sys.argv[1]
 pname = path.replace("/","")
 print(pname)
 runs = ["16pre", "16post", "17", "18"]
+runs = ["18"]
 flist = {}
 for run in runs:
-    flist[run] = [i for i in sorted(os.listdir(pname+"/"+run)) if ".root" in i]
+    flist[run] = [i for i in sorted(os.listdir(path+"/"+run)) if ".root" in i]
     for j in flist[run]:
         if "DYJetsToLL_M-50_madgraph" in j:
             flist[run].remove(j)
@@ -360,7 +361,10 @@ def texScript(run,formattedcutflow):
     script = h+s+b
     return script
 
-run2s=["Run16pre","Run16post","Run17","Run18","Run2"]
+run2s = [ "Run"+i for i in runs ]
+if len(runs) == 4:
+    run2s.append("Run2")
+#run2s=["Run16pre","Run16post","Run17","Run18","Run2"]
 for run, cutflow in zip(run2s, formattedcutflows):
     if run=="Run16pre":
         lumi = 19.5 # fb^(-1)
