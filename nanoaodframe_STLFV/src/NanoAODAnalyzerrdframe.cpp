@@ -223,11 +223,15 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                 cout<<"Loading Tau SF"<<endl;
                 std::string tauid_vse = "VLoose";
                 std::string tauid_vsmu = "Tight";
+                std::string tauid_vsjet = "VTight";
                 if(_isSTLFVcat){
-                    std::string tauid_vsjet = "VTight";
+                    tauid_vsjet = "VTight";
                 }else if(_isTTLFVcat){
-                    std::string tauid_vsjet = "Medium";
+                    tauid_vsjet = "Medium";
                 }
+                cout<<"Tau ID WP vsJet : "<<tauid_vsjet<<endl;
+                cout<<"Tau ID WP vsMuon : "<<tauid_vsmu<<endl;
+                cout<<"Tau ID WP vsElectron : "<<tauid_vse<<endl;
                 if(_isRun16pre){
                     _tauidSFjet = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSjet",tauid_vsjet);
                     _tauidSFele = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSe",tauid_vse);
