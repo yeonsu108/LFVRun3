@@ -9,7 +9,6 @@ path = sys.argv[1]
 pname = path.replace("/","")
 print(pname)
 runs = ["16pre", "16post", "17", "18"]
-runs = ["18"]
 flist = {}
 for run in runs:
     flist[run] = [i for i in sorted(os.listdir(path+"/"+run)) if ".root" in i]
