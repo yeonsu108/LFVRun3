@@ -315,7 +315,7 @@ void NanoAODAnalyzerrdframe::setupAnalysis()
 
 	// Object selection will be defined in sequence.
 	// Selected objects will be stored in new vectors.
-        if(!_isSkim){
+        if(_isSkim){
             selectMuons();
         }else{
             selectElectrons();
