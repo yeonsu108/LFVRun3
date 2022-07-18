@@ -8,12 +8,13 @@ mcdir20ul18=/data1/common/NanoAOD/v8_UL/mc/RunIISummer20UL18NanoAODv2
 #tgdir18=/data1/common/skimmed_NanoAOD/${version}/mc/18
 #logdir=/data1/common/skimmed_NanoAOD/${version}/log
 tgdir18=$(pwd)
-logdir=$(pwd)/log/
+logdir=$(pwd)
 mkdir -p ${tgdir}
 mkdir -p ${logdir}
 ./skimonefile.py -Y skim18 /data1/common/NanoAOD/v8_UL/mc/RunIISummer20UL18NanoAODv2/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8/NANOAODSIM/106X_upgrade2018_realistic_v15_L1v1-v1/270000/019426EE-3D50-1249-B266-F6DBA0AFE3B5.root test_skim_mc_TTTo2L2Nu.root Events outputTree &> ${logdir}/test_skim_mc_TTTo2L2Nu.out
 # 18
 #./skimnanoaod.py -F --split ${njobs} -Y skim18 ${mcdir20ul18}/QCD_Pt-15To20_MuEnrichedPt5_TuneCP5_13TeV-pythia8 ${tgdir18}/QCD_Pt-15To20_MuEnrichedPt5 &> ${logdir}/QCD_Pt-15To20_MuEnrichedPt5_skim18.out
+#./skimnanoaod.py -F --split ${njobs} -Y skim18 ${mcdir20ul18}/QCD_Pt-15To20_MuEnrichedPt5_TuneCP5_13TeV-pythia8 ${tgdir18}/test_skim_QCD_Pt-15To20_MuEnrichedPt5 &> ${logdir}/test_skim_QCD_Pt-15To20_MuEnrichedPt5_skim18.out
 #./skimnanoaod.py -F --split ${njobs} -Y skim18 ${mcdir20ul18}/QCD_Pt-20To30_MuEnrichedPt5_TuneCP5_13TeV-pythia8 ${tgdir18}/QCD_Pt-20To30_MuEnrichedPt5 &> ${logdir}/QCD_Pt-20To30_MuEnrichedPt5_skim18.out
 #./skimnanoaod.py -F --split ${njobs} -Y skim18 ${mcdir20ul18}/QCD_Pt-30To50_MuEnrichedPt5_TuneCP5_13TeV-pythia8 ${tgdir18}/QCD_Pt-30To50_MuEnrichedPt5 &> ${logdir}/QCD_Pt-30To50_MuEnrichedPt5_skim18.out
 #./skimnanoaod.py -F --split ${njobs} -Y skim18 ${mcdir20ul18}/QCD_Pt-50To80_MuEnrichedPt5_TuneCP5_13TeV-pythia8 ${tgdir18}/QCD_Pt-50To80_MuEnrichedPt5 &> ${logdir}/QCD_Pt-50To80_MuEnrichedPt5_skim18.out

@@ -155,10 +155,6 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                     _hmuoniso->SetDirectory(0);
                     muoniso.Close();
 
-                    _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
-                    _muonid = new WeightCalculatorFromHistogram(_hmuonid);
-                    _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
-
                 }else if(_isRun16post){
                     TFile muontrg("data/MuonSF/UL2016_postVFP/Efficiencies_muon_generalTracks_Z_Run2016_UL_SingleMuonTriggers.root");
                     _hmuontrg = dynamic_cast<TH2F *>(muontrg.Get("NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt"));
@@ -174,10 +170,6 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                     _hmuoniso = dynamic_cast<TH2F *>(muoniso.Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
                     _hmuoniso->SetDirectory(0);
                     muoniso.Close();
-
-                    _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
-                    _muonid = new WeightCalculatorFromHistogram(_hmuonid);
-                    _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
 
                 }else if(_isRun17){
                     TFile muontrg("data/MuonSF/UL2017/Efficiencies_muon_generalTracks_Z_Run2017_UL_SingleMuonTriggers.root");
@@ -195,10 +187,6 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                     _hmuoniso->SetDirectory(0);
                     muoniso.Close();
 
-                    _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
-                    _muonid = new WeightCalculatorFromHistogram(_hmuonid);
-                    _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
-
                 }else if(_isRun18){
                     TFile muontrg("data/MuonSF/UL2018/Efficiencies_muon_generalTracks_Z_Run2018_UL_SingleMuonTriggers.root");
                     _hmuontrg = dynamic_cast<TH2F *>(muontrg.Get("NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt"));
@@ -215,10 +203,10 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                     _hmuoniso->SetDirectory(0);
                     muoniso.Close();
 
-                    _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
-                    _muonid = new WeightCalculatorFromHistogram(_hmuonid);
-                    _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
                 }
+                _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
+                _muonid = new WeightCalculatorFromHistogram(_hmuonid);
+                _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
                 // Loading Tau Scale Factor
                 cout<<"Loading Tau SF"<<endl;
                 std::string tauid_vse = "VLoose";
@@ -264,19 +252,7 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
 NanoAODAnalyzerrdframe::~NanoAODAnalyzerrdframe() {
 	// TODO Auto-generated destructor stub
 	// ugly...
-
-	cout << "writing histograms" << endl;
-        for (auto afile:_outrootfilenames)
-        {
-                _outrootfile = new TFile(afile.c_str(), "UPDATE");
-                for (auto &h : _th1dhistos)
-                {
-                        if (h.second.GetPtr() != nullptr) h.second->Write();
-                }
-                _outrootfile->Write(0, TObject::kOverwrite);
-                _outrootfile->Close();
-                delete _outrootfile;
-        }
+        std::cout<<">>  Job Done  <<"<<std::endl;
 }
 
 bool NanoAODAnalyzerrdframe::isDefined(string v)
@@ -339,23 +315,27 @@ void NanoAODAnalyzerrdframe::setupAnalysis()
 
 	// Object selection will be defined in sequence.
 	// Selected objects will be stored in new vectors.
-	selectElectrons();
-	selectMuons();
-        applyJetMETCorrections();
-        //selectMET();
-        selectJets();
-        selectTaus();
-        removeOverlaps();
-        //selectFatJets();
-        if(!_isData && !_isSkim){
-            //matchGenReco();
-            calculateEvWeight();
+        if(!_isSkim){
+            selectMuons();
+        }else{
+            selectElectrons();
+            selectMuons();
+            applyJetMETCorrections();
+            //selectMET();
+            selectJets();
+            selectTaus();
+            removeOverlaps();
+            //selectFatJets();
+            if(!_isData){
+                //matchGenReco();
+                calculateEvWeight();
+            }
         }
-	defineMoreVars();
-	defineCuts();
-	bookHists();
-	setupCuts_and_Hists();
-	setupTree();
+        defineMoreVars();
+        defineCuts();
+        bookHists();
+        setupCuts_and_Hists();
+        setupTree();
 }
 
 bool NanoAODAnalyzerrdframe::readjson()
@@ -918,7 +898,6 @@ void NanoAODAnalyzerrdframe::helper_1DHistCreator(std::string hname, std::string
 	RDF1DHist histojets = anode->Histo1D({hname.c_str(), title.c_str(), nbins, xlow, xhi}, rdfvar, evWeight); // Fill with weight given by evWeight
 	_th1dhistos[hname] = histojets;
 }
-;
 
 // Automatically loop to create
 void NanoAODAnalyzerrdframe::setupCuts_and_Hists()
@@ -1106,8 +1085,18 @@ void NanoAODAnalyzerrdframe::run(bool saveAll, string outtreename)
                         cout<<endl;
 			arnode->Snapshot(outtreename, outname, _varstostorepertree[nodename]);
 		}
+                _outrootfile = new TFile(outname.c_str(),"UPDATE");
+                for (auto &h : _th1dhistos)
+                {
+                        if (h.second.GetPtr() != nullptr){
+                            h.second.GetPtr()->Print();
+                            h.second.GetPtr()->Write();
+                            //std::cout<<h.second->GetName()<<std::endl;
+                            //h.second->Write();
+                            //std::cout<<"Histogram is written"<<std::endl;
+                        }
+                }
+                _outrootfile->Write(0, TObject::kOverwrite);
+                _outrootfile->Close();
 	}
-
-
-
 }
