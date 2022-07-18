@@ -35,7 +35,7 @@ if __name__=='__main__':
     cppyy.load_reflection_info("libnanoadrdframe.so")
     t = ROOT.TChain(intreename)
     t.Add(infile)
-    aproc = ROOT.LQtopAnalyzer(t, outfile, options.year+"stlfv", options.syst, options.json, options.globaltag)
+    aproc = ROOT.TopSTlfvAnalyzer(t, outfile, options.year+"stlfv", options.syst, options.json, options.globaltag)
     aproc.setupAnalysis()
     aproc.run(options.saveallbranches, outtreename)
     
