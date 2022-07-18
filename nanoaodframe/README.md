@@ -1,3 +1,15 @@
+### Compile
+```bash
+make clean
+make -j 4   # max 6 effective.
+```
+
+### Two scripts for STLFV and TTLFV regions.
+```
+processnanoaod_ST.py
+processnanoaod_TT.py
+```
+
 With this package, we can do the following to NanoAOD files
 - Apply good JSON
 - Calculate b-tag weights for MC
