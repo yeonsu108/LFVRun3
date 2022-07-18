@@ -132,5 +132,5 @@ void SkimEvents::bookHists()
 	//
 	// The braces are used to initalize the struct
 	// TH1D
-        add1DHist( {"hncounter", "Number of events", 2, -0.5, 1.5}, "one", "unitGenWeight", "");
+        add1DHist( {"hcounter", "Number of events", 2, -0.5, 1.5}, "one", "unitGenWeight", "");
 }
