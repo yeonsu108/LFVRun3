@@ -61,29 +61,30 @@ The class has several methods:
     ```c++
     gSystem->Load("libnanoadrdframe.so");
     ```
-    or within pyROOT (look in processnanoaod.py).
+    or within pyROOT (look in `processnanoaod.py`).
 
 
 ## III. Running over large dataset
 
-`skimnanoaod.py`, `processnanoaod_ST.py` or `processnanoaod_TT.py` script can automatically run over all ROOT files in an input directory.
+`skimnanoaod.py` or `processnanoaod.py` scripts can automatically run over all ROOT files in an input directory.
 ``` txt
-Usage: processnanoaod_ST.py [options] inputDir outputDir
+Usage: processnanoaod.py [options] inputDir outputDir
 
 Options:
-    -h, --help            show this help message and exit
-    -Y YEAR, --year=YEAR  Select 16pre, 16post, 17, or 18 runs. When skim, add "wjet" for wjet inclusive sample.
-    -S SYST, --syst=SYST  Systematic sources
-    -J JSON, --json=JSON  Select events using this JSON file, meaningful only
+  -h, --help            show this help message and exit
+  -Y YEAR, --year=YEAR  Select 2016, 2017, or 2018 runs
+  -S SYST, --syst=SYST  Systematic sources
+  -J JSON, --json=JSON  Select events using this JSON file, meaningful only
                         for data
-    --split=SPLIT         How many jobs to split into
-    --skipold             Skip existing root files
-    --recursive           Process files in the subdirectories recursively
-    -A, --allinone        Process all files and output a single root file. You
+  --split=SPLIT         How many jobs to split into
+  --skipold             Skip existing root files
+  --recursive           Process files in the subdirectories recursively
+  -A, --allinone        Process all files and output a single root file. You
                         must make sure MC and Data are not mixed together.
-    --saveallbranches     Save all branches. False by default
-    --globaltag=GLOBALTAG
+  --saveallbranches     Save all branches. False by default
+  --globaltag=GLOBALTAG
                         Global tag to be used in JetMET corrections
+  --analyzer=ANALYZER   Anayzer selection (stlfv or ttlfv)
 ```
   
 By default, it will go into subdirectories recursively and process ROOT files. 
@@ -108,7 +109,5 @@ source ./scripts/skimdata.sh # or skimmc.sh, skimlfv.sh
 #### Process
 ```bash
 # You are at LFVRun2/nanoaodframe/
-# Since we have processnanoaod_ST.py and processnanoaod_TT.py, scripts are doubled.
-source ./scripts/processdatast.sh # or processmcst.sh, processlfvst.sh
-source ./scripts/processdatatt.sh # or processmctt.sh, processlfvtt.sh
+source ./scripts/processdata.sh # or processmc.sh, processlfv.sh
 ```
