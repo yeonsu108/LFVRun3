@@ -1,0 +1,17 @@
+tar -zxvf Summer19UL16APV_RunBCD_V7_DATA.tar.gz
+tar -zxvf Summer19UL16APV_RunEF_V7_DATA.tar.gz
+tar -zxvf Summer19UL16APV_V7_MC.tar.gz
+tar -zxvf Summer19UL16_RunFGH_V7_DATA.tar.gz
+tar -zxvf Summer19UL16_V7_MC.tar.gz
+tar -zxvf Summer19UL16_V7_all.tar.gz
+tar -zxvf Summer19UL17_RunB_V5_DATA.tar.gz
+tar -zxvf Summer19UL17_RunC_V5_DATA.tar.gz
+tar -zxvf Summer19UL17_RunD_V5_DATA.tar.gz
+tar -zxvf Summer19UL17_RunE_V5_DATA.tar.gz
+tar -zxvf Summer19UL17_RunF_V5_DATA.tar.gz
+tar -zxvf Summer19UL17_V5_MC.tar.gz
+tar -zxvf Summer19UL18_RunA_V5_DATA.tar.gz
+tar -zxvf Summer19UL18_RunB_V5_DATA.tar.gz
+tar -zxvf Summer19UL18_RunC_V5_DATA.tar.gz
+tar -zxvf Summer19UL18_RunD_V5_DATA.tar.gz
+tar -zxvf Summer19UL18_V5_MC.tar.gz
