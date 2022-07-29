@@ -110,7 +110,7 @@ double foxwolframmoment(int l, FourVectorVec &p, int minj, int maxj)
 ints good_idx(ints good)
 {
         ints out;
-        for(unsigned int i = 0; i < good.size(); i++){
+        for(int i = 0; i < int(good.size()); i++){
                 if( good[i] ){
                         out.emplace_back(i);
                 }
@@ -119,47 +119,13 @@ ints good_idx(ints good)
 }
 
 
-floats chi2(float smtop_mass, float smw_mass, float lfvtop_mass)
-{
-	floats out;
-        // Theory values
-        const float MT_LFV = 172.5;
-        const float MT_SM = 172.5;
-        const float MW = 80.4;
-        const float WT_LFV = 1.41;
-        const float WT_SM = 1.41;
-        const float WW = 2.085;
-
-        // Resolution applied values
-//        const float MT_LFV = 150.5;
-//        const float MT_SM = 165.2;
-//        const float MW = 80.8;
-//        const float WT_LFV = 17.8;
-//        const float WT_SM = 21.3;
-//        const float WW = 11.71;	
-
-        float chi2_SMTop = pow((MT_SM-smtop_mass)/WT_SM, 2);
-        float chi2_SMW = pow((MW-smw_mass)/WW, 2);
-        float chi2_LFVTop = pow((MT_LFV-lfvtop_mass)/WT_LFV, 2);
-        float chi2 = chi2_SMTop + chi2_SMW + chi2_LFVTop;
-
-	out.emplace_back(chi2);
-	out.emplace_back(chi2_SMTop);
-	out.emplace_back(chi2_SMW);
-	out.emplace_back(chi2_LFVTop);
-	
-	return out;
-}
-
-
-floats top_reconstruction_whad(FourVectorVec &jets, FourVectorVec &bjets, FourVectorVec &muons, FourVectorVec &taus){
+floats top_reconstruction_STLFV(FourVectorVec &jets, FourVectorVec &bjets, FourVectorVec &muons, FourVectorVec &taus){
         
         floats out;
-
-        float LFVtop_mass, SMW_mass, SMtop_mass;
-        float X_LFVtop, X_SMW, X_SMtop;
-        float X_min=9999999999, X_min_LFVtop_mass=-1, X_min_SMW_mass=-1, X_min_SMtop_mass=-1;
-        float X_min_LFVtop=999999999, X_min_SMW=999999999, X_min_SMtop=999999999;
+        float SMW_mass, SMtop_mass;
+        float X_SMW, X_SMtop;
+        float X_min=9999999999, X_min_SMW_mass=-1, X_min_SMtop_mass=-1;
+        float X_min_SMW=999999999, X_min_SMtop=999999999;
         float wj1_idx=-1, wj2_idx=-1;
         const float MT = 165.2;
         const float MW = 80.8;
@@ -167,10 +133,10 @@ floats top_reconstruction_whad(FourVectorVec &jets, FourVectorVec &bjets, FourVe
         const float WW = 11.71;	
         
         // Jets from W-1
-        for(unsigned int j1 = 0; j1<jets.size(); j1++){
+        for(int j1 = 0; j1<int(jets.size()); j1++){
             if(jets[j1].Pt() == bjets[0].Pt()) continue;
             // Jets from W-2
-            for(unsigned int j2 = 0; j2<jets.size(); j2++){
+            for(int j2 = 0; j2<int(jets.size()); j2++){
                 if(jets[j2].Pt() == jets[j1].Pt() || jets[j2].Pt() == bjets[0].Pt()) continue;
                 SMW_mass = (jets[j1]+jets[j2]).M();
                 X_SMW = std::pow((MW-SMW_mass)/WW,2);
@@ -198,7 +164,67 @@ floats top_reconstruction_whad(FourVectorVec &jets, FourVectorVec &bjets, FourVe
         return out;
 }
 
-floats top_reco_products(FourVectorVec &jets, FourVectorVec &muons, FourVectorVec &taus, floats topreco){
+floats top_reconstruction_TTLFV(FourVectorVec &jets, FourVectorVec &bjets, FourVectorVec &muons, FourVectorVec &taus){
+        
+        floats out;
+        float LFVtop_mass, SMW_mass, SMtop_mass;
+        float X_LFVtop, X_SMW, X_SMtop;
+        float X_min=9999999999, X_min_LFVtop_mass=-1, X_min_SMW_mass=-1, X_min_SMtop_mass=-1;
+        float X_min_LFVtop=999999999, X_min_SMW=999999999, X_min_SMtop=999999999;
+        float lfvj_idx=-1, wj1_idx=-1, wj2_idx=-1;
+        
+        // Mass and Width of top and w boson
+        const float MT_LFV = 150.5;
+        const float MT_SM = 165.2;
+        const float MW = 80.8;
+        const float WT_LFV = 17.8;
+        const float WT_SM = 21.3;
+        const float WW = 11.71;	
+        
+        // lfv jet
+        for(int j1 = 0; j1<int(jets.size()); j1++){
+            LFVtop_mass = (jets[j1]+taus[0]+muons[0]).M();
+            X_LFVtop = std::pow((MT_LFV-LFVtop_mass)/WT_LFV,2);
+            // Jet1 from W
+            for(int j2 = 0; j2<int(jets.size()); j2++){
+                if(jets[j2].Pt() == bjets[0].Pt() || jets[j2].Pt() == jets[j1].Pt()) continue;
+                // Jet2 from W
+                for(int j3 = 0; j3<int(jets.size()); j3++){
+                    if(jets[j3].Pt() == jets[j2].Pt() || jets[j3].Pt() == bjets[0].Pt() || jets[j3].Pt() == jets[j1].Pt()) continue;
+                    SMW_mass = (jets[j2]+jets[j3]).M();
+                    X_SMW = std::pow((MW-SMW_mass)/WW,2);
+                    SMtop_mass = (bjets[0]+jets[j2]+jets[j3]).M();
+                    X_SMtop = std::pow((MT_SM-SMtop_mass)/WT_SM,2);
+                    if (X_LFVtop + X_SMW + X_SMtop < X_min){
+                        X_min = X_LFVtop + X_SMW + X_SMtop;
+                        X_min_LFVtop = X_LFVtop;
+                        X_min_SMW = X_SMW;
+                        X_min_SMtop = X_SMtop;
+                        X_min_LFVtop_mass = LFVtop_mass;
+                        X_min_SMW_mass = SMW_mass;
+                        X_min_SMtop_mass = SMtop_mass;
+                        lfvj_idx = float(j1);
+                        wj1_idx = float(j2);
+                        wj2_idx = float(j3);
+                    }
+                }
+            }
+        }
+        out.push_back(X_min);               // 0
+        out.push_back(X_min_LFVtop_mass);   // 1
+        out.push_back(X_min_SMW_mass);      // 2
+        out.push_back(X_min_SMtop_mass);    // 3
+        out.push_back(lfvj_idx);            // 4
+        out.push_back(wj1_idx);             // 5
+        out.push_back(wj2_idx);             // 6
+        out.push_back(X_min_LFVtop);        // 7
+        out.push_back(X_min_SMW);           // 8
+        out.push_back(X_min_SMtop);         // 9
+
+        return out;
+}
+
+floats top_reco_products_STLFV(FourVectorVec &jets, FourVectorVec &muons, FourVectorVec &taus, floats topreco){
         floats out;
         int wjet1_idx = topreco[3];
         int wjet2_idx = topreco[4];
@@ -213,6 +239,57 @@ floats top_reco_products(FourVectorVec &jets, FourVectorVec &muons, FourVectorVe
         out.emplace_back(wqq_dEta);
         out.emplace_back(wqq_dPhi);
         out.emplace_back(wqq_dR);
+        return out;
+}
+
+floats top_reco_products_TTLFV(FourVectorVec &jets, FourVectorVec &muons, FourVectorVec &taus, floats topreco){
+        floats out;
+        int j_idx = topreco[4];
+        int wjet1_idx = topreco[5];
+        int wjet2_idx = topreco[6];
+
+        FourVector lfvjet = jets[j_idx];
+        FourVector wjet1 = jets[wjet1_idx];
+        FourVector wjet2 = jets[wjet2_idx];
+        FourVector tau = taus[0];
+        FourVector muon = muons[0];
+
+        float wqq_dEta = wjet1.Eta() - wjet2.Eta();
+        float wqq_dPhi = ROOT::Math::VectorUtil::DeltaPhi(wjet1, wjet2);
+        float wqq_dR = ROOT::Math::VectorUtil::DeltaR(wjet1, wjet2);
+
+        float lfvjmu_dEta = lfvjet.Eta() - muon.Eta();
+        float lfvjmu_dPhi = ROOT::Math::VectorUtil::DeltaPhi(lfvjet, muon);
+        float lfvjmu_dR = ROOT::Math::VectorUtil::DeltaR(lfvjet, muon);
+        float lfvjmu_mass = ROOT::Math::VectorUtil::InvariantMass(lfvjet, muon);
+
+        float lfvjtau_dEta = lfvjet.Eta() - tau.Eta();
+        float lfvjtau_dPhi = ROOT::Math::VectorUtil::DeltaPhi(lfvjet, tau);
+        float lfvjtau_dR = ROOT::Math::VectorUtil::DeltaR(lfvjet, tau);
+        float lfvjtau_mass = ROOT::Math::VectorUtil::InvariantMass(lfvjet, tau);
+
+        FourVector mutau = muon + tau;
+        float lfvjmutau_dEta = lfvjet.Eta() - mutau.Eta();
+        float lfvjmutau_dPhi = ROOT::Math::VectorUtil::DeltaPhi(lfvjet, mutau);
+        float lfvjmutau_dR = ROOT::Math::VectorUtil::DeltaR(lfvjet, mutau);
+        float lfvjmutau_mass = ROOT::Math::VectorUtil::InvariantMass(lfvjet, mutau);
+
+        out.emplace_back(wqq_dEta);         //0
+        out.emplace_back(wqq_dPhi);         //1
+        out.emplace_back(wqq_dR);           //2
+        out.emplace_back(lfvjmu_dEta);      //3
+        out.emplace_back(lfvjmu_dPhi);      //4
+        out.emplace_back(lfvjmu_dR);        //5
+        out.emplace_back(lfvjmu_mass);      //6
+        out.emplace_back(lfvjtau_dEta);     //7
+        out.emplace_back(lfvjtau_dPhi);     //8
+        out.emplace_back(lfvjtau_dR);       //9
+        out.emplace_back(lfvjtau_mass);     //10
+        out.emplace_back(lfvjmutau_dEta);   //11
+        out.emplace_back(lfvjmutau_dPhi);   //12
+        out.emplace_back(lfvjmutau_dR);     //13
+        out.emplace_back(lfvjmutau_mass);   //14
+
         return out;
 }
 
@@ -261,7 +338,7 @@ floats sort_discriminant( floats discr, floats obj ){
 
 ints find_element(ints vec, int a){
     ints idx;
-    for(int i = 0; i < vec.size(); i++){
+    for(int i = 0; i < int(vec.size()); i++){
         if( vec[i] == a ) idx.emplace_back(i);
     }
     return idx;
@@ -269,7 +346,7 @@ ints find_element(ints vec, int a){
 
 ints find_element_binary( ints vec, int a){
     ints bin;
-    for( int i = 0; i < vec.size(); i++){
+    for( int i = 0; i < int(vec.size()); i++){
         if( vec[i] == a ) bin.emplace_back(1);
         else bin.emplace_back(0);
     }
@@ -279,7 +356,7 @@ ints find_element_binary( ints vec, int a){
 /////Find last genparticle using pdgid/////(i : idx, id : pdgId, t : target, d: daughter)
 ints LastGenPart_idx( int target_id, ints GenPart_pdgId, ints GenPart_genPartIdxMother){
     ints out;
-    for( int idx = 0 ; idx < GenPart_pdgId.size(); idx++){
+    for( int idx = 0 ; idx < int(GenPart_pdgId.size()); idx++){
         int p_id = GenPart_pdgId[idx];
         if(abs(p_id)==target_id){
             bool isLastParticle = true;
@@ -378,15 +455,15 @@ ints dRmatching_binary( int origin_i,float maxdR,  floats origin_pt, floats orig
     origin = gen4vec(origin_pt, origin_eta, origin_phi, origin_mass);
     target = gen4vec(target_pt, target_eta, target_phi, target_mass);
 
-    for( int i=0; i<target.size(); i++){
+    for(int i=0; i<int(target.size()); i++){
         tempdR = ROOT::Math::VectorUtil::DeltaR(origin[origin_i],target[i]); 
         if( tempdR < dR ){
             target_i = i;
             dR = tempdR;
         }
     }
-    for( int j=0; j<target.size(); j++){
-        if( j == target_i )target_binary.emplace_back(1);
+    for(int j=0; j<int(target.size()); j++){
+        if( j == int(target_i) )target_binary.emplace_back(1);
         else target_binary.emplace_back(0);
     }
     return target_binary;
