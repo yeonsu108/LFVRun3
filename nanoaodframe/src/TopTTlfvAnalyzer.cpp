@@ -86,7 +86,7 @@ void TopTTlfvAnalyzer::defineMoreVars()
         addVar({"Sel2_bjet1eta", "Sel2_bjeteta[0]", ""});
         addVar({"Sel2_bjet1mass", "Sel2_bjetmass[0]", ""});
 
-        defineVar("top_reco_whad", ::top_reconstruction_whad, {"cleanjet4vecs","cleanbjet4vecs","muon4vecs","cleantau4vecs"});
+        defineVar("top_reco_whad", ::top_reconstruction_TTLFV, {"cleanjet4vecs","cleanbjet4vecs","muon4vecs","cleantau4vecs"});
         addVar({"chi2","top_reco_whad[0]",""});
         addVar({"chi2_lfvTop_mass","top_reco_whad[1]",""});
         addVar({"chi2_SMW_mass","top_reco_whad[2]",""});
@@ -98,7 +98,7 @@ void TopTTlfvAnalyzer::defineMoreVars()
         addVar({"chi2_SMW","top_reco_whad[8]",""});
         addVar({"chi2_SMTop","top_reco_whad[9]",""});
 
-        defineVar("top_reco_prod", ::top_reco_products, {"cleanjet4vecs","muon4vecs","cleantau4vecs","top_reco_whad"});
+        defineVar("top_reco_prod", ::top_reco_products_TTLFV, {"cleanjet4vecs","muon4vecs","cleantau4vecs","top_reco_whad"});
         addVar({"chi2_wqq_dEta","top_reco_prod[0]",""});
         addVar({"chi2_wqq_dPhi","top_reco_prod[1]",""});
         addVar({"chi2_wqq_dR","top_reco_prod[2]",""});

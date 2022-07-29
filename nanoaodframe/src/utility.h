@@ -63,9 +63,13 @@ ints good_idx(ints good);
 
 floats lqtop_reconstruction( FourVectorVec &cjet, FourVectorVec &mu, FourVectorVec &tau);
 
-floats top_reconstruction_whad(FourVectorVec &jets, FourVectorVec &bjets, FourVectorVec &muons, FourVectorVec &taus);
+floats top_reconstruction_STLFV(FourVectorVec &jets, FourVectorVec &bjets, FourVectorVec &muons, FourVectorVec &taus);
 
-floats top_reco_products(FourVectorVec &jets, FourVectorVec &muons, FourVectorVec &taus, floats topreco);
+floats top_reconstruction_TTLFV(FourVectorVec &jets, FourVectorVec &bjets, FourVectorVec &muons, FourVectorVec &taus);
+
+floats top_reco_products_STLFV(FourVectorVec &jets, FourVectorVec &muons, FourVectorVec &taus, floats topreco);
+
+floats top_reco_products_TTLFV(FourVectorVec &jets, FourVectorVec &muons, FourVectorVec &taus, floats topreco);
 
 float calculate_deltaEta( FourVector &p1, FourVector &p2);
 

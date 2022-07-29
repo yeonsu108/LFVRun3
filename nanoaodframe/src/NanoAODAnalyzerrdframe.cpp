@@ -131,6 +131,10 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                 }else if(_isRun18){
                         _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL18_v2.csv"};
                 }
+                if(_syst.find("btag") != std::string::npos){
+                    cout<<"Btag SF Uncertainty Source : "+_syst.substr(4)<<endl;
+                }
+
     
                 // load the formulae b flavor tagging
                 _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_B, "iterativefit");
@@ -415,27 +419,25 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, string jeta
 		string dbfilenamel2l3 = basedirectory+globaltag+"_"+datamcflag+"_L2L3Residual_"+jetalgo+".txt";
 
 		JetCorrectorParameters *L1JetCorrPar = new JetCorrectorParameters(dbfilenamel1);
-
-                if (!L1JetCorrPar->isValid())
-                {
+                if (!L1JetCorrPar->isValid()) {
                     std::cerr << "L1FastJet correction parameters not read" << std::endl;
                     exit(1);
                 }
-                        JetCorrectorParameters *L2JetCorrPar = new JetCorrectorParameters(dbfilenamel2);
-                if (!L2JetCorrPar->isValid())
-                {
+
+                JetCorrectorParameters *L2JetCorrPar = new JetCorrectorParameters(dbfilenamel2);
+                if (!L2JetCorrPar->isValid()) {
                     std::cerr << "L2Relative correction parameters not read" << std::endl;
                     exit(1);
                 }
-                        JetCorrectorParameters *L3JetCorrPar = new JetCorrectorParameters(dbfilenamel3);
-                if (!L3JetCorrPar->isValid())
-                {
+
+                JetCorrectorParameters *L3JetCorrPar = new JetCorrectorParameters(dbfilenamel3);
+                if (!L3JetCorrPar->isValid()) {
                     std::cerr << "L3Absolute correction parameters not read" << std::endl;
                     exit(1);
                 }
-                        JetCorrectorParameters *L2L3JetCorrPar = new JetCorrectorParameters(dbfilenamel2l3);
-                if (!L2L3JetCorrPar->isValid())
-                {
+
+                JetCorrectorParameters *L2L3JetCorrPar = new JetCorrectorParameters(dbfilenamel2l3);
+                if (!L2L3JetCorrPar->isValid()) {
                     std::cerr << "L2L3Residual correction parameters not read" << std::endl;
                     exit(1);
                 }
@@ -451,8 +453,21 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, string jeta
 		_jetCorrector = new FactorizedJetCorrector(jetc);
 
 		// object to calculate uncertainty
-		string dbfilenameunc = basedirectory+globaltag+"_"+datamcflag+"_Uncertainty_"+jetalgo+".txt";
-		_jetCorrectionUncertainty = new JetCorrectionUncertainty(dbfilenameunc);
+                // _syst should be like "jec_upAbsolute"
+                if(_syst.find("jec") != std::string::npos) {
+                    string uncsource = _syst.substr(4);
+                    if(_syst.find("up") != std::string::npos) {
+                        uncsource = uncsource.substr(2);
+                    }else if(_syst.find("down") != std::string::npos) {
+                        uncsource = uncsource.substr(4);
+                    }
+                    cout<<"Apply JEC Uncertainty"<<endl;
+                    cout<<"JEC Uncertainty Source : "+uncsource<<endl;
+                    string dbfilenameunc = basedirectory+"RegroupedV2_"+globaltag+"_"+datamcflag+"_UncertaintySources_"+jetalgo+".txt";
+                    JetCorrectorParameters *uncCorrPar = new JetCorrectorParameters(dbfilenameunc,uncsource);
+                    _jetCorrectionUncertainty = new JetCorrectionUncertainty(*uncCorrPar);
+                }
+
 	}
 	else
 	{
@@ -585,16 +600,19 @@ void NanoAODAnalyzerrdframe::applyJetMETCorrections()
 
 	if (_jetCorrector != 0)
 	{
-		_rlm = _rlm.Define("Jet_pt_corr", appcorrlambdaf, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"});
-		_rlm = _rlm.Define("Jet_pt_relerror", jecuncertaintylambdaf, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"});
-		_rlm = _rlm.Define("Jet_pt_corr_up", "Jet_pt_corr*(1.0f + Jet_pt_relerror)");
-		_rlm = _rlm.Define("Jet_pt_corr_down", "Jet_pt_corr*(1.0f - Jet_pt_relerror)");
-		_rlm = _rlm.Define("MET_pt_corr", metcorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"});
-		_rlm = _rlm.Define("MET_phi_corr", metphicorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"});
-		_rlm = _rlm.Define("MET_pt_corr_up", metcorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_up", "Jet_phi"});
-		_rlm = _rlm.Define("MET_phi_corr_up", metphicorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_up", "Jet_phi"});
-		_rlm = _rlm.Define("MET_pt_corr_down", metcorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_down", "Jet_phi"});
-		_rlm = _rlm.Define("MET_phi_corr_down", metphicorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_down", "Jet_phi"});
+		_rlm = _rlm.Define("Jet_pt_corr", appcorrlambdaf, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
+                           .Define("MET_pt_corr", metcorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"})
+                           .Define("MET_phi_corr", metphicorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"});
+
+                if (_syst.find("jec") != std::string::npos) { 
+                    _rlm = _rlm.Define("Jet_pt_relerror", jecuncertaintylambdaf, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
+                               .Define("Jet_pt_corr_up", "Jet_pt_corr*(1.0f + Jet_pt_relerror)")
+                               .Define("Jet_pt_corr_down", "Jet_pt_corr*(1.0f - Jet_pt_relerror)")
+                               .Define("MET_pt_corr_up", metcorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_up", "Jet_phi"})
+                               .Define("MET_phi_corr_up", metphicorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_up", "Jet_phi"})
+                               .Define("MET_pt_corr_down", metcorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_down", "Jet_phi"})
+                               .Define("MET_phi_corr_down", metphicorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_down", "Jet_phi"});
+                }
 	}
 }
 
@@ -603,23 +621,25 @@ void NanoAODAnalyzerrdframe::selectJets()
 	// apparently size() returns long int, which ROOT doesn't recognized for branch types
 	// , so it must be cast into int if you want to save them later into a TTree
         if (_globaltag != ""){
-                if (_syst=="jesup"){
-                        _rlm = _rlm.Define("Sys_jetpt","Jet_pt_corr_up");
-                        _rlm = _rlm.Define("Sys_METpt","MET_pt_corr_up");
-                        _rlm = _rlm.Define("Sys_METphi","MET_phi_corr_up");
-                } else if (_syst=="jesdown"){
-                        _rlm = _rlm.Define("Sys_jetpt","Jet_pt_corr_down");
-                        _rlm = _rlm.Define("Sys_METpt","MET_pt_corr_down");
-                        _rlm = _rlm.Define("Sys_METphi","MET_phi_corr_down");
-                } else{
-                        _rlm = _rlm.Define("Sys_jetpt","Jet_pt_corr");
-                        _rlm = _rlm.Define("Sys_METpt","MET_pt_corr");
-                        _rlm = _rlm.Define("Sys_METphi","MET_phi_corr");
+            if (_syst.find("jec") != std::string::npos){
+                if (_syst.find("up") != std::string::npos){
+                    _rlm = _rlm.Define("Sys_jetpt","Jet_pt_corr_up");
+                    _rlm = _rlm.Define("Sys_METpt","MET_pt_corr_up");
+                    _rlm = _rlm.Define("Sys_METphi","MET_phi_corr_up");
+                }else if (_syst.find("down") != std::string::npos){
+                    _rlm = _rlm.Define("Sys_jetpt","Jet_pt_corr_down");
+                    _rlm = _rlm.Define("Sys_METpt","MET_pt_corr_down");
+                    _rlm = _rlm.Define("Sys_METphi","MET_phi_corr_down");
                 }
+            }else{
+                _rlm = _rlm.Define("Sys_jetpt","Jet_pt_corr");
+                _rlm = _rlm.Define("Sys_METpt","MET_pt_corr");
+                _rlm = _rlm.Define("Sys_METphi","MET_phi_corr");
+            }
         }else{
-                _rlm = _rlm.Define("Sys_jetpt","Jet_pt");
-                _rlm = _rlm.Define("Sys_METpt","MET_pt");
-                _rlm = _rlm.Define("Sys_METphi","MET_phi");
+            _rlm = _rlm.Define("Sys_jetpt","Jet_pt");
+            _rlm = _rlm.Define("Sys_METpt","MET_pt");
+            _rlm = _rlm.Define("Sys_METphi","MET_phi");
         }
         if(_isSTLFVcat){
             _rlm = _rlm.Define("jetcuts", "Sys_jetpt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
