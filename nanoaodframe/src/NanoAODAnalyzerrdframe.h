@@ -74,6 +74,8 @@ public:
 	void setTree(TTree *t, std::string outfilename);
 	void setupTree();
 
+        bool _isSTLFVcat = false;
+        bool _isTTLFVcat = false;
 private:
 	ROOT::RDataFrame _rd;
 
@@ -82,8 +84,6 @@ private:
 	bool _jsonOK;
 	std::string _outfilename;
         std::string _year;
-        bool _isSTLFVcat = false;
-        bool _isTTLFVcat = false;
         bool _isRun16pre = false;
         bool _isRun16post = false;
         bool _isRun16 = false;
