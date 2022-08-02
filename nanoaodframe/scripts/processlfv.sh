@@ -4,13 +4,27 @@ mc16pre=/data1/common/skimmed_NanoAOD/$version/mc/16pre
 mc16post=/data1/common/skimmed_NanoAOD/$version/mc/16post
 mc17=/data1/common/skimmed_NanoAOD/$version/mc/17
 mc18=/data1/common/skimmed_NanoAOD/$version/mc/18
-# syst
-# nom, jecup, jecdown, puup, pudown, btagup_jes, btagdown_jes
-# btagup_hf, btagdown_hf, btagup_lf, btagdown_lf
-# btag
 label=jul22     # Arbitrary strings
-ana=$1          # or ttlfv
-syst=jec_upAbsolute
+ana=$1          # stlfv or ttlfv
+# syst
+#syst=nom
+#syst=pudown
+#syst=btagdown_hf
+#syst=btagdown_lf
+#syst=btagdown_hfstats1
+#syst=btagdown_hfstats2
+#syst=btagdown_lfstats1
+#syst=btagdown_lfstats2
+syst=btagup_cferr1
+#syst=btagup_cferr2
+#syst=up_jesAbsolute
+#syst=up_jesBBEC1
+#syst=up_jesEC2
+#syst=up_jesFlavorQCD
+#syst=up_jesRelativeBal
+#syst=up_jesAbsolute_year
+#syst=up_jesBBEC1_year
+#syst=up_jesEC2_year
 target=${label}_${ana}/${syst} # Arbitrary folder name
 mkdir -p ${target}
 # 16pre
@@ -40,7 +54,7 @@ mkdir -p ${target}
 ./processnanoaod.py --analyzer ${ana} -A -Y 16post -S ${syst} --globaltag Summer19UL16_V7 ${mc16post}/TT_LFV_TToUMuTau_Vector ${target}/TT_LFV_TToUMuTau_Vector_16post_${syst}.root &> ${target}/TT_LFV_TToUMuTau_Vector_16post_${syst}.out &
 ./processnanoaod.py --analyzer ${ana} -A -Y 16post -S ${syst} --globaltag Summer19UL16_V7 ${mc16post}/TT_LFV_TToUMuTau_Tensor ${target}/TT_LFV_TToUMuTau_Tensor_16post_${syst}.root &> ${target}/TT_LFV_TToUMuTau_Tensor_16post_${syst}.out &
 
-sleep 15m
+sleep 12m
 
 # 17
 ./processnanoaod.py --analyzer ${ana} -A -Y 17 -S ${syst} --globaltag Summer19UL17_V5 ${mc17}/ST_LFV_TCMuTau_Scalar ${target}/ST_LFV_TCMuTau_Scalar_17_${syst}.root &> ${target}/ST_LFV_TCMuTau_Scalar_17_${syst}.out &
