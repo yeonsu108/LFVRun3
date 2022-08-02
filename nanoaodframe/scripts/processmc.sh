@@ -4,13 +4,26 @@ mc16pre=/data1/common/skimmed_NanoAOD/$version/mc/16pre
 mc16post=/data1/common/skimmed_NanoAOD/$version/mc/16post
 mc17=/data1/common/skimmed_NanoAOD/$version/mc/17
 mc18=/data1/common/skimmed_NanoAOD/$version/mc/18
-# syst
-# nom, jecup, jecdown, puup, pudown, btagup_jes, btagdown_jes
-# btagup_hf, btagdown_hf, btagup_lf, btagdown_lf
-# btag
 label=jul22     # Arbitrary strings
-ana=$1          # or ttlfv
-syst=jec_upAbsolute
+ana=$1          # stlfv or ttlfv
+# syst
+#syst=pudown
+#syst=btagdown_hf
+#syst=btagdown_lf
+syst=btagdown_hfstats1
+#syst=btagup_hfstats2
+#syst=btagup_lfstats1
+#syst=btagup_lfstats2
+#syst=btagup_cferr1
+#syst=btagup_cferr2
+#syst=up_jesAbsolute
+#syst=up_jesBBEC1
+#syst=up_jesEC2
+#syst=up_jesFlavorQCD
+#syst=up_jesRelativeBal
+#syst=up_jesAbsolute_year
+#syst=up_jesBBEC1_year
+#syst=up_jesEC2_year
 target=${label}_${ana}/${syst} # Arbitrary folder name
 mkdir -p ${target}
 # 16pre

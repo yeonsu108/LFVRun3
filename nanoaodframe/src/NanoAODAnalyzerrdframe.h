@@ -90,6 +90,10 @@ private:
         bool _isRun17 = false;
         bool _isRun18 = false;
         std::string _syst;
+        bool _isSystBtag = false;
+        bool _isSystJes = false;
+        bool _isSystUp = false;
+        bool _isSystDown = false;
 	std::string _jsonfname;
 	std::string _globaltag;
         std::string tauid_vsjet = "";
@@ -116,9 +120,7 @@ private:
 
 	// btag weights
 	BTagCalibration _btagcalib;
-	BTagCalibration _btagcalib2;
 	BTagCalibrationReader _btagcalibreader;
-	BTagCalibrationReader _btagcalibreader2;
 
 	// pile up weights
         const char * pumcfile;
