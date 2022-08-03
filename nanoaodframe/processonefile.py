@@ -20,6 +20,7 @@ if __name__=='__main__':
     parser.add_option("-J", "--json",  dest="json", type="string", default="", help="Select events using this JSON file, meaningful only for data")
     parser.add_option("--saveallbranches", dest="saveallbranches", action="store_true", default=False, help="Save all branches. False by default")
     parser.add_option("--globaltag", dest="globaltag", type="string", default="", help="Global tag to be used in JetMET corrections")
+    parser.add_option("--analyzer", dest="analyzer", type="string", default="", help="Anayzer selection (stlfv or ttlfv)")
 
     (options, args) = parser.parse_args()
     if len(args) < 1:
@@ -35,7 +36,7 @@ if __name__=='__main__':
     cppyy.load_reflection_info("libnanoadrdframe.so")
     t = ROOT.TChain(intreename)
     t.Add(infile)
-    aproc = ROOT.TopSTlfvAnalyzer(t, outfile, options.year+"stlfv", options.syst, options.json, options.globaltag)
+    aproc = ROOT.TopLFVAnalyzer(t, outfile, options.year + options.analyzer, options.syst, options.json, options.globaltag)
     aproc.setupAnalysis()
     aproc.run(options.saveallbranches, outtreename)
     
