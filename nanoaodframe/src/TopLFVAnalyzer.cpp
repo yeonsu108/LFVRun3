@@ -184,13 +184,13 @@ void TopLFVAnalyzer::bookHists()
 	//add1DHist( {"hnvtx", "Number of Primary Vertex", 200, 0.0, 200.0}, "PV_npvsGood", "evWeight", "");
 
         //=================== PUGEN * Lepton SF ===================
-	add1DHist( {"hmetpt", "MET pt", 20, 0, 400}, "Sys_METpt", "evWeight_pglep", "0");
-	add1DHist( {"hsumet", "Sum ET", 50, 0.0, 5000.0}, "MET_sumEt", "evWeight_pglep", "0");
-	add1DHist( {"hmetphi", "MET phi", 20, -4.0, 4.0}, "Sys_METphi", "evWeight_pglep", "0");
+	add1DHist( {"hmetpt_nobweight", "MET pt", 20, 0, 400}, "Sys_METpt", "evWeight_pglep", "0");
+	add1DHist( {"hsumet_nobweight", "Sum ET", 50, 0.0, 5000.0}, "MET_sumEt", "evWeight_pglep", "0");
+	add1DHist( {"hmetphi_nobweight", "MET phi", 20, -4.0, 4.0}, "Sys_METphi", "evWeight_pglep", "0");
 
-//        add1DHist( {"hnpvdof", "Number of PV of DoF", 50, 0.0, 50.0}, "PV_ndof", "evWeight_pglep", "0");
-//        add1DHist( {"hnpvs", "Number of PVs", 100, 0.0, 100.0}, "PV_npvs", "evWeight_pglep", "0");
-//        add1DHist( {"hnpvsgood", "Number of good PVs", 100, 0.0, 100.0}, "PV_npvsGood", "evWeight_pglep", "0");
+//        add1DHist( {"hnpvdof_nobweight", "Number of PV of DoF", 50, 0.0, 50.0}, "PV_ndof", "evWeight_pglep", "0");
+//        add1DHist( {"hnpvs_nobweight", "Number of PVs", 100, 0.0, 100.0}, "PV_npvs", "evWeight_pglep", "0");
+//        add1DHist( {"hnpvsgood_nobweight", "Number of good PVs", 100, 0.0, 100.0}, "PV_npvsGood", "evWeight_pglep", "0");
 
 	add1DHist( {"hnmuonpass_nobweight", "Passing muoncuts", 5, 0.0, 5.0}, "nmuonpass", "evWeight_pglep", "0");
 	add1DHist( {"hncleantaupass_nobweight", "Passing taucuts", 5, 0.0, 5.0}, "ncleantaupass", "evWeight_pglep", "0");
