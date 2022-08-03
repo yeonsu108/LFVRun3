@@ -11,13 +11,7 @@
 TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string year, std::string syst, std::string jsonfname, string globaltag, int nthreads)
 :NanoAODAnalyzerrdframe(t, outfilename, year, syst, jsonfname, globaltag, nthreads)
 {
-//        if(_year.find("stlfv") != std::string::npos){
-//            _isSTLFVcat = true;
-//            cout<<"Analyzer for STLFV region is selected."<<endl;
-//        }else if(_year.find("ttlfv") != std::string::npos){
-//            _isTTLFVcat = true;
-//            cout<<"Analyzer for TTLFV region is selected."<<endl;
-//        }
+
 }
 
 // Define your cuts here
@@ -190,58 +184,58 @@ void TopLFVAnalyzer::bookHists()
 	//add1DHist( {"hnvtx", "Number of Primary Vertex", 200, 0.0, 200.0}, "PV_npvsGood", "evWeight", "");
 
         //=================== PUGEN * Lepton SF ===================
-	add1DHist( {"h1metpt", "MET pt", 20, 0, 400}, "Sys_METpt", "evWeight_pglep", "0");
-	add1DHist( {"h1sumet", "Sum ET", 50, 0.0, 5000.0}, "MET_sumEt", "evWeight_pglep", "0");
-	add1DHist( {"h1metphi", "MET phi", 20, -4.0, 4.0}, "Sys_METphi", "evWeight_pglep", "0");
+	add1DHist( {"hmetpt", "MET pt", 20, 0, 400}, "Sys_METpt", "evWeight_pglep", "0");
+	add1DHist( {"hsumet", "Sum ET", 50, 0.0, 5000.0}, "MET_sumEt", "evWeight_pglep", "0");
+	add1DHist( {"hmetphi", "MET phi", 20, -4.0, 4.0}, "Sys_METphi", "evWeight_pglep", "0");
 
-//        add1DHist( {"h1npvdof", "Number of PV of DoF", 50, 0.0, 50.0}, "PV_ndof", "evWeight_pglep", "0");
-//        add1DHist( {"h1npvs", "Number of PVs", 100, 0.0, 100.0}, "PV_npvs", "evWeight_pglep", "0");
-//        add1DHist( {"h1npvsgood", "Number of good PVs", 100, 0.0, 100.0}, "PV_npvsGood", "evWeight_pglep", "0");
+//        add1DHist( {"hnpvdof", "Number of PV of DoF", 50, 0.0, 50.0}, "PV_ndof", "evWeight_pglep", "0");
+//        add1DHist( {"hnpvs", "Number of PVs", 100, 0.0, 100.0}, "PV_npvs", "evWeight_pglep", "0");
+//        add1DHist( {"hnpvsgood", "Number of good PVs", 100, 0.0, 100.0}, "PV_npvsGood", "evWeight_pglep", "0");
 
-	add1DHist( {"h1nmuonpass", "Passing muoncuts", 5, 0.0, 5.0}, "nmuonpass", "evWeight_pglep", "0");
-	add1DHist( {"h1ncleantaupass", "Passing taucuts", 5, 0.0, 5.0}, "ncleantaupass", "evWeight_pglep", "0");
-	add1DHist( {"h1ncleanjetspass", "Passing jetcuts", 10, 0.0, 10.0}, "ncleanjetspass", "evWeight_pglep", "0");
-        add1DHist( {"h1ncleanbjetspass", "Passing bjetcuts", 5, 0.0, 5.0}, "ncleanbjetspass", "evWeight_pglep", "0");
+	add1DHist( {"hnmuonpass_nobweight", "Passing muoncuts", 5, 0.0, 5.0}, "nmuonpass", "evWeight_pglep", "0");
+	add1DHist( {"hncleantaupass_nobweight", "Passing taucuts", 5, 0.0, 5.0}, "ncleantaupass", "evWeight_pglep", "0");
+	add1DHist( {"hncleanjetspass_nobweight", "Passing jetcuts", 10, 0.0, 10.0}, "ncleanjetspass", "evWeight_pglep", "0");
+        add1DHist( {"hncleanbjetspass_nobweight", "Passing bjetcuts", 5, 0.0, 5.0}, "ncleanbjetspass", "evWeight_pglep", "0");
 
-        add1DHist( {"h1muon1pt", "Muon pt", 20, 0, 400}, "Sel_muon1pt", "evWeight_pglep", "0");
-        add1DHist( {"h1muon1eta", "Muon eta", 18, -2.7, 2.7}, "Sel_muon1eta", "evWeight_pglep", "0");
-        add1DHist( {"h1muon1mass", "Muon mass", 20, 0, 100}, "Sel_muon1mass", "evWeight_pglep", "0");
-        add1DHist( {"h1muMETmt", "Muon met mt", 20, 0, 200}, "muMET_mt", "evWeight_pglep", "0");
+        add1DHist( {"hmuon1pt_nobweight", "Muon pt", 20, 0, 400}, "Sel_muon1pt", "evWeight_pglep", "0");
+        add1DHist( {"hmuon1eta_nobweight", "Muon eta", 18, -2.7, 2.7}, "Sel_muon1eta", "evWeight_pglep", "0");
+        add1DHist( {"hmuon1mass_nobweight", "Muon mass", 20, 0, 100}, "Sel_muon1mass", "evWeight_pglep", "0");
+        add1DHist( {"hmuMETmt_nobweight", "Muon met mt", 20, 0, 200}, "muMET_mt", "evWeight_pglep", "0");
     
-        add1DHist( {"h1tau1pt", "Tau pt", 20, 0, 400}, "Sel_tau1pt", "evWeight_pglep", "00");
-        add1DHist( {"h1tau1eta", "Tau eta", 18, -2.7, 2.7}, "Sel_tau1eta", "evWeight_pglep", "00");
-        add1DHist( {"h1tau1mass", "Tau mass", 20, 0, 100}, "Sel_tau1mass", "evWeight_pglep", "00");
+        add1DHist( {"htau1pt_nobweight", "Tau pt", 20, 0, 400}, "Sel_tau1pt", "evWeight_pglep", "00");
+        add1DHist( {"htau1eta_nobweight", "Tau eta", 18, -2.7, 2.7}, "Sel_tau1eta", "evWeight_pglep", "00");
+        add1DHist( {"htau1mass_nobweight", "Tau mass", 20, 0, 100}, "Sel_tau1mass", "evWeight_pglep", "00");
 
-        add1DHist( {"h1mutau_dEta", "dEta of muon and tau", 25, -5, 5}, "mutau_dEta", "evWeight_pglep","00");
-        add1DHist( {"h1mutau_dPhi", "dPhi of muon and tau", 20, -4, 4}, "mutau_dPhi", "evWeight_pglep","00");
-        add1DHist( {"h1mutau_dR", "dR of muon and tau", 20, 0, 4.0}, "mutau_dR", "evWeight_pglep","00");
-        add1DHist( {"h1mutau_mass", "Mass of muon and tau", 30, 0, 600}, "mutau_mass", "evWeight_pglep","00");
+        add1DHist( {"hmutau_dEta_nobweight", "dEta of muon and tau", 25, -5, 5}, "mutau_dEta", "evWeight_pglep","00");
+        add1DHist( {"hmutau_dPhi_nobweight", "dPhi of muon and tau", 20, -4, 4}, "mutau_dPhi", "evWeight_pglep","00");
+        add1DHist( {"hmutau_dR_nobweight", "dR of muon and tau", 20, 0, 4.0}, "mutau_dR", "evWeight_pglep","00");
+        add1DHist( {"hmutau_mass_nobweight", "Mass of muon and tau", 30, 0, 600}, "mutau_mass", "evWeight_pglep","00");
 
-        add1DHist( {"h1jet1pt", "leading jet pt", 20, 0, 400}, "Sel2_jet1pt", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet1eta", "leading jet eta", 18, -2.7, 2.7}, "Sel2_jet1eta", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet1mass", "leading jet mass", 20, 0, 100}, "Sel2_jet1mass", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet1btag","btag discr of leading jet", 20, 0, 1.0}, "Sel2_jet1btag", "evWeight_pglep", "0000");
+        add1DHist( {"hjet1pt_nobweight", "leading jet pt", 20, 0, 400}, "Sel2_jet1pt", "evWeight_pglep", "0000");
+        add1DHist( {"hjet1eta_nobweight", "leading jet eta", 18, -2.7, 2.7}, "Sel2_jet1eta", "evWeight_pglep", "0000");
+        add1DHist( {"hjet1mass_nobweight", "leading jet mass", 20, 0, 100}, "Sel2_jet1mass", "evWeight_pglep", "0000");
+        add1DHist( {"hjet1btag_nobweight","btag discr of leading jet", 20, 0, 1.0}, "Sel2_jet1btag", "evWeight_pglep", "0000");
 
-        add1DHist( {"h1jet2pt", "sub-leading jet pt", 20, 0, 400}, "Sel2_jet2pt", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet2eta", "sub-leading jet eta", 18, -2.7, 2.7}, "Sel2_jet2eta", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet2mass", "sub-leading jet mass", 20, 0, 100}, "Sel2_jet2mass", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet2btag","btag discr of sub-leading jet", 20, 0, 1.0}, "Sel2_jet2btag", "evWeight_pglep", "0000");
+        add1DHist( {"hjet2pt_nobweight", "sub-leading jet pt", 20, 0, 400}, "Sel2_jet2pt", "evWeight_pglep", "0000");
+        add1DHist( {"hjet2eta_nobweight", "sub-leading jet eta", 18, -2.7, 2.7}, "Sel2_jet2eta", "evWeight_pglep", "0000");
+        add1DHist( {"hjet2mass_nobweight", "sub-leading jet mass", 20, 0, 100}, "Sel2_jet2mass", "evWeight_pglep", "0000");
+        add1DHist( {"hjet2btag_nobweight","btag discr of sub-leading jet", 20, 0, 1.0}, "Sel2_jet2btag", "evWeight_pglep", "0000");
 
-        add1DHist( {"h1jet3pt", "third jet pt", 20, 0, 400}, "Sel2_jet3pt", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet3eta", "third jet eta", 18, -2.7, 2.7}, "Sel2_jet3eta", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet3mass", "third jet mass", 20, 0, 100}, "Sel2_jet3mass", "evWeight_pglep", "0000");
-        add1DHist( {"h1jet3btag","btag discr of third jet", 20, 0, 1.0}, "Sel2_jet3btag", "evWeight_pglep", "0000");
+        add1DHist( {"hjet3pt_nobweight", "third jet pt", 20, 0, 400}, "Sel2_jet3pt", "evWeight_pglep", "0000");
+        add1DHist( {"hjet3eta_nobweight", "third jet eta", 18, -2.7, 2.7}, "Sel2_jet3eta", "evWeight_pglep", "0000");
+        add1DHist( {"hjet3mass_nobweight", "third jet mass", 20, 0, 100}, "Sel2_jet3mass", "evWeight_pglep", "0000");
+        add1DHist( {"hjet3btag_nobweight","btag discr of third jet", 20, 0, 1.0}, "Sel2_jet3btag", "evWeight_pglep", "0000");
     
         if(_isTTLFVcat){
-            add1DHist( {"h1jet4pt", "fourth jet pt", 20, 0, 400}, "Sel2_jet4pt", "evWeight_pglep", "0000");
-            add1DHist( {"h1jet4eta", "fourth jet eta", 18, -2.7, 2.7}, "Sel2_jet4eta", "evWeight_pglep", "0000");
-            add1DHist( {"h1jet4mass", "fourth jet mass", 20, 0, 100}, "Sel2_jet4mass", "evWeight_pglep", "0000");
-            add1DHist( {"h1jet4btag","btag discr of fourth jet", 20, 0, 1.0}, "Sel2_jet4btag", "evWeight_pglep", "0000");
+            add1DHist( {"hjet4pt_nobweight", "fourth jet pt", 20, 0, 400}, "Sel2_jet4pt", "evWeight_pglep", "0000");
+            add1DHist( {"hjet4eta_nobweight", "fourth jet eta", 18, -2.7, 2.7}, "Sel2_jet4eta", "evWeight_pglep", "0000");
+            add1DHist( {"hjet4mass_nobweight", "fourth jet mass", 20, 0, 100}, "Sel2_jet4mass", "evWeight_pglep", "0000");
+            add1DHist( {"hjet4btag_nobweight","btag discr of fourth jet", 20, 0, 1.0}, "Sel2_jet4btag", "evWeight_pglep", "0000");
         }
 
-        add1DHist( {"h1bjet1pt", "b jet pt", 20, 0, 400}, "Sel2_bjet1pt", "evWeight_pglep", "0000");
-        add1DHist( {"h1bjet1eta", "b jet eta", 18, -2.7, 2.7}, "Sel2_bjet1eta", "evWeight_pglep", "0000");
-        add1DHist( {"h1bjet1mass", "b jet mass", 20, 0, 100}, "Sel2_bjet1mass", "evWeight_pglep", "0000");
+        add1DHist( {"hbjet1pt_nobweight", "b jet pt", 20, 0, 400}, "Sel2_bjet1pt", "evWeight_pglep", "0000");
+        add1DHist( {"hbjet1eta_nobweight", "b jet eta", 18, -2.7, 2.7}, "Sel2_bjet1eta", "evWeight_pglep", "0000");
+        add1DHist( {"hbjet1mass_nobweight", "b jet mass", 20, 0, 100}, "Sel2_bjet1mass", "evWeight_pglep", "0000");
 
 
         //=================== Fully weighted ===================
@@ -320,79 +314,5 @@ void TopLFVAnalyzer::bookHists()
             add1DHist( {"hchi2_lfvjmutau_dEta", "dEta of lfv jet and mutau", 25, -5, 5}, "chi2_lfvjmutau_dEta", "evWeight","00000");
             add1DHist( {"hchi2_lfvjmutau_dPhi", "dPhi of lfv jet and mutau", 20, -4, 4}, "chi2_lfvjmutau_dPhi", "evWeight","00000");
             add1DHist( {"hchi2_lfvjmutau_dR", "dR of lfv jet and mutau", 20, 0, 4.0}, "chi2_lfvjmutau_dR", "evWeight","00000");
-        }
-
-        // Step 6 (Only for TTLFV region)
-        if(_isTTLFVcat){
-            add1DHist( {"hmetpt", "MET pt", 20, 0, 400}, "Sys_METpt", "evWeight", "000000");
-            add1DHist( {"hsumet", "Sum ET", 50, 0.0, 5000.0}, "MET_sumEt", "evWeight", "000000");
-            add1DHist( {"hmetphi", "MET phi", 20, -4.0, 4.0}, "Sys_METphi", "evWeight", "000000");
-
-            add1DHist( {"hnmuonpass", "Passing muoncuts", 5, 0.0, 5.0}, "nmuonpass", "evWeight", "000000");
-            add1DHist( {"hncleantaupass", "Passing taucuts", 5, 0.0, 5.0}, "ncleantaupass", "evWeight", "000000");
-            add1DHist( {"hncleanjetspass", "Passing jetcuts", 10, 0.0, 10.0}, "ncleanjetspass", "evWeight", "000000");
-            add1DHist( {"hncleanbjetspass", "Passing bjetcuts", 5, 0.0, 5.0}, "ncleanbjetspass", "evWeight", "0000");
-
-            add1DHist( {"hmuon1pt", "Muon pt", 20, 0, 400}, "Sel_muon1pt", "evWeight", "000000");
-            add1DHist( {"hmuon1eta", "Muon eta", 18, -2.7, 2.7}, "Sel_muon1eta", "evWeight", "000000");
-            add1DHist( {"hmuon1mass", "Muon mass", 20, 0, 100}, "Sel_muon1mass", "evWeight", "000000");
-            add1DHist( {"hmuMETmt", "Muon met mt", 20, 0, 200}, "muMET_mt", "evWeight", "000000");
-        
-            add1DHist( {"htau1pt", "Tau pt", 20, 0, 400}, "Sel_tau1pt", "evWeight", "000000");
-            add1DHist( {"htau1eta", "Tau eta", 18, -2.7, 2.7}, "Sel_tau1eta", "evWeight", "000000");
-            add1DHist( {"htau1mass", "Tau mass", 20, 0, 100}, "Sel_tau1mass", "evWeight", "000000");
-
-            add1DHist( {"hmutau_dEta", "dEta of muon and tau", 25, -5, 5}, "mutau_dEta", "evWeight","000000");
-            add1DHist( {"hmutau_dPhi", "dPhi of muon and tau", 20, -4, 4}, "mutau_dPhi", "evWeight","000000");
-            add1DHist( {"hmutau_dR", "dR of muon and tau", 20, 0, 4.0}, "mutau_dR", "evWeight","000000");
-            add1DHist( {"hmutau_mass", "Mass of muon and tau", 30, 0, 600}, "mutau_mass", "evWeight","000000");
-
-            add1DHist( {"hjet1pt", "leading jet pt", 20, 0, 400}, "Sel2_jet1pt", "evWeight", "000000");
-            add1DHist( {"hjet1eta", "leading jet eta", 18, -2.7, 2.7}, "Sel2_jet1eta", "evWeight", "000000");
-            add1DHist( {"hjet1mass", "leading jet mass", 20, 0, 100}, "Sel2_jet1mass", "evWeight", "000000");
-            add1DHist( {"hjet1btag","btag discr of leading jet", 20, 0, 1.0}, "Sel2_jet1btag", "evWeight", "000000");
-
-            add1DHist( {"hjet2pt", "sub-leading jet pt", 20, 0, 400}, "Sel2_jet2pt", "evWeight", "000000");
-            add1DHist( {"hjet2eta", "sub-leading jet eta", 18, -2.7, 2.7}, "Sel2_jet2eta", "evWeight", "000000");
-            add1DHist( {"hjet2mass", "sub-leading jet mass", 20, 0, 100}, "Sel2_jet2mass", "evWeight", "000000");
-            add1DHist( {"hjet2btag","btag discr of sub-leading jet", 20, 0, 1.0}, "Sel2_jet2btag", "evWeight", "000000");
-
-            add1DHist( {"hjet3pt", "third jet pt", 20, 0, 400}, "Sel2_jet3pt", "evWeight", "000000");
-            add1DHist( {"hjet3eta", "third jet eta", 18, -2.7, 2.7}, "Sel2_jet3eta", "evWeight", "000000");
-            add1DHist( {"hjet3mass", "third jet mass", 20, 0, 100}, "Sel2_jet3mass", "evWeight", "000000");
-            add1DHist( {"hjet3btag","btag discr of third jet", 20, 0, 1.0}, "Sel2_jet3btag", "evWeight", "000000");
-
-            add1DHist( {"hjet4pt", "fourth jet pt", 20, 0, 400}, "Sel2_jet4pt", "evWeight", "000000");
-            add1DHist( {"hjet4eta", "fourth jet eta", 18, -2.7, 2.7}, "Sel2_jet4eta", "evWeight", "000000");
-            add1DHist( {"hjet4mass", "fourth jet mass", 20, 0, 100}, "Sel2_jet4mass", "evWeight", "000000");
-            add1DHist( {"hjet4btag","btag discr of fourth jet", 20, 0, 1.0}, "Sel2_jet4btag", "evWeight", "000000");
-            
-            add1DHist( {"hbjet1pt", "b jet pt", 20, 0, 400}, "Sel2_bjet1pt", "evWeight", "000000");
-            add1DHist( {"hbjet1eta", "b jet eta", 18, -2.7, 2.7}, "Sel2_bjet1eta", "evWeight", "000000");
-            add1DHist( {"hbjet1mass", "b jet mass", 20, 0, 100}, "Sel2_bjet1mass", "evWeight", "000000");
-
-            // Histogram of Top mass reconstruction
-            add1DHist( {"hchi2", "Minimum chi2 for hadronic W", 20, 0, 600}, "chi2", "evWeight","000000");
-            add1DHist( {"hchi2_SMTop_mass", "chi2 SM Top mass", 20, 0, 400}, "chi2_SMTop_mass", "evWeight","000000");
-            add1DHist( {"hchi2_SMW_mass", "chi2 SM W mass", 20, 0, 400}, "chi2_SMW_mass", "evWeight","000000");
-            
-            add1DHist( {"hchi2_wqq_dEta", "dEta of jets from W", 25, -5, 5}, "chi2_wqq_dEta", "evWeight","000000");
-            add1DHist( {"hchi2_wqq_dPhi", "dPhi of jets from W", 20, -4, 4}, "chi2_wqq_dPhi", "evWeight","000000");
-            add1DHist( {"hchi2_wqq_dR", "dR of jets from W", 20, 0, 4.0}, "chi2_wqq_dR", "evWeight","000000");
-            
-            add1DHist( {"hchi2_lfvTop_mass", "chi2 LFV Top mass", 20, 0, 400}, "chi2_lfvTop_mass", "evWeight","000000");
-            add1DHist( {"hchi2_lfvjmu_dEta", "dEta of lfv jet and muon", 25, -5, 5}, "chi2_lfvjmu_dEta", "evWeight","000000");
-            add1DHist( {"hchi2_lfvjmu_dPhi", "dPhi of lfv jet and muon", 20, -4, 4}, "chi2_lfvjmu_dPhi", "evWeight","000000");
-            add1DHist( {"hchi2_lfvjmu_dR", "dR of lfv jet and muon", 20, 0, 4.0}, "chi2_lfvjmu_dR", "evWeight","000000");
-            add1DHist( {"hchi2_lfvjmu_mass", "Mass of lfv jet and muon", 15, 0, 300}, "chi2_lfvjmu_mass", "evWeight","000000");
-            
-            add1DHist( {"hchi2_lfvjtau_dEta", "dEta of lfv jet and tau", 25, -5, 5}, "chi2_lfvjtau_dEta", "evWeight","000000");
-            add1DHist( {"hchi2_lfvjtau_dPhi", "dPhi of lfv jet and tau", 20, -4, 4}, "chi2_lfvjtau_dPhi", "evWeight","000000");
-            add1DHist( {"hchi2_lfvjtau_dR", "dR of lfv jet and tau", 20, 0, 4.0}, "chi2_lfvjtau_dR", "evWeight","000000");
-            add1DHist( {"hchi2_lfvjtau_mass", "Mass of lfv jet and tau", 15, 0, 300}, "chi2_lfvjtau_mass", "evWeight","000000"); 
-            
-            add1DHist( {"hchi2_lfvjmutau_dEta", "dEta of lfv jet and mutau", 25, -5, 5}, "chi2_lfvjmutau_dEta", "evWeight","000000");
-            add1DHist( {"hchi2_lfvjmutau_dPhi", "dPhi of lfv jet and mutau", 20, -4, 4}, "chi2_lfvjmutau_dPhi", "evWeight","000000");
-            add1DHist( {"hchi2_lfvjmutau_dR", "dR of lfv jet and mutau", 20, 0, 4.0}, "chi2_lfvjmutau_dR", "evWeight","000000");
         }
 }

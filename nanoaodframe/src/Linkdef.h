@@ -12,8 +12,6 @@
 #pragma link C++ class NanoAODAnalyzerrdframe +;
 #pragma link C++ class LQtopAnalyzer +;
 #pragma link C++ class TopLFVAnalyzer +;
-#pragma link C++ class TopSTlfvAnalyzer +;
-#pragma link C++ class TopTTlfvAnalyzer +;
 #pragma link C++ class SkimEvents +;
 
 #endif /* LINKDEF_H_ */
