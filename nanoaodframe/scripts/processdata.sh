@@ -6,7 +6,7 @@ inpath=/data1/common/skimmed_NanoAOD/$version/data
 # btagup_hf, btagdown_hf, btagup_lf, btagdown_lf
 # btag
 # 'Absolute', 'Absolute_2018', 'BBEC1', 'BBEC1_2018', 'EC2', 'EC2_2018', 'FlavorQCD', 'HF', 'HF_2018', 'RelativeBal', 'RelativeSample_2018'
-label=jul22     # Arbitrary strings
+label=aug22     # Arbitrary strings
 ana=$1          # or ttlfv
 syst=nom
 target=${label}_${ana}/${syst} # Arbitrary folder name
