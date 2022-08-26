@@ -5,7 +5,7 @@ from ROOT import *
 import numpy as np
 
 base_path = './'
-label = 'jul_22_01'
+label = 'aug22_stlfv'
 nom_path = base_path + label + '/nom/'
 if not os.path.exists(nom_path):
     print("Folder '{}' does not exists.".format(nom_path))
@@ -23,23 +23,34 @@ if not os.path.exists(out_path):
         os.makedirs(out_path + '/' + run)
 
 # Systematic Sources => All systematics in one file.
-systs = ['nom','jesup','jesdown','puup','pudown',
-'btagup_jes','btagdown_jes',
+systs = ['nom','puup','pudown',
 'btagup_hf','btagdown_hf','btagup_lf','btagdown_lf',
 'btagup_hfstats1','btagdown_hfstats1',
 'btagup_hfstats2','btagdown_hfstats2',
 'btagup_lfstats1','btagdown_lfstats1',
 'btagup_lfstats2','btagdown_lfstats2',
 'btagup_cferr1','btagdown_cferr1',
-'btagup_cferr2','btagdown_cferr2',]
-systs = ['nom']
+'btagup_cferr2','btagdown_cferr2',
+'up_jesAbsolute','down_jesAbsolute',
+]
 
+systs=['nom','puup','pudown',
+'btagup_hf','btagdown_hf','btagup_lf','btagdown_lf',
+'btagup_hfstats1','btagdown_hfstats1','btagup_lfstats1','btagdown_lfstats1',
+'btagup_hfstats2','btagdown_hfstats2','btagup_lfstats2','btagdown_lfstats2',
+'btagup_cferr1','btagdown_cferr1','btagup_cferr2','btagdown_cferr2',
+'up_jesAbsolute','down_jesAbsolute','up_jesAbsolute_year','down_jesAbsolute_year',
+'up_jesBBEC1','down_jesBBEC1','up_jesBBEC1_year','down_jesBBEC1_year',
+'up_jesEC2','down_jesEC2','up_jesEC2_year','down_jesEC2_year',
+'up_jesFlavorQCD','down_jesFlavorQCD','up_jesRelativeBal','down_jesRelativeBal',]
+
+#systs=['puup']
 # Produce dictionary for file lists.
 file_list = {}
 for run in runs:
     file_list[run] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+run) if '.root' in i]
 
-def collect_systhists(outfile,fname,hlists,syst):
+def collect_systhists(outfile,fname,hlists,syst,run):
     fname = fname.replace(fname.split('_')[-1],'')
     syst_path = base_path+label+'/'+syst
     tmpf = TFile.Open(os.path.join(syst_path,run,fname+syst+'.root'), 'READ')
@@ -55,6 +66,18 @@ def collect_systhists(outfile,fname,hlists,syst):
                     newsyst = 'btag_' + syst.split('_')[-1] + 'up'
                 elif 'down' in syst:
                     newsyst = 'btag_' + syst.split('_')[-1] + 'down'
+            if 'jes' in syst:
+                if 'up' in syst:
+                    newsyst = syst.replace('up_','') + 'up'
+                elif 'down' in syst:
+                    newsyst = syst.replace('down_','') + 'down' 
+            if 'year' in syst:
+                if '16' in run:
+                    newsyst = syst.replace('year','2016')
+                elif '17' in run:
+                    newsyst = syst.replace('year','2017')
+                elif '18' in run:
+                    newsyst = syst.replace('year','2018')
             newtmphist = tmphist.Clone(histname + '__' + newsyst)
         outfile.cd()
         newtmphist.Write()
@@ -85,14 +108,14 @@ for run in runs:
         # Looping over all systematics.
         for syst in systs:
             if ("Run" in fname) and (syst != "nom"): continue  # Skip DATA
-            collect_systhists(outfile,fname,hlists,syst)
+            collect_systhists(outfile,fname,hlists,syst,run)
         outhlists = [ h.GetName() for h in outfile.GetListOfKeys() if 'cut' in h.GetName() ]
         for h in outhlists:
             if "Run" in fname:
                 continue
             if ('event' in h) or ('counter' in h):
                 continue
-            if h[:2] == 'h1':
+            if ('nobweight' in h) and ('hncleanbjetspass' not in h):
                 continue
             if ('cut00000' in h) or ('hncleanbjetspass' in h):
                 outfile.cd()
