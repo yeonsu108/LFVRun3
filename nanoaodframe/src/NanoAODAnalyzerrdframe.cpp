@@ -135,7 +135,6 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                     cout<<"Btag SF Uncertainty Source : "+_syst.substr(4)<<endl;
                 }
 
-    
                 // load the formulae b flavor tagging
                 _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_B, "iterativefit");
                 _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_C, "iterativefit");

@@ -8,9 +8,9 @@ mc18=/data1/common/skimmed_NanoAOD/$version/mc/18
 # nom, jecup, jecdown, puup, pudown, btagup_jes, btagdown_jes
 # btagup_hf, btagdown_hf, btagup_lf, btagdown_lf
 # btag
-label=jul22     # Arbitrary strings
+label=16Aug    # Arbitrary strings
 ana=$1          # or ttlfv
-syst=jec_upAbsolute
+syst=$2
 target=${label}_${ana}/${syst} # Arbitrary folder name
 mkdir -p ${target}
 # 16pre
