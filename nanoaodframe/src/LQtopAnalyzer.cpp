@@ -72,9 +72,16 @@ void LQtopAnalyzer::defineMoreVars()
         addVar({"Sel2_jet3eta", "Sel2_jeteta[2]", ""});
         addVar({"Sel2_jet3mass", "Sel2_jetmass[2]", ""});
 
+	//For the TT analysis
+        addVar({"Sel2_jet4pt", "Sel2_jetpt[3]", ""});
+        addVar({"Sel2_jet4eta", "Sel2_jeteta[3]", ""});
+        addVar({"Sel2_jet4mass", "Sel2_jetmass[3]", ""});
+
+
         addVar({"Sel2_jet1btag","Sel2_jetbtag[0]",""});
         addVar({"Sel2_jet2btag","Sel2_jetbtag[1]",""});
         addVar({"Sel2_jet3btag","Sel2_jetbtag[2]",""});
+	addVar({"Sel2_jet4btag","Sel2_jetbtag[3]",""}); //For the TT analysis
 
         addVar({"Sel2_bjet1pt", "Sel2_bjetpt[0]", ""});
         addVar({"Sel2_bjet1eta", "Sel2_bjeteta[0]", ""});
