@@ -23,7 +23,7 @@ using namespace std;
 
 NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
 :_rd(*atree),_jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0),_outrootfile(0), _rlm(_rd)
-	, _btagcalibreader(BTagEntry::OP_RESHAPING, "central", {"up_jes", "down_jes", "up_hf","down_hf","up_lf","down_lf","up_hfstats1","down_hfstats1","up_hfstats2","down_hfstats2","up_lfstats1","down_lfstats1","up_lfstats2","down_lfstats2"})
+	//, _btagcalibreader(BTagEntry::OP_RESHAPING, "central", {"up_jes", "down_jes", "up_hf","down_hf","up_lf","down_lf","up_hfstats1","down_hfstats1","up_hfstats2","down_hfstats2","up_lfstats1","down_lfstats1","up_lfstats2","down_lfstats2"})
 	, _rnt(&_rlm), currentnode(0), _jetCorrector(0), _jetCorrectionUncertainty(0)
 {
         // Skim switch
@@ -38,16 +38,16 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
         // Year switch
         if(_year.find("16pre") != std::string::npos){
                 _isRun16pre = true;
-                cout << "Run 16 pre (16 APV)" << endl;
+                cout << "Year : Run 16 pre (16 APV)" << endl;
         }else if(_year.find("16post") != std::string::npos){
                 _isRun16post = true;
-                cout << "Run 16 post" << endl;
+                cout << "Year : Run 16 post" << endl;
         }else if(_year.find("17") != std::string::npos){
                 _isRun17 = true;
-                cout << "Run 17" << endl;
+                cout << "Year : Run 17" << endl;
         }else if(_year.find("18") != std::string::npos){
                 _isRun18 = true;
-                cout << "Run 18" << endl;
+                cout << "Year : Run 18" << endl;
         }
         _isRun16 = _isRun16pre || _isRun16post;
 
@@ -55,21 +55,46 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
         // ST LFV and TT LFV switch
         if(_year.find("stlfv") != std::string::npos){
             _isSTLFVcat = true;
-            cout << "ST LFV region" << endl;
+            cout << "ST LFV region (category 1)" << endl;
         }
         if(_year.find("ttlfv") != std::string::npos){
             _isTTLFVcat = true;
-            cout << "TT LFV region" << endl;
+            cout << "TT LFV region (category 2)" << endl;
         }
 
 	// Data/mc switch
 	if(atree->GetBranch("genWeight") == nullptr){
 		_isData = true;
-		cout << "input file is data" <<endl;
+		cout << "Input file is data" <<endl;
 	}else{
 		_isData = false;
-		cout << "input file is MC" <<endl;
+		cout << "Input file is MC" <<endl;
 	}
+
+        // Systematic switch
+        if(_syst != "nom"){
+            cout<<"Systematics Information"<<endl;
+            cout<<"Activated option --syst "<<_syst<<endl;
+            
+            if(_syst.find("btag") != std::string::npos){
+                _isSystBtag = true;
+                cout<<"    Apply btag SF uncertainty"<<endl;
+            }
+            if(_syst.find("jes") != std::string::npos){
+                _isSystJes = true;
+                cout<<"    Apply JES uncertainty"<<endl;
+            }
+            if(_syst.find("up") != std::string::npos){
+                _isSystUp = true;
+                cout<<"    Systematic Up"<<endl;
+            }else if(_syst.find("down") != std::string::npos){
+                _isSystDown = true;
+                cout<<"    Systematic Down"<<endl;
+            }
+        }else{
+            cout<<"Nominal process without systematics"<<endl;
+        }
+
 	TObjArray *allbranches = atree->GetListOfBranches();
 	for (int i =0; i<allbranches->GetSize(); i++)
 	{
@@ -122,19 +147,61 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                 
 
                 cout<<"Loading Btag SF"<<endl;
-                if(_isRun16pre){
-                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL16preVFP_v2.csv"};
-                }else if(_isRun16post){
-                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL16postVFP_v3.csv"};
-                }else if(_isRun17){
-                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL17_v3.csv"};
-                }else if(_isRun18){
-                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL18_v2.csv"};
-                }
-                if(_syst.find("btag") != std::string::npos){
+                string filetag = _syst;
+                string btagpath = "data/btagSF/update/";
+                if(_isSystBtag){
+                    // _syst should be like "btagup_hf" or "btagdown_hf"
                     cout<<"Btag SF Uncertainty Source : "+_syst.substr(4)<<endl;
+                    if(_isSystUp){
+                        filetag = filetag.substr(7);
+                    }else if(_isSystDown){
+                        filetag = filetag.substr(9);
+                    }
+                }else if(_isSystJes){
+                    // _syst should be like "up_jesAbsolute" or "down_jesAbsolute"
+                    cout<<"Correlation of btag SF and JES uncertainties : "+_syst<<endl;
+                    if(_isSystUp){
+                        filetag = filetag.substr(3);
+                    }else if(_isSystDown){
+                        filetag = filetag.substr(5);
+                    }
+                }else {
+                    // all files have "central" so we can load any file.
+                    filetag = "cferr1"; // smallest size.
                 }
-
+                if(_isRun16pre){
+                    _btagcalib = {"DeepJet",btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_16preVFP.csv"};
+                    cout<<"    Loaded file : "<<btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_16preVFP.csv"<<endl;
+                }else if(_isRun16post){
+                    _btagcalib = {"DeepJet",btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_16postVFP.csv"};
+                    cout<<"    Loaded file : "<<btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_16postVFP.csv"<<endl;
+                }else if(_isRun17){
+                    _btagcalib = {"DeepJet",btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_17.csv"};
+                    cout<<"    Loaded file : "<<btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_17.csv"<<endl;
+                }else if(_isRun18){
+                    _btagcalib = {"DeepJet",btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_18.csv"};
+                    cout<<"    Loaded file : "<<btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_18.csv"<<endl;
+                }
+//                if(_isRun16pre){
+//                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL16preVFP_v2.csv"};
+//                }else if(_isRun16post){
+//                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL16postVFP_v3.csv"};
+//                }else if(_isRun17){
+//                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL17_v3.csv"};
+//                }else if(_isRun18){
+//                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL18_v2.csv"};
+//                }
+                
+                if(_isSystBtag){
+                    cout<<"    Loading uncertainties for "<<_syst.substr(4)<<endl;
+                    _btagcalibreader = {BTagEntry::OP_RESHAPING, _syst.substr(4)};
+                }else if(_isSystJes){
+                    cout<<"    Loading uncertainties for "<<_syst<<endl;
+                    _btagcalibreader = {BTagEntry::OP_RESHAPING, _syst};
+                }else{
+                    cout<<"    Loading uncertainties for central"<<endl;
+                    _btagcalibreader = {BTagEntry::OP_RESHAPING, "central"};
+                }
                 // load the formulae b flavor tagging
                 _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_B, "iterativefit");
                 _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_C, "iterativefit");
@@ -453,14 +520,24 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, string jeta
 
 		// object to calculate uncertainty
                 // _syst should be like "jec_upAbsolute"
-                if(_syst.find("jec") != std::string::npos) {
-                    string uncsource = _syst.substr(4);
-                    if(_syst.find("up") != std::string::npos) {
-                        uncsource = uncsource.substr(2);
-                    }else if(_syst.find("down") != std::string::npos) {
-                        uncsource = uncsource.substr(4);
+                if(_isSystJes) {
+                    cout<<"Applying JEC Uncertainty"<<endl;
+                    if(_syst.find("year") != std::string::npos) {
+                        int begin_position = _syst.length() - 4;
+                        if(_isRun16) {
+                            _syst.replace(begin_position,4,"2016");
+                        } else if(_isRun17) {
+                            _syst.replace(begin_position,4,"2017");
+                        } else if(_isRun18) {
+                            _syst.replace(begin_position,4,"2018");
+                        }
                     }
-                    cout<<"Apply JEC Uncertainty"<<endl;
+                    string uncsource = _syst;
+                    if(_isSystUp) {
+                        uncsource = uncsource.substr(6);    // Remove "up_jes"
+                    }else if(_isSystDown) {
+                        uncsource = uncsource.substr(8);    // Remove "down_jes"
+                    }
                     cout<<"JEC Uncertainty Source : "+uncsource<<endl;
                     string dbfilenameunc = basedirectory+"RegroupedV2_"+globaltag+"_"+datamcflag+"_UncertaintySources_"+jetalgo+".txt";
                     JetCorrectorParameters *uncCorrPar = new JetCorrectorParameters(dbfilenameunc,uncsource);
@@ -603,7 +680,7 @@ void NanoAODAnalyzerrdframe::applyJetMETCorrections()
                            .Define("MET_pt_corr", metcorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"})
                            .Define("MET_phi_corr", metphicorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"});
 
-                if (_syst.find("jec") != std::string::npos) { 
+                if (_isSystJes) { 
                     _rlm = _rlm.Define("Jet_pt_relerror", jecuncertaintylambdaf, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
                                .Define("Jet_pt_corr_up", "Jet_pt_corr*(1.0f + Jet_pt_relerror)")
                                .Define("Jet_pt_corr_down", "Jet_pt_corr*(1.0f - Jet_pt_relerror)")
@@ -620,12 +697,12 @@ void NanoAODAnalyzerrdframe::selectJets()
 	// apparently size() returns long int, which ROOT doesn't recognized for branch types
 	// , so it must be cast into int if you want to save them later into a TTree
         if (_globaltag != ""){
-            if (_syst.find("jec") != std::string::npos){
-                if (_syst.find("up") != std::string::npos){
+            if (_isSystJes){
+                if (_isSystUp){
                     _rlm = _rlm.Define("Sys_jetpt","Jet_pt_corr_up");
                     _rlm = _rlm.Define("Sys_METpt","MET_pt_corr_up");
                     _rlm = _rlm.Define("Sys_METphi","MET_phi_corr_up");
-                }else if (_syst.find("down") != std::string::npos){
+                }else if (_isSystDown){
                     _rlm = _rlm.Define("Sys_jetpt","Jet_pt_corr_down");
                     _rlm = _rlm.Define("Sys_METpt","MET_pt_corr_down");
                     _rlm = _rlm.Define("Sys_METphi","MET_phi_corr_down");
@@ -889,8 +966,10 @@ void NanoAODAnalyzerrdframe::calculateEvWeight()
                 else hadfconv=BTagEntry::FLAV_UDSG;
 
                 double w = 1.0;
-                if(_syst.find("btag") != std::string::npos){
+                if(_isSystBtag){
                     w = _btagcalibreader.eval_auto_bounds(_syst.substr(4), hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                }else if(_isSystJes){ 
+                    w = _btagcalibreader.eval_auto_bounds(_syst, hadfconv, fabs(etas[i]), pts[i], btags[i]);
                 }else{
                     w = _btagcalibreader.eval_auto_bounds("central", hadfconv, fabs(etas[i]), pts[i], btags[i]);
                 }

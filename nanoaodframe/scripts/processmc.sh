@@ -4,6 +4,8 @@ mc16pre=/data1/common/skimmed_NanoAOD/$version/mc/16pre
 mc16post=/data1/common/skimmed_NanoAOD/$version/mc/16post
 mc17=/data1/common/skimmed_NanoAOD/$version/mc/17
 mc18=/data1/common/skimmed_NanoAOD/$version/mc/18
+label=aug22     # Arbitrary strings
+ana=$1          # stlfv or ttlfv
 # syst
 # nom, jecup, jecdown, puup, pudown, btagup_jes, btagdown_jes
 # btagup_hf, btagdown_hf, btagup_lf, btagdown_lf

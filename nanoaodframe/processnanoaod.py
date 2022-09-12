@@ -198,10 +198,7 @@ def Nanoaodprocessor_singledir(outputroot, indir, outtree, intree, year, syst, j
         t.Add(afile)
     #aproc = ROOT.LQtopAnalyzer(t, outputroot, year, syst, json, globaltag, split)
     aproc = None
-    if analyzer == "stlfv":
-        aproc = ROOT.TopSTlfvAnalyzer(t, outputroot, year+analyzer, syst, json, globaltag, split)
-    elif analyzer == "ttlfv":
-        aproc = ROOT.TopTTlfvAnalyzer(t, outputroot, year+analyzer, syst, json, globaltag, split)
+    aproc = ROOT.TopLFVAnalyzer(t, outputroot, year+analyzer, syst, json, globaltag, split)
     aproc.setupAnalysis()
     aproc.run(saveallbranches, outtree)
 

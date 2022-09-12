@@ -4,6 +4,8 @@ mc16pre=/data1/common/skimmed_NanoAOD/$version/mc/16pre
 mc16post=/data1/common/skimmed_NanoAOD/$version/mc/16post
 mc17=/data1/common/skimmed_NanoAOD/$version/mc/17
 mc18=/data1/common/skimmed_NanoAOD/$version/mc/18
+label=aug22     # Arbitrary strings
+ana=$1          # stlfv or ttlfv
 # syst
 # nom, jecup, jecdown, puup, pudown, btagup_jes, btagdown_jes
 # btagup_hf, btagdown_hf, btagup_lf, btagdown_lf
@@ -40,7 +42,7 @@ mkdir -p ${target}
 ./processnanoaod.py --analyzer ${ana} -A -Y 16post -S ${syst} --globaltag Summer19UL16_V7 ${mc16post}/TT_LFV_TToUMuTau_Vector ${target}/TT_LFV_TToUMuTau_Vector_16post_${syst}.root &> ${target}/TT_LFV_TToUMuTau_Vector_16post_${syst}.out &
 ./processnanoaod.py --analyzer ${ana} -A -Y 16post -S ${syst} --globaltag Summer19UL16_V7 ${mc16post}/TT_LFV_TToUMuTau_Tensor ${target}/TT_LFV_TToUMuTau_Tensor_16post_${syst}.root &> ${target}/TT_LFV_TToUMuTau_Tensor_16post_${syst}.out &
 
-sleep 15m
+sleep 12m
 
 # 17
 ./processnanoaod.py --analyzer ${ana} -A -Y 17 -S ${syst} --globaltag Summer19UL17_V5 ${mc17}/ST_LFV_TCMuTau_Scalar ${target}/ST_LFV_TCMuTau_Scalar_17_${syst}.root &> ${target}/ST_LFV_TCMuTau_Scalar_17_${syst}.out &

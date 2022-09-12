@@ -31,21 +31,34 @@ json18=data/GoldenJSON/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt
 #!/bin/bash
 version=skim_LFVv8
 mc16pre=/data1/common/skimmed_NanoAOD/$version/mc/16pre
+
 ana=stlfv
 label=test_process # Arbitrary strings
 syst=nom
 target=${label}_${ana}/${syst} # Arbitrary folder name
-#mkdir -p ${target}
+mkdir -p ${target}
+./processnanoaod.py --analyzer ${ana} -A -Y 16pre -S ${syst} --globaltag Summer19UL16APV_V7 ${mc16pre}/ST_t-channel_top ${target}/ST_t-channel_top_16pre_${syst}.root &> ${target}/ST_t-channel_top_16pre_${syst}.out &
 
+syst=up_jesAbsolute
+target=${label}_${ana}/${syst} # Arbitrary folder name
+mkdir -p ${target}
+./processnanoaod.py --analyzer ${ana} -A -Y 16pre -S ${syst} --globaltag Summer19UL16APV_V7 ${mc16pre}/ST_t-channel_top ${target}/ST_t-channel_top_16pre_${syst}.root &> ${target}/ST_t-channel_top_16pre_${syst}.out &
+
+syst=btagup_hf
+target=${label}_${ana}/${syst} # Arbitrary folder name
+mkdir -p ${target}
+./processnanoaod.py --analyzer ${ana} -A -Y 16pre -S ${syst} --globaltag Summer19UL16APV_V7 ${mc16pre}/ST_t-channel_top ${target}/ST_t-channel_top_16pre_${syst}.root &> ${target}/ST_t-channel_top_16pre_${syst}.out &
+
+ana=ttlfv
 syst=nom
 target=${label}_${ana}/${syst} # Arbitrary folder name
 mkdir -p ${target}
-#./processnanoaod.py --analyzer ${ana} -A -Y 16pre -S ${syst} --globaltag Summer19UL16APV_V7 ${mc16pre}/ST_t-channel_top ${target}/ST_t-channel_top_16pre_${syst}.root &> ${target}/ST_t-channel_top_16pre_${syst}.out &
+./processnanoaod.py --analyzer ${ana} -A -Y 16pre -S ${syst} --globaltag Summer19UL16APV_V7 ${mc16pre}/ST_t-channel_top ${target}/ST_t-channel_top_16pre_${syst}.root &> ${target}/ST_t-channel_top_16pre_${syst}.out &
 
-syst=jec_Absolute
+syst=up_jesAbsolute
 target=${label}_${ana}/${syst} # Arbitrary folder name
 mkdir -p ${target}
-#./processnanoaod.py --analyzer ${ana} -A -Y 16pre -S ${syst} --globaltag Summer19UL16APV_V7 ${mc16pre}/ST_t-channel_top ${target}/ST_t-channel_top_16pre_${syst}.root &> ${target}/ST_t-channel_top_16pre_${syst}.out &
+./processnanoaod.py --analyzer ${ana} -A -Y 16pre -S ${syst} --globaltag Summer19UL16APV_V7 ${mc16pre}/ST_t-channel_top ${target}/ST_t-channel_top_16pre_${syst}.root &> ${target}/ST_t-channel_top_16pre_${syst}.out &
 
 syst=btagup_hf
 target=${label}_${ana}/${syst} # Arbitrary folder name

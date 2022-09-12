@@ -22,7 +22,7 @@ clean:
 	rm -f $(OBJS) $(TARGET) libnanoaodrdframe.so $(SRCDIR)/JetMETObjects_dict.C $(SRCDIR)/rootdict.C JetMETObjects_dict_rdict.pcm rootdict_rdict.pcm
 
 #$(SRCDIR)/rootdict.C: $(SRCDIR)/NanoAODAnalyzerrdframe.h $(SRCDIR)/LQtopAnalyzer.h $(SRCDIR)/SkimEvents.h $(SRCDIR)/Linkdef.h
-$(SRCDIR)/rootdict.C: $(SRCDIR)/NanoAODAnalyzerrdframe.h $(SRCDIR)/TopSTlfvAnalyzer.h $(SRCDIR)/TopTTlfvAnalyzer.h $(SRCDIR)/SkimEvents.h $(SRCDIR)/Linkdef.h
+$(SRCDIR)/rootdict.C: $(SRCDIR)/NanoAODAnalyzerrdframe.h $(SRCDIR)/TopLFVAnalyzer.h $(SRCDIR)/SkimEvents.h $(SRCDIR)/Linkdef.h
 	rm -f $@
 	rootcint -v $@ -c $(rootflags) $^
 	ln -s $(SRCDIR)/rootdict_rdict.pcm .
