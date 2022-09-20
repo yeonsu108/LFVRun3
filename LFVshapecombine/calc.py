@@ -56,8 +56,9 @@ ops = ["c_s","c_v","c_t","u_s","u_v","u_t"]
 
 
 
-totalLimits = []
+
 for year in years:
+    totalLimits = []
     for cat in cats:
         if year == "run2" and cat != "combined": continue
         for op in ops:
