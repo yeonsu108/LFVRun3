@@ -1009,7 +1009,8 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists()
 
 	for (auto &x : _hist1dinfovector)
 	{
-		std::string hpost = "_nocut";
+		//std::string hpost = "_nocut";
+		std::string hpost = "_S0";
 
 		if (x.mincutstep.length()==0)
 		{
