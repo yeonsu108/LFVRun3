@@ -62,7 +62,7 @@ htau1pt = df.Define("tau1pt","Tau_pt[seltaucuts][0]").Histo1D(("htau1pt", "htau1
 htau1eta = df.Define("tau1eta","Tau_eta[seltaucuts][0]").Histo1D(("htau1eta", "htau1eta", 40, -4.0, 4.0),"tau1eta")
 
 hfile = TFile( outfolder + outfname, "RECREATE" )
-#hcount_nocut = TH1D("hcount_nocut","counter",2,0,2)
+#hcount_nocut = TH1D("hcount_S0","counter",2,0,2)
 #hcount_nocut.SetBinContent(1,nocutevts)
 #hcount_nocut.Write()
 hmuon1pt.Write()
