@@ -1,0 +1,127 @@
+configuration:
+  width: 450
+  height: 450
+  luminosity-label: '%1$.1f fb^{-1} at #sqrt{s} = 13 TeV'
+  experiment: " CMS"
+  extra-label: "work in progress"
+  root: ''
+  luminosity: 59830
+  luminosity-error: 0.025
+  error-fill-style: 3254
+  error-fill-color: "#ee556270"
+  ratio-fit-error-fill-style: 1001
+  ratio-fit-error-fill-color: "#aa556270"
+  ratio-fit-line-color: "#0B486B"
+  blinded-range-fill-color: "#29556270"
+  blinded-range-fill-style: 1001
+  yields-table-align: v
+  book-keeping-file: 'plots.root'
+  yields-table-numerical-precision-yields: 2
+
+files: 
+  include: ['files_2018.yml']
+
+systematics:
+#  - ttLJ_xsec:   {type: const, value: 1.055, on: 'hist_TTpowhegttbb.root'}
+#  - ttLL_xsec:   {type: const, value: 1.055, on: 'hist_TTLLpowhegttbb.root'}
+#  - ttHad_xsec:  {type: const, value: 1.055, on: 'hist_TTHadpowhegttbb.root'}
+##   - ttLJbb_xsec2:  {type: const, value: 1.17, on: 'hist_TTpowhegttbb.root'}
+##   - ttLLbb_xsec2:  {type: const, value: 1.25, on: 'hist_TTLLpowhegttbb.root'}
+##   - ttLJcc_xsec2:  {type: const, value: 1.5, on: 'hist_TTpowhegttcc.root'}
+##   - ttLLcc_xsec2:  {type: const, value: 1.5, on: 'hist_TTLLpowhegttcc.root'}
+#  - other_xsec1:   {type: const, value: 1.1, on: 'hist_DYJets.root'}
+#  - other_xsec2:   {type: const, value: 1.1, on: 'hist_DYJets10to50.root'}
+#  - other_xsec3:   {type: const, value: 1.1, on: 'hist_W1JetsToLNu.root'}
+#  - other_xsec4:   {type: const, value: 1.1, on: 'hist_W2JetsToLNu.root'}
+#  - other_xsec5:   {type: const, value: 1.1, on: 'hist_W3JetsToLNu.root'}
+#  - other_xsec6:   {type: const, value: 1.1, on: 'hist_W4JetsToLNu.root'}
+#  - other_xsec7:   {type: const, value: 1.1, on: 'hist_SingleTops.root'}
+#  - other_xsec8:   {type: const, value: 1.1, on: 'hist_SingleTopt.root'}
+#  - other_xsec9:   {type: const, value: 1.1, on: 'hist_SingleTbart.root'}
+#  - other_xsec10:  {type: const, value: 1.1, on: 'hist_SingleToptW.root'}
+#  - other_xsec11:  {type: const, value: 1.1, on: 'hist_SingleTbartW.root'}
+#  - other_xsec12:  {type: const, value: 1.1, on: 'hist_WW.root'}
+#  - other_xsec13:  {type: const, value: 1.1, on: 'hist_WZ.root'}
+#  - other_xsec14:  {type: const, value: 1.1, on: 'hist_ZZ.root'}
+#  - other_xsec15:  {type: const, value: 1.1, on: 'hist_ttHTobb.root'}
+#  - other_xsec16:  {type: const, value: 1.1, on: 'hist_ttHToNonbb.root'}
+#  - other_xsec17:  {type: const, value: 1.1, on: 'hist_TTWJetsToLNuPSweight.root'}
+#  - other_xsec18:  {type: const, value: 1.1, on: 'hist_TTWJetsToQQ.root'}
+#  - other_xsec19:  {type: const, value: 1.1, on: 'hist_TTZToLLNuNu.root'}
+#  - other_xsec20:  {type: const, value: 1.1, on: 'hist_TTZToQQ.root'}
+  - pu
+  - jesAbsolute
+  - jesAbsolute_2018
+  - jesBBEC1
+  - jesBBEC1_2018
+  - jesFlavorQCD
+  - jesRelativeBal
+  - jesRelativeSample_2018
+  - btag_hf
+  - btag_lf
+  - btag_hfstats1
+  - btag_lfstats1
+  - btag_hfstats2
+  - btag_lfstats2
+  - btag_cferr1
+  - btag_cferr2
+#  - muid
+#  - muiso
+#  - mutrg
+#  - elid
+#  - elreco
+#  - elzvtx
+#  - eltrg
+#  - jecAbsolute
+#  - jecAbsolute2018
+#  - jecBBEC1
+#  - jecBBEC12018
+#  - jecFlavorQCD
+#  - jecRelativeBal
+#  - jecRelativeSample2018
+#  - jer
+#  - scale: {type: shape, on: 'hist_TTpowhegttbb.root'}
+#  - scale: {type: shape, on: 'hist_TTLLpowhegttbb.root'}
+#  - scale: {type: shape, on: 'hist_TTHadpowhegttbb.root'}
+#  - scale: {type: shape, on: 'hist_STTH1L3BHut.root'}
+#  - scale: {type: shape, on: 'hist_STTH1L3BHct.root'}
+#  - scale: {type: shape, on: 'hist_TTTH1L3BHut.root'}
+#  - scale: {type: shape, on: 'hist_TTTH1L3BHct.root'}
+#  - ps: {type: shape, on: 'hist_TTpowhegttbb.root'}
+#  - ps: {type: shape, on: 'hist_TTLLpowhegttbb.root'}
+#  - ps: {type: shape, on: 'hist_TTHadpowhegttbb.root'}
+#  - ps: {type: shape, on: 'hist_STTH1L3BHut.root'}
+#  - ps: {type: shape, on: 'hist_STTH1L3BHct.root'}
+#  - ps: {type: shape, on: 'hist_TTTH1L3BHut.root'}
+#  - ps: {type: shape, on: 'hist_TTTH1L3BHct.root'}
+#  - hdamp: {type: shape, on: 'hist_TTpowhegttbb.root'}
+#  - hdamp: {type: shape, on: 'hist_TTLLpowhegttbb.root'}
+#  - hdamp: {type: shape, on: 'hist_TTHadpowhegttbb.root'}
+#  - pdf: {type: shape, on: 'hist_TTpowhegttbb.root'}
+#  - pdf: {type: shape, on: 'hist_TTLLpowhegttbb.root'}
+#  - pdf: {type: shape, on: 'hist_TTHadpowhegttbb.root'}
+#  - pdf: {type: shape, on: 'hist_STTH1L3BHut.root'}
+#  - pdf: {type: shape, on: 'hist_STTH1L3BHct.root'}
+#  - pdf: {type: shape, on: 'hist_TTTH1L3BHut.root'}
+#  - pdf: {type: shape, on: 'hist_TTTH1L3BHct.root'}
+#  - TuneCP5: {type: shape, on: 'hist_TTpowhegttbb.root'}
+#  - TuneCP5: {type: shape, on: 'hist_TTLLpowhegttbb.root'}
+#  - TuneCP5: {type: shape, on: 'hist_TTHadpowhegttbb.root'}
+#  - lf
+#  - hf
+#  - lfstat1
+#  - lfstat2
+#  - hfstat1
+#  - hfstat2
+#  - cferr1
+#  - cferr2
+
+plots:
+  include: ['histos_ttlfv_control.yml']
+
+legend:
+  position: [0.18, 0.70, 0.96, 0.88]
+  columns: 5
+
+groups:
+  include: ['groups.yml']
