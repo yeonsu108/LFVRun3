@@ -27,12 +27,12 @@
 #  - other_xsec20:  {type: const, value: 1.1, on: 'hist_TTZToQQ.root'}
   - pu
   - jesAbsolute
-  - jesAbsolute_2018
+  - jesAbsolute_2016
   - jesBBEC1
-  - jesBBEC1_2018
+  - jesBBEC1_2016
   - jesFlavorQCD
   - jesRelativeBal
-  - jesRelativeSample_2018
+  - jesRelativeSample_2016
   - btag_hf
   - btag_lf
   - btag_hfstats1
@@ -49,12 +49,12 @@
 #  - elzvtx
 #  - eltrg
 #  - jecAbsolute
-#  - jecAbsolute2018
+#  - jecAbsolute2016
 #  - jecBBEC1
-#  - jecBBEC12018
+#  - jecBBEC12016
 #  - jecFlavorQCD
 #  - jecRelativeBal
-#  - jecRelativeSample2018
+#  - jecRelativeSample2016
 #  - jer
 #  - scale: {type: shape, on: 'hist_TTpowhegttbb.root'}
 #  - scale: {type: shape, on: 'hist_TTLLpowhegttbb.root'}
