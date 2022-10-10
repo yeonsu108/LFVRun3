@@ -1021,7 +1021,8 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists()
 
 	for (auto acut : _cutinfovector)
 	{
-		std::string cutname = "cut"+ acut.idx;
+		//std::string cutname = "cut"+ acut.idx;
+    std::string cutname = "S" + to_string(acut.idx.length());
 		std::string hpost = "_"+cutname;
 		RNode *r = _rnt.getParent(acut.idx)->getRNode();
 		auto rnext = new RNode(r->Define(cutname, acut.cutdefinition));
