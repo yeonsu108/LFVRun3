@@ -9,7 +9,7 @@ import multiprocessing
 
 labels = ['rerun_staug22','rerun_ttaug22']
 
-lumi_dict = {'16pre': 19500, '16post': 16800, '17': 41530, '18':59740}
+lumi_dict = {'16pre': 19500, '16post': 16800, '17': 41530, '18':59740}#run2:137570
 file_names = collections.OrderedDict()
 
 for label in labels:

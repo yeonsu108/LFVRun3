@@ -11,7 +11,6 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-from utils.hists import *
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
 processed = "aug22"
