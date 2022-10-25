@@ -14,9 +14,10 @@ common_syst_list = ['pu', 'btaglf', 'btaghf', 'btaglfstat1',
 syst = ['jesAbsoluteyear', 'jesBBEC1year', 'jesEC2year', 'jesRelativeSampleyear']
 for sy in syst:
   if 'year' in sy:
-    common_syst_list.append(sy.replace('year', '2016'))
-    common_syst_list.append(sy.replace('year', '2017'))
-    common_syst_list.append(sy.replace('year', '2018'))
+    common_syst_list.append(sy.replace('year', '16pre'))
+    common_syst_list.append(sy.replace('year', '16post'))
+    common_syst_list.append(sy.replace('year', '17'))
+    common_syst_list.append(sy.replace('year', '18'))
   else: common_syst_list.append(sy)
 
 reco_str = 'rerun_CHaug22/'
@@ -103,7 +104,7 @@ for ch in chs:
         else: string_for_files += line
 
   with open(config_path + 'files_Run2.yml', 'w+') as fnew:
-    print>>fnew, """
+    print("""
 '{0}/Run2/hist_ST_LFV_TCMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVSTcv'
@@ -135,7 +136,7 @@ for ch in chs:
   generated-events: 11286000
   group: GLFVTTuv
   order: 4
-    """.format(dest_path)
+    """.format(dest_path), file=fnew)
     fnew.write(string_for_files)
 
   file_syst = ''
