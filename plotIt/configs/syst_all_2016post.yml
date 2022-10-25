@@ -27,20 +27,20 @@
 #  - other_xsec20:  {type: const, value: 1.1, on: 'hist_TTZToQQ.root'}
   - pu
   - jesAbsolute
-  - jesAbsolute_2016
+  - jesAbsolute16post
   - jesBBEC1
-  - jesBBEC1_2016
+  - jesBBEC116post
   - jesFlavorQCD
   - jesRelativeBal
-  - jesRelativeSample_2016
-  - btag_hf
-  - btag_lf
-  - btag_hfstats1
-  - btag_lfstats1
-  - btag_hfstats2
-  - btag_lfstats2
-  - btag_cferr1
-  - btag_cferr2
+  - jesRelativeSample16post
+  - btaghf
+  - btaglf
+  - btaghfstats1
+  - btaglfstats1
+  - btaghfstats2
+  - btaglfstats2
+  - btagcferr1
+  - btagcferr2
 #  - muid
 #  - muiso
 #  - mutrg

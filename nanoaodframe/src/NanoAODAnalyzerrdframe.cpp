@@ -1009,8 +1009,8 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists()
 
 	for (auto &x : _hist1dinfovector)
 	{
-		//std::string hpost = "_nocut";
-		std::string hpost = "_S0";
+		std::string hpost = "_nocut";
+		//std::string hpost = "_S0";
 
 		if (x.mincutstep.length()==0)
 		{
@@ -1022,8 +1022,8 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists()
 
 	for (auto acut : _cutinfovector)
 	{
-		//std::string cutname = "cut"+ acut.idx;
-    std::string cutname = "S" + to_string(acut.idx.length());
+		std::string cutname = "cut"+ acut.idx;
+    //std::string cutname = "S" + to_string(acut.idx.length());
 		std::string hpost = "_"+cutname;
 		RNode *r = _rnt.getParent(acut.idx)->getRNode();
 		auto rnext = new RNode(r->Define(cutname, acut.cutdefinition));

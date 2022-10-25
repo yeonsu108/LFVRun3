@@ -51,12 +51,12 @@ systematics:
 #  - other_xsec20:  {type: const, value: 1.1, on: 'hist_TTZToQQ.root'}
   - pu
   - jesAbsolute
-  - jesAbsolute_2018
+  - jesAbsolute18
   - jesBBEC1
-  - jesBBEC1_2018
+  - jesBBEC118
   - jesFlavorQCD
   - jesRelativeBal
-  - jesRelativeSample_2018
+  - jesRelativeSample18
   - btag_hf
   - btag_lf
   - btag_hfstats1
