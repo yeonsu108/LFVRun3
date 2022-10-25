@@ -2,15 +2,15 @@ GData:
   legend: 'Data'
   marker-size: 0.6
 
-Gttdi:
+Gttll:
   fill-color: '#330000'
   legend: 'TTLL'
 
-Gttsemi:
+Gttlj:
   fill-color: '#990000'
   legend: 'TTLJ'
 
-Gtthad:
+Gttjj:
   fill-color: '#cc0000'
   legend: 'TTHad'
 

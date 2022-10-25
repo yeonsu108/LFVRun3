@@ -5,8 +5,8 @@ configuration:
   experiment: " CMS"
   extra-label: "work in progress"
   root: ''
-  luminosity: 41480
-  luminosity-error: 0.023
+  luminosity: 59830
+  luminosity-error: 0.025
   error-fill-style: 3254
   error-fill-color: "#ee556270"
   ratio-fit-error-fill-style: 1001
@@ -19,7 +19,7 @@ configuration:
   yields-table-numerical-precision-yields: 2
 
 files: 
-  include: ['files_2017.yml']
+  include: ['files_2018.yml']
 
 systematics:
 #  - ttLJ_xsec:   {type: const, value: 1.055, on: 'hist_TTpowhegttbb.root'}
@@ -51,12 +51,12 @@ systematics:
 #  - other_xsec20:  {type: const, value: 1.1, on: 'hist_TTZToQQ.root'}
   - pu
   - jesAbsolute
-  - jesAbsolute_2017
+  - jesAbsolute_2018
   - jesBBEC1
-  - jesBBEC1_2017
+  - jesBBEC1_2018
   - jesFlavorQCD
   - jesRelativeBal
-  - jesRelativeSample_2017
+  - jesRelativeSample_2018
   - btag_hf
   - btag_lf
   - btag_hfstats1
@@ -73,12 +73,12 @@ systematics:
 #  - elzvtx
 #  - eltrg
 #  - jecAbsolute
-#  - jecAbsolute2017
+#  - jecAbsolute2018
 #  - jecBBEC1
-#  - jecBBEC12017
+#  - jecBBEC12018
 #  - jecFlavorQCD
 #  - jecRelativeBal
-#  - jecRelativeSample2017
+#  - jecRelativeSample2018
 #  - jer
 #  - scale: {type: shape, on: 'hist_TTpowhegttbb.root'}
 #  - scale: {type: shape, on: 'hist_TTLLpowhegttbb.root'}
@@ -117,7 +117,8 @@ systematics:
 #  - cferr2
 
 plots:
-  include: ['histos_ttlfv_control.yml']
+  include: ['histos_stlfv_control.yml']
+  #include: ['histos_ttlfv_control.yml']
 
 legend:
   position: [0.18, 0.70, 0.96, 0.88]
