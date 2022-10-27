@@ -51,7 +51,7 @@ hmuon1eta = df.Define("muon1eta","Muon_eta[muoncuts][0]")\
 
 
 hfile = TFile( outfolder + outfname, "RECREATE" )
-hcount_nocut = TH1D("hcount_nocut","counter",2,0,2)
+hcount_nocut = TH1D("hcount_S0","counter",2,0,2)
 hcount_nocut.SetBinContent(1,nocutevts)
 hcount_nocut.Write()
 hmuon1pt.Write()
