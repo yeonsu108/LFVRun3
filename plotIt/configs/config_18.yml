@@ -5,8 +5,8 @@ configuration:
   experiment: " CMS"
   extra-label: "work in progress"
   root: ''
-  luminosity: 19500
-  luminosity-error: 0.012
+  luminosity: 59830
+  luminosity-error: 0.025
   error-fill-style: 3254
   error-fill-color: "#ee556270"
   ratio-fit-error-fill-style: 1001
@@ -19,7 +19,7 @@ configuration:
   yields-table-numerical-precision-yields: 2
 
 files: 
-  include: ['files_2016pre.yml']
+  include: ['files_18.yml']
 
 systematics:
 #  - ttLJ_xsec:   {type: const, value: 1.055, on: 'hist_TTpowhegttbb.root'}
@@ -51,20 +51,20 @@ systematics:
 #  - other_xsec20:  {type: const, value: 1.1, on: 'hist_TTZToQQ.root'}
   - pu
   - jesAbsolute
-  - jesAbsolute16pre
+  - jesAbsolute18
   - jesBBEC1
-  - jesBBEC116pre
-  - jesFlavorQCD          
+  - jesBBEC118
+  - jesFlavorQCD
   - jesRelativeBal
-  - jesRelativeSample16pre
-  - btaghf               
-  - btaglf               
-  - btaghfstats1         
-  - btaglfstats1         
-  - btaghfstats2         
-  - btaglfstats2         
-  - btagcferr1           
-  - btagcferr2           
+  - jesRelativeSample18
+  - btag_hf
+  - btag_lf
+  - btag_hfstats1
+  - btag_lfstats1
+  - btag_hfstats2
+  - btag_lfstats2
+  - btag_cferr1
+  - btag_cferr2
 #  - muid
 #  - muiso
 #  - mutrg
@@ -73,12 +73,12 @@ systematics:
 #  - elzvtx
 #  - eltrg
 #  - jecAbsolute
-#  - jecAbsolute2016
+#  - jecAbsolute2018
 #  - jecBBEC1
-#  - jecBBEC12016
+#  - jecBBEC12018
 #  - jecFlavorQCD
 #  - jecRelativeBal
-#  - jecRelativeSample2016
+#  - jecRelativeSample2018
 #  - jer
 #  - scale: {type: shape, on: 'hist_TTpowhegttbb.root'}
 #  - scale: {type: shape, on: 'hist_TTLLpowhegttbb.root'}
