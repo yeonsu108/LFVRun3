@@ -2,7 +2,7 @@
 ### 0. Presets
 ```{.Bash}
 conda activate py36
-source source /opt/ohpc/pub/root/root_v6.26.06_gcc540/bin/thisroot.sh
+source /opt/ohpc/pub/root/root_v6.26.06_gcc540/bin/thisroot.sh
 ```
 ROOT_6.26.06 with python 3.6 is installed in htop.
  
