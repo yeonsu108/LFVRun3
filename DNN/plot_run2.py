@@ -129,7 +129,7 @@ for ch in chs:
         if '#' in line[0]: skip_signal = True
         if skip_signal and 'hist_QCD' in line: skip_signal = False
         if 'hist_QCD' in line:
-          line = line[0] + year + '_postprocess/' + line[1:]
+          line = line[0] + dest_path + year + '_postprocess/' + line[1:]
           if not any(i in line for i in ['LFV', 'Run1']):
             line += '  scale: ' + str(int(lumi)/137570.0) + '\n'
         if not skip_signal and not any(i in line for i in ['yields-group']): string_for_qcd += line
@@ -146,4 +146,4 @@ for ch in chs:
       f1.write(file_syst)
       f1.write("\nplots:\n  include: ['histos_dnn.yml']\n")
 
-  #call(['../plotIt/plotIt', '-o ' + dest_path + '/figures/qcd', config_path + 'config_Run2.yml'], shell=False)
+  call(['../plotIt/plotIt', '-o ' + dest_path + '/figures/qcd', config_path + 'config_Run2.yml'], shell=False)

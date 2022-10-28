@@ -13,7 +13,7 @@ import multiprocessing
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
 processed = "aug22"
-label = "test"
+label = "rerun"
 systs = ['nom', 'puup', 'pudown', 'btagup_hf', 'btagdown_hf', 'btagup_lf', 'btagdown_lf', 'btagup_hfstats1', 'btagdown_hfstats1', 'btagup_hfstats2', 'btagdown_hfstats2', 'btagup_lfstats1', 'btagdown_lfstats1', 'btagup_lfstats2', 'btagdown_lfstats2', 'btagup_cferr1', 'btagdown_cferr1', 'btagup_cferr2', 'btagdown_cferr2', 'up_jesAbsolute', 'down_jesAbsolute', 'up_jesBBEC1', 'down_jesBBEC1', 'up_jesEC2', 'down_jesEC2', 'up_jesFlavorQCD', 'down_jesFlavorQCD', 'up_jesRelativeBal', 'down_jesRelativeBal', 'up_jesAbsolute_year', 'down_jesAbsolute_year', 'up_jesBBEC1_year', 'down_jesBBEC1_year', 'up_jesEC2_year', 'down_jesEC2_year', 'up_jesRelativeSample_year', 'down_jesRelativeSample_year']
 
 
@@ -22,7 +22,9 @@ def run(inputs):
     syst = inputs[1]
     ch   = inputs[2]
 
-    if 'syst' in syst: syst.replace('year', year)
+    if 'year' in syst:
+        syst_ = syst.replace('year', year)
+    else: syst_ = syst
 
     inputvars = []
     if ch == "st":
@@ -74,10 +76,10 @@ def run(inputs):
         except: pass
 
     for f in flist:
-        syst_ = ""
-        if syst == "nom": syst_ = ""
-        else: syst_ = "__" + syst
-        fdict = f.replace('_'+year+'_'+syst+'.root', syst_+'.root')
+        syst__ = ""
+        if syst == "nom": syst__ = ""
+        else: syst__ = "__" + syst_
+        fdict = f.replace('_'+year+'_'+syst+'.root', syst__+'.root')
         f_dir = path+f
         outf_dir = hists_path + fdict
         print(outf_dir)
@@ -93,17 +95,23 @@ def run(inputs):
             hfinal = infile["hnevents_cut000000"]
         if len(tree) == 0:
             print("No events : "+f)
-            continue
-        pd_data = tree.arrays(inputvars,library="pd")
-        pd_weight = tree.arrays(weights,library="np")
-        pred_data = np.array(pd_data.filter(items = inputvars))
-        pred = model.predict(pred_data, batch_size=128, workers=1, use_multiprocessing=False)
-        pred = pred[:,1].tolist()
-        pd_weight = pd_weight['evWeight'].tolist()
-        binedges = [0,0.1,0.3,0.7,0.9,1.0]
-        #dnnhist = np.histogram(pred,20,(0.0,1.0),weights=pd_weight,density=False)
-        dnnhist = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
-        dnnhist_entries = np.histogram(pred,bins=binedges,density=False)
+            pred = []
+            pd_weight = []
+            binedges = [0,0.1,0.3,0.7,0.9,1.0]
+            dnnhist = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
+            dnnhist_entries = np.histogram(pred,bins=binedges,density=False)
+            #continue
+        else:
+            pd_data = tree.arrays(inputvars,library="pd")
+            pd_weight = tree.arrays(weights,library="np")
+            pred_data = np.array(pd_data.filter(items = inputvars))
+            pred = model.predict(pred_data, batch_size=128, workers=1, use_multiprocessing=False)
+            pred = pred[:,1].tolist()
+            pd_weight = pd_weight['evWeight'].tolist()
+            binedges = [0,0.1,0.3,0.7,0.9,1.0]
+            #dnnhist = np.histogram(pred,20,(0.0,1.0),weights=pd_weight,density=False)
+            dnnhist = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
+            dnnhist_entries = np.histogram(pred,bins=binedges,density=False)
         with uproot.recreate(outf_dir) as outf:
             outf["h_dnn_pred"] = dnnhist
             outf["h_dnn_entries"] = dnnhist_entries
