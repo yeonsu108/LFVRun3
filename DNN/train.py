@@ -18,8 +18,8 @@ from sklearn.metrics import roc_curve, roc_auc_score
 root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
 processed = "aug22"
-syst = "norm"
-label = "rerun"
+syst = "nom"
+label = "rerun_test"
 class_names = ["sig", "bkg"]
 
 # Calculating AUC (metric function)
@@ -28,7 +28,7 @@ class_names = ["sig", "bkg"]
 
 for p in ["ST","TT"]:
     print("Start "+p+" LFV Training")
-    epochs = 1000
+    epochs = 10
     inputvars = []
     if p == "ST":
         inputvars = ["Sel_muon1pt","Sel_muon1eta",
@@ -46,10 +46,11 @@ for p in ["ST","TT"]:
     elif p == "TT":
         inputvars = ["Sel_muon1pt","Sel_muon1eta",
             "Sel_tau1pt","Sel_tau1eta","Sel_tau1mass",
-            "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt","Sel2_jet4pt",
-            "Sel2_jet1eta","Sel2_jet2eta","Sel2_jet3eta","Sel2_jet4eta",
-            "Sel2_jet1mass","Sel2_jet2mass","Sel2_jet3mass","Sel2_jet4mass",
-            "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag","Sel2_jet4btag",
+            "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt",
+	    "Sel2_jet4pt","Sel2_jet4eta", "Sel2_jet4btag","Sel2_jet4mass",
+            "Sel2_jet1eta","Sel2_jet2eta","Sel2_jet3eta",
+            "Sel2_jet1mass","Sel2_jet2mass","Sel2_jet3mass",
+            "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag",
             "Sys_METpt","Sys_METphi",
             "chi2","chi2_lfvTop_mass","chi2_SMW_mass","chi2_SMTop_mass",
             "chi2_wqq_dEta","chi2_wqq_dPhi","chi2_wqq_dR",
@@ -61,14 +62,15 @@ for p in ["ST","TT"]:
         sbratio = 1 # sig:bkg = 1:1
 
     #project_dir = "nanoaodframe_"+p+"LFV/"+processed+"_"+syst+"/"
-    project_dir = "/home/itseyes/github/LFVRun2_ndf_integration/nanoaodframe/aug22_stlfv/nom/"
+    project_dir = "/home/itseyes/github/LFVRun2_ndf_integration/nanoaodframe/aug22_"+p.lower()+"lfv/nom/"
     #sig_filedir = root_dir+project_dir+p+"_LFV_nom.root"
     sig_filedir = project_dir+p+"_LFV_nom.root"
     #bkg1_filedir = root_dir+project_dir+"TTTo2L2Nu_nom.root"
     #bkg2_filedir = root_dir+project_dir+"TTToSemiLeptonic_nom.root"
     bkg1_filedir = project_dir+"TTTo2L2Nu_nom.root"
     bkg2_filedir = project_dir+"TTToSemiLeptonic_nom.root"
-    train_outdir = label+"_"+p+processed+"/"+syst
+    train_outdir = label+"_"+p+processed+"/"+syst+"/"
+    print("train out dir:" , train_outdir)
     os.makedirs(train_outdir, exist_ok=True)
 
     sig_tree = uproot.open(sig_filedir)["outputTree2"]
@@ -180,9 +182,6 @@ for p in ["ST","TT"]:
 
     model.compile(loss='sparse_categorical_crossentropy',
                   optimizer = 'adam',
-                  #optimizer = 'Adadelta',
-                  #optimizer = 'Nadam',
-                  #optimizer = 'Adamax',
                   metrics=['accuracy', 'sparse_categorical_accuracy'])
 
     hist = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, 
@@ -196,7 +195,8 @@ for p in ["ST","TT"]:
     train_result = pd.DataFrame(np.array([y_train.T[0], pred_train.T[1]]).T, columns=["True", "Pred"])
     pred_val = model.predict(x_val)
     val_result = pd.DataFrame(np.array([y_val.T[0], pred_val.T[1]]).T, columns=["True", "Pred"])
-
+    print("train result:", train_result)
+    print("val result:", val_result)
     pred = np.argmax(pred_val, axis=1)
    
     fpr, tpr, thresholds = roc_curve(y_val,pred_val[:,1])
@@ -215,7 +215,7 @@ for p in ["ST","TT"]:
 
     plot_performance(hist=hist, savedir=train_outdir)
 
-    plot_output_dist(train_result, val_result, savedir=train_outdir)
+    plot_output_dist(train_result, val_result, sig=p.lower(),  savedir=train_outdir)
 
     plot_roc_curve(fpr, tpr, auc, savedir=train_outdir)
 
