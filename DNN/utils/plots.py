@@ -67,10 +67,12 @@ def plot_performance(hist, savedir="./"):
     plt.savefig(os.path.join(savedir+'/fig_score_loss.pdf'))
     plt.gcf().clear()
 
-def plot_output_dist(train, test, savedir="./"):
-    sigtrain = np.array(train[train["True"]==1]["Pred"])
+def plot_output_dist(train, test,sig="st", savedir="./"):
+    #sig can be "tt" or "st"
+    sig_class = {"st":2,"tt":1}
+    sigtrain = np.array(train[train["True"]==sig_class[sig]]["Pred"])
     bkgtrain = np.array(train[train["True"]==0]["Pred"])
-    sigtest = np.array(test[test["True"]==1]["Pred"])
+    sigtest = np.array(test[test["True"]==sig_class[sig]]["Pred"])
     bkgtest = np.array(test[test["True"]==0]["Pred"])
     bins=40
     scores = [sigtrain, sigtest, bkgtrain, bkgtest]
@@ -79,18 +81,18 @@ def plot_output_dist(train, test, savedir="./"):
     high = max(np.max(d) for d in scores)
 
     # test is dotted
-    plt.hist(sigtrain, color="b", alpha=0.5, range=(low, high), bins=bins, histtype="stepfilled", density=True, label="sig train")
+    plt.hist(sigtrain, color="b", alpha=0.5, range=(low, high), bins=bins, histtype="stepfilled", density=True, label=sig+" train")
     plt.hist(bkgtrain, color="r", alpha=0.5, range=(low, high), bins=bins, histtype="stepfilled", density=True, label="bkg train")
     # train is filled
 #    plt.hist(sigtest, color="b", range=(low, high), bins=bins, histtype="step", density=True, label="sig test")
 #    plt.hist(bkgtest, color="r", range=(low, high), bins=bins, histtype="step", density=True, label="bkg test")
-        
+
     hist, bins = np.histogram(sigtest, bins=bins, range=(low,high), density=True)
     scale = len(sigtest) / sum(hist)
     err = np.sqrt(hist * scale) / scale
     width = (bins[1] - bins[0])
     center = (bins[:-1] + bins[1:]) / 2
-    plt.errorbar(center, hist, yerr=err, fmt='o', c='b', label='S (test)')
+    plt.errorbar(center, hist, yerr=err, fmt='o', c='b', label='S (test):'+sig)
     hist, bins = np.histogram(bkgtest, bins=bins, range=(low,high), density=True)
     scale = len(bkgtest) / sum(hist)
     err = np.sqrt(hist * scale) / scale
@@ -100,7 +102,7 @@ def plot_output_dist(train, test, savedir="./"):
     plt.ylabel("entry")
     plt.xlabel("probability")
     plt.legend(loc='best')
-    plt.savefig(os.path.join(savedir+'/fig_output_dist.pdf'))
+    plt.savefig(os.path.join(savedir+'/fig_output_dist_'+sig+'.pdf'))
     plt.gcf().clear()
 
 def plot_corrMatrix(dataframe, savedir="./", outname=""):
