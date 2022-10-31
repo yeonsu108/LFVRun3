@@ -4,9 +4,9 @@ configuration:
   luminosity-label: '%1$.0f fb^{-1} (13 TeV)'
   experiment: " CMS"
   experiment-label-paper: true
-  extra-label: "Work in progress"
+  extra-label: "Preliminary"
   root: ''
-  luminosity: 137620
+  luminosity: 137625
   luminosity-error: 0.016
   error-fill-style: 3254
   error-fill-color: "#ee556270"

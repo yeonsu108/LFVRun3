@@ -1,14 +1,17 @@
 configuration:
   width: 450
   height: 450
-  luminosity-label: '%1$.1f fb^{-1} at #sqrt{s} = 13 TeV'
+  luminosity-label: '%1$.1f fb^{-1} (13 TeV)'
   experiment: " CMS"
-  extra-label: "work in progress"
+  experiment-label-paper: true
+  extra-label: "Preliminary"
   root: ''
-  luminosity: 19500
+  luminosity: 19502
   luminosity-error: 0.012
   error-fill-style: 3254
   error-fill-color: "#ee556270"
+  staterror-fill-style: 3145
+  staterror-fill-color: 7
   ratio-fit-error-fill-style: 1001
   ratio-fit-error-fill-color: "#aa556270"
   ratio-fit-line-color: "#0B486B"
@@ -57,14 +60,14 @@ systematics:
   - jesFlavorQCD          
   - jesRelativeBal
   - jesRelativeSample16pre
-  - btaghf               
-  - btaglf               
-  - btaghfstats1         
-  - btaglfstats1         
-  - btaghfstats2         
-  - btaglfstats2         
-  - btagcferr1           
-  - btagcferr2           
+  - btaghf
+  - btaglf
+  - btaghfstats1
+  - btaglfstats1
+  - btaghfstats2
+  - btaglfstats2
+  - btagcferr1
+  - btagcferr2
 #  - muid
 #  - muiso
 #  - mutrg
@@ -72,13 +75,6 @@ systematics:
 #  - elreco
 #  - elzvtx
 #  - eltrg
-#  - jecAbsolute
-#  - jecAbsolute2016
-#  - jecBBEC1
-#  - jecBBEC12016
-#  - jecFlavorQCD
-#  - jecRelativeBal
-#  - jecRelativeSample2016
 #  - jer
 #  - scale: {type: shape, on: 'hist_TTpowhegttbb.root'}
 #  - scale: {type: shape, on: 'hist_TTLLpowhegttbb.root'}
@@ -107,22 +103,15 @@ systematics:
 #  - TuneCP5: {type: shape, on: 'hist_TTpowhegttbb.root'}
 #  - TuneCP5: {type: shape, on: 'hist_TTLLpowhegttbb.root'}
 #  - TuneCP5: {type: shape, on: 'hist_TTHadpowhegttbb.root'}
-#  - lf
-#  - hf
-#  - lfstat1
-#  - lfstat2
-#  - hfstat1
-#  - hfstat2
-#  - cferr1
-#  - cferr2
 
 plots:
   include: ['histos_stlfv_control.yml']
   #include: ['histos_ttlfv_control.yml']
 
 legend:
-  position: [0.18, 0.70, 0.96, 0.88]
-  columns: 5
+  #position: [0.18, 0.70, 0.96, 0.88]
+  position: [0.35, 0.70, 0.96, 0.88]
+  columns: 4
 
 groups:
   include: ['groups.yml']
