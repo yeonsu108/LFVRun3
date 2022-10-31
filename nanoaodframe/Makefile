@@ -1,12 +1,12 @@
 rootlibs:=$(shell root-config --libs)
 rootflags:=$(shell root-config --cflags)
-rootflags2 = -I${ROOTSYS}/include
-
+rootflags2 := -I${ROOTSYS}/include
+corlibflag := $(shell correction config --cflags --ldflags --rpath)
 SOFLAGS       = -shared
 
 LD = g++ -g -Wall
 
-CXXFLAGS = -O2 -g -Wall -fmessage-length=0 $(rootflags) -fpermissive -fPIC -pthread -DSTANDALONE -I.
+CXXFLAGS = -O2 -g -Wall -fmessage-length=0 $(rootflags) -fpermissive -fPIC -pthread -DSTANDALONE $(corlibflag) -I.
 
 OBJDIR=src
 SRCDIR=src
