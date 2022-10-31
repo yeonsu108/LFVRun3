@@ -18,10 +18,18 @@ When training is done, `./<train output folder>/` will be generated (e.g. TTnov_
 
 Best model is stored in the output folder as `best_model.h5`.
 
-### 2. Evaluation, post processing, drawing
+### 2. Evaoluation, post processing, drawing
 ```{.Bash}
 python eval.py
-python postprocess.py
+```
+In order to run the postprocess.py you need provide an option.
+For now option can be:
+'rerun_multi_Multiaug22','rerun_staug22', 'rerun_ttaug22'
+If you run with out changing the label it will run the st channel.
+```{.Bash}
+python postprocess.py --label=rerun_staug22
+```
+```{.Bash}
 python stack_signals.py
 python plot_run2.py
 ```

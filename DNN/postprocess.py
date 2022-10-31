@@ -3,17 +3,21 @@ import sys
 import ROOT
 from ROOT import *
 import numpy as np
+import argparse
 
 base_path = './'
-labels = ['rerun_staug22', 'rerun_ttaug22']
+parser = argparse.ArgumentParser()
+parser.add_argument('-L', '--label', dest='label', type=str, default="rerun_staug22")
+args = parser.parse_args()
+label = args.label
+#labels = ['rerun_multi_Multiaug22','rerun_staug22', 'rerun_ttaug22']
 # Set Runs
 years = ['16pre', '16post', '17', '18']
 
 # Set output folders
 for year in years:
-    for label in labels:
-        if not os.path.exists(base_path + label + '/' + year + '_postprocess'):
-            os.makedirs(base_path + label + '/' + year + '_postprocess')
+	if not os.path.exists(base_path + label + '/' + year + '_postprocess'):
+	    os.makedirs(base_path + label + '/' + year + '_postprocess')
 
 # Systematic Sources => All systematics in one file.
 systs={'':'', 'puup':'puup', 'pudown':'puup',
@@ -37,77 +41,77 @@ systs={'':'', 'puup':'puup', 'pudown':'puup',
 #systs=['puup']
 # Produce dictionary for file lists.
 
-for label in labels:
-    nom_path = base_path + label
-    if not os.path.exists(nom_path):
-        print("Folder '{}' does not exists.".format(nom_path))
-    else:
-        print("Start postprocessing at '{}'.".format(nom_path))
+nom_path = base_path + label
+if not os.path.exists(nom_path):
+    print("Folder '{}' does not exists.".format(nom_path))
+else:
+    print("Start postprocessing at '{}'.".format(nom_path))
 
-    file_list = {}
-    for year in years:
-        file_list[year] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+year) if '.root' in i and '__' not in i]
+file_list = {}
+for year in years:
+    file_list[year] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+year) if '.root' in i and '__' not in i]
+print(file_list)
 
-    def collect_systhists(outfile, fname, hlists, syst, syst_, year):
-        if 'Run' not in fname and syst != '':
-            try: tmpf = TFile.Open(os.path.join(nom_path, year, fname + '__' + syst + '.root'), 'READ')
-            except:
-              print("No file: " + nom_path + year + fname+'.root')
-              return
-        else: tmpf = TFile.Open(os.path.join(nom_path, year, fname + '.root'), 'READ')
-        for histname in hlists:
-            if syst != '' and 'counter' in histname: continue
-            tmpf.cd()
-            tmphist = tmpf.Get(histname)
-            if syst == '': newtmphist = tmphist.Clone(histname)
-            else: newtmphist = tmphist.Clone(histname + '__' + syst_)
-            newtmphist.Scale(1./get_bSFratio(tmpf))
-            outfile.cd()
-            newtmphist.Write()
-        tmpf.Close()
-        return
+def collect_systhists(outfile, fname, hlists, syst, syst_, year):
+    if 'Run' not in fname and syst != '':
+        try: tmpf = TFile.Open(os.path.join(nom_path, year, fname + '__' + syst + '.root'), 'READ')
+        except:
+          print("No file: " + nom_path + year + fname+'.root')
+          return
+    else: tmpf = TFile.Open(os.path.join(nom_path, year, fname + '.root'), 'READ')
+    for histname in hlists:
+        if syst != '' and 'counter' in histname: continue
+        tmpf.cd()
+        tmphist = tmpf.Get(histname)
+        if syst == '': newtmphist = tmphist.Clone(histname)
+        else: newtmphist = tmphist.Clone(histname + '__' + syst_)
+        newtmphist.Scale(1./get_bSFratio(tmpf))
+        outfile.cd()
+        newtmphist.Write()
+    tmpf.Close()
+    return
 
-    def get_bSFratio(infile):
-        prehist = infile.Get('hnevents_pglep_cut0000')
-        posthist = infile.Get('hnevents_cut0000')
-        if prehist.Integral() * posthist.Integral() == 0:
-            return 1
-        return posthist.Integral() / prehist.Integral()
+def get_bSFratio(infile):
+    prehist = infile.Get('hnevents_pglep_cut0000')
+    posthist = infile.Get('hnevents_cut0000')
+    if prehist.Integral() * posthist.Integral() == 0:
+        return 1
+    return posthist.Integral() / prehist.Integral()
 
-    # Loop over all files.
-    for year in years:
-        out_path = nom_path + '/' + year + '_postprocess'
-        for fname in file_list[year]:
-            infile = TFile.Open(os.path.join(nom_path, year, fname+'.root'), 'READ')
-            hlists = [ h.GetName() for h in infile.GetListOfKeys() if any(i in h.GetName() for i in ['dnn_pred', 'counter']) ]
-            # Get ratio for rescaling with b-tagSF.
-            ratio = get_bSFratio(infile)
-            outfname = fname.replace("_" + year + "_" + fname.split("_")[-1], "")
+# Loop over all files.
+for year in years:
+    out_path = nom_path + '/' + year + '_postprocess'
+    for fname in file_list[year]:
+        infile = TFile.Open(os.path.join(nom_path, year, fname+'.root'), 'READ')
+        hlists = [ h.GetName() for h in infile.GetListOfKeys() if any(i in h.GetName() for i in ['dnn_pred', 'counter']) ]
+        # Get ratio for rescaling with b-tagSF.
+        ratio = get_bSFratio(infile)
+        outfname = fname.replace("_" + year + "_" + fname.split("_")[-1], "")
+        if "Run" in fname:
+            outfname = fname.replace("_" + fname.split("_")[-1], "")
+        print("Saving histograms at {}/hist_{}.root".format(out_path, outfname))
+        # Collecting Histograms in outfile.
+        outfile = TFile.Open(os.path.join(out_path, "hist_" + outfname + '.root'), 'RECREATE')
+        # Looping over all systematics.
+        for syst, syst_ in systs.items():
+            if "year" in syst:
+              syst = syst.replace('year', year)
+              syst_ = syst_.replace('year', year)
+            collect_systhists(outfile, fname, hlists, syst, syst_, year)
+        outhlists = [ h.GetName() for h in outfile.GetListOfKeys() if 'cut' in h.GetName() ]
+        for h in outhlists:
             if "Run" in fname:
-                outfname = fname.replace("_" + fname.split("_")[-1], "")
-            print("Saving histograms at {}/hist_{}.root".format(out_path, outfname))
-            # Collecting Histograms in outfile.
-            outfile = TFile.Open(os.path.join(out_path, "hist_" + outfname + '.root'), 'RECREATE')
-            # Looping over all systematics.
-            for syst, syst_ in systs.items():
-                if "year" in syst:
-                  syst = syst.replace('year', year)
-                  syst_ = syst_.replace('year', year)
-                collect_systhists(outfile, fname, hlists, syst, syst_, year)
-            outhlists = [ h.GetName() for h in outfile.GetListOfKeys() if 'cut' in h.GetName() ]
-            for h in outhlists:
-                if "Run" in fname:
-                    continue
-                if h == "hcounter_nocut":
-                    newhist = outfile.Get(h)
-                    newhist.Write()
-                if ('nobweight' in h) and ('hncleanbjetspass' not in h):
-                    continue
-                if ('pred' in h):
-                    outfile.cd()
-                    newhist = outfile.Get(h)
-                    ratio = 1
-                    newhist.Scale(1/ratio)
-                    newhist.Write()
-            infile.Close()
-            outfile.Close()
+                continue
+            if h == "hcounter_nocut":
+                newhist = outfile.Get(h)
+                newhist.Write()
+            if ('nobweight' in h) and ('hncleanbjetspass' not in h):
+                continue
+            if ('pred' in h):
+                outfile.cd()
+                newhist = outfile.Get(h)
+                ratio = 1
+                newhist.Scale(1/ratio)
+                newhist.Write()
+        infile.Close()
+        outfile.Close()
