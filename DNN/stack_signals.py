@@ -6,21 +6,26 @@ from os import listdir, path
 import collections
 import glob
 import multiprocessing
+import argparse
 
-labels = ['rerun_staug22','rerun_ttaug22']
+#labels = ['rerun_multi_Multiaug22','rerun_staug22','rerun_ttaug22']
+parser = argparse.ArgumentParser()
+parser.add_argument('-L', '--label', dest='label', type=str, default="rerun_staug22")
+args = parser.parse_args()
+label = args.label
 
 lumi_dict = {'16pre': 19502, '16post': 16812, '17': 41480, '18':59832}#16: 36314, run2:137625
 file_names = collections.OrderedDict()
 
-for label in labels:
-  if not os.path.exists(label + "/Run2"):
-    try: os.makedirs(label + "/Run2")
-    except: pass
+if not os.path.exists(label + "/Run2"):
+  try: os.makedirs(label + "/Run2")
+  except: pass
 
 def store_file(it):
   path = it[0]
   file_name = it[1]
   for f in file_name:
+    print(os.path.join(path, f[:f.rfind('_')] + '.root'))
     ftmp = TFile.Open(os.path.join(path, f[:f.rfind('_')] + '.root'), 'READ')
 
     hist_names = [x.GetName() for x in ftmp.GetListOfKeys()]
@@ -46,12 +51,13 @@ def store_file(it):
 
 if __name__ == '__main__':
 
-  for label in labels:
-    for era in ['16pre', '16post', '17', '18']:
-      dir_path = os.path.join(label, era+'_postprocess')
-      dirs = os.listdir(dir_path)
-      dirs[:] = [item.replace('.root', '_' + era + '.root') for item in dirs if any(i in item for i in ['LFV'])] #avoid TTTH merged
-      file_names[dir_path] = dirs
+  for era in ['16pre', '16post', '17', '18']:
+     dir_path = os.path.join(label, era+'_postprocess')
+     dirs = os.listdir(dir_path)
+     print("POST process path: " , dir_path)
+     dirs[:] = [item.replace('.root', '_' + era + '.root') for item in dirs if any(i in item for i in ['LFV'])] #avoid TTTH merged
+     print("EDITED DIRS: " , dirs)
+     file_names[dir_path] = dirs
 
   pool = multiprocessing.Pool(1)
   pool.map(store_file, file_names.items())
@@ -62,12 +68,7 @@ if __name__ == '__main__':
          'ST_LFV_TUMuTau_Scalar', 'ST_LFV_TUMuTau_Tensor', 'ST_LFV_TUMuTau_Vector',
          'TT_LFV_TToCMuTau_Scalar', 'TT_LFV_TToCMuTau_Tensor', 'TT_LFV_TToCMuTau_Vector',
          'TT_LFV_TToUMuTau_Scalar', 'TT_LFV_TToUMuTau_Tensor', 'TT_LFV_TToUMuTau_Vector']
-  #for coup in ['ST', 'TT']:
-  #  for quark in ['TToCMuTau', 'TToUMuTau', 'TCMuTau', 'TUMuTau']:
-  #    for rank in ['Scalar', 'Vector', 'Tensor']:
-  #      chs.append(coup + '_LFV_' + quark + '_' + rank)
 
-  for label in labels:
-    for ch in chs:
-      print(label + '/Run2/hist_' + ch + '_1*.root')
-      check_call(['hadd','-f', label + '/Run2/hist_' + ch + '.root'] +  glob.glob(label + '/Run2/hist_' + ch + '_1*.root'))
+  for ch in chs:
+    print(label + '/Run2/hist_' + ch + '_1*.root')
+    check_call(['hadd','-f', label + '/Run2/hist_' + ch + '.root'] +  glob.glob(label + '/Run2/hist_' + ch + '_1*.root'))

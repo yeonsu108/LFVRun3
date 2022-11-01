@@ -26,9 +26,16 @@ Best model is stored in the output folder as `best_model.h5`.
 ### 2. Evaluation, post processing, drawing
 ```{.Bash}
 python eval.py
-python postprocess.py
-python stack_signals.py
-python plot_run2.py
+```
+In order to run the following scripts you need provide an option.
+For now allowed options are:
+'rerun_multi_Multiaug22','rerun_staug22', 'rerun_ttaug22'
+If you run with out changing the label it will run the st channel.
+If you have not compile the plotlt yet please follow the read me in the plotlt.
+```{.Bash}
+python postprocess.py -L rerun_staug22
+python stack_signals.py -L rerun_staug22
+python plot_run2.py -L rerun_staug22
 ```
 **Evaluation** is performed with the best model from training and produce dnn output score histograms with data and MC samples.
 
@@ -41,7 +48,6 @@ The post processing is to gather all uncertainty histograms into a single, nomin
 The plotIt does not support stack for signals, thus it is done by dedicated code.
 
 The `plot_run2.py` will read information from existing configs for each year, then combine into one, usint templates.
-
 
 ### Advanced
 > To modify some details of the plots from training, cross section for normalization, histogram styles, modules in `utils/` folder will be helpful.
