@@ -12,6 +12,7 @@ source /opt/ohpc/pub/root/root_v6.26.06_gcc830/bin/thisroot.sh
 ROOT_6.26.06 with python 3.6 is installed in htop.
  
 ### 1. Train
+#### 1.1. Train 2 separate binary class classification 
 ```{.Bash}
 python train.py
 ```
@@ -22,8 +23,14 @@ Training is performed with signal (LFV sample mixture) and background (tt semile
 When training is done, `./<train output folder>/` will be generated (e.g. TTnov_01_norm_20nodes_3layers_s1b1) with result plots (correlation, loss, accuracy, DNN output, confusion matrix).
 
 Best model is stored in the output folder as `best_model.h5`.
+#### 1.2. Train 2 separate multi class classification 
+```{.Bash}
+python train_multi.py
+```
+
 
 ### 2. Evaluation, post processing, drawing
+#### 2.1. Binary class
 ```{.Bash}
 python eval.py
 ```
@@ -48,6 +55,16 @@ The post processing is to gather all uncertainty histograms into a single, nomin
 The plotIt does not support stack for signals, thus it is done by dedicated code.
 
 The `plot_run2.py` will read information from existing configs for each year, then combine into one, usint templates.
+#### 2.2. multi class
+
+```{.Bash}
+python haddToMergeBkg.py
+python eval.py
+python postprocess.py -L rerun_multi_Multiaug22
+python haddToMergeSig.py
+python stack_signals.py -L rerun_multi_Multiaug22
+python plot_run2.py -L rerun_multi_Multiaug22
+```
 
 ### Advanced
 > To modify some details of the plots from training, cross section for normalization, histogram styles, modules in `utils/` folder will be helpful.
