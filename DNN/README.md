@@ -58,6 +58,7 @@ The `plot_run2.py` will read information from existing configs for each year, th
 #### 2.2. multi class
 
 ```{.Bash}
+python haddToMergeBkg.py
 python eval.py
 python postprocess.py -L rerun_multi_Multiaug22
 python haddToMergeSig.py
