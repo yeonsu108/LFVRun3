@@ -1,11 +1,12 @@
 rootlibs:=$(shell root-config --libs)
 rootflags:=$(shell root-config --cflags)
-
+rootflags2 := -I${ROOTSYS}/include
+corlibflag := $(shell correction config --cflags --ldflags --rpath)
 SOFLAGS       = -shared
 
 LD = g++ -g -Wall
 
-CXXFLAGS = -O2 -g -Wall -fmessage-length=0 $(rootflags) -fpermissive -fPIC -pthread -DSTANDALONE -I.
+CXXFLAGS = -O2 -g -Wall -fmessage-length=0 $(rootflags) -fpermissive -fPIC -pthread -DSTANDALONE $(corlibflag) -I.
 
 OBJDIR=src
 SRCDIR=src
@@ -24,7 +25,7 @@ clean:
 #$(SRCDIR)/rootdict.C: $(SRCDIR)/NanoAODAnalyzerrdframe.h $(SRCDIR)/LQtopAnalyzer.h $(SRCDIR)/SkimEvents.h $(SRCDIR)/Linkdef.h
 $(SRCDIR)/rootdict.C: $(SRCDIR)/NanoAODAnalyzerrdframe.h $(SRCDIR)/TopLFVAnalyzer.h $(SRCDIR)/SkimEvents.h $(SRCDIR)/Linkdef.h
 	rm -f $@
-	rootcint -v $@ -c $(rootflags) $^
+	rootcint -v $@ -c $(rootflags2) $^
 	ln -s $(SRCDIR)/rootdict_rdict.pcm .
 
 	
@@ -34,7 +35,7 @@ libnanoadrdframe.so: $(OBJS)
 
 $(SRCDIR)/JetMETObjects_dict.C: $(SRCDIR)/JetCorrectorParameters.h $(SRCDIR)/SimpleJetCorrector.h $(SRCDIR)/FactorizedJetCorrector.h $(SRCDIR)/LinkdefJetmet.h
 	rm -f $@
-	$(ROOTSYS)/bin/rootcint -f $@ -c $(rootflags) $^ 
+	$(ROOTSYS)/bin/rootcint -f $@ -c $(rootflags2) $^
 	ln -s $(SRCDIR)/JetMETObjects_dict_rdict.pcm .
 
 $(SRCDIR)/rootdict.o: $(SRCDIR)/rootdict.C

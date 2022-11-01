@@ -1,8 +1,13 @@
 ## DNN with 3 features - Train, Evaluation, Draw Histograms
 ### 0. Presets
 ```{.Bash}
+#check if modules are properly loaded
+ml list
+> Currently Loaded Modules:
+>   1) ohpc   2) gnu8/8.3.0   3) boost/1.63.0_gcc830   4) cuda/11.8
+
 conda activate py36
-source /opt/ohpc/pub/root/root_v6.26.06_gcc540/bin/thisroot.sh
+source /opt/ohpc/pub/root/root_v6.26.06_gcc830/bin/thisroot.sh
 ```
 ROOT_6.26.06 with python 3.6 is installed in htop.
  
