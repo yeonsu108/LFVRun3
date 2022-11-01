@@ -29,11 +29,13 @@ inputvars = ["Sel_muon1pt","Sel_muon1eta",
 "mutau_mass","mutau_dEta","mutau_dPhi","mutau_dR",
 ]
 infile_dict = {"st":("hnevents_cut00000",2),"tt":("hnevents_cut000000",1), "bkg":("",0)}
+discriminators = {"p_st" : 2, "p_tt" : 1 , "p_bkg" : 0 , "p_st_tt" : 999}
 
 def run(inputs):
     year = inputs[0]
     syst = inputs[1]
     ch   = inputs[2]
+    discriminator_key = inputs[3]
 
     if 'year' in syst:
         syst_ = syst.replace('year', year)
@@ -63,7 +65,7 @@ def run(inputs):
     eval_dir = label+"_"+p+processed+"/"
     
     weights = ["evWeight"]
-    hists_path = eval_dir+"/"+year+"/preds/"
+    hists_path = eval_dir+"/"+year+"/preds/"+discriminator_key+"/"
     if not os.path.isdir(hists_path):
         os.makedirs(hists_path)
     
@@ -98,7 +100,13 @@ def run(inputs):
             pd_weight = tree.arrays(weights,library="np")
             pred_data = np.array(pd_data.filter(items = inputvars))
             pred = model.predict(pred_data,batch_size=128, workers=1, use_multiprocessing=False)
-            pred = pred[:,infile_dict[ch][1]].tolist()
+            #print("TYPE: ", type(pred))
+            #print("Prediction : ", pred)
+            #pred = pred[:,infile_dict[ch][1]].tolist()
+            if discriminator_key == "p_st_tt"  : pred = (pred[:,2]+pred[:,1]).tolist()
+            elif discriminator_key == "p_max"  : pred = (np.amax(pred, axis=1)).tolist()
+            elif discriminator_key == "p_mean"  : pred = (np.mean(pred, axis=1)).tolist()
+            else  : pred = (pred[:,discriminators[discriminator_key]]).tolist()
             pd_weight = pd_weight['evWeight'].tolist()
             dnnhist = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
             dnnhist_entries = np.histogram(pred,bins=binedges,density=False)
@@ -119,12 +127,13 @@ def run(inputs):
 if __name__ == '__main__':
 
     parameters = []
-    for year in ["16pre","16post","17","18"]:
-        for syst in systs:
-            for ch in ['st', 'tt', 'bkg']:
-                parameters.append((year, syst, ch))
+    for discriminator in ["p_st","p_tt","p_bkg","p_st_tt", "p_max", "p_mean"]:
+      for year in ["16pre","16post","17","18"]:
+          for syst in systs:
+              for ch in ['st','tt','bkg']:
+                  parameters.append((year, syst, ch, discriminator))
 
-    pool = multiprocessing.get_context("spawn").Pool(1)
+    pool = multiprocessing.get_context("spawn").Pool(10)
     pool.map(run, parameters)
     pool.close()
     pool.join()
