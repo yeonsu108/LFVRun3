@@ -45,16 +45,18 @@ nom_path = base_path + label
 if not os.path.exists(nom_path):
     print("Folder '{}' does not exists.".format(nom_path))
 else:
-    print("Start postprocessing at '{}'.".format(nom_path))
+    print("Start postprocessing for '{}'.".format(nom_path))
 
 file_list = {}
 for year in years:
-    file_list[year] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+year) if '.root' in i and '__' not in i]
+    if "multi" in label: file_list[year] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+year+'/preds/') if '.root' in i and '__' not in i]
+    else: file_list[year] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+year) if '.root' in i and '__' not in i]
 print(file_list)
 
 def collect_systhists(outfile, fname, hlists, syst, syst_, year):
     if 'Run' not in fname and syst != '':
-        try: tmpf = TFile.Open(os.path.join(nom_path, year, fname + '__' + syst + '.root'), 'READ')
+        try:
+          tmpf = TFile.Open(os.path.join(nom_path, year, fname + '__' + syst + '.root'), 'READ')
         except:
           print("No file: " + nom_path + year + fname+'.root')
           return
@@ -82,7 +84,8 @@ def get_bSFratio(infile):
 for year in years:
     out_path = nom_path + '/' + year + '_postprocess'
     for fname in file_list[year]:
-        infile = TFile.Open(os.path.join(nom_path, year, fname+'.root'), 'READ')
+        if "multi" in label : infile = TFile.Open(os.path.join(nom_path, year, "preds", fname+'.root'), 'READ')
+        else : infile = TFile.Open(os.path.join(nom_path, year, fname+'.root'), 'READ')
         hlists = [ h.GetName() for h in infile.GetListOfKeys() if any(i in h.GetName() for i in ['dnn_pred', 'counter']) ]
         # Get ratio for rescaling with b-tagSF.
         ratio = get_bSFratio(infile)
@@ -97,7 +100,8 @@ for year in years:
             if "year" in syst:
               syst = syst.replace('year', year)
               syst_ = syst_.replace('year', year)
-            collect_systhists(outfile, fname, hlists, syst, syst_, year)
+            if "multi" in label: collect_systhists(outfile, fname, hlists, syst, syst_, year+"/preds/")
+            else: collect_systhists(outfile, fname, hlists, syst, syst_, year)
         outhlists = [ h.GetName() for h in outfile.GetListOfKeys() if 'cut' in h.GetName() ]
         for h in outhlists:
             if "Run" in fname:

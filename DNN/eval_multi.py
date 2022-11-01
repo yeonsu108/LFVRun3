@@ -14,7 +14,8 @@ import multiprocessing
 base_dir = os.getcwd().replace("DNN","") # Upper directory
 processed = "aug22"
 label = "rerun_multi"
-systs = ['nom', 'puup', 'pudown', 'btagup_hf', 'btagdown_hf', 'btagup_lf', 'btagdown_lf', 'btagup_hfstats1', 'btagdown_hfstats1', 'btagup_hfstats2', 'btagdown_hfstats2', 'btagup_lfstats1', 'btagdown_lfstats1', 'btagup_lfstats2', 'btagdown_lfstats2', 'btagup_cferr1', 'btagdown_cferr1', 'btagup_cferr2', 'btagdown_cferr2', 'up_jesAbsolute', 'down_jesAbsolute', 'up_jesBBEC1', 'down_jesBBEC1', 'up_jesEC2', 'down_jesEC2', 'up_jesFlavorQCD', 'down_jesFlavorQCD', 'up_jesRelativeBal', 'down_jesRelativeBal', 'up_jesAbsolute_year', 'down_jesAbsolute_year', 'up_jesBBEC1_year', 'down_jesBBEC1_year', 'up_jesEC2_year', 'down_jesEC2_year', 'up_jesRelativeSample_year', 'down_jesRelativeSample_year']
+#systs = ['nom', 'puup', 'pudown', 'btagup_hf', 'btagdown_hf', 'btagup_lf', 'btagdown_lf', 'btagup_hfstats1', 'btagdown_hfstats1', 'btagup_hfstats2', 'btagdown_hfstats2', 'btagup_lfstats1', 'btagdown_lfstats1', 'btagup_lfstats2', 'btagdown_lfstats2', 'btagup_cferr1', 'btagdown_cferr1', 'btagup_cferr2', 'btagdown_cferr2', 'up_jesAbsolute', 'down_jesAbsolute', 'up_jesBBEC1', 'down_jesBBEC1', 'up_jesEC2', 'down_jesEC2', 'up_jesFlavorQCD', 'down_jesFlavorQCD', 'up_jesRelativeBal', 'down_jesRelativeBal', 'up_jesAbsolute_year', 'down_jesAbsolute_year', 'up_jesBBEC1_year', 'down_jesBBEC1_year', 'up_jesEC2_year', 'down_jesEC2_year', 'up_jesRelativeSample_year', 'down_jesRelativeSample_year']
+systs = ['nom']
 
 inputvars = ["Sel_muon1pt","Sel_muon1eta",
 "Sel_tau1pt","Sel_tau1eta","Sel_tau1mass",
@@ -62,7 +63,7 @@ def run(inputs):
     eval_dir = label+"_"+p+processed+"/"
     
     weights = ["evWeight"]
-    hists_path = eval_dir+"/"+year+"/"
+    hists_path = eval_dir+"/"+year+"/preds/"
     if not os.path.isdir(hists_path):
         os.makedirs(hists_path)
     
@@ -70,7 +71,9 @@ def run(inputs):
         syst__ = ""
         if syst == "nom": syst__ = ""
         else: syst__ = "__" + syst_
-        outf_dir = hists_path+f.replace("_"+year+"_"+syst+".root","_"+ch+"_pred"+syst__+".root")
+        #outf_dir = hists_path+f.replace("_"+year+"_"+syst+".root","_"+ch+"_pred"+syst__+".root")
+        if ch == "bkg" : outf_dir = hists_path+f.replace("_"+year+"_"+syst+".root",syst__+".root")
+        else : outf_dir = hists_path+f.replace("_"+year+"_"+syst+".root","_"+ch+syst__+".root")
         f_dir = path+f
         infile = uproot.open(f_dir)
         tree = infile["outputTree2"]
@@ -121,7 +124,7 @@ if __name__ == '__main__':
             for ch in ['st', 'tt', 'bkg']:
                 parameters.append((year, syst, ch))
 
-    pool = multiprocessing.get_context("spawn").Pool(15)
+    pool = multiprocessing.get_context("spawn").Pool(1)
     pool.map(run, parameters)
     pool.close()
     pool.join()
