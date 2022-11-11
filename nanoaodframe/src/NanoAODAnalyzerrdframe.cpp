@@ -27,27 +27,25 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
 	, _rnt(&_rlm), currentnode(0), _jetCorrector(0), _jetCorrectionUncertainty(0)
 {
         // Skim switch
-        if(_year.find("skim") != std::string::npos){
-                _isSkim = true;
+        if(_isSkim == true){
                 cout << "<< Start Skim NanoAOD >>" << endl;
         }else{
-                _isSkim = false;
                 cout << "<< Start Process NanoAOD >>" << endl;
         }
 
         // Year switch
-        if(_year.find("16pre") != std::string::npos){
+        if(_year.find("2016pre") != std::string::npos){
                 _isRun16pre = true;
-                cout << "Year : Run 16 pre (16 APV)" << endl;
-        }else if(_year.find("16post") != std::string::npos){
+                cout << "Year : Run 2016 pre (16 APV)" << endl;
+        }else if(_year.find("2016post") != std::string::npos){
                 _isRun16post = true;
-                cout << "Year : Run 16 post" << endl;
-        }else if(_year.find("17") != std::string::npos){
+                cout << "Year : Run 2016 post" << endl;
+        }else if(_year.find("2017") != std::string::npos){
                 _isRun17 = true;
-                cout << "Year : Run 17" << endl;
-        }else if(_year.find("18") != std::string::npos){
+                cout << "Year : Run 2017" << endl;
+        }else if(_year.find("2018") != std::string::npos){
                 _isRun18 = true;
-                cout << "Year : Run 18" << endl;
+                cout << "Year : Run 2018" << endl;
         }
         _isRun16 = _isRun16pre || _isRun16post;
 

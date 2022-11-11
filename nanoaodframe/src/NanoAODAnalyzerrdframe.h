@@ -76,13 +76,15 @@ public:
 
         bool _isSTLFVcat = false;
         bool _isTTLFVcat = false;
+        bool _isSkim;
+  bool _isHTstitching = false;
+  std::string _outfilename;
+
 private:
 	ROOT::RDataFrame _rd;
 
-        bool _isSkim;
 	bool _isData;
 	bool _jsonOK;
-	std::string _outfilename;
         std::string _year;
         bool _isRun16pre = false;
         bool _isRun16post = false;

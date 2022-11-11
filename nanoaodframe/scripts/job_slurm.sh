@@ -17,14 +17,11 @@ year=$1
 infile=$2
 outpath=$3
 outfile=$4
-intree=$5
-outtree=$6
-workdir=$7
-logdir=$8
-datasetname=$9
+workdir=$5
+logdir=$6
 
 source /opt/ohpc/pub/utils/conda/anaconda3/etc/profile.d/conda.sh
 cd $workdir
 conda activate py36
-echo "python skimonefile.py -Y $year $infile ${outpath}/${outfile} $intree $outtree > ${logdir}/${outfile%%root}log"
-python skimonefile.py -Y $year $infile ${outpath}/${outfile} $intree $outtree > ${logdir}/${outfile%%root}log
+echo "python skimonefile.py -Y $year -I $infile -O ${outpath}/${outfile} > ${logdir}/${outfile%%root}log"
+python skimonefile.py -Y $year -I $infile -O ${outpath}/${outfile} > ${logdir}/${outfile%%root}log
