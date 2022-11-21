@@ -46,6 +46,7 @@ public:
 	void selectMuons();
 	void applyJetMETCorrections();
 	void selectJets();
+	void skimJets();
         void selectTaus();
         void selectMET();
 	void selectFatJets();
@@ -70,7 +71,7 @@ public:
 
 	void setupCuts_and_Hists();
 	void drawHists(RNode t);
-	void run(bool saveAll=true, std::string outtreename="outputTree");
+	void run(bool saveAll=true, std::string outtreename="Events");
 	void setTree(TTree *t, std::string outfilename);
 	void setupTree();
 
@@ -85,22 +86,25 @@ private:
 
 	bool _isData;
 	bool _jsonOK;
-        std::string _year;
-        bool _isRun16pre = false;
-        bool _isRun16post = false;
-        bool _isRun16 = false;
-        bool _isRun17 = false;
-        bool _isRun18 = false;
-        std::string _syst;
-        bool _isSystBtag = false;
-        bool _isSystJes = false;
-        bool _isSystUp = false;
-        bool _isSystDown = false;
+  std::string _year;
+  bool _isRun16pre = false;
+  bool _isRun16post = false;
+  bool _isRun16 = false;
+  bool _isRun17 = false;
+  bool _isRun18 = false;
+  std::string _syst;
+  //inline static std::vector<std::string> btag_var;
+  //inline static std::vector<std::string> jes_var;
+  //std::vector<JetCorrectionUncertainty*> regroupedUnc;
+  bool _isSystBtag = false;
+  bool _isSystJes = false;
+  bool _isSystUp = false;
+  bool _isSystDown = false;
 	std::string _jsonfname;
 	std::string _globaltag;
-        std::string tauid_vsjet = "";
-        std::string tauid_vse = "";
-        std::string tauid_vsmu = "";
+  std::string tauid_vsjet = "";
+  std::string tauid_vse = "";
+  std::string tauid_vsmu = "";
 	TFile *_inrootfile;
 	TFile *_outrootfile;
 	std::vector<std::string> _outrootfilenames;
@@ -122,11 +126,11 @@ private:
 
 	// btag weights
 	BTagCalibration _btagcalib;
+	BTagCalibration _btagcalibJes;
 	BTagCalibrationReader _btagcalibreader;
+	BTagCalibrationReader _btagcalibreaderJes;
 
 	// pile up weights
-        const char * pumcfile;
-        const char * pudatafile;
 	TH1D *_hpumc;
 	TH1D *_hpudata;
 	TH1D *_hpudata_plus;
@@ -139,7 +143,7 @@ private:
 	bool isDefined(string v);
 
 	// Jet MET corrections
-	void setupJetMETCorrection(std::string globaltag, std::string jetalgo="AK4PFchs");
+	//void setupJetMETCorrection(std::string globaltag, std::string jetalgo="AK4PFchs");
 	FactorizedJetCorrector *_jetCorrector;
 	JetCorrectionUncertainty *_jetCorrectionUncertainty;
 

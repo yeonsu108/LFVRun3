@@ -22,10 +22,10 @@
 using namespace std;
 
 NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
-:_rd(*atree),_jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0),_outrootfile(0), _rlm(_rd)
-	//, _btagcalibreader(BTagEntry::OP_RESHAPING, "central", {"up_jes", "down_jes", "up_hf","down_hf","up_lf","down_lf","up_hfstats1","down_hfstats1","up_hfstats2","down_hfstats2","up_lfstats1","down_lfstats1","up_lfstats2","down_lfstats2"})
-	, _rnt(&_rlm), currentnode(0), _jetCorrector(0), _jetCorrectionUncertainty(0)
+:_rd(*atree), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), _jetCorrector(0)//, regroupedUnc(0)
 {
+
+        ROOT::DisableImplicitMT();
         // Skim switch
         if(_isSkim == true){
                 cout << "<< Start Skim NanoAOD >>" << endl;
@@ -69,67 +69,50 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
 		cout << "Input file is MC" <<endl;
 	}
 
-        // Systematic switch
-        if(_syst != "nom"){
-            cout<<"Systematics Information"<<endl;
-            cout<<"Activated option --syst "<<_syst<<endl;
-            
-            if(_syst.find("btag") != std::string::npos){
-                _isSystBtag = true;
-                cout<<"    Apply btag SF uncertainty"<<endl;
-            }
-            if(_syst.find("jes") != std::string::npos){
-                _isSystJes = true;
-                cout<<"    Apply JES uncertainty"<<endl;
-            }
-            if(_syst.find("up") != std::string::npos){
-                _isSystUp = true;
-                cout<<"    Systematic Up"<<endl;
-            }else if(_syst.find("down") != std::string::npos){
-                _isSystDown = true;
-                cout<<"    Systematic Down"<<endl;
-            }
-        }else{
-            cout<<"Nominal process without systematics"<<endl;
-        }
+    // Systematic switch
+    if (_syst != "") {
+        cout << "Systematics Information" << endl;
+        cout << "Activated option --syst " << _syst << endl;
 
-	TObjArray *allbranches = atree->GetListOfBranches();
-	for (int i =0; i<allbranches->GetSize(); i++)
-	{
-		TBranch *abranch = dynamic_cast<TBranch *>(allbranches->At(i));
-		if (abranch!= nullptr){
-			cout << abranch->GetName() << ", ";
-			_originalvars.push_back(abranch->GetName());
-		}
-	}
-        cout<<endl;
-        
-        if(!_isSkim){
-            cout<<"Loading jetmet Correction"<<endl;
-            setupJetMETCorrection(_globaltag);
-            if(!_isData){
+        if (_syst.find("jes") != std::string::npos) {
+            _isSystJes = true;
+            cout << "    Apply JES uncertainty" << endl;
+        }
+        if (_syst.find("up") != std::string::npos) {
+            _isSystUp = true;
+            cout << "    Systematic Up" << endl;
+        } else if (_syst.find("down") != std::string::npos) {
+            _isSystDown = true;
+            cout << "    Systematic Down" << endl;
+        }
+    } else {
+        cout << "Nominal process without systematics" << endl;
+    }
+
+    TObjArray *allbranches = atree->GetListOfBranches();
+    for (int i =0; i<allbranches->GetSize(); i++) {
+      TBranch *abranch = dynamic_cast<TBranch *>(allbranches->At(i));
+      if (abranch!= nullptr) {
+          std::string brname = abranch->GetName();
+          if (brname.find("HLT_") == std::string::npos and brname.find("L1_") == std::string::npos)
+              cout << brname << ", ";
+          _originalvars.push_back(abranch->GetName());
+      }
+    }
+    cout << endl;
+
+        if (_isSkim) {
+            if (!_isData) {
+
                 // pu weight setup
                 cout<<"Loading Pileup profiles"<<endl;
-                if(_isRun16pre){
-                    pumcfile = "data/Pileup/PileupMC_UL16.root";
-                    pudatafile = "data/Pileup/PileupDATA_UL16pre.root";
-                }else if(_isRun16post){
-                    pumcfile = "data/Pileup/PileupMC_UL16.root";
-                    pudatafile = "data/Pileup/PileupDATA_UL16post.root";
-                }else if(_isRun17){
-                    pumcfile = "data/Pileup/PileupMC_UL17.root";
-                    pudatafile = "data/Pileup/PileupDATA_UL17.root";
-                }
-                else if(_isRun18){
-                    pumcfile = "data/Pileup/PileupMC_UL18.root";
-                    pudatafile = "data/Pileup/PileupDATA_UL18.root";
-                }
-                TFile tfmc(pumcfile);
+                // MC 2016pre = MC 2016post (same file)
+                TFile tfmc(("data/Pileup/PileupMC_UL" + _year + ".root").c_str());
                 _hpumc = dynamic_cast<TH1D *>(tfmc.Get("pu_mc"));
                 _hpumc->SetDirectory(0);
                 tfmc.Close();
 
-                TFile tfdata(pudatafile);
+                TFile tfdata(("data/Pileup/PileupDATA_UL" + _year + ".root").c_str());
                 _hpudata = dynamic_cast<TH1D *>(tfdata.Get("pileup"));
                 _hpudata_plus = dynamic_cast<TH1D *>(tfdata.Get("pileup_plus"));
                 _hpudata_minus = dynamic_cast<TH1D *>(tfdata.Get("pileup_minus"));
@@ -144,137 +127,44 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
                 _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus);
                 
 
-                cout<<"Loading Btag SF"<<endl;
-                string filetag = _syst;
-                string btagpath = "data/btagSF/update/";
-                if(_isSystBtag){
-                    // _syst should be like "btagup_hf" or "btagdown_hf"
-                    cout<<"Btag SF Uncertainty Source : "+_syst.substr(4)<<endl;
-                    if(_isSystUp){
-                        filetag = filetag.substr(7);
-                    }else if(_isSystDown){
-                        filetag = filetag.substr(9);
-                    }
-                }else if(_isSystJes){
-                    // _syst should be like "up_jesAbsolute" or "down_jesAbsolute"
-                    cout<<"Correlation of btag SF and JES uncertainties : "+_syst<<endl;
-                    if(_isSystUp){
-                        filetag = filetag.substr(3);
-                    }else if(_isSystDown){
-                        filetag = filetag.substr(5);
-                    }
-                }else {
-                    // all files have "central" so we can load any file.
-                    filetag = "cferr1"; // smallest size.
-                }
-                if(_isRun16pre){
-                    _btagcalib = {"DeepJet",btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_16preVFP.csv"};
-                    cout<<"    Loaded file : "<<btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_16preVFP.csv"<<endl;
-                }else if(_isRun16post){
-                    _btagcalib = {"DeepJet",btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_16postVFP.csv"};
-                    cout<<"    Loaded file : "<<btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_16postVFP.csv"<<endl;
-                }else if(_isRun17){
-                    _btagcalib = {"DeepJet",btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_17.csv"};
-                    cout<<"    Loaded file : "<<btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_17.csv"<<endl;
-                }else if(_isRun18){
-                    _btagcalib = {"DeepJet",btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_18.csv"};
-                    cout<<"    Loaded file : "<<btagpath+"skimmed_btag_"+ filetag +"_reshaping_deepJet_18.csv"<<endl;
-                }
-//                if(_isRun16pre){
-//                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL16preVFP_v2.csv"};
-//                }else if(_isRun16post){
-//                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL16postVFP_v3.csv"};
-//                }else if(_isRun17){
-//                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL17_v3.csv"};
-//                }else if(_isRun18){
-//                        _btagcalib = {"DeepJet","data/btagSF/skimmed_reshaping_deepJet_106XUL18_v2.csv"};
-//                }
-                
-                if(_isSystBtag){
-                    cout<<"    Loading uncertainties for "<<_syst.substr(4)<<endl;
-                    _btagcalibreader = {BTagEntry::OP_RESHAPING, _syst.substr(4)};
-                }else if(_isSystJes){
-                    cout<<"    Loading uncertainties for "<<_syst<<endl;
-                    _btagcalibreader = {BTagEntry::OP_RESHAPING, _syst};
-                }else{
-                    cout<<"    Loading uncertainties for central"<<endl;
-                    _btagcalibreader = {BTagEntry::OP_RESHAPING, "central"};
-                }
-                // load the formulae b flavor tagging
-                _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_B, "iterativefit");
-                _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_C, "iterativefit");
-                _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_UDSG, "iterativefit");
-
                 // Loading Muon Scale Factor
                 cout<<"Loading Muon SF"<<endl;
-                if(_isRun16pre){
-                    TFile muontrg("data/MuonSF/UL2016_preVFP/Efficiencies_muon_generalTracks_Z_Run2016_UL_HIPM_SingleMuonTriggers.root");
-                    _hmuontrg = dynamic_cast<TH2F *>(muontrg.Get("NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt"));
-                    _hmuontrg->SetDirectory(0);
-                    muontrg.Close();
+                std::string muonFile = _year + "_UL";
+                std::string muonTrgHist = "";
+                TFile *muontrg;
+                TFile *muonid;
+                TFile *muoniso;
 
-                    TFile muonid("data/MuonSF/UL2016_preVFP/Efficiencies_muon_generalTracks_Z_Run2016_UL_HIPM_ID.root");
-                    _hmuonid = dynamic_cast<TH2F *>(muonid.Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
-                    _hmuonid->SetDirectory(0);
-                    muonid.Close();
-
-                    TFile muoniso("data/MuonSF/UL2016_preVFP/Efficiencies_muon_generalTracks_Z_Run2016_UL_HIPM_ISO.root");
-                    _hmuoniso = dynamic_cast<TH2F *>(muoniso.Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
-                    _hmuoniso->SetDirectory(0);
-                    muoniso.Close();
-
-                }else if(_isRun16post){
-                    TFile muontrg("data/MuonSF/UL2016_postVFP/Efficiencies_muon_generalTracks_Z_Run2016_UL_SingleMuonTriggers.root");
-                    _hmuontrg = dynamic_cast<TH2F *>(muontrg.Get("NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt"));
-                    _hmuontrg->SetDirectory(0);
-                    muontrg.Close();
-
-                    TFile muonid("data/MuonSF/UL2016_postVFP/Efficiencies_muon_generalTracks_Z_Run2016_UL_ID.root");
-                    _hmuonid = dynamic_cast<TH2F *>(muonid.Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
-                    _hmuonid->SetDirectory(0);
-                    muonid.Close();
-
-                    TFile muoniso("data/MuonSF/UL2016_postVFP/Efficiencies_muon_generalTracks_Z_Run2016_UL_ISO.root");
-                    _hmuoniso = dynamic_cast<TH2F *>(muoniso.Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
-                    _hmuoniso->SetDirectory(0);
-                    muoniso.Close();
-
-                }else if(_isRun17){
-                    TFile muontrg("data/MuonSF/UL2017/Efficiencies_muon_generalTracks_Z_Run2017_UL_SingleMuonTriggers.root");
-                    _hmuontrg = dynamic_cast<TH2F *>(muontrg.Get("NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt"));
-                    _hmuontrg->SetDirectory(0);
-                    muontrg.Close();
-
-                    TFile muonid("data/MuonSF/UL2017/Efficiencies_muon_generalTracks_Z_Run2017_UL_ID.root");
-                    _hmuonid = dynamic_cast<TH2F *>(muonid.Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
-                    _hmuonid->SetDirectory(0);
-                    muonid.Close();
-
-                    TFile muoniso("data/MuonSF/UL2017/Efficiencies_muon_generalTracks_Z_Run2017_UL_ISO.root");
-                    _hmuoniso = dynamic_cast<TH2F *>(muoniso.Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
-                    _hmuoniso->SetDirectory(0);
-                    muoniso.Close();
-
-                }else if(_isRun18){
-                    TFile muontrg("data/MuonSF/UL2018/Efficiencies_muon_generalTracks_Z_Run2018_UL_SingleMuonTriggers.root");
-                    _hmuontrg = dynamic_cast<TH2F *>(muontrg.Get("NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt"));
-                    _hmuontrg->SetDirectory(0);
-                    muontrg.Close();
-
-                    TFile muonid("data/MuonSF/UL2018/Efficiencies_muon_generalTracks_Z_Run2018_UL_ID.root");
-                    _hmuonid = dynamic_cast<TH2F *>(muonid.Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
-                    _hmuonid->SetDirectory(0);
-                    muonid.Close();
-
-                    TFile muoniso("data/MuonSF/UL2018/Efficiencies_muon_generalTracks_Z_Run2018_UL_ISO.root");
-                    _hmuoniso = dynamic_cast<TH2F *>(muoniso.Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
-                    _hmuoniso->SetDirectory(0);
-                    muoniso.Close();
-
+                if (_isRun16pre) {
+                    muonFile = "2016_UL_HIPM_";
+                    muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+                } else if (_isRun16pre) {
+                    muonFile = "2016_UL_";
+                    muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+                } else if (_isRun17) {
+                    muonTrgHist = "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+                } else if (_isRun18) {
+                    muonTrgHist = "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
                 }
+                muontrg = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_SingleMuonTriggers.root").c_str());
+                _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
+                _hmuontrg->SetDirectory(0);
+                muontrg->Close();
                 _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
+
+                muonid = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ID.root").c_str());
+                _hmuonid = dynamic_cast<TH2F *>(muonid->Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
+                _hmuonid->SetDirectory(0);
+                muonid->Close();
                 _muonid = new WeightCalculatorFromHistogram(_hmuonid);
+
+                muoniso = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ISO.root").c_str());
+                _hmuoniso = dynamic_cast<TH2F *>(muoniso->Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
+                _hmuoniso->SetDirectory(0);
+                muoniso->Close();
                 _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
+
+
                 // Loading Tau Scale Factor
                 cout<<"Loading Tau SF"<<endl;
                 std::string tauid_vse = "VLoose";
@@ -346,64 +236,54 @@ void NanoAODAnalyzerrdframe::setTree(TTree *t, std::string outfilename)
 
 void NanoAODAnalyzerrdframe::setupAnalysis()
 {
-	/* Must sequentially define objects.
-	 *
-	 */
+    if (_isData) _jsonOK = readjson();
 
-	if (_isData) _jsonOK = readjson();
-	// Event weight for data it's always one. For MC, it depends on the sign
+    //_rlm = _rlm.Filter("event < 12534199");
 
-	_rlm = _rlm.Define("one", "1.0");
-        if(_isSkim){
-            if(_isData){
-                _rlm = _rlm.Define("unitGenWeight","one");
-            } else{
-                _rlm = _rlm.Define("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0");
-            }
-        } else{
-                if(_isData){
-                    _rlm = _rlm.Define("re_unitGenWeight","one")
-                               .Define("re_pugenWeight","one")
-                               .Define("evWeight_tauSF","one")
-                               .Define("evWeight_muonSF","one")
-                               .Define("evWeight_leptonSF","one")
-                               .Define("btagWeight_DeepFlavBrecalc","one");
-                }else{
-                    if(_syst == "puup"){
-                        _rlm = _rlm.Define("re_puWeight",[this](float x) {return _puweightcalc_plus->getWeight(x);}, {"Pileup_nTrueInt"});
-                    }else if(_syst == "pudown"){
-                        _rlm = _rlm.Define("re_puWeight",[this](float x) {return _puweightcalc_minus->getWeight(x);}, {"Pileup_nTrueInt"});
-                    }else{
-                        _rlm = _rlm.Define("re_puWeight",[this](float x) {return _puweightcalc->getWeight(x);}, {"Pileup_nTrueInt"});
-                    }
-                    _rlm = _rlm.Define("re_unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
-                               .Define("re_pugenWeight", "re_unitGenWeight * re_puWeight");
-                }
+    // Event weight for data it's always one. For MC, it depends on the sign
+    _rlm = _rlm.Define("one", "1.0");
+    if(_isSkim){
+        if(_isData){
+            _rlm = _rlm.Define("unitGenWeight","one")
+                       .Define("puGenWeight","one")
+                       .Define("evWeight_tauSF","one")
+                       .Define("evWeight_muonSF","one")
+                       .Define("evWeight_leptonSF","one")
+                       .Define("btagWeight_DeepFlavB","one");
+        } else {
+            _rlm = _rlm.Define("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0");
+            if (_syst == "puup")
+                _rlm = _rlm.Define("puWeight",[this](float x) {return _puweightcalc_plus->getWeight(x);}, {"Pileup_nTrueInt"});
+            else if (_syst == "pudown")
+                _rlm = _rlm.Define("puWeight",[this](float x) {return _puweightcalc_minus->getWeight(x);}, {"Pileup_nTrueInt"});
+            else
+                _rlm = _rlm.Define("puWeight",[this](float x) {return _puweightcalc->getWeight(x);}, {"Pileup_nTrueInt"});
+
         }
+    }
 
-	// Object selection will be defined in sequence.
-	// Selected objects will be stored in new vectors.
-        if(_isSkim){
-            selectMuons();
-        }else{
-            selectElectrons();
-            selectMuons();
-            applyJetMETCorrections();
-            //selectMET();
-            selectJets();
-            selectTaus();
-            removeOverlaps();
-            //selectFatJets();
-            if(!_isData){
-                //matchGenReco();
-                calculateEvWeight();
-            }
+    // Object selection will be defined in sequence.
+    // Selected objects will be stored in new vectors.
+    if (_isSkim) {
+        selectMuons();
+        skimJets();
+    } else {
+        selectElectrons();
+        selectMuons();
+        //selectMET();
+        selectJets();
+        selectTaus();
+        removeOverlaps();
+        if(!_isData){
+            //matchGenReco();
+            calculateEvWeight();
         }
-        defineMoreVars();
-        defineCuts();
-        bookHists();
-        setupCuts_and_Hists();
-        setupTree();
+    }
+    defineMoreVars();
+    defineCuts();
+    bookHists();
+    setupCuts_and_Hists();
+    setupTree();
 }
 
 bool NanoAODAnalyzerrdframe::readjson()
@@ -465,107 +345,23 @@ bool NanoAODAnalyzerrdframe::readjson()
 	}
 }
 
-void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, string jetalgo)
-{
-	if (globaltag != "")
-	{
-		cout << "Applying new JetMET corrections. GT: "+globaltag+" on jetAlgo: "+jetalgo << endl;
-		string basedirectory = "data/jme/";
-
-		string datamcflag = "";
-		if (_isData) datamcflag = "DATA";
-		else datamcflag = "MC";
-
-		// set file names that contain the parameters for corrections
-		string dbfilenamel1 = basedirectory+globaltag+"_"+datamcflag+"_L1FastJet_"+jetalgo+".txt";
-		string dbfilenamel2 = basedirectory+globaltag+"_"+datamcflag+"_L2Relative_"+jetalgo+".txt";
-		string dbfilenamel3 = basedirectory+globaltag+"_"+datamcflag+"_L3Absolute_"+jetalgo+".txt";
-		string dbfilenamel2l3 = basedirectory+globaltag+"_"+datamcflag+"_L2L3Residual_"+jetalgo+".txt";
-
-		JetCorrectorParameters *L1JetCorrPar = new JetCorrectorParameters(dbfilenamel1);
-                if (!L1JetCorrPar->isValid()) {
-                    std::cerr << "L1FastJet correction parameters not read" << std::endl;
-                    exit(1);
-                }
-
-                JetCorrectorParameters *L2JetCorrPar = new JetCorrectorParameters(dbfilenamel2);
-                if (!L2JetCorrPar->isValid()) {
-                    std::cerr << "L2Relative correction parameters not read" << std::endl;
-                    exit(1);
-                }
-
-                JetCorrectorParameters *L3JetCorrPar = new JetCorrectorParameters(dbfilenamel3);
-                if (!L3JetCorrPar->isValid()) {
-                    std::cerr << "L3Absolute correction parameters not read" << std::endl;
-                    exit(1);
-                }
-
-                JetCorrectorParameters *L2L3JetCorrPar = new JetCorrectorParameters(dbfilenamel2l3);
-                if (!L2L3JetCorrPar->isValid()) {
-                    std::cerr << "L2L3Residual correction parameters not read" << std::endl;
-                    exit(1);
-                }
-
-		// to apply all the corrections, first collect them into a vector
-		std::vector<JetCorrectorParameters> jetc;
-		jetc.push_back(*L1JetCorrPar);
-		jetc.push_back(*L2JetCorrPar);
-		jetc.push_back(*L3JetCorrPar);
-		jetc.push_back(*L2L3JetCorrPar);
-
-		// apply the various corrections
-		_jetCorrector = new FactorizedJetCorrector(jetc);
-
-		// object to calculate uncertainty
-                // _syst should be like "jec_upAbsolute"
-                if(_isSystJes) {
-                    cout<<"Applying JEC Uncertainty"<<endl;
-                    if(_syst.find("year") != std::string::npos) {
-                        int begin_position = _syst.length() - 4;
-                        if(_isRun16) {
-                            _syst.replace(begin_position,4,"2016");
-                        } else if(_isRun17) {
-                            _syst.replace(begin_position,4,"2017");
-                        } else if(_isRun18) {
-                            _syst.replace(begin_position,4,"2018");
-                        }
-                    }
-                    string uncsource = _syst;
-                    if(_isSystUp) {
-                        uncsource = uncsource.substr(6);    // Remove "up_jes"
-                    }else if(_isSystDown) {
-                        uncsource = uncsource.substr(8);    // Remove "down_jes"
-                    }
-                    cout<<"JEC Uncertainty Source : "+uncsource<<endl;
-                    string dbfilenameunc = basedirectory+"RegroupedV2_"+globaltag+"_"+datamcflag+"_UncertaintySources_"+jetalgo+".txt";
-                    JetCorrectorParameters *uncCorrPar = new JetCorrectorParameters(dbfilenameunc,uncsource);
-                    _jetCorrectionUncertainty = new JetCorrectionUncertainty(*uncCorrPar);
-                }
-
-	}
-	else
-	{
-		cout << "Not applying new JetMET corrections. Using NanoAOD as is." << endl;
-	}
-}
-
 void NanoAODAnalyzerrdframe::selectElectrons()
 {
-	//cout << "select electrons" << endl;
-        // Run II recommendation: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaRunIIRecommendations
-        // Run II recomendation - cutbased: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2
-        // Temporary elecuts (Not to be used!)
-	// _rlm = _rlm.Define("elecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1 && ((abs(Electron_deltaEtaSC<=1.479) && abs(Electron_dxy) < 0.05 && abs(Electron_dz) < 0.10 ) || (abs(Electron_deltaEtaSC>1.479) && abs(Electron_dxy) < 0.10 && abs(Electron_dz) < 0.20))")
-//                      .Define("Sel_elept", "Electron_pt[elecuts]") // define new variables
-//                      .Define("Sel_eleta", "Electron_eta[elecuts]")
-//                      .Define("Sel_elephi", "Electron_phi[elecuts]")
-//                      .Define("Sel_elemass", "Electron_mass[elecuts]")
-//                      .Define("Sel_eleidx", ::good_idx, {"elecuts"})
-//                      .Define("nelepass", "int(Sel_elept.size())")
-//                      .Define("ele4vecs", ::gen4vec, {"Sel_elept", "Sel_eleta", "Sel_elephi", "Sel_elemass"});
+    //cout << "select electrons" << endl;
+    // Run II recommendation: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaRunIIRecommendations
+    // Run II recomendation - cutbased: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2
+    // Temporary elecuts (Not to be used!)
+    //_rlm = _rlm.Define("elecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1 && ((abs(Electron_deltaEtaSC<=1.479) && abs(Electron_dxy) < 0.05 && abs(Electron_dz) < 0.10 ) || (abs(Electron_deltaEtaSC>1.479) && abs(Electron_dxy) < 0.10 && abs(Electron_dz) < 0.20))")
+    //           .Define("Sel_elept", "Electron_pt[elecuts]") // define new variables
+    //           .Define("Sel_eleta", "Electron_eta[elecuts]")
+    //           .Define("Sel_elephi", "Electron_phi[elecuts]")
+    //           .Define("Sel_elemass", "Electron_mass[elecuts]")
+    //           .Define("Sel_eleidx", ::good_idx, {"elecuts"})
+    //           .Define("nelepass", "int(Sel_elept.size())")
+    //           .Define("ele4vecs", ::gen4vec, {"Sel_elept", "Sel_eleta", "Sel_elephi", "Sel_elemass"});
 
-        _rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
-                   .Define("nvetoelepass","Sum(vetoelecuts)");
+    _rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
+               .Define("nvetoelepass","Sum(vetoelecuts)");
 }
 
 void NanoAODAnalyzerrdframe::selectMuons()
@@ -595,141 +391,377 @@ void NanoAODAnalyzerrdframe::selectMuons()
 /*
 void NanoAODAnalyzerrdframe::selectMET()
 {
-        _rlm = _rlm.Define("met4vec", ::genmet4vec, {"MET_pt","MET_phi"});
-
+    _rlm = _rlm.Define("met4vec", ::genmet4vec, {"MET_pt","MET_phi"});
 }*/
 
-
-// Adapted from https://github.com/cms-nanoAOD/nanoAOD-tools/blob/master/python/postprocessing/modules/jme/jetRecalib.py
-// and https://github.com/cms-nanoAOD/nanoAOD-tools/blob/master/python/postprocessing/modules/jme/JetRecalibrator.py
-void NanoAODAnalyzerrdframe::applyJetMETCorrections()
+void NanoAODAnalyzerrdframe::skimJets()
 {
-	auto appcorrlambdaf = [this](floats jetpts, floats jetetas, floats jetAreas, floats jetrawf, float rho)->floats
-	{
-		floats corrfactors;
-		corrfactors.reserve(jetpts.size());
-		for (unsigned int i =0; i<jetpts.size(); i++)
-		{
-			float rawjetpt = jetpts[i]*(1.0-jetrawf[i]);
-			_jetCorrector->setJetPt(rawjetpt);
-			_jetCorrector->setJetEta(jetetas[i]);
-			_jetCorrector->setJetA(jetAreas[i]);
-			_jetCorrector->setRho(rho);
-			float corrfactor = _jetCorrector->getCorrection();
-			corrfactors.emplace_back(rawjetpt * corrfactor);
-		}
-		return corrfactors;
-	};
+    // apparently size() returns long int, which ROOT doesn't recognized for branch types
+    // , so it must be cast into int if you want to save them later into a TTree
 
-	auto jecuncertaintylambdaf= [this](floats jetpts, floats jetetas, floats jetAreas, floats jetrawf, float rho)->floats
-		{
-			floats uncertainties;
-			uncertainties.reserve(jetpts.size());
-			for (unsigned int i =0; i<jetpts.size(); i++)
-			{
-				float rawjetpt = jetpts[i]*(1.0-jetrawf[i]);
-				_jetCorrector->setJetPt(rawjetpt);
-				_jetCorrector->setJetEta(jetetas[i]);
-				_jetCorrector->setJetA(jetAreas[i]);
-				_jetCorrector->setRho(rho);
-				float corrfactor = _jetCorrector->getCorrection();
-				_jetCorrectionUncertainty->setJetPt(corrfactor*rawjetpt);
-				_jetCorrectionUncertainty->setJetEta(jetetas[i]);
-				float unc = _jetCorrectionUncertainty->getUncertainty(true);
-				uncertainties.emplace_back(unc);
+    //////////////////
+    // JES and unc. //
+    //////////////////
 
-			}
-			return uncertainties;
-		};
+    // you MUST copy syst names from the output of 'python skimcsv.py'
+    std::vector<std::string> btag_var = {"central",
+        "hfup", "hfdown", "lfup", "lfdown", "hfstats1up", "hfstats1down",
+        "hfstats2up", "hfstats2down", "lfstats1up", "lfstats1down",
+        "lfstats2up", "lfstats2down", "cferr1up", "cferr1down", "cferr2up", "cferr2down"};
+    std::vector<std::string> jes_var_2016 = {"jesAbsoluteup", "jesAbsolutedown",
+        "jesAbsolute_2016up", "jesAbsolute_2016down", "jesBBEC1up", "jesBBEC1down",
+        "jesBBEC1_2016up", "jesBBEC1_2016down", "jesFlavorQCDup", "jesFlavorQCDdown",
+        "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2016up", "jesRelativeSample_2016down"};
+    std::vector<std::string> jes_var_2017 = {"jesAbsoluteup", "jesAbsolutedown",
+        "jesAbsolute_2017up", "jesAbsolute_2017down", "jesBBEC1up", "jesBBEC1down",
+        "jesBBEC1_2017up", "jesBBEC1_2017down", "jesFlavorQCDup", "jesFlavorQCDdown",
+        "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2017up", "jesRelativeSample_2017down"};
+    std::vector<std::string> jes_var_2018 = {"jesAbsoluteup", "jesAbsolutedown",
+        "jesAbsolute_2018up", "jesAbsolute_2018down", "jesBBEC1up", "jesBBEC1down",
+        "jesBBEC1_2018up", "jesBBEC1_2018down", "jesFlavorQCDup", "jesFlavorQCDdown",
+        "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2018up", "jesRelativeSample_2018down"};
 
-	auto metcorrlambdaf = [](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis)->float
-	{
-		auto metx = met * cos(metphi);
-		auto mety = met * sin(metphi);
-		for (unsigned int i=0; i<jetphis.size(); i++)
-		{
-			if (jetptsafter[i]>15.0)
-			{
-				metx -= (jetptsafter[i] - jetptsbefore[i])*cos(jetphis[i]);
-				mety -= (jetptsafter[i] - jetptsbefore[i])*sin(jetphis[i]);
-			}
-		}
-		return float(sqrt(metx*metx + mety*mety));
-	};
+    std::vector<std::string> jes_var;
+    if (_isRun16)
+        jes_var = jes_var_2016;
+    else if (_isRun17)
+        jes_var = jes_var_2017;
+    else if (_isRun18)
+        jes_var = jes_var_2018;
+    else
+        cout << "WARNING !!!!!! : No JES - BTAG SF found" << endl;
 
-	auto metphicorrlambdaf = [](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis)->float
-	{
-		auto metx = met * cos(metphi);
-		auto mety = met * sin(metphi);
-		for (unsigned int i=0; i<jetphis.size(); i++)
-		{
-			if (jetptsafter[i]>15.0)
-			{
-				metx -= (jetptsafter[i] - jetptsbefore[i])*cos(jetphis[i]);
-				mety -= (jetptsafter[i] - jetptsbefore[i])*sin(jetphis[i]);
-			}
-		}
-		return float(atan2(mety, metx));
-	};
+    std::vector<JetCorrectionUncertainty*> regroupedUnc;
+    if (_globaltag != "") {
+        cout << "Applying new JetMET corrections. GT: " + _globaltag + " on jetAlgo: AK4PFchs" << endl;
+        string basedirectory = "data/jme/";
 
-	if (_jetCorrector != 0)
-	{
-		_rlm = _rlm.Define("Jet_pt_corr", appcorrlambdaf, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
-                           .Define("MET_pt_corr", metcorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"})
-                           .Define("MET_phi_corr", metphicorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"});
+        string datamcflag = "";
+        if (_isData) datamcflag = "DATA";
+        else datamcflag = "MC";
 
-                if (_isSystJes) { 
-                    _rlm = _rlm.Define("Jet_pt_relerror", jecuncertaintylambdaf, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
-                               .Define("Jet_pt_corr_up", "Jet_pt_corr*(1.0f + Jet_pt_relerror)")
-                               .Define("Jet_pt_corr_down", "Jet_pt_corr*(1.0f - Jet_pt_relerror)")
-                               .Define("MET_pt_corr_up", metcorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_up", "Jet_phi"})
-                               .Define("MET_phi_corr_up", metphicorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_up", "Jet_phi"})
-                               .Define("MET_pt_corr_down", metcorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_down", "Jet_phi"})
-                               .Define("MET_phi_corr_down", metphicorrlambdaf, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr_down", "Jet_phi"});
+        // set file names that contain the parameters for corrections
+        string dbfilenamel1 = basedirectory + _globaltag + "_" + datamcflag + "_L1FastJet_AK4PFchs.txt";
+        string dbfilenamel2 = basedirectory + _globaltag + "_" + datamcflag + "_L2Relative_AK4PFchs.txt";
+        string dbfilenamel3 = basedirectory + _globaltag + "_" + datamcflag + "_L3Absolute_AK4PFchs.txt";
+        string dbfilenamel2l3 = basedirectory + _globaltag + "_" + datamcflag + "_L2L3Residual_AK4PFchs.txt";
+
+        JetCorrectorParameters *L1JetCorrPar = new JetCorrectorParameters(dbfilenamel1);
+        if (!L1JetCorrPar->isValid()) {
+          std::cerr << "L1FastJet correction parameters not read" << std::endl;
+          exit(1);
+        }
+
+        JetCorrectorParameters *L2JetCorrPar = new JetCorrectorParameters(dbfilenamel2);
+        if (!L2JetCorrPar->isValid()) {
+            std::cerr << "L2Relative correction parameters not read" << std::endl;
+            exit(1);
+        }
+
+        JetCorrectorParameters *L3JetCorrPar = new JetCorrectorParameters(dbfilenamel3);
+        if (!L3JetCorrPar->isValid()) {
+            std::cerr << "L3Absolute correction parameters not read" << std::endl;
+            exit(1);
+        }
+
+        JetCorrectorParameters *L2L3JetCorrPar = new JetCorrectorParameters(dbfilenamel2l3);
+        if (!L2L3JetCorrPar->isValid()) {
+            std::cerr << "L2L3Residual correction parameters not read" << std::endl;
+            exit(1);
+        }
+
+        // to apply all the corrections, first collect them into a vector
+        std::vector<JetCorrectorParameters> jetc;
+        jetc.push_back(*L1JetCorrPar);
+        jetc.push_back(*L2JetCorrPar);
+        jetc.push_back(*L3JetCorrPar);
+        jetc.push_back(*L2L3JetCorrPar);
+
+        // apply the various corrections
+        _jetCorrector = new FactorizedJetCorrector(jetc);
+
+        // object to calculate uncertainty
+        cout<<"Applying JEC Uncertainty"<<endl;
+        for (std::string src : jes_var) {
+            if (src.find("up") != std::string::npos) {
+                auto uncsource = src.substr(3, src.size()-2-3);
+                cout << "JEC Uncertainty Source : " + uncsource << endl;
+                string dbfilenameunc = basedirectory + "RegroupedV2_" + _globaltag + "_MC_UncertaintySources_AK4PFchs.txt";
+                JetCorrectorParameters *uncCorrPar = new JetCorrectorParameters(dbfilenameunc, uncsource);
+                _jetCorrectionUncertainty = new JetCorrectionUncertainty(*uncCorrPar);
+                regroupedUnc.emplace_back(_jetCorrectionUncertainty);
+            } else {
+                continue; //We only need var name, no up/down
+            }
+        }
+    }
+
+    auto applyJes = [this](floats jetpts, floats jetetas, floats jetAreas, floats jetrawf, float rho, floats tocorrect)->floats {
+        floats corrfactors;
+        corrfactors.reserve(jetpts.size());
+
+        for (unsigned int i =0; i<jetpts.size(); i++) {
+            float rawfrac = 1.0-jetrawf[i];
+            float rawjetpt = jetpts[i] * (rawfrac);
+            _jetCorrector->setJetPt(rawjetpt);
+            _jetCorrector->setJetEta(jetetas[i]);
+            _jetCorrector->setJetA(jetAreas[i]);
+            _jetCorrector->setRho(rho);
+            float corrfactor = _jetCorrector->getCorrection();
+            corrfactors.emplace_back(tocorrect[i] * rawfrac * corrfactor);
+        }
+        return corrfactors;
+    };
+
+    // structure: jes[jetIdx][varIdx]
+    auto jesUnc = [this, regroupedUnc](floats jetpts, floats jetetas, floats jetAreas, floats jetrawf, float rho)->std::vector<std::vector<float>> {
+        std::vector<float> uncSources;
+        uncSources.reserve(2 * regroupedUnc.size());
+        std::vector<std::vector<float>> uncertainties;
+        uncertainties.reserve(jetpts.size());
+
+        for (unsigned int i =0; i<jetpts.size(); i++) {
+            for (size_t j=0; j<regroupedUnc.size(); j++) {
+                auto corrector = regroupedUnc[j];
+
+                corrector->setJetPt(jetpts[i]);
+                corrector->setJetEta(jetetas[i]);
+                float unc = corrector->getUncertainty(true);
+                uncSources.emplace_back(1.0f + unc);
+                uncSources.emplace_back(1.0f - unc);
+            }
+            uncertainties.emplace_back(uncSources);
+            uncSources.clear();
+        }
+        return uncertainties;
+    };
+
+    auto metCorr = [](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis)->float {
+
+        auto metx = met * cos(metphi);
+        auto mety = met * sin(metphi);
+
+        for (unsigned int i=0; i<jetphis.size(); i++) {
+            if (jetptsafter[i] > 15.0) {
+                metx -= (jetptsafter[i] - jetptsbefore[i])*cos(jetphis[i]);
+                mety -= (jetptsafter[i] - jetptsbefore[i])*sin(jetphis[i]);
+            }
+        }
+        return (float(sqrt(metx*metx + mety*mety)));
+    };
+
+    auto metUnc = [](float met, float metphi, floats jetptsbefore, std::vector<std::vector<float>> jetptscorr, floats jetphis)->floats {
+
+        floats corrfactors;
+        corrfactors.reserve(static_cast<int>(jetptscorr.size()));
+
+        for (size_t j=0; j<jetptscorr[0].size(); j++) {
+            auto metx = met * cos(metphi);
+            auto mety = met * sin(metphi);
+
+            for (unsigned int i=0; i<jetphis.size(); i++) {
+                if (jetptsbefore[i] * jetptscorr[i][j] > 15.0) {
+                    metx -= (jetptscorr[i][j] - 1.0) * jetptsbefore[i] * cos(jetphis[i]);
+                    mety -= (jetptscorr[i][j] - 1.0) * jetptsbefore[i] * sin(jetphis[i]);
                 }
-	}
+            }
+            corrfactors.emplace_back(float(sqrt(metx*metx + mety*mety)));
+        }
+        return corrfactors;
+    };
+
+    auto metPhiCorr = [](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis)->float {
+        auto metx = met * cos(metphi);
+        auto mety = met * sin(metphi);
+
+        for (unsigned int i=0; i<jetphis.size(); i++) {
+            if (jetptsafter[i] > 15.0) {
+                metx -= (jetptsafter[i] - jetptsbefore[i])*cos(jetphis[i]);
+                mety -= (jetptsafter[i] - jetptsbefore[i])*sin(jetphis[i]);
+            }
+        }
+        return float(atan2(mety, metx));
+    };
+
+    auto metPhiUnc = [](float met, float metphi, floats jetptsbefore, std::vector<std::vector<float>> jetptscorr, floats jetphis)->floats {
+
+        floats corrfactors;
+        corrfactors.reserve(static_cast<int>(jetptscorr.size()));
+
+        for (size_t j=0; j<jetptscorr[0].size(); j++) {
+            auto metx = met * cos(metphi);
+            auto mety = met * sin(metphi);
+
+            for (unsigned int i=0; i<jetphis.size(); i++) {
+                if (jetptsbefore[i] * jetptscorr[i][j] > 15.0) {
+                    metx -= (jetptscorr[i][j] - 1.0) * jetptsbefore[i] * cos(jetphis[i]);
+                    mety -= (jetptscorr[i][j] - 1.0) * jetptsbefore[i] * sin(jetphis[i]);
+                }
+            }
+            corrfactors.emplace_back(float(atan2(mety, metx)));
+        }
+        return corrfactors;
+    };
+
+    //FIXME: should correct jet mass. but can we do it at once?
+    if (_jetCorrector != 0) {
+        _rlm = _rlm.Define("Jet_pt_corr", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_pt"})
+                   .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_mass"})
+                   .Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"})
+                   .Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"});
+        if (!_isData) {
+            _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
+                       .Define("MET_pt_unc", metUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"})
+                       .Define("MET_phi_unc", metPhiUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"});
+        }
+        _rlm = _rlm.Redefine("Jet_pt", "Jet_pt_corr");
+    }
+
+    float jetPtCut = 30;
+    float jetEtaCut = 2.4;
+    int jetIdCut = 6;
+
+    // input vector: vec[pt][vars]
+    // vec<vec<float>> or similar form were not able to be skimmed!?
+    // Note: do not skim with exact value of pt!
+    auto skimJetCol = [this, jetPtCut, jetEtaCut, jetIdCut](std::vector<std::vector<float>> toSkim, floats pts, floats etas, ints ids)->std::vector<std::vector<float>> {
+        std::vector<float> newvars;
+        newvars.reserve(toSkim[0].size());
+        std::vector<std::vector<float>> out;
+
+        for (size_t i =0; i<toSkim.size(); i++) {
+            if (pts[i] < jetPtCut) continue;
+            if (ids[i] != jetIdCut) continue;
+            if (abs(etas[i]) > jetEtaCut) continue;
+
+            for (size_t j=0; j<toSkim[0].size(); j++) {
+                newvars.emplace_back(toSkim[i][j]);
+            }
+            out.emplace_back(newvars);
+            newvars.clear();
+        }
+        return out;
+    };
+
+    // skim jet collection
+    _rlm = _rlm.Define("jetcuts", "Jet_pt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6")
+               .Define("Jet_pt_unc2", skimJetCol, {"Jet_pt_unc", "Jet_pt", "Jet_eta", "Jet_jetId"});
+    _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetcuts]")
+               .Redefine("Jet_eta", "Jet_eta[jetcuts]")
+               .Redefine("Jet_phi", "Jet_phi[jetcuts]")
+               .Redefine("Jet_jetId", "Jet_jetId[jetcuts]")
+               .Redefine("Jet_hadronFlavour","Jet_hadronFlavour[jetcuts]");
+
+    //////////////////
+    // b-tagging SF //
+    //////////////////
+    if (!_isData) {
+        cout << "Loading Btag SF" << endl;
+        string btagpath = "data/btagSF/";
+        // btag SF w/o JES
+        _btagcalib = {"DeepJet", btagpath + "skimmed_btag_" + _year + ".csv"};
+        cout << "    Loaded file : " << btagpath + "skimmed_btag_" + _year + ".csv" << endl;
+        _btagcalibJes = {"DeepJet", btagpath + "skimmed_jes_" + _year + ".csv"};
+        cout << "    Loaded file : " << btagpath + "skimmed_jes_" + _year + ".csv" << endl;
+
+        _rlm = _rlm.Define("btag_var", [btag_var](){return strings(btag_var);})
+                   .Define("btag_jes_var", [jes_var](){return strings(jes_var);});
+
+
+        _btagcalibreader = {BTagEntry::OP_RESHAPING, "central", btag_var};
+        _btagcalibreaderJes = {BTagEntry::OP_RESHAPING, "central", jes_var};
+
+        // load the formulae b flavor tagging 
+        _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_B, "iterativefit");
+        _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_C, "iterativefit");
+        _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_UDSG, "iterativefit");
+        _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_B, "iterativefit");
+        _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_C, "iterativefit");
+        _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_UDSG, "iterativefit");
+
+        // function to calculate event weight for MC events based on DeepJet algorithm
+        auto btagweightgenerator= [this](floats &pts, floats &etas, ints &hadflav, floats &btags, strings &var) -> doubles {
+            doubles bSFs;
+            for (std::string src : var) {
+                double bweight = 1.0;
+                for (unsigned int i=0; i<pts.size(); i++) {
+                    if (pts[i] < 40) continue;
+                    if (src.find("cferr") != std::string::npos and hadflav[i] != 4) continue;
+                    if (src.find("cferr") == std::string::npos and hadflav[i] == 4) continue;
+
+                    BTagEntry::JetFlavor hadfconv;
+                    if      (hadflav[i]==5) hadfconv=BTagEntry::FLAV_B;
+                    else if (hadflav[i]==4) hadfconv=BTagEntry::FLAV_C;
+                    else                    hadfconv=BTagEntry::FLAV_UDSG;
+                    double w = _btagcalibreader.eval_auto_bounds(src, hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                    bweight *= w;
+                }
+                bSFs.emplace_back(bweight);
+            }
+            return bSFs;
+        };
+
+        auto btagweightgeneratorJes= [this](floats &pts, floats &etas, ints &hadflav, floats &btags, std::vector<std::vector<float>> jes, strings &var) -> doubles {
+            doubles bSFs;
+            for (size_t i=0; i<var.size(); i++) {
+                double bweight = 1.0;
+                std::string src = var[i];
+
+                for (unsigned int j=0; j<pts.size(); j++) {
+                    auto newpt = pts[j] * jes[j][i];
+                    if (newpt < 40) continue;
+
+                    BTagEntry::JetFlavor hadfconv;
+                    if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
+                    else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
+                    else                    hadfconv=BTagEntry::FLAV_UDSG;
+                    double w = _btagcalibreaderJes.eval_auto_bounds(src, hadfconv, fabs(etas[j]), newpt, btags[j]);
+                    bweight *= w;
+                }
+                bSFs.emplace_back(bweight);
+            }
+            return bSFs;
+        };
+        cout << "Generate b-tagging weight" << endl;
+        _rlm = _rlm.Define("btagWeight_DeepFlavB", btagweightgenerator, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "btag_var"})
+                   .Define("btagWeight_DeepFlavB_jes", btagweightgeneratorJes, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "Jet_pt_unc", "btag_jes_var"});
+    }
+
+
 }
 
 void NanoAODAnalyzerrdframe::selectJets()
 {
 	// apparently size() returns long int, which ROOT doesn't recognized for branch types
 	// , so it must be cast into int if you want to save them later into a TTree
-        if (_globaltag != ""){
-            if (_isSystJes){
-                if (_isSystUp){
-                    _rlm = _rlm.Define("Sys_jetpt","Jet_pt_corr_up");
-                    _rlm = _rlm.Define("Sys_METpt","MET_pt_corr_up");
-                    _rlm = _rlm.Define("Sys_METphi","MET_phi_corr_up");
-                }else if (_isSystDown){
-                    _rlm = _rlm.Define("Sys_jetpt","Jet_pt_corr_down");
-                    _rlm = _rlm.Define("Sys_METpt","MET_pt_corr_down");
-                    _rlm = _rlm.Define("Sys_METphi","MET_phi_corr_down");
+        if (_globaltag != "") {
+            if (_isSystJes) {
+                if (_isSystUp) {
+                    _rlm = _rlm.Define("Sys_jetpt","Jet_pt_up");
+                    _rlm = _rlm.Define("Sys_METpt","MET_pt_up");
+                    _rlm = _rlm.Define("Sys_METphi","MET_phi_up");
+                } else if (_isSystDown) {
+                    _rlm = _rlm.Define("Sys_jetpt","Jet_pt_down");
+                    _rlm = _rlm.Define("Sys_METpt","MET_pt_down");
+                    _rlm = _rlm.Define("Sys_METphi","MET_phi_down");
                 }
-            }else{
-                _rlm = _rlm.Define("Sys_jetpt","Jet_pt_corr");
-                _rlm = _rlm.Define("Sys_METpt","MET_pt_corr");
-                _rlm = _rlm.Define("Sys_METphi","MET_phi_corr");
             }
-        }else{
-            _rlm = _rlm.Define("Sys_jetpt","Jet_pt");
-            _rlm = _rlm.Define("Sys_METpt","MET_pt");
-            _rlm = _rlm.Define("Sys_METphi","MET_phi");
         }
         if(_isSTLFVcat){
-            _rlm = _rlm.Define("jetcuts", "Sys_jetpt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
+            _rlm = _rlm.Define("jetcuts", "Jet_pt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
         }else if(_isTTLFVcat){
-            _rlm = _rlm.Define("jetcuts", "Sys_jetpt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
+            _rlm = _rlm.Define("jetcuts", "Jet_pt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
         }else{
             // Prevention from not defined.
-            _rlm = _rlm.Define("jetcuts", "Sys_jetpt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
+            _rlm = _rlm.Define("jetcuts", "Jet_pt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
         }
-        _rlm = _rlm.Define("Sel_jetpt", "Sys_jetpt[jetcuts]")
-                   .Define("Sel_jeteta", "Jet_eta[jetcuts]")
-                   .Define("Sel_jetphi", "Jet_phi[jetcuts]")
-                   .Define("Sel_jetmass", "Jet_mass[jetcuts]")
-                   .Define("Sel_jetbtag", "Jet_btagDeepFlavB[jetcuts]")
-                   .Define("njetspass", "int(Sel_jetpt.size())")
-                   .Define("jet4vecs", ::gen4vec, {"Sel_jetpt", "Sel_jeteta", "Sel_jetphi", "Sel_jetmass"});
+        _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetcuts]")
+                   .Redefine("Jet_eta", "Jet_eta[jetcuts]")
+                   .Redefine("Jet_phi", "Jet_phi[jetcuts]")
+                   .Redefine("Jet_mass", "Jet_mass[jetcuts]")
+                   .Redefine("Jet_btagDeepFlavB", "Jet_btagDeepFlavB[jetcuts]")
+                   .Redefine("nJet", "int(Jet_pt.size())")
+                   .Define("jet4vecs", ::gen4vec, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass"});
 }
 
 void NanoAODAnalyzerrdframe::selectTaus()
@@ -948,37 +980,6 @@ void NanoAODAnalyzerrdframe::calculateEvWeight()
                    .Define("evWeight_tauSF", tauSF, {"Sel_taupt","Sel_taueta","Sel_tauflav"})
                    .Define("evWeight_leptonSF","evWeight_muonSF*evWeight_tauSF");
 
-        // B tagging SF
-        _rlm = _rlm.Define("Sel_jethadflav","Jet_hadronFlavour[jetcuts]")
-                   .Define("Sel2_jethadflav", "Sel_jethadflav[jetoverlap]");
-
-        // function to calculate event weight for MC events based on DeepJet algorithm
-        auto btagweightgenerator= [this](floats &pts, floats &etas, ints &hadflav, floats &btags)->float
-        {
-            double bweight=1.0;
-            BTagEntry::JetFlavor hadfconv;
-            for (unsigned int i=0; i<pts.size(); i++)
-            {
-                if (hadflav[i]==5) hadfconv=BTagEntry::FLAV_B;
-                else if (hadflav[i]==4) hadfconv=BTagEntry::FLAV_C;
-                else hadfconv=BTagEntry::FLAV_UDSG;
-
-                double w = 1.0;
-                if(_isSystBtag){
-                    w = _btagcalibreader.eval_auto_bounds(_syst.substr(4), hadfconv, fabs(etas[i]), pts[i], btags[i]);
-                }else if(_isSystJes){ 
-                    w = _btagcalibreader.eval_auto_bounds(_syst, hadfconv, fabs(etas[i]), pts[i], btags[i]);
-                }else{
-                    w = _btagcalibreader.eval_auto_bounds("central", hadfconv, fabs(etas[i]), pts[i], btags[i]);
-                }
-                bweight *= w;
-            }
-            //auto outbweight = std::make_tuple(bweight, bweightup, bweightdown);
-            return bweight;
-        };
-
-        cout<<"Generate b-tagging weight"<<endl;
-        _rlm = _rlm.Define("btagWeight_DeepFlavBrecalc", btagweightgenerator, {"Sel2_jetpt", "Sel2_jeteta", "Sel2_jethadflav", "Sel2_jetbtag"});
 }
 
 /*
