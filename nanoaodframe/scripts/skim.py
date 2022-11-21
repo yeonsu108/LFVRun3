@@ -17,8 +17,10 @@ os.makedirs(log, exist_ok=True)
 for fn in os.listdir("data/dataset/v8UL_" + year):
     if 'json' in fn: continue
     fname = fn.lstrip('dataset_').rstrip('.txt')
-    #test
-    #if not 'SingleMuon2016B' in fname: continue
+    test_list = []
+    #test_list = ['TTToSemiLeptonic']
+    if len(test_list) > 0:
+        if not any(i in fname for i in test_list): continue
     if len(sys.argv) > 3:
         if dataOrMC == 'data':
             if '201' not in fname: continue
@@ -46,4 +48,4 @@ for fn in os.listdir("data/dataset/v8UL_" + year):
             runString = "sbatch scripts/job_slurm.sh " + year + " " + infile + " " + os.path.join(outputdir, fname) + " " + dirNum + '_' + rootName + " " + workdir + " " + logdir
 
             print(runString)
-            #call([runString, shell=True)
+            call([runString], shell=True)

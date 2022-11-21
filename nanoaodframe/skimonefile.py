@@ -25,6 +25,31 @@ if __name__=='__main__':
     (options, args) = parser.parse_args()
 
 
+    #if "Run2016" in options.infile:
+    #    options.json = "data/GoldenJSON/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt"
+    #elif "Run2017" in options.infile:
+    #    options.json = "data/GoldenJSON/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt"
+    #elif "Run2018" in options.infile:
+    #    options.json = "data/GoldenJSON/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt"
+
+    if any(i in options.infile for i in ["Run2016B", "Run2016B", "Run2016D"]):
+        options.globaltag = "Summer19UL16APV_RunBCD_V7"
+    elif any(i in options.infile for i in ["Run2016E", "Run2016Fpre"]):
+        options.globaltag = "Summer19UL16APV_RunEF_V7"
+    elif any(i in options.infile for i in ["Run2016Fpost", "Run2016G", "Run2016H"]):
+        options.globaltag = "Summer19UL16_RunFGH_V7"
+    elif any(i in options.infile for i in ["Run2017", "Run2018"]):
+        era = options.infile[options.infile.find("Run" + year)+6]
+        options.globaltag = "Summer19UL" + year[2:] + era
+    elif "UL16NanoAODAPVv" in options.infile:
+        options.globaltag = "Summer19UL16APV_V7"
+    elif "UL16NanoAODv" in options.infile:
+        options.globaltag = "Summer19UL16_V7"
+    elif "UL17NanoAODv" in options.infile:
+        options.globaltag = "Summer19UL17_V5"
+    elif "UL18NanoAODv" in options.infile:
+        options.globaltag = "Summer19UL18_V5"
+
     # load compiled C++ library into ROOT/python
     cppyy.load_reflection_info("libnanoadrdframe.so")
     t = ROOT.TChain("Events")
