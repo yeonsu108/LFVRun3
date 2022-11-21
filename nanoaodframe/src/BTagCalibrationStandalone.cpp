@@ -28,10 +28,10 @@ BTagEntry::Parameters::Parameters(
   discrMin(discr_min),
   discrMax(discr_max)
 {
-  std::transform(measurementType.begin(), measurementType.end(),
-                 measurementType.begin(), ::tolower);
-  std::transform(sysType.begin(), sysType.end(),
-                 sysType.begin(), ::tolower);
+//  std::transform(measurementType.begin(), measurementType.end(),
+//                 measurementType.begin(), ::tolower);
+//  std::transform(sysType.begin(), sysType.end(),
+//                 sysType.begin(), ::tolower);
 }
 
 BTagEntry::BTagEntry(const std::string &csvLine)
