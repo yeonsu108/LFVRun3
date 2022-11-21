@@ -90,7 +90,7 @@ from ROOT import *
 
 
 hostname = os.environ["HOSTNAME"]
-if 'htop' in hostname:
+if any(i in hostname for i in ['htop', 'compute-0', 'gpu-0']):
     storageprefix = "/data1/common/NanoAOD"
 elif 'sdfarm.kr' in hostname:
     storageprefix = "root://cms-xrdr.sdfarm.kr:1094//store"
