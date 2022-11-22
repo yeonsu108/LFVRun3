@@ -22,7 +22,7 @@
 using namespace std;
 
 NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
-:_rd(*atree), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), _jetCorrector(0)//, regroupedUnc(0)
+:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), _jetCorrector(0)
 {
 
         ROOT::DisableImplicitMT();
@@ -60,14 +60,14 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
             cout << "TT LFV region (category 2)" << endl;
         }
 
-	// Data/mc switch
-	if(atree->GetBranch("genWeight") == nullptr){
-		_isData = true;
-		cout << "Input file is data" <<endl;
-	}else{
-		_isData = false;
-		cout << "Input file is MC" <<endl;
-	}
+    // Data/mc switch
+    if (atree->GetBranch("genWeight") == nullptr) {
+        _isData = true;
+    cout << "Input file is data" <<endl;
+    } else {
+        _isData = false;
+        cout << "Input file is MC" <<endl;
+    }
 
     // Systematic switch
     if (_syst != "") {
@@ -103,7 +103,6 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
 
         if (_isSkim) {
             if (!_isData) {
-
                 // pu weight setup
                 cout<<"Loading Pileup profiles"<<endl;
                 // MC 2016pre = MC 2016post (same file)
@@ -262,11 +261,23 @@ void NanoAODAnalyzerrdframe::setupAnalysis()
         }
     }
 
+    std::vector<std::string> jes_var;
+    if (_isRun16)
+        jes_var = jes_var_2016;
+    else if (_isRun17)
+        jes_var = jes_var_2017;
+    else if (_isRun18)
+        jes_var = jes_var_2018;
+    else
+        cout << "WARNING !!!!!! : No JES - BTAG SF found" << endl;
+
     // Object selection will be defined in sequence.
     // Selected objects will be stored in new vectors.
     if (_isSkim) {
         selectMuons();
+        setupJetMETCorrection(_globaltag, jes_var, "AK4PFchs");
         skimJets();
+        applyBSFs(jes_var);
     } else {
         selectElectrons();
         selectMuons();
@@ -394,43 +405,11 @@ void NanoAODAnalyzerrdframe::selectMET()
     _rlm = _rlm.Define("met4vec", ::genmet4vec, {"MET_pt","MET_phi"});
 }*/
 
-void NanoAODAnalyzerrdframe::skimJets()
-{
-    // apparently size() returns long int, which ROOT doesn't recognized for branch types
-    // , so it must be cast into int if you want to save them later into a TTree
+void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector<std::string> jes_var, std::string jetalgo) {
 
     //////////////////
     // JES and unc. //
     //////////////////
-
-    // you MUST copy syst names from the output of 'python skimcsv.py'
-    std::vector<std::string> btag_var = {"central",
-        "hfup", "hfdown", "lfup", "lfdown", "hfstats1up", "hfstats1down",
-        "hfstats2up", "hfstats2down", "lfstats1up", "lfstats1down",
-        "lfstats2up", "lfstats2down", "cferr1up", "cferr1down", "cferr2up", "cferr2down"};
-    std::vector<std::string> jes_var_2016 = {"jesAbsoluteup", "jesAbsolutedown",
-        "jesAbsolute_2016up", "jesAbsolute_2016down", "jesBBEC1up", "jesBBEC1down",
-        "jesBBEC1_2016up", "jesBBEC1_2016down", "jesFlavorQCDup", "jesFlavorQCDdown",
-        "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2016up", "jesRelativeSample_2016down"};
-    std::vector<std::string> jes_var_2017 = {"jesAbsoluteup", "jesAbsolutedown",
-        "jesAbsolute_2017up", "jesAbsolute_2017down", "jesBBEC1up", "jesBBEC1down",
-        "jesBBEC1_2017up", "jesBBEC1_2017down", "jesFlavorQCDup", "jesFlavorQCDdown",
-        "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2017up", "jesRelativeSample_2017down"};
-    std::vector<std::string> jes_var_2018 = {"jesAbsoluteup", "jesAbsolutedown",
-        "jesAbsolute_2018up", "jesAbsolute_2018down", "jesBBEC1up", "jesBBEC1down",
-        "jesBBEC1_2018up", "jesBBEC1_2018down", "jesFlavorQCDup", "jesFlavorQCDdown",
-        "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2018up", "jesRelativeSample_2018down"};
-
-    std::vector<std::string> jes_var;
-    if (_isRun16)
-        jes_var = jes_var_2016;
-    else if (_isRun17)
-        jes_var = jes_var_2017;
-    else if (_isRun18)
-        jes_var = jes_var_2018;
-    else
-        cout << "WARNING !!!!!! : No JES - BTAG SF found" << endl;
-
     std::vector<JetCorrectionUncertainty*> regroupedUnc;
     if (_globaltag != "") {
         cout << "Applying new JetMET corrections. GT: " + _globaltag + " on jetAlgo: AK4PFchs" << endl;
@@ -441,10 +420,10 @@ void NanoAODAnalyzerrdframe::skimJets()
         else datamcflag = "MC";
 
         // set file names that contain the parameters for corrections
-        string dbfilenamel1 = basedirectory + _globaltag + "_" + datamcflag + "_L1FastJet_AK4PFchs.txt";
-        string dbfilenamel2 = basedirectory + _globaltag + "_" + datamcflag + "_L2Relative_AK4PFchs.txt";
-        string dbfilenamel3 = basedirectory + _globaltag + "_" + datamcflag + "_L3Absolute_AK4PFchs.txt";
-        string dbfilenamel2l3 = basedirectory + _globaltag + "_" + datamcflag + "_L2L3Residual_AK4PFchs.txt";
+        string dbfilenamel1 = basedirectory + _globaltag + "_" + datamcflag + "_L1FastJet_" + jetalgo + ".txt";
+        string dbfilenamel2 = basedirectory + _globaltag + "_" + datamcflag + "_L2Relative_" + jetalgo + ".txt";
+        string dbfilenamel3 = basedirectory + _globaltag + "_" + datamcflag + "_L3Absolute_" + jetalgo + ".txt";
+        string dbfilenamel2l3 = basedirectory + _globaltag + "_" + datamcflag + "_L2L3Residual_" + jetalgo + ".txt";
 
         JetCorrectorParameters *L1JetCorrPar = new JetCorrectorParameters(dbfilenamel1);
         if (!L1JetCorrPar->isValid()) {
@@ -616,6 +595,9 @@ void NanoAODAnalyzerrdframe::skimJets()
         }
         _rlm = _rlm.Redefine("Jet_pt", "Jet_pt_corr");
     }
+}
+
+void NanoAODAnalyzerrdframe::skimJets() {
 
     float jetPtCut = 30;
     float jetEtaCut = 2.4;
@@ -652,6 +634,10 @@ void NanoAODAnalyzerrdframe::skimJets()
                .Redefine("Jet_jetId", "Jet_jetId[jetcuts]")
                .Redefine("Jet_hadronFlavour","Jet_hadronFlavour[jetcuts]");
 
+}
+
+void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
+
     //////////////////
     // b-tagging SF //
     //////////////////
@@ -664,7 +650,7 @@ void NanoAODAnalyzerrdframe::skimJets()
         _btagcalibJes = {"DeepJet", btagpath + "skimmed_jes_" + _year + ".csv"};
         cout << "    Loaded file : " << btagpath + "skimmed_jes_" + _year + ".csv" << endl;
 
-        _rlm = _rlm.Define("btag_var", [btag_var](){return strings(btag_var);})
+        _rlm = _rlm.Define("btag_var", [](){return strings(btag_var);})
                    .Define("btag_jes_var", [jes_var](){return strings(jes_var);});
 
 
@@ -726,8 +712,6 @@ void NanoAODAnalyzerrdframe::skimJets()
         _rlm = _rlm.Define("btagWeight_DeepFlavB", btagweightgenerator, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "btag_var"})
                    .Define("btagWeight_DeepFlavB_jes", btagweightgeneratorJes, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "Jet_pt_unc", "btag_jes_var"});
     }
-
-
 }
 
 void NanoAODAnalyzerrdframe::selectJets()

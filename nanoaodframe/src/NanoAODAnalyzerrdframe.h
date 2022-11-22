@@ -39,20 +39,20 @@ public:
 	virtual ~NanoAODAnalyzerrdframe();
 	void setupAnalysis();
 
-	// object selectors
-	// RNode is in namespace ROOT::RDF
-	bool readjson();
-	void selectElectrons();
-	void selectMuons();
-	void applyJetMETCorrections();
-	void selectJets();
-	void skimJets();
-        void selectTaus();
-        void selectMET();
-	void selectFatJets();
-	void removeOverlaps();
-        void matchGenReco();
-        void calculateEvWeight();
+  // object selectors
+  // RNode is in namespace ROOT::RDF
+  bool readjson();
+  void selectElectrons();
+  void selectMuons();
+  void selectJets();
+  void skimJets();
+  void applyBSFs(std::vector<string> jes_var);
+  void selectTaus();
+  void selectMET();
+  void selectFatJets();
+  void removeOverlaps();
+  void matchGenReco();
+  void calculateEvWeight();
 	virtual void defineMoreVars() = 0; // define higher-level variables from basic ones, you must implement this in your subclassed analysis code
 
 	void addVar(varinfo v);
@@ -75,17 +75,16 @@ public:
 	void setTree(TTree *t, std::string outfilename);
 	void setupTree();
 
-        bool _isSTLFVcat = false;
-        bool _isTTLFVcat = false;
-        bool _isSkim;
+  bool _isSTLFVcat = false;
+  bool _isTTLFVcat = false;
+  bool _isSkim;
   bool _isHTstitching = false;
   std::string _outfilename;
 
 private:
 	ROOT::RDataFrame _rd;
-
-	bool _isData;
-	bool _jsonOK;
+  bool _isData;
+  bool _jsonOK;
   std::string _year;
   bool _isRun16pre = false;
   bool _isRun16post = false;
@@ -93,8 +92,23 @@ private:
   bool _isRun17 = false;
   bool _isRun18 = false;
   std::string _syst;
-  //inline static std::vector<std::string> btag_var;
-  //inline static std::vector<std::string> jes_var;
+  // you MUST copy syst names from the output of 'python skimcsv.py'
+  inline static std::vector<std::string> btag_var = {"central",
+                "hfup", "hfdown", "lfup", "lfdown", "hfstats1up", "hfstats1down",
+                "hfstats2up", "hfstats2down", "lfstats1up", "lfstats1down",
+                "lfstats2up", "lfstats2down", "cferr1up", "cferr1down", "cferr2up", "cferr2down"};
+  inline static std::vector<std::string> jes_var_2016 = {"jesAbsoluteup", "jesAbsolutedown",
+                "jesAbsolute_2016up", "jesAbsolute_2016down", "jesBBEC1up", "jesBBEC1down",
+                "jesBBEC1_2016up", "jesBBEC1_2016down", "jesFlavorQCDup", "jesFlavorQCDdown",
+                "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2016up", "jesRelativeSample_2016down"};
+  inline static std::vector<std::string> jes_var_2017 = {"jesAbsoluteup", "jesAbsolutedown",
+                "jesAbsolute_2017up", "jesAbsolute_2017down", "jesBBEC1up", "jesBBEC1down",
+                "jesBBEC1_2017up", "jesBBEC1_2017down", "jesFlavorQCDup", "jesFlavorQCDdown",
+                "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2017up", "jesRelativeSample_2017down"};
+  inline static std::vector<std::string> jes_var_2018 = {"jesAbsoluteup", "jesAbsolutedown",
+                "jesAbsolute_2018up", "jesAbsolute_2018down", "jesBBEC1up", "jesBBEC1down",
+                "jesBBEC1_2018up", "jesBBEC1_2018down", "jesFlavorQCDup", "jesFlavorQCDdown",
+                "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2018up", "jesRelativeSample_2018down"};
   //std::vector<JetCorrectionUncertainty*> regroupedUnc;
   bool _isSystBtag = false;
   bool _isSystJes = false;
@@ -143,7 +157,7 @@ private:
 	bool isDefined(string v);
 
 	// Jet MET corrections
-	//void setupJetMETCorrection(std::string globaltag, std::string jetalgo="AK4PFchs");
+	void setupJetMETCorrection(std::string globaltag, const std::vector<std::string> var = std::vector<std::string>(), std::string jetalgo="AK4PFchs");
 	FactorizedJetCorrector *_jetCorrector;
 	JetCorrectionUncertainty *_jetCorrectionUncertainty;
 
