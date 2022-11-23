@@ -75,8 +75,6 @@ public:
 	void setTree(TTree *t, std::string outfilename);
 	void setupTree();
 
-  bool _isSTLFVcat = false;
-  bool _isTTLFVcat = false;
   bool _isSkim;
   bool _isHTstitching = false;
   std::string _outfilename;
@@ -116,9 +114,6 @@ private:
   bool _isSystDown = false;
 	std::string _jsonfname;
 	std::string _globaltag;
-  std::string tauid_vsjet = "";
-  std::string tauid_vse = "";
-  std::string tauid_vsmu = "";
 	TFile *_inrootfile;
 	TFile *_outrootfile;
 	std::vector<std::string> _outrootfilenames;
@@ -137,12 +132,6 @@ private:
 	std::map<std::string, std::vector<std::string>> _varstostorepertree;
 
 	Json::Value jsonroot;
-
-	// btag weights
-	BTagCalibration _btagcalib;
-	BTagCalibration _btagcalibJes;
-	BTagCalibrationReader _btagcalibreader;
-	BTagCalibrationReader _btagcalibreaderJes;
 
 	// pile up weights
 	TH1D *_hpumc;

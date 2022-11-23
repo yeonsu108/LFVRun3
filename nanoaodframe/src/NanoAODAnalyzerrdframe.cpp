@@ -3,6 +3,7 @@
  *
  *  Created on: Sep 30, 2018
  *      Author: suyong
+ *      Refactored for LFV analysis: jiwon park
  */
 
 #include "NanoAODAnalyzerrdframe.h"
@@ -46,17 +47,6 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
         cout << "Year : Run 2018" << endl;
     }
     _isRun16 = _isRun16pre || _isRun16post;
-
-
-    // ST LFV and TT LFV switch
-    if (_year.find("stlfv") != std::string::npos) {
-        _isSTLFVcat = true;
-        cout << "ST LFV region (category 1)" << endl;
-    }
-    if (_year.find("ttlfv") != std::string::npos) {
-        _isTTLFVcat = true;
-        cout << "TT LFV region (category 2)" << endl;
-    }
 
     // Data/mc switch
     if (atree->GetBranch("genWeight") == nullptr) {
@@ -202,37 +192,31 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
 
 bool NanoAODAnalyzerrdframe::readjson() {
 
-	auto isgoodjsonevent = [this](unsigned int runnumber, unsigned int lumisection)
-		{
+	auto isgoodjsonevent = [this](unsigned int runnumber, unsigned int lumisection) {
+
 			auto key = std::to_string(runnumber);
 
 			bool goodeventflag = false;
 
-			if (jsonroot.isMember(key))
-			{
+			if (jsonroot.isMember(key)) {
 				Json::Value runlumiblocks = jsonroot[key];
-				for (unsigned int i=0; i<runlumiblocks.size() && !goodeventflag; i++)
-				{
+				for (unsigned int i=0; i<runlumiblocks.size() && !goodeventflag; i++) {
 					auto lumirange = runlumiblocks[i];
 					if (lumisection >= lumirange[0].asUInt() && lumisection <= lumirange[1].asUInt()) goodeventflag = true;
 				}
 				return goodeventflag;
-			}
-			else
-			{
+			} else {
 				//cout << "Run not in json " << runnumber << endl;
 				return false;
 			}
 
 		};
 
-	if (_jsonfname != "")
-	{
+	if (_jsonfname != "") {
 		std::ifstream jsoninfile;
 		jsoninfile.open(_jsonfname);
 
-		if (jsoninfile.good())
-		{
+		if (jsoninfile.good()) {
 			jsoninfile >> jsonroot;
 			/*
 			auto runlumiblocks =  jsonroot["276775"];
@@ -245,15 +229,11 @@ bool NanoAODAnalyzerrdframe::readjson() {
 			_rlm = _rlm.Define("goodjsonevent", isgoodjsonevent, {"run", "luminosityBlock"}).Filter("goodjsonevent");
 			_jsonOK = true;
 			return true;
-		}
-		else
-		{
+		} else {
 			cout << "Problem reading json file " << _jsonfname << endl;
 			return false;
 		}
-	}
-	else
-	{
+	} else {
 		cout << "no JSON file given" << endl;
 		return true;
 	}
@@ -280,14 +260,7 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
 
 void NanoAODAnalyzerrdframe::selectMuons() {
 
-    if (_isSTLFVcat) {
-        _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
-    } else if (_isTTLFVcat) {
-        _rlm = _rlm.Define("muoncuts", "Muon_pt>30.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
-    } else {
-        // Prevention from not defined.
-        _rlm = _rlm.Define("muoncuts", "Muon_pt>30.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
-    }
+    _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
     //cout << "select muons" << endl;
     _rlm = _rlm.Redefine("Muon_pt", "Muon_pt[muoncuts]")
                .Redefine("Muon_eta", "Muon_eta[muoncuts]")
@@ -310,9 +283,6 @@ void NanoAODAnalyzerrdframe::selectMET()
 
 void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector<std::string> jes_var, std::string jetalgo, bool dataMc) {
 
-    //////////////////
-    // JES and unc. //
-    //////////////////
     std::vector<JetCorrectionUncertainty*> regroupedUnc;
     if (_globaltag != "") {
         cout << "Applying new JetMET corrections. GT: " + _globaltag + " on jetAlgo: AK4PFchs" << endl;
@@ -379,6 +349,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     }
 
     auto applyJes = [this](floats jetpts, floats jetetas, floats jetAreas, floats jetrawf, float rho, floats tocorrect)->floats {
+
         floats corrfactors;
         corrfactors.reserve(jetpts.size());
 
@@ -397,6 +368,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
 
     // structure: jes[jetIdx][varIdx]
     auto jesUnc = [this, regroupedUnc](floats jetpts, floats jetetas, floats jetAreas, floats jetrawf, float rho)->std::vector<std::vector<float>> {
+
         std::vector<float> uncSources;
         uncSources.reserve(2 * regroupedUnc.size());
         std::vector<std::vector<float>> uncertainties;
@@ -453,6 +425,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     };
 
     auto metPhiCorr = [](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis)->float {
+
         auto metx = met * cos(metphi);
         auto mety = met * sin(metphi);
 
@@ -487,6 +460,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
 
     //FIXME: should correct jet mass. but can we do it at once?
     if (_jetCorrector != 0) {
+        _rlm = _rlm.Redefine("Jet_pt_uncorr", "Jet_pt");
         _rlm = _rlm.Define("Jet_pt_corr", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_pt"})
                    .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_mass"})
                    .Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"})
@@ -510,6 +484,7 @@ void NanoAODAnalyzerrdframe::skimJets() {
     // vec<vec<float>> or similar form were not able to be skimmed!?
     // Note: do not skim with exact value of pt!
     auto skimJetCol = [this, jetPtCut, jetEtaCut, jetIdCut](std::vector<std::vector<float>> toSkim, floats pts, floats etas, ints ids)->std::vector<std::vector<float>> {
+
         std::vector<float> newvars;
         newvars.reserve(toSkim[0].size());
         std::vector<std::vector<float>> out;
@@ -543,18 +518,18 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
 
     cout << "Loading Btag SF" << endl;
     string btagpath = "data/btagSF/";
-    // btag SF w/o JES
-    _btagcalib = {"DeepJet", btagpath + "skimmed_btag_" + _year + ".csv"};
+
+    BTagCalibration _btagcalib = {"DeepJet", btagpath + "skimmed_btag_" + _year + ".csv"};
     cout << "    Loaded file : " << btagpath + "skimmed_btag_" + _year + ".csv" << endl;
-    _btagcalibJes = {"DeepJet", btagpath + "skimmed_jes_" + _year + ".csv"};
+    BTagCalibration _btagcalibJes = {"DeepJet", btagpath + "skimmed_jes_" + _year + ".csv"};
     cout << "    Loaded file : " << btagpath + "skimmed_jes_" + _year + ".csv" << endl;
 
     _rlm = _rlm.Define("btag_var", [](){return strings(btag_var);})
                .Define("btag_jes_var", [jes_var](){return strings(jes_var);});
 
 
-    _btagcalibreader = {BTagEntry::OP_RESHAPING, "central", btag_var};
-    _btagcalibreaderJes = {BTagEntry::OP_RESHAPING, "central", jes_var};
+    BTagCalibrationReader _btagcalibreader = {BTagEntry::OP_RESHAPING, "central", btag_var};
+    BTagCalibrationReader _btagcalibreaderJes = {BTagEntry::OP_RESHAPING, "central", jes_var};
 
     // load the formulae b flavor tagging
     _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_B, "iterativefit");
@@ -565,7 +540,8 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
     _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_UDSG, "iterativefit");
 
     // function to calculate event weight for MC events based on DeepJet algorithm
-    auto btagweightgenerator = [this](floats &pts, floats &etas, ints &hadflav, floats &btags, strings &var)->doubles {
+    auto btagweightgenerator = [this, _btagcalibreader](floats &pts, floats &etas, ints &hadflav, floats &btags, strings &var)->doubles {
+
         doubles bSFs;
         for (std::string src : var) {
             double bweight = 1.0;
@@ -586,8 +562,9 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
         return bSFs;
     };
 
-    auto btagweightgeneratorJes = [this](floats &pts, floats &etas, ints &hadflav, floats &btags, std::vector<std::vector<float>> jes, strings &var)->doubles {
-        doubles bSFs;
+    auto btagweightgeneratorJes = [this, _btagcalibreaderJes](floats &pts, floats &etas, ints &hadflav, floats &btags, std::vector<std::vector<float>> jes, strings &var)->doubles {
+
+       doubles bSFs;
         for (size_t i=0; i<var.size(); i++) {
             double bweight = 1.0;
             std::string src = var[i];
@@ -607,6 +584,7 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
         }
         return bSFs;
     };
+
     cout << "Generate b-tagging weight" << endl;
     _rlm = _rlm.Define("btagWeight_DeepFlavB", btagweightgenerator, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "btag_var"})
                .Define("btagWeight_DeepFlavB_jes", btagweightgeneratorJes, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "Jet_pt_unc", "btag_jes_var"});
@@ -629,14 +607,7 @@ void NanoAODAnalyzerrdframe::selectJets()
                 }
             }
         }
-        if(_isSTLFVcat){
-            _rlm = _rlm.Define("jetcuts", "Jet_pt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
-        }else if(_isTTLFVcat){
-            _rlm = _rlm.Define("jetcuts", "Jet_pt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
-        }else{
-            // Prevention from not defined.
-            _rlm = _rlm.Define("jetcuts", "Jet_pt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
-        }
+        _rlm = _rlm.Define("jetcuts", "Jet_pt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
         _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetcuts]")
                    .Redefine("Jet_eta", "Jet_eta[jetcuts]")
                    .Redefine("Jet_phi", "Jet_phi[jetcuts]")
@@ -664,17 +635,8 @@ void NanoAODAnalyzerrdframe::selectTaus()
                    .Define("mutauoverlap", overlap_removal_mutau, {"muon4vecs","tau4vecs"});
 
         // Hadronic Tau Object Selections
-        if(_isSTLFVcat){
-            _rlm = _rlm.Define("taucuts", "Scaled_taupt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
-                       .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64");
-        }else if(_isTTLFVcat){
-            _rlm = _rlm.Define("taucuts", "Scaled_taupt>30.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
-                       .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 16");
-        }else{
-            // Prevention from not defined.
-            _rlm = _rlm.Define("taucuts", "Scaled_taupt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
-                       .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64");
-        }
+        _rlm = _rlm.Define("taucuts", "Scaled_taupt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
+                   .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64");
 
         // Hadronic Tau Selection
         _rlm = _rlm.Define("seltaucuts","taucuts && deeptauidcuts && mutauoverlap")
@@ -877,11 +839,7 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     std::string tauid_vse = "VLoose";
     std::string tauid_vsmu = "Tight";
     std::string tauid_vsjet = "VTight";
-    //if (_isSTLFVcat) {
-    //    tauid_vsjet = "VTight";
-    //} else if (_isTTLFVcat) {
-    //    tauid_vsjet = "Medium";
-    //}
+
     cout << "Tau ID WP vsJet : " << tauid_vsjet << endl;
     cout << "Tau ID WP vsMuon : " << tauid_vsmu << endl;
     cout << "Tau ID WP vsElectron : " << tauid_vse << endl;

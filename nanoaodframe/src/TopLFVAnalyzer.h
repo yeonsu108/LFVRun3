@@ -17,11 +17,10 @@ class TopLFVAnalyzer: public NanoAODAnalyzerrdframe
 		void defineCuts();
 		void defineMoreVars(); // define higher-level variables from
 		void bookHists();
-        private:
-                std::string _year;
-                std::string _syst;
-                //bool isSTLFVcat = false;
-                //bool isTTLFVcat = false;
+
+private:
+    std::string _year;
+    std::string _syst;
 
 };
 
