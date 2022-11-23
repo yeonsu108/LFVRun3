@@ -22,48 +22,46 @@
 using namespace std;
 
 NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
-:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), _jetCorrector(0)
-{
+:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), _jetCorrector(0) {
 
-        ROOT::DisableImplicitMT();
-        // Skim switch
-        if(_isSkim == true){
-                cout << "<< Start Skim NanoAOD >>" << endl;
-        }else{
-                cout << "<< Start Process NanoAOD >>" << endl;
-        }
+    // Skim switch
+    if (_isSkim == true) {
+        cout << "<< Start Skim NanoAOD >>" << endl;
+    } else {
+        cout << "<< Start Process NanoAOD >>" << endl;
+    }
 
-        // Year switch
-        if(_year.find("2016pre") != std::string::npos){
-                _isRun16pre = true;
-                cout << "Year : Run 2016 pre (16 APV)" << endl;
-        }else if(_year.find("2016post") != std::string::npos){
-                _isRun16post = true;
-                cout << "Year : Run 2016 post" << endl;
-        }else if(_year.find("2017") != std::string::npos){
-                _isRun17 = true;
-                cout << "Year : Run 2017" << endl;
-        }else if(_year.find("2018") != std::string::npos){
-                _isRun18 = true;
-                cout << "Year : Run 2018" << endl;
-        }
-        _isRun16 = _isRun16pre || _isRun16post;
+    // Year switch
+    if (_year.find("2016pre") != std::string::npos) {
+        _isRun16pre = true;
+        cout << "Year : Run 2016 pre (16 APV)" << endl;
+    } else if (_year.find("2016post") != std::string::npos) {
+        _isRun16post = true;
+        cout << "Year : Run 2016 post" << endl;
+    } else if (_year.find("2017") != std::string::npos) {
+        _isRun17 = true;
+        cout << "Year : Run 2017" << endl;
+    } else if (_year.find("2018") != std::string::npos) {
+        _isRun18 = true;
+        cout << "Year : Run 2018" << endl;
+    }
+    _isRun16 = _isRun16pre || _isRun16post;
 
 
-        // ST LFV and TT LFV switch
-        if(_year.find("stlfv") != std::string::npos){
-            _isSTLFVcat = true;
-            cout << "ST LFV region (category 1)" << endl;
-        }
-        if(_year.find("ttlfv") != std::string::npos){
-            _isTTLFVcat = true;
-            cout << "TT LFV region (category 2)" << endl;
-        }
+    // ST LFV and TT LFV switch
+    if (_year.find("stlfv") != std::string::npos) {
+        _isSTLFVcat = true;
+        cout << "ST LFV region (category 1)" << endl;
+    }
+    if (_year.find("ttlfv") != std::string::npos) {
+        _isTTLFVcat = true;
+        cout << "TT LFV region (category 2)" << endl;
+    }
 
     // Data/mc switch
     if (atree->GetBranch("genWeight") == nullptr) {
         _isData = true;
-    cout << "Input file is data" <<endl;
+        cout << "Input file is data" <<endl;
     } else {
         _isData = false;
         cout << "Input file is MC" <<endl;
@@ -73,17 +71,9 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
     if (_syst != "") {
         cout << "Systematics Information" << endl;
         cout << "Activated option --syst " << _syst << endl;
-
         if (_syst.find("jes") != std::string::npos) {
             _isSystJes = true;
             cout << "    Apply JES uncertainty" << endl;
-        }
-        if (_syst.find("up") != std::string::npos) {
-            _isSystUp = true;
-            cout << "    Systematic Up" << endl;
-        } else if (_syst.find("down") != std::string::npos) {
-            _isSystDown = true;
-            cout << "    Systematic Down" << endl;
         }
     } else {
         cout << "Nominal process without systematics" << endl;
@@ -91,136 +81,33 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
 
     TObjArray *allbranches = atree->GetListOfBranches();
     for (int i =0; i<allbranches->GetSize(); i++) {
-      TBranch *abranch = dynamic_cast<TBranch *>(allbranches->At(i));
-      if (abranch!= nullptr) {
-          std::string brname = abranch->GetName();
-          if (brname.find("HLT_") == std::string::npos and brname.find("L1_") == std::string::npos)
-              cout << brname << ", ";
-          _originalvars.push_back(abranch->GetName());
-      }
+        TBranch *abranch = dynamic_cast<TBranch *>(allbranches->At(i));
+        if (abranch!= nullptr) {
+            std::string brname = abranch->GetName();
+            if (brname.find("HLT_") == std::string::npos and brname.find("L1_") == std::string::npos)
+                cout << brname << ", ";
+            _originalvars.push_back(abranch->GetName());
+        }
     }
     cout << endl;
-
-        if (_isSkim) {
-            if (!_isData) {
-                // pu weight setup
-                cout<<"Loading Pileup profiles"<<endl;
-                // MC 2016pre = MC 2016post (same file)
-                TFile tfmc(("data/Pileup/PileupMC_UL" + _year + ".root").c_str());
-                _hpumc = dynamic_cast<TH1D *>(tfmc.Get("pu_mc"));
-                _hpumc->SetDirectory(0);
-                tfmc.Close();
-
-                TFile tfdata(("data/Pileup/PileupDATA_UL" + _year + ".root").c_str());
-                _hpudata = dynamic_cast<TH1D *>(tfdata.Get("pileup"));
-                _hpudata_plus = dynamic_cast<TH1D *>(tfdata.Get("pileup_plus"));
-                _hpudata_minus = dynamic_cast<TH1D *>(tfdata.Get("pileup_minus"));
-
-                _hpudata->SetDirectory(0);
-                _hpudata_plus->SetDirectory(0);
-                _hpudata_minus->SetDirectory(0);
-                tfdata.Close();
-
-                _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
-                _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
-                _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus);
-                
-
-                // Loading Muon Scale Factor
-                cout<<"Loading Muon SF"<<endl;
-                std::string muonFile = _year + "_UL";
-                std::string muonTrgHist = "";
-                TFile *muontrg;
-                TFile *muonid;
-                TFile *muoniso;
-
-                if (_isRun16pre) {
-                    muonFile = "2016_UL_HIPM_";
-                    muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-                } else if (_isRun16pre) {
-                    muonFile = "2016_UL_";
-                    muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-                } else if (_isRun17) {
-                    muonTrgHist = "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-                } else if (_isRun18) {
-                    muonTrgHist = "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-                }
-                muontrg = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_SingleMuonTriggers.root").c_str());
-                _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
-                _hmuontrg->SetDirectory(0);
-                muontrg->Close();
-                _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
-
-                muonid = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ID.root").c_str());
-                _hmuonid = dynamic_cast<TH2F *>(muonid->Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
-                _hmuonid->SetDirectory(0);
-                muonid->Close();
-                _muonid = new WeightCalculatorFromHistogram(_hmuonid);
-
-                muoniso = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ISO.root").c_str());
-                _hmuoniso = dynamic_cast<TH2F *>(muoniso->Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
-                _hmuoniso->SetDirectory(0);
-                muoniso->Close();
-                _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
-
-
-                // Loading Tau Scale Factor
-                cout<<"Loading Tau SF"<<endl;
-                std::string tauid_vse = "VLoose";
-                std::string tauid_vsmu = "Tight";
-                std::string tauid_vsjet = "VTight";
-                if(_isSTLFVcat){
-                    tauid_vsjet = "VTight";
-                }else if(_isTTLFVcat){
-                    tauid_vsjet = "Medium";
-                }
-                cout<<"Tau ID WP vsJet : "<<tauid_vsjet<<endl;
-                cout<<"Tau ID WP vsMuon : "<<tauid_vsmu<<endl;
-                cout<<"Tau ID WP vsElectron : "<<tauid_vse<<endl;
-                if(_isRun16pre){
-                    _tauidSFjet = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSjet",tauid_vsjet);
-                    _tauidSFele = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSe",tauid_vse);
-                    _tauidSFmu = new TauIDSFTool("UL2016_preVFP","DeepTau2017v2p1VSmu",tauid_vsmu);
-                    _testool = new TauESTool("UL2016_preVFP","DeepTau2017v2p1VSjet");
-                    _festool = new TauFESTool("UL2016_preVFP");
-                }else if(_isRun16post){
-                    _tauidSFjet = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSjet",tauid_vsjet);
-                    _tauidSFele = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSe",tauid_vse);
-                    _tauidSFmu = new TauIDSFTool("UL2016_postVFP","DeepTau2017v2p1VSmu",tauid_vsmu);
-                    _testool = new TauESTool("UL2016_postVFP","DeepTau2017v2p1VSjet");
-                    _festool = new TauFESTool("UL2016_postVFP");
-                }else if(_isRun17){
-                    _tauidSFjet = new TauIDSFTool("UL2017","DeepTau2017v2p1VSjet",tauid_vsjet);
-                    _tauidSFele = new TauIDSFTool("UL2017","DeepTau2017v2p1VSe",tauid_vse);
-                    _tauidSFmu = new TauIDSFTool("UL2017","DeepTau2017v2p1VSmu",tauid_vsmu);
-                    _testool = new TauESTool("UL2017","DeepTau2017v2p1VSjet");
-                    _festool = new TauFESTool("UL2017");
-                }else if(_isRun18){
-                    _tauidSFjet = new TauIDSFTool("UL2018","DeepTau2017v2p1VSjet",tauid_vsjet);
-                    _tauidSFele = new TauIDSFTool("UL2018","DeepTau2017v2p1VSe",tauid_vse);
-                    _tauidSFmu = new TauIDSFTool("UL2018","DeepTau2017v2p1VSmu",tauid_vsmu);
-                    _testool = new TauESTool("UL2018","DeepTau2017v2p1VSjet");
-                    _festool = new TauFESTool("UL2018");
-                }
-            }
-        }
 }
 
 NanoAODAnalyzerrdframe::~NanoAODAnalyzerrdframe() {
-	// TODO Auto-generated destructor stub
-	// ugly...
-        std::cout<<">>  Job Done  <<"<<std::endl;
+
+    // TODO Auto-generated destructor stub
+    // ugly...
+    std::cout<<">>  Job Done  <<"<<std::endl;
 }
 
-bool NanoAODAnalyzerrdframe::isDefined(string v)
-{
+bool NanoAODAnalyzerrdframe::isDefined(string v) {
+
 	auto result = std::find(_originalvars.begin(), _originalvars.end(), v);
 	if (result != _originalvars.end()) return true;
 	else return false;
 }
 
-void NanoAODAnalyzerrdframe::setTree(TTree *t, std::string outfilename)
-{
+void NanoAODAnalyzerrdframe::setTree(TTree *t, std::string outfilename) {
+
 	_rd = ROOT::RDataFrame(*t);
 	_rlm = RNode(_rd);
 	_outfilename = outfilename;
@@ -233,8 +120,8 @@ void NanoAODAnalyzerrdframe::setTree(TTree *t, std::string outfilename)
 	this->setupAnalysis();
 }
 
-void NanoAODAnalyzerrdframe::setupAnalysis()
-{
+void NanoAODAnalyzerrdframe::setupAnalysis() {
+
     if (_isData) _jsonOK = readjson();
 
     //_rlm = _rlm.Filter("event < 12534199");
@@ -244,20 +131,38 @@ void NanoAODAnalyzerrdframe::setupAnalysis()
     if(_isSkim){
         if(_isData){
             _rlm = _rlm.Define("unitGenWeight","one")
-                       .Define("puGenWeight","one")
-                       .Define("evWeight_tauSF","one")
-                       .Define("evWeight_muonSF","one")
-                       .Define("evWeight_leptonSF","one")
-                       .Define("btagWeight_DeepFlavB","one");
+                       .Define("puWeight","one")
+                       .Define("muonWeightId","one")
+                       .Define("muonWeightIso","one")
+                       .Define("muonWeightTrg","one")
+                       .Define("btagWeight_DeepFlavB","one")
+                       .Define("btagWeight_DeepFlavB_jes","one");
         } else {
-            _rlm = _rlm.Define("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0");
-            if (_syst == "puup")
-                _rlm = _rlm.Define("puWeight",[this](float x) {return _puweightcalc_plus->getWeight(x);}, {"Pileup_nTrueInt"});
-            else if (_syst == "pudown")
-                _rlm = _rlm.Define("puWeight",[this](float x) {return _puweightcalc_minus->getWeight(x);}, {"Pileup_nTrueInt"});
-            else
-                _rlm = _rlm.Define("puWeight",[this](float x) {return _puweightcalc->getWeight(x);}, {"Pileup_nTrueInt"});
+            // pu weight setup
+            cout<<"Loading Pileup profiles"<<endl;
+            // MC 2016pre = MC 2016post (same file)
+            TFile tfmc(("data/Pileup/PileupMC_UL" + _year + ".root").c_str());
+            _hpumc = dynamic_cast<TH1D *>(tfmc.Get("pu_mc"));
+            _hpumc->SetDirectory(0);
+            tfmc.Close();
 
+            TFile tfdata(("data/Pileup/PileupDATA_UL" + _year + ".root").c_str());
+            _hpudata = dynamic_cast<TH1D *>(tfdata.Get("pileup"));
+            _hpudata_plus = dynamic_cast<TH1D *>(tfdata.Get("pileup_plus"));
+            _hpudata_minus = dynamic_cast<TH1D *>(tfdata.Get("pileup_minus"));
+
+            _hpudata->SetDirectory(0);
+            _hpudata_plus->SetDirectory(0);
+            _hpudata_minus->SetDirectory(0);
+            tfdata.Close();
+
+            _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
+            _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
+            _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus);
+
+            _rlm = _rlm.Define("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
+                       .Define("puWeight", [this](float x) ->std::vector<float>
+                              {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
         }
     }
 
@@ -275,20 +180,18 @@ void NanoAODAnalyzerrdframe::setupAnalysis()
     // Selected objects will be stored in new vectors.
     if (_isSkim) {
         selectMuons();
-        setupJetMETCorrection(_globaltag, jes_var, "AK4PFchs");
+        setupJetMETCorrection(_globaltag, jes_var, "AK4PFchs", _isData);
         skimJets();
-        applyBSFs(jes_var);
+        if (!_isData){
+            calculateEvWeight();
+            applyBSFs(jes_var);
+        }
     } else {
         selectElectrons();
         selectMuons();
-        //selectMET();
         selectJets();
         selectTaus();
         removeOverlaps();
-        if(!_isData){
-            //matchGenReco();
-            calculateEvWeight();
-        }
     }
     defineMoreVars();
     defineCuts();
@@ -297,8 +200,8 @@ void NanoAODAnalyzerrdframe::setupAnalysis()
     setupTree();
 }
 
-bool NanoAODAnalyzerrdframe::readjson()
-{
+bool NanoAODAnalyzerrdframe::readjson() {
+
 	auto isgoodjsonevent = [this](unsigned int runnumber, unsigned int lumisection)
 		{
 			auto key = std::to_string(runnumber);
@@ -356,8 +259,8 @@ bool NanoAODAnalyzerrdframe::readjson()
 	}
 }
 
-void NanoAODAnalyzerrdframe::selectElectrons()
-{
+void NanoAODAnalyzerrdframe::selectElectrons() {
+
     //cout << "select electrons" << endl;
     // Run II recommendation: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaRunIIRecommendations
     // Run II recomendation - cutbased: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2
@@ -375,28 +278,28 @@ void NanoAODAnalyzerrdframe::selectElectrons()
                .Define("nvetoelepass","Sum(vetoelecuts)");
 }
 
-void NanoAODAnalyzerrdframe::selectMuons()
-{
-        if(_isSTLFVcat){
-	    _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
-        }else if(_isTTLFVcat){
-            _rlm = _rlm.Define("muoncuts", "Muon_pt>30.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
-        }else{
-            // Prevention from not defined.
-            _rlm = _rlm.Define("muoncuts", "Muon_pt>30.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
-        }
-	//cout << "select muons" << endl;
-	_rlm = _rlm.Define("Sel_muonpt", "Muon_pt[muoncuts]") // define new variables
-                   .Define("Sel_muoneta", "Muon_eta[muoncuts]")
-                   .Define("Sel_muonphi", "Muon_phi[muoncuts]")
-                   .Define("Sel_muonmass", "Muon_mass[muoncuts]")
-                   .Define("Sel_muoncharge", "Muon_charge[muoncuts]")
-                   .Define("Sel_muonidx", ::good_idx, {"muoncuts"})
-                   .Define("nmuonpass", "int(Sel_muonpt.size())")
-                   .Define("muon4vecs", ::gen4vec, {"Sel_muonpt", "Sel_muoneta", "Sel_muonphi", "Sel_muonmass"});
+void NanoAODAnalyzerrdframe::selectMuons() {
 
-        _rlm = _rlm.Define("vetomuoncuts", "!muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25")
-                   .Define("nvetomuons","Sum(vetomuoncuts)");
+    if (_isSTLFVcat) {
+        _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
+    } else if (_isTTLFVcat) {
+        _rlm = _rlm.Define("muoncuts", "Muon_pt>30.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
+    } else {
+        // Prevention from not defined.
+        _rlm = _rlm.Define("muoncuts", "Muon_pt>30.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
+    }
+    //cout << "select muons" << endl;
+    _rlm = _rlm.Redefine("Muon_pt", "Muon_pt[muoncuts]")
+               .Redefine("Muon_eta", "Muon_eta[muoncuts]")
+               .Redefine("Muon_phi", "Muon_phi[muoncuts]")
+               .Redefine("Muon_mass", "Muon_mass[muoncuts]")
+               .Redefine("Muon_charge", "Muon_charge[muoncuts]")
+               .Define("Sel_muonidx", ::good_idx, {"muoncuts"})
+               .Define("nmuonpass", "int(Muon_pt.size())")
+               .Define("muon4vecs", ::gen4vec, {"Muon_pt", "Muon_eta", "Muon_phi", "Muon_mass"});
+
+    _rlm = _rlm.Define("vetomuoncuts", "!muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25")
+               .Define("nvetomuons","Sum(vetomuoncuts)");
 }
 
 /*
@@ -405,7 +308,7 @@ void NanoAODAnalyzerrdframe::selectMET()
     _rlm = _rlm.Define("met4vec", ::genmet4vec, {"MET_pt","MET_phi"});
 }*/
 
-void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector<std::string> jes_var, std::string jetalgo) {
+void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector<std::string> jes_var, std::string jetalgo, bool dataMc) {
 
     //////////////////
     // JES and unc. //
@@ -416,7 +319,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         string basedirectory = "data/jme/";
 
         string datamcflag = "";
-        if (_isData) datamcflag = "DATA";
+        if (dataMc) datamcflag = "DATA";
         else datamcflag = "MC";
 
         // set file names that contain the parameters for corrections
@@ -588,7 +491,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                    .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_mass"})
                    .Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"})
                    .Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"});
-        if (!_isData) {
+        if (!dataMc) {
             _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
                        .Define("MET_pt_unc", metUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"})
                        .Define("MET_phi_unc", metPhiUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"});
@@ -638,80 +541,75 @@ void NanoAODAnalyzerrdframe::skimJets() {
 
 void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
 
-    //////////////////
-    // b-tagging SF //
-    //////////////////
-    if (!_isData) {
-        cout << "Loading Btag SF" << endl;
-        string btagpath = "data/btagSF/";
-        // btag SF w/o JES
-        _btagcalib = {"DeepJet", btagpath + "skimmed_btag_" + _year + ".csv"};
-        cout << "    Loaded file : " << btagpath + "skimmed_btag_" + _year + ".csv" << endl;
-        _btagcalibJes = {"DeepJet", btagpath + "skimmed_jes_" + _year + ".csv"};
-        cout << "    Loaded file : " << btagpath + "skimmed_jes_" + _year + ".csv" << endl;
+    cout << "Loading Btag SF" << endl;
+    string btagpath = "data/btagSF/";
+    // btag SF w/o JES
+    _btagcalib = {"DeepJet", btagpath + "skimmed_btag_" + _year + ".csv"};
+    cout << "    Loaded file : " << btagpath + "skimmed_btag_" + _year + ".csv" << endl;
+    _btagcalibJes = {"DeepJet", btagpath + "skimmed_jes_" + _year + ".csv"};
+    cout << "    Loaded file : " << btagpath + "skimmed_jes_" + _year + ".csv" << endl;
 
-        _rlm = _rlm.Define("btag_var", [](){return strings(btag_var);})
-                   .Define("btag_jes_var", [jes_var](){return strings(jes_var);});
+    _rlm = _rlm.Define("btag_var", [](){return strings(btag_var);})
+               .Define("btag_jes_var", [jes_var](){return strings(jes_var);});
 
 
-        _btagcalibreader = {BTagEntry::OP_RESHAPING, "central", btag_var};
-        _btagcalibreaderJes = {BTagEntry::OP_RESHAPING, "central", jes_var};
+    _btagcalibreader = {BTagEntry::OP_RESHAPING, "central", btag_var};
+    _btagcalibreaderJes = {BTagEntry::OP_RESHAPING, "central", jes_var};
 
-        // load the formulae b flavor tagging 
-        _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_B, "iterativefit");
-        _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_C, "iterativefit");
-        _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_UDSG, "iterativefit");
-        _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_B, "iterativefit");
-        _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_C, "iterativefit");
-        _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_UDSG, "iterativefit");
+    // load the formulae b flavor tagging
+    _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_B, "iterativefit");
+    _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_C, "iterativefit");
+    _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_UDSG, "iterativefit");
+    _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_B, "iterativefit");
+    _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_C, "iterativefit");
+    _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_UDSG, "iterativefit");
 
-        // function to calculate event weight for MC events based on DeepJet algorithm
-        auto btagweightgenerator= [this](floats &pts, floats &etas, ints &hadflav, floats &btags, strings &var) -> doubles {
-            doubles bSFs;
-            for (std::string src : var) {
-                double bweight = 1.0;
-                for (unsigned int i=0; i<pts.size(); i++) {
-                    if (pts[i] < 40) continue;
-                    if (src.find("cferr") != std::string::npos and hadflav[i] != 4) continue;
-                    if (src.find("cferr") == std::string::npos and hadflav[i] == 4) continue;
+    // function to calculate event weight for MC events based on DeepJet algorithm
+    auto btagweightgenerator = [this](floats &pts, floats &etas, ints &hadflav, floats &btags, strings &var)->doubles {
+        doubles bSFs;
+        for (std::string src : var) {
+            double bweight = 1.0;
+            for (unsigned int i=0; i<pts.size(); i++) {
+                if (pts[i] < 40) continue;
+                if (src.find("cferr") != std::string::npos and hadflav[i] != 4) continue;
+                if (src.find("cferr") == std::string::npos and hadflav[i] == 4) continue;
 
-                    BTagEntry::JetFlavor hadfconv;
-                    if      (hadflav[i]==5) hadfconv=BTagEntry::FLAV_B;
-                    else if (hadflav[i]==4) hadfconv=BTagEntry::FLAV_C;
-                    else                    hadfconv=BTagEntry::FLAV_UDSG;
-                    double w = _btagcalibreader.eval_auto_bounds(src, hadfconv, fabs(etas[i]), pts[i], btags[i]);
-                    bweight *= w;
-                }
-                bSFs.emplace_back(bweight);
+                BTagEntry::JetFlavor hadfconv;
+                if      (hadflav[i]==5) hadfconv=BTagEntry::FLAV_B;
+                else if (hadflav[i]==4) hadfconv=BTagEntry::FLAV_C;
+                else                    hadfconv=BTagEntry::FLAV_UDSG;
+                double w = _btagcalibreader.eval_auto_bounds(src, hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                bweight *= w;
             }
-            return bSFs;
-        };
+            bSFs.emplace_back(bweight);
+        }
+        return bSFs;
+    };
 
-        auto btagweightgeneratorJes= [this](floats &pts, floats &etas, ints &hadflav, floats &btags, std::vector<std::vector<float>> jes, strings &var) -> doubles {
-            doubles bSFs;
-            for (size_t i=0; i<var.size(); i++) {
-                double bweight = 1.0;
-                std::string src = var[i];
+    auto btagweightgeneratorJes = [this](floats &pts, floats &etas, ints &hadflav, floats &btags, std::vector<std::vector<float>> jes, strings &var)->doubles {
+        doubles bSFs;
+        for (size_t i=0; i<var.size(); i++) {
+            double bweight = 1.0;
+            std::string src = var[i];
 
-                for (unsigned int j=0; j<pts.size(); j++) {
-                    auto newpt = pts[j] * jes[j][i];
-                    if (newpt < 40) continue;
+            for (unsigned int j=0; j<pts.size(); j++) {
+                auto newpt = pts[j] * jes[j][i];
+                if (newpt < 40) continue;
 
-                    BTagEntry::JetFlavor hadfconv;
-                    if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
-                    else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
-                    else                    hadfconv=BTagEntry::FLAV_UDSG;
-                    double w = _btagcalibreaderJes.eval_auto_bounds(src, hadfconv, fabs(etas[j]), newpt, btags[j]);
-                    bweight *= w;
-                }
-                bSFs.emplace_back(bweight);
+                BTagEntry::JetFlavor hadfconv;
+                if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
+                else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
+                else                    hadfconv=BTagEntry::FLAV_UDSG;
+                double w = _btagcalibreaderJes.eval_auto_bounds(src, hadfconv, fabs(etas[j]), newpt, btags[j]);
+                bweight *= w;
             }
-            return bSFs;
-        };
-        cout << "Generate b-tagging weight" << endl;
-        _rlm = _rlm.Define("btagWeight_DeepFlavB", btagweightgenerator, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "btag_var"})
-                   .Define("btagWeight_DeepFlavB_jes", btagweightgeneratorJes, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "Jet_pt_unc", "btag_jes_var"});
-    }
+            bSFs.emplace_back(bweight);
+        }
+        return bSFs;
+    };
+    cout << "Generate b-tagging weight" << endl;
+    _rlm = _rlm.Define("btagWeight_DeepFlavB", btagweightgenerator, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "btag_var"})
+               .Define("btagWeight_DeepFlavB_jes", btagweightgeneratorJes, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "Jet_pt_unc", "btag_jes_var"});
 }
 
 void NanoAODAnalyzerrdframe::selectJets()
@@ -750,29 +648,6 @@ void NanoAODAnalyzerrdframe::selectJets()
 
 void NanoAODAnalyzerrdframe::selectTaus()
 {
-        // Tau SF
-        cout<<"Applying TauES on Genuine taus"<<endl;
-        auto tauES = [this](floats &pt, floats &eta, ints &dm, uchars &genid, floats &x)->floats{
-                floats xout;
-                for(unsigned int i=0; i<pt.size(); i++){
-                        float es = 1.0;
-                        if(genid[i]==5){
-                                es = _testool->getTES(pt[i],dm[i],genid[i]);
-                        }else if(genid[i]==1 || genid[i]==3){
-                                es = _festool->getFES(eta[i],dm[i],genid[i]);
-                        }
-                        xout.emplace_back(x[i]*es);
-                }
-                return xout;
-        };
-        if (!_isData) {
-                _rlm = _rlm.Define("Scaled_taupt",tauES,{"Tau_pt","Tau_eta","Tau_decayMode","Tau_genPartFlav","Tau_pt"})
-                           .Define("Scaled_taumass",tauES,{"Tau_pt","Tau_eta","Tau_decayMode","Tau_genPartFlav","Tau_mass"});
-        }else{
-                _rlm = _rlm.Define("Scaled_taupt","Tau_pt")
-                           .Define("Scaled_taumass","Tau_mass");
-        }
-
         auto overlap_removal_mutau = [](FourVectorVec &muon4vecs, FourVectorVec &tau4vecs){
                 ints out;
                 for (auto tau: tau4vecs){
@@ -809,6 +684,7 @@ void NanoAODAnalyzerrdframe::selectTaus()
                    .Define("Sel_taumass", "Scaled_taumass[seltaucuts]")
                    .Define("Sel_taucharge", "Tau_charge[seltaucuts]")
                    .Define("Sel_taujetidx", "Tau_jetIdx[seltaucuts]")
+                   .Define("Sel_tauflav","Tau_genPartFlav[seltaucuts]")
                    .Define("ncleantaupass", "int(Sel_taupt.size())")
                    .Define("cleantau4vecs", ::gen4vec, {"Sel_taupt", "Sel_taueta", "Sel_tauphi", "Sel_taumass"});
 
@@ -861,7 +737,7 @@ void NanoAODAnalyzerrdframe::removeOverlaps()
                 //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL18
                 _rlm = _rlm.Define("btagcuts", "Sel2_jetbtag>0.2783"); //l: 0.0490, m: 0.2783, t: 0.7100
         }
-	
+
         _rlm = _rlm.Define("Sel2_bjetpt", "Sel2_jetpt[btagcuts]")
                    .Define("Sel2_bjeteta", "Sel2_jeteta[btagcuts]")
                    .Define("Sel2_bjetphi", "Sel2_jetphi[btagcuts]")
@@ -925,45 +801,160 @@ void NanoAODAnalyzerrdframe::selectFatJets()
 				.Define("Sel_fatjet4vecs", ::gen4vec, {"Sel_fatjetpt", "Sel_fatjeteta", "Sel_fatjetphi", "Sel_fatjetmass"});
 }
 
-// This function is newly added for getting event weight with selected objects
-void NanoAODAnalyzerrdframe::calculateEvWeight()
-{        
-        // Muon SF
-        cout<<"Getting Muon Scale Factors"<<endl;
-        auto muonSF = [this](floats &pt, floats &eta)->float {
-            float weight = 1.0;
-            if(pt.size() > 0){
-                for(unsigned int i=0; i<pt.size(); i++){
-                    float trg_SF = _muontrg->getWeight(std::abs(eta[i]),pt[i]);
-                    float ID_SF = _muonid->getWeight(std::abs(eta[i]),pt[i]);
-                    float Iso_SF = _muoniso->getWeight(std::abs(eta[i]),pt[i]);
-                    weight *= trg_SF * ID_SF * Iso_SF;
-                }
-            }
-            return weight;
-        };
-        _rlm = _rlm.Define("evWeight_muonSF",muonSF,{"Sel_muonpt","Sel_muoneta"});
+void NanoAODAnalyzerrdframe::calculateEvWeight() {
 
-        // Tau SF
-        cout<<"Getting Tau ID Scale Factors"<<endl;
-        auto tauSF = [this](floats &pt, floats &eta, uchars &genid)->float {
-            float weight = 1.0;
-            if(pt.size() > 1){
-                //cout<<pt.size()<<" taus"<<endl;
-                for(unsigned int i=0; i<pt.size(); i++){
-                    float tauidsfVSjet = _tauidSFjet->getSFvsPT(pt[i],int(genid[i]));
-                    float tauidsfVSele = _tauidSFele->getSFvsEta(eta[i],int(genid[i]));
-                    float tauidsfVSmu = _tauidSFmu->getSFvsEta(eta[i],int(genid[i]));
-                    weight *= tauidsfVSjet*tauidsfVSele*tauidsfVSmu;
-                }
-            }
-            return weight;
-        };
-        
-        _rlm = _rlm.Define("Sel_tauflav","Tau_genPartFlav[seltaucuts]")
-                   .Define("evWeight_tauSF", tauSF, {"Sel_taupt","Sel_taueta","Sel_tauflav"})
-                   .Define("evWeight_leptonSF","evWeight_muonSF*evWeight_tauSF");
+    // Muon SF
+    cout<<"Loading Muon SF"<<endl;
+    std::string muonFile = _year + "_UL";
+    std::string muonTrgHist = "";
+    TFile *muontrg;
+    TFile *muonid;
+    TFile *muoniso;
 
+    if (_isRun16pre) {
+        muonFile = "2016_UL_HIPM_";
+        muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+    } else if (_isRun16post) {
+        muonFile = "2016_UL_";
+        muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+    } else if (_isRun17) {
+        muonTrgHist = "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+    } else if (_isRun18) {
+        muonTrgHist = "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+    }
+    muonid = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ID.root").c_str());
+    TH2F* _hmuonid = dynamic_cast<TH2F *>(muonid->Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
+    _hmuonid->SetDirectory(0);
+    muonid->Close();
+    WeightCalculatorFromHistogram* _muonid = new WeightCalculatorFromHistogram(_hmuonid);
+
+    muoniso = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ISO.root").c_str());
+    TH2F* _hmuoniso = dynamic_cast<TH2F *>(muoniso->Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
+    _hmuoniso->SetDirectory(0);
+    muoniso->Close();
+    WeightCalculatorFromHistogram* _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
+
+    muontrg = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_SingleMuonTriggers.root").c_str());
+    TH2F* _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
+    _hmuontrg->SetDirectory(0);
+    muontrg->Close();
+    WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
+
+    auto muonSFId = [this, _muonid](floats &pt, floats &eta)->std::vector<float> {
+        std::vector<float> wVec;
+        if (pt.size() > 0) {
+            for (unsigned int i=0; i<pt.size(); i++)
+                wVec.emplace_back(_muonid->getWeight(std::abs(eta[i]),pt[i]));
+        }
+        return wVec;
+    };
+
+    auto muonSFIso = [this, _muoniso](floats &pt, floats &eta)->std::vector<float> {
+        std::vector<float> wVec;
+        if (pt.size() > 0) {
+            for (unsigned int i=0; i<pt.size(); i++)
+                wVec.emplace_back(_muoniso->getWeight(std::abs(eta[i]),pt[i]));
+        }
+        return wVec;
+    };
+
+    auto muonSFTrg = [this, _muontrg](floats &pt, floats &eta)->std::vector<float> {
+        std::vector<float> wVec;
+        if (pt.size() > 0) {
+            for (unsigned int i=0; i<pt.size(); i++)
+                wVec.emplace_back(_muontrg->getWeight(std::abs(eta[i]),pt[i]));
+        }
+        return wVec;
+    };
+
+    _rlm = _rlm.Define("muonWeightId", muonSFId, {"Muon_pt","Muon_eta"})
+               .Define("muonWeightIso", muonSFIso, {"Muon_pt","Muon_eta"})
+               .Define("muonWeightTrg", muonSFTrg, {"Muon_pt","Muon_eta"});
+
+
+    // Tau SF
+    cout << "Loading Tau SF" << endl;
+    std::string tauid_vse = "VLoose";
+    std::string tauid_vsmu = "Tight";
+    std::string tauid_vsjet = "VTight";
+    //if (_isSTLFVcat) {
+    //    tauid_vsjet = "VTight";
+    //} else if (_isTTLFVcat) {
+    //    tauid_vsjet = "Medium";
+    //}
+    cout << "Tau ID WP vsJet : " << tauid_vsjet << endl;
+    cout << "Tau ID WP vsMuon : " << tauid_vsmu << endl;
+    cout << "Tau ID WP vsElectron : " << tauid_vse << endl;
+
+    TauIDSFTool* _tauidSFjet;
+    TauIDSFTool* _tauidSFele;
+    TauIDSFTool* _tauidSFmu;
+    TauESTool* _testool;
+    TauFESTool* _festool;
+    std::string tauYear = "";
+
+    if (_isRun16pre) {
+        tauYear = "UL2016_preVFP";
+    } else if (_isRun16post) {
+        tauYear = "UL2016_postVFP";
+    } else {
+        tauYear = "UL" + _year;
+    }
+    _tauidSFjet = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet);
+    _tauidSFele = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSe", tauid_vse);
+    _tauidSFmu = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSmu", tauid_vsmu);
+    _testool = new TauESTool(tauYear, "DeepTau2017v2p1VSjet");
+    _festool = new TauFESTool(tauYear);
+
+    auto tauSFIdVsJet = [this, _tauidSFjet](floats &pt, floats &eta, uchars &genid)->std::vector<float> {
+        std::vector<float> wVec;
+        if (pt.size() > 0) {
+            for (unsigned int i=0; i<pt.size(); i++)
+                wVec.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i])));
+        }
+        return wVec;
+    };
+
+    auto tauSFIdVsEl = [this, _tauidSFele](floats &pt, floats &eta, uchars &genid)->std::vector<float> {
+        std::vector<float> wVec;
+        if (pt.size() > 0) {
+            for (unsigned int i=0; i<pt.size(); i++)
+                wVec.emplace_back(_tauidSFele->getSFvsEta(abs(eta[i]), int(genid[i])));
+        }
+        return wVec;
+    };
+
+    auto tauSFIdVsMu = [this, _tauidSFmu](floats &pt, floats &eta, uchars &genid)->std::vector<float> {
+        std::vector<float> wVec;
+        if (pt.size() > 0) {
+            for (unsigned int i=0; i<pt.size(); i++)
+                wVec.emplace_back(_tauidSFmu->getSFvsEta(abs(eta[i]), int(genid[i])));
+        }
+        return wVec;
+    };
+
+    _rlm = _rlm.Define("tauWeightIdVsJet", tauSFIdVsJet, {"Tau_pt","Tau_eta","Tau_genPartFlav"})
+               .Define("tauWeightIdVsEl", tauSFIdVsEl, {"Tau_pt","Tau_eta","Tau_genPartFlav"})
+               .Define("tauWeightIdVsMu", tauSFIdVsMu, {"Tau_pt","Tau_eta","Tau_genPartFlav"});
+
+    // Tau ES
+    cout<<"Applying TauES on Genuine taus"<<endl;
+    auto tauES = [this, _testool, _festool](floats &pt, floats &eta, ints &dm, uchars &genid, floats &x)->floats {
+        floats xout;
+        for (unsigned int i=0; i<pt.size(); i++) {
+            float es = 1.0;
+            if (genid[i]==5) {
+                es = _testool->getTES(pt[i], dm[i], genid[i]);
+            } else if (genid[i]==1 || genid[i]==3){
+                es = _festool->getFES(eta[i], dm[i], genid[i]);
+            }
+            xout.emplace_back(x[i]*es);
+        }
+        return xout;
+    };
+
+    _rlm = _rlm.Redefine("Tau_pt", tauES, {"Tau_pt", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt"})
+               .Redefine("Tau_mass", tauES, {"Tau_pt", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"});
 }
 
 /*

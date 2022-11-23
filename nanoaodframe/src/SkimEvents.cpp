@@ -50,9 +50,9 @@ void SkimEvents::defineMoreVars()
         addVartoStore("event");
         addVartoStore("puWeight.*");
         addVartoStore("unitGenWeight.*");
-        //addVartoStore("nGenPart");
+        addVartoStore("muonWeight.*");
+        addVartoStore("tauWeight.*");
         addVartoStore("GenPart_.*");
-        //addVartoStore("nGenJet");
         addVartoStore("GenJet_.*");
         addVartoStore("nGenVisTau");
         addVartoStore("GenVisTau_.*");
@@ -65,7 +65,6 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Jet_genJetIdx");
         addVartoStore("Jet_hadronFlavour");
         addVartoStore("Jet_partonFlavour");
-        addVartoStore("Jet_jetId");
         addVartoStore("Jet_pt");
         addVartoStore("Jet_pt_unc");
         addVartoStore("Jet_pt_unc2");

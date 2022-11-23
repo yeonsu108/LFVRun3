@@ -157,22 +157,10 @@ private:
 	bool isDefined(string v);
 
 	// Jet MET corrections
-	void setupJetMETCorrection(std::string globaltag, const std::vector<std::string> var = std::vector<std::string>(), std::string jetalgo="AK4PFchs");
+	void setupJetMETCorrection(std::string globaltag, const std::vector<std::string> var = std::vector<std::string>(), std::string jetalgo="AK4PFchs", bool dataMc=false);
 	FactorizedJetCorrector *_jetCorrector;
 	JetCorrectionUncertainty *_jetCorrectionUncertainty;
 
-        TH2F* _hmuontrg;
-        TH2F* _hmuonid;
-        TH2F* _hmuoniso;
-        WeightCalculatorFromHistogram* _muontrg;
-        WeightCalculatorFromHistogram* _muonid;
-        WeightCalculatorFromHistogram* _muoniso;
-
-        TauIDSFTool* _tauidSFjet;
-        TauIDSFTool* _tauidSFele;
-        TauIDSFTool* _tauidSFmu;
-        TauESTool* _testool;
-        TauFESTool* _festool;
 };
 
 #endif /* NANOAODANALYZERRDFRAME_H_ */
