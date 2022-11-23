@@ -66,8 +66,8 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Jet_hadronFlavour");
         addVartoStore("Jet_partonFlavour");
         addVartoStore("Jet_pt");
+        addVartoStore("Jet_pt_uncorr");
         addVartoStore("Jet_pt_unc");
-        addVartoStore("Jet_pt_unc2");
         addVartoStore("Jet_eta");
         addVartoStore("Jet_phi");
         addVartoStore("Jet_mass");
