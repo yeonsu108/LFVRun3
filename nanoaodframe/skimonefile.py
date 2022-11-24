@@ -11,6 +11,7 @@ This script applies nanoaod processing to one file
 import sys
 import cppyy
 import ROOT
+from ROOT import *
 
 if __name__=='__main__':
     from optparse import OptionParser
@@ -39,8 +40,8 @@ if __name__=='__main__':
     elif any(i in options.infile for i in ["Run2016Fpost", "Run2016G", "Run2016H"]):
         options.globaltag = "Summer19UL16_RunFGH_V7"
     elif any(i in options.infile for i in ["Run2017", "Run2018"]):
-        era = options.infile[options.infile.find("Run" + year)+6]
-        options.globaltag = "Summer19UL" + year[2:] + era
+        era = options.infile[options.infile.find("Run" + options.year)+7]
+        options.globaltag = "Summer19UL" + options.year[2:] + "_Run" + era + "_V5"
     elif "UL16NanoAODAPVv" in options.infile:
         options.globaltag = "Summer19UL16APV_V7"
     elif "UL16NanoAODv" in options.infile:
@@ -57,3 +58,4 @@ if __name__=='__main__':
     aproc = ROOT.SkimEvents(t, options.outfile, options.year, options.syst, options.json, options.globaltag)
     aproc.setupAnalysis()
     aproc.run(options.saveallbranches, "Events")
+
