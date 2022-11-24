@@ -23,7 +23,7 @@
 using namespace std;
 
 NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
-:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0) {
+:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), PDFWeights(103, 0.0) {
 
     // Skim switch
     if (_isSkim == true) {
@@ -112,18 +112,28 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
 
     //_rlm = _rlm.Filter("event < 12534199");
 
-    // Event weight for data it's always one. For MC, it depends on the sign
     _rlm = _rlm.Define("one", "1.0");
+    // Event weight for data it's always one. For MC, it depends on the sign
     if(_isSkim){
         if(_isData){
-            _rlm = _rlm.Define("unitGenWeight","one")
-                       .Define("puWeight","one")
-                       .Define("muonWeightId","one")
-                       .Define("muonWeightIso","one")
-                       .Define("muonWeightTrg","one")
-                       .Define("btagWeight_DeepFlavB","one")
-                       .Define("btagWeight_DeepFlavB_jes","one");
+            _rlm = _rlm.Define("unitGenWeight","one");
         } else {
+
+            // Store PDF sum of weights
+            auto storeWeights = [this](floats weights)->std::vector<float> {
+
+                for (unsigned int i=0; i<weights.size(); i++)
+                    PDFWeights[i] += weights[i];
+
+                return PDFWeights;
+            };
+            try {
+                _rlm.Foreach(storeWeights, {"LHEPdfWeight"});
+            } catch (exception& e) {
+                cout << e.what() << endl;
+                cout << "No PDF weight in this root file!" << endl;
+            }
+
             // pu weight setup
             cout<<"Loading Pileup profiles"<<endl;
             // MC 2016pre = MC 2016post (same file)
@@ -350,7 +360,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         floats corrfactors;
         corrfactors.reserve(jetpts.size());
 
-        for (unsigned int i =0; i<jetpts.size(); i++) {
+        for (unsigned int i=0; i<jetpts.size(); i++) {
             float rawfrac = 1.0-jetrawf[i];
             float rawjetpt = jetpts[i] * (rawfrac);
             _jetCorrector->setJetPt(rawjetpt);
@@ -371,7 +381,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         std::vector<std::vector<float>> uncertainties;
         uncertainties.reserve(jetpts.size());
 
-        for (unsigned int i =0; i<jetpts.size(); i++) {
+        for (unsigned int i=0; i<jetpts.size(); i++) {
             for (size_t j=0; j<regroupedUnc.size(); j++) {
                 auto corrector = regroupedUnc[j];
 
@@ -486,7 +496,7 @@ void NanoAODAnalyzerrdframe::skimJets() {
         newvars.reserve(toSkim[0].size());
         std::vector<std::vector<float>> out;
 
-        for (size_t i =0; i<toSkim.size(); i++) {
+        for (size_t i=0; i<toSkim.size(); i++) {
             if (pts[i] < jetPtCut) continue;
             if (ids[i] != jetIdCut) continue;
             if (abs(etas[i]) > jetEtaCut) continue;
@@ -502,12 +512,19 @@ void NanoAODAnalyzerrdframe::skimJets() {
 
     // skim jet collection
     _rlm = _rlm.Define("jetcuts", "Jet_pt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6")
-               .Define("Jet_pt_unc2", skimJetCol, {"Jet_pt_unc", "Jet_pt", "Jet_eta", "Jet_jetId"});
-    _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetcuts]")
+               .Redefine("Jet_pt_unc", skimJetCol, {"Jet_pt_unc", "Jet_pt", "Jet_eta", "Jet_jetId"})
+               .Redefine("Jet_pt", "Jet_pt[jetcuts]")
                .Redefine("Jet_eta", "Jet_eta[jetcuts]")
                .Redefine("Jet_phi", "Jet_phi[jetcuts]")
+               .Redefine("Jet_mass", "Jet_mass[jetcuts]")
                .Redefine("Jet_jetId", "Jet_jetId[jetcuts]")
-               .Redefine("Jet_hadronFlavour","Jet_hadronFlavour[jetcuts]");
+               .Redefine("Jet_area", "Jet_area[jetcuts]")
+               .Redefine("Jet_pt_uncorr", "Jet_pt_uncorr[jetcuts]")
+               .Redefine("Jet_rawFactor", "Jet_rawFactor[jetcuts]")
+               .Redefine("Jet_btagDeepFlavB", "Jet_btagDeepFlavB[jetcuts]")
+               .Redefine("Jet_hadronFlavour","Jet_hadronFlavour[jetcuts]")
+               .Redefine("Jet_genJetIdx","Jet_genJetIdx[jetcuts]")
+               .Redefine("nJet", "int(Jet_pt.size())");
 
 }
 
@@ -1093,6 +1110,11 @@ void NanoAODAnalyzerrdframe::run(bool saveAll, string outtreename) {
                 //std::cout<<"Histogram is written"<<std::endl;
             }
         }
+
+        TH1F* hPDFWeights = new TH1F("LHEPdfWeightSum", "LHEPdfWeightSum", 103, 0, 103);
+        for (size_t i=0; i<PDFWeights.size(); i++)
+            hPDFWeights->SetBinContent(i+1, PDFWeights[i]);
+
         _outrootfile->Write(0, TObject::kOverwrite);
         _outrootfile->Close();
     }

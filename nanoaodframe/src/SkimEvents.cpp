@@ -52,6 +52,9 @@ void SkimEvents::defineMoreVars()
         addVartoStore("unitGenWeight.*");
         addVartoStore("muonWeight.*");
         addVartoStore("tauWeight.*");
+        addVartoStore("LHEPdfWeight");
+        addVartoStore("LHEScaleWeight");
+        addVartoStore("PSWeight");
         addVartoStore("GenPart_.*");
         addVartoStore("GenJet_.*");
         addVartoStore("nGenVisTau");
