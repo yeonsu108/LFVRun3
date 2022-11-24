@@ -89,6 +89,8 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Tau_mass");
         addVartoStore("Tau_phi");
         addVartoStore("Tau_pt");
+        addVartoStore("Tau_pt_unc");
+        addVartoStore("Tau_pt_uncor");
         addVartoStore("Tau_puCorr");
         addVartoStore("Tau_rawDeep.*");
         addVartoStore("Tau_rawIso.*");
@@ -103,25 +105,18 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Electron_dxy.*");
         addVartoStore("Electron_dz.*");
         addVartoStore("Electron_eta");
-        //addVartoStore("Electron_gen.*");
         addVartoStore("Electron_mass");
         addVartoStore("Electron_pf.*");
         addVartoStore("Electron_phi");
         addVartoStore("Electron_pt");
         addVartoStore("nMuon");
         addVartoStore("Muon_charge");
-        //addVartoStore("Muon_dxy.*");
-        //addVartoStore("Muon_dz.*");
         addVartoStore("Muon_eta");
-        //addVartoStore("Muon_gen.*");
-        addVartoStore("Muon_loose.*");
         addVartoStore("Muon_mass");
         addVartoStore("Muon_pfRelIso04_all");
         addVartoStore("Muon_phi");
         addVartoStore("Muon_pt.*");
         addVartoStore("Muon_tightId");
-        //addVartoStore("Muon_mini.*");
-        //addVartoStore("PV.*");
         addVartoStore("fixedGridRhoFastjetAll");
 }
 

@@ -265,9 +265,18 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
 
 void NanoAODAnalyzerrdframe::selectMuons() {
 
-    _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
-    //cout << "select muons" << endl;
-    _rlm = _rlm.Redefine("Muon_pt", "Muon_pt[muoncuts]")
+    // same fct as skimJetCol
+    auto skimSFCol = [this](std::vector<std::vector<float>> toSkim, ints cut)->std::vector<std::vector<float>> {
+
+        std::vector<std::vector<float>> out;
+        for (size_t i=0; i<toSkim.size(); i++) {
+            if (cut[i] > 0) out.emplace_back(toSkim[i]);
+        }
+        return out;
+    };
+
+    _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15")
+               .Redefine("Muon_pt", "Muon_pt[muoncuts]")
                .Redefine("Muon_eta", "Muon_eta[muoncuts]")
                .Redefine("Muon_phi", "Muon_phi[muoncuts]")
                .Redefine("Muon_mass", "Muon_mass[muoncuts]")
@@ -278,6 +287,103 @@ void NanoAODAnalyzerrdframe::selectMuons() {
 
     _rlm = _rlm.Define("vetomuoncuts", "!muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25")
                .Define("nvetomuons","Sum(vetomuoncuts)");
+
+
+    // Muon SF
+    cout<<"Loading Muon SF"<<endl;
+    std::string muonFile = _year + "_UL";
+    std::string muonTrgHist = "";
+    TFile *muontrg;
+    TFile *muonid;
+    TFile *muoniso;
+
+    if (_isRun16pre) {
+        muonFile = "2016_UL_HIPM_";
+        muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+    } else if (_isRun16post) {
+        muonFile = "2016_UL_";
+        muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+    } else if (_isRun17) {
+        muonTrgHist = "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+    } else if (_isRun18) {
+        muonTrgHist = "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+    }
+    muonid = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ID.root").c_str());
+    TH2F* _hmuonid = dynamic_cast<TH2F *>(muonid->Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
+    _hmuonid->SetDirectory(0);
+    muonid->Close();
+    WeightCalculatorFromHistogram* _muonid = new WeightCalculatorFromHistogram(_hmuonid);
+
+    muoniso = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ISO.root").c_str());
+    TH2F* _hmuoniso = dynamic_cast<TH2F *>(muoniso->Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
+    _hmuoniso->SetDirectory(0);
+    muoniso->Close();
+    WeightCalculatorFromHistogram* _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
+
+    muontrg = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_SingleMuonTriggers.root").c_str());
+    TH2F* _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
+    _hmuontrg->SetDirectory(0);
+    muontrg->Close();
+    WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
+
+    // Shape must be vec[pt][var]
+    auto muonSFId = [this, _muonid](floats &pt, floats &eta)->std::vector<float> {
+
+        std::vector<float> wVec;
+        wVec.reserve(3); //cent, up, down
+
+        if (pt.size() == 1) {
+            for (unsigned int i=0; i<pt.size(); i++) {
+                float sf = _muonid->getWeight(std::abs(eta[i]),pt[i]);
+                float err = _muonid->getWeightErr(std::abs(eta[i]),pt[i]);
+                wVec.emplace_back(sf);
+                wVec.emplace_back(sf + err);
+                wVec.emplace_back(sf - err);
+            }
+        }
+        else wVec = {1.0, 1.0, 1.0};
+        return wVec;
+    };
+
+    auto muonSFIso = [this, _muoniso](floats &pt, floats &eta)->std::vector<float> {
+
+        std::vector<float> wVec;
+        wVec.reserve(3); //cent, up, down
+
+        if (pt.size() == 1) {
+            for (unsigned int i=0; i<pt.size(); i++) {
+                float sf = _muoniso->getWeight(std::abs(eta[i]),pt[i]);
+                float err = _muoniso->getWeightErr(std::abs(eta[i]),pt[i]);
+                wVec.emplace_back(sf);
+                wVec.emplace_back(sf + err);
+                wVec.emplace_back(sf - err);
+            }
+        }
+        else wVec = {1.0, 1.0, 1.0};
+        return wVec;
+    };
+
+    auto muonSFTrg = [this, _muontrg](floats &pt, floats &eta)->std::vector<float> {
+
+        std::vector<float> wVec;
+        wVec.reserve(3); //cent, up, down
+
+        if (pt.size() == 1) {
+            for (unsigned int i=0; i<pt.size(); i++) {
+                float sf = _muontrg->getWeight(std::abs(eta[i]),pt[i]);
+                float err = _muontrg->getWeightErr(std::abs(eta[i]),pt[i]);
+                wVec.emplace_back(sf);
+                wVec.emplace_back(sf + err);
+                wVec.emplace_back(sf - err);
+            }
+        }
+        else wVec = {1.0, 1.0, 1.0};
+        return wVec;
+    };
+
+    _rlm = _rlm.Define("muonWeightId", muonSFId, {"Muon_pt","Muon_eta"})
+               .Define("muonWeightIso", muonSFIso, {"Muon_pt","Muon_eta"})
+               .Define("muonWeightTrg", muonSFTrg, {"Muon_pt","Muon_eta"});
 }
 
 /*
@@ -490,29 +596,18 @@ void NanoAODAnalyzerrdframe::skimJets() {
     // input vector: vec[pt][vars]
     // vec<vec<float>> or similar form were not able to be skimmed!?
     // Note: do not skim with exact value of pt!
-    auto skimJetCol = [this, jetPtCut, jetEtaCut, jetIdCut](std::vector<std::vector<float>> toSkim, floats pts, floats etas, ints ids)->std::vector<std::vector<float>> {
+    auto skimJetCol = [this](std::vector<std::vector<float>> toSkim, ints cut)->std::vector<std::vector<float>> {
 
-        std::vector<float> newvars;
-        newvars.reserve(toSkim[0].size());
         std::vector<std::vector<float>> out;
-
         for (size_t i=0; i<toSkim.size(); i++) {
-            if (pts[i] < jetPtCut) continue;
-            if (ids[i] != jetIdCut) continue;
-            if (abs(etas[i]) > jetEtaCut) continue;
-
-            for (size_t j=0; j<toSkim[0].size(); j++) {
-                newvars.emplace_back(toSkim[i][j]);
-            }
-            out.emplace_back(newvars);
-            newvars.clear();
+            if (cut[i] > 0) out.emplace_back(toSkim[i]);
         }
         return out;
     };
 
     // skim jet collection
     _rlm = _rlm.Define("jetcuts", "Jet_pt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6")
-               .Redefine("Jet_pt_unc", skimJetCol, {"Jet_pt_unc", "Jet_pt", "Jet_eta", "Jet_jetId"})
+               .Redefine("Jet_pt_unc", skimJetCol, {"Jet_pt_unc", "jetcuts"})
                .Redefine("Jet_pt", "Jet_pt[jetcuts]")
                .Redefine("Jet_eta", "Jet_eta[jetcuts]")
                .Redefine("Jet_phi", "Jet_phi[jetcuts]")
@@ -637,7 +732,9 @@ void NanoAODAnalyzerrdframe::selectTaus() {
         return out;
     };
 
-    _rlm = _rlm.Define("tau4vecs", ::gen4vec, {"Scaled_taupt", "Tau_eta", "Tau_phi", "Scaled_taumass"})
+    //TODO: TES var.
+
+    _rlm = _rlm.Define("tau4vecs", ::gen4vec, {"Tau_pt", "Tau_eta", "Tau_phi", "Tau_mass"})
                .Define("mutauoverlap", overlap_removal_mutau, {"muon4vecs","tau4vecs"});
 
     // Hadronic Tau Object Selections
@@ -646,14 +743,14 @@ void NanoAODAnalyzerrdframe::selectTaus() {
 
     // Hadronic Tau Selection
     _rlm = _rlm.Define("seltaucuts","taucuts && deeptauidcuts && mutauoverlap")
-               .Define("Sel_taupt", "Scaled_taupt[seltaucuts]")
-               .Define("Sel_taueta", "Tau_eta[seltaucuts]")
-               .Define("Sel_tauphi", "Tau_phi[seltaucuts]")
-               .Define("Sel_taumass", "Scaled_taumass[seltaucuts]")
-               .Define("Sel_taucharge", "Tau_charge[seltaucuts]")
-               .Define("Sel_taujetidx", "Tau_jetIdx[seltaucuts]")
-               .Define("Sel_tauflav","Tau_genPartFlav[seltaucuts]")
-               .Define("ncleantaupass", "int(Sel_taupt.size())")
+               .Redefine("Tau_pt", "Tau_pt[seltaucuts]")
+               .Redefine("Tau_eta", "Tau_eta[seltaucuts]")
+               .Redefine("Tau_phi", "Tau_phi[seltaucuts]")
+               .Redefine("Tau_mmass", "Tau_mmass[seltaucuts]")
+               .Redefine("Tau_charge", "Tau_charge[seltaucuts]")
+               .Redefine("Tau_jetIdx", "Tau_jetIdx[seltaucuts]")
+               .Redefine("Tau_genPartFlav","Tau_genPartFlav[seltaucuts]")
+               .Define("ncleantaupass", "int(Tau_pt.size())")
                .Define("cleantau4vecs", ::gen4vec, {"Sel_taupt", "Sel_taueta", "Sel_tauphi", "Sel_taumass"});
 
 }
@@ -769,74 +866,8 @@ void NanoAODAnalyzerrdframe::selectFatJets() {
 
 void NanoAODAnalyzerrdframe::calculateEvWeight() {
 
-    // Muon SF
-    cout<<"Loading Muon SF"<<endl;
-    std::string muonFile = _year + "_UL";
-    std::string muonTrgHist = "";
-    TFile *muontrg;
-    TFile *muonid;
-    TFile *muoniso;
-
-    if (_isRun16pre) {
-        muonFile = "2016_UL_HIPM_";
-        muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-    } else if (_isRun16post) {
-        muonFile = "2016_UL_";
-        muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-    } else if (_isRun17) {
-        muonTrgHist = "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-    } else if (_isRun18) {
-        muonTrgHist = "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-    }
-    muonid = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ID.root").c_str());
-    TH2F* _hmuonid = dynamic_cast<TH2F *>(muonid->Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
-    _hmuonid->SetDirectory(0);
-    muonid->Close();
-    WeightCalculatorFromHistogram* _muonid = new WeightCalculatorFromHistogram(_hmuonid);
-
-    muoniso = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ISO.root").c_str());
-    TH2F* _hmuoniso = dynamic_cast<TH2F *>(muoniso->Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
-    _hmuoniso->SetDirectory(0);
-    muoniso->Close();
-    WeightCalculatorFromHistogram* _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
-
-    muontrg = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_SingleMuonTriggers.root").c_str());
-    TH2F* _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
-    _hmuontrg->SetDirectory(0);
-    muontrg->Close();
-    WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
-
-    auto muonSFId = [this, _muonid](floats &pt, floats &eta)->std::vector<float> {
-        std::vector<float> wVec;
-        if (pt.size() > 0) {
-            for (unsigned int i=0; i<pt.size(); i++)
-                wVec.emplace_back(_muonid->getWeight(std::abs(eta[i]),pt[i]));
-        }
-        return wVec;
-    };
-
-    auto muonSFIso = [this, _muoniso](floats &pt, floats &eta)->std::vector<float> {
-        std::vector<float> wVec;
-        if (pt.size() > 0) {
-            for (unsigned int i=0; i<pt.size(); i++)
-                wVec.emplace_back(_muoniso->getWeight(std::abs(eta[i]),pt[i]));
-        }
-        return wVec;
-    };
-
-    auto muonSFTrg = [this, _muontrg](floats &pt, floats &eta)->std::vector<float> {
-        std::vector<float> wVec;
-        if (pt.size() > 0) {
-            for (unsigned int i=0; i<pt.size(); i++)
-                wVec.emplace_back(_muontrg->getWeight(std::abs(eta[i]),pt[i]));
-        }
-        return wVec;
-    };
-
-    _rlm = _rlm.Define("muonWeightId", muonSFId, {"Muon_pt","Muon_eta"})
-               .Define("muonWeightIso", muonSFIso, {"Muon_pt","Muon_eta"})
-               .Define("muonWeightTrg", muonSFTrg, {"Muon_pt","Muon_eta"});
-
+    // Put SFs that need to be calculated in skim:
+    // e.g. tau selection is done at processing but we want to have SFs already
 
     // Tau SF
     cout << "Loading Tau SF" << endl;
@@ -868,29 +899,59 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     _testool = new TauESTool(tauYear, "DeepTau2017v2p1VSjet");
     _festool = new TauFESTool(tauYear);
 
-    auto tauSFIdVsJet = [this, _tauidSFjet](floats &pt, floats &eta, uchars &genid)->std::vector<float> {
-        std::vector<float> wVec;
+    auto tauSFIdVsJet = [this, _tauidSFjet](floats &pt, floats &eta, uchars &genid)->std::vector<std::vector<float>> {
+
+        std::vector<float> uncSources;
+        uncSources.reserve(3);
+        std::vector<std::vector<float>> wVec;
+        wVec.reserve(pt.size());
+
         if (pt.size() > 0) {
-            for (unsigned int i=0; i<pt.size(); i++)
-                wVec.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i])));
+            for (unsigned int i=0; i<pt.size(); i++) {
+                uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i])));
+                uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i]), "Up"));
+                uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i]), "Down"));
+            }
+            wVec.emplace_back(uncSources);
+            uncSources.clear();
         }
         return wVec;
     };
 
-    auto tauSFIdVsEl = [this, _tauidSFele](floats &pt, floats &eta, uchars &genid)->std::vector<float> {
-        std::vector<float> wVec;
+    auto tauSFIdVsEl = [this, _tauidSFele](floats &pt, floats &eta, uchars &genid)->std::vector<std::vector<float>> {
+
+        std::vector<float> uncSources;
+        uncSources.reserve(3);
+        std::vector<std::vector<float>> wVec;
+        wVec.reserve(pt.size());
+
         if (pt.size() > 0) {
-            for (unsigned int i=0; i<pt.size(); i++)
-                wVec.emplace_back(_tauidSFele->getSFvsEta(abs(eta[i]), int(genid[i])));
+            for (unsigned int i=0; i<pt.size(); i++) {
+                uncSources.emplace_back(_tauidSFele->getSFvsEta(abs(eta[i]), int(genid[i])));
+                uncSources.emplace_back(_tauidSFele->getSFvsEta(abs(eta[i]), int(genid[i]), "Up"));
+                uncSources.emplace_back(_tauidSFele->getSFvsEta(abs(eta[i]), int(genid[i]), "Down"));
+            }
+            wVec.emplace_back(uncSources);
+            uncSources.clear();
         }
         return wVec;
     };
 
-    auto tauSFIdVsMu = [this, _tauidSFmu](floats &pt, floats &eta, uchars &genid)->std::vector<float> {
-        std::vector<float> wVec;
+    auto tauSFIdVsMu = [this, _tauidSFmu](floats &pt, floats &eta, uchars &genid)->std::vector<std::vector<float>> {
+
+        std::vector<float> uncSources;
+        uncSources.reserve(3);
+        std::vector<std::vector<float>> wVec;
+        wVec.reserve(pt.size());
+
         if (pt.size() > 0) {
-            for (unsigned int i=0; i<pt.size(); i++)
-                wVec.emplace_back(_tauidSFmu->getSFvsEta(abs(eta[i]), int(genid[i])));
+            for (unsigned int i=0; i<pt.size(); i++) {
+                uncSources.emplace_back(_tauidSFmu->getSFvsEta(abs(eta[i]), int(genid[i])));
+                uncSources.emplace_back(_tauidSFmu->getSFvsEta(abs(eta[i]), int(genid[i]), "Up"));
+                uncSources.emplace_back(_tauidSFmu->getSFvsEta(abs(eta[i]), int(genid[i]), "Down"));
+            }
+            wVec.emplace_back(uncSources);
+            uncSources.clear();
         }
         return wVec;
     };
@@ -902,7 +963,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     // Tau ES
     cout<<"Applying TauES on Genuine taus"<<endl;
     auto tauES = [this, _testool, _festool](floats &pt, floats &eta, ints &dm, uchars &genid, floats &x)->floats {
+
         floats xout;
+
         for (unsigned int i=0; i<pt.size(); i++) {
             float es = 1.0;
             if (genid[i]==5) {
@@ -915,8 +978,32 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
         return xout;
     };
 
-    _rlm = _rlm.Redefine("Tau_pt", tauES, {"Tau_pt", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt"})
-               .Redefine("Tau_mass", tauES, {"Tau_pt", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"});
+    // return SF for pT and mass
+    auto tauESUnc = [this, _testool, _festool](floats &pt, floats &eta, ints &dm, uchars &genid, floats &x)->std::vector<std::vector<float>> {
+
+        std::vector<float> uncSources;
+        uncSources.reserve(2);
+        std::vector<std::vector<float>> xout;
+        xout.reserve(pt.size());
+
+        for (unsigned int i=0; i<pt.size(); i++) {
+            if (genid[i]==5) {
+                uncSources.emplace_back(_testool->getTES(pt[i], dm[i], genid[i], "Up"));
+                uncSources.emplace_back(_testool->getTES(pt[i], dm[i], genid[i], "Down"));
+            } else if (genid[i]==1 || genid[i]==3){
+                uncSources.emplace_back(_festool->getFES(eta[i], dm[i], genid[i], "Up"));
+                uncSources.emplace_back(_festool->getFES(eta[i], dm[i], genid[i], "Down"));
+            }
+            xout.emplace_back(uncSources);
+            uncSources.clear();
+        }
+        return xout;
+    };
+
+    _rlm = _rlm.Define("Tau_pt_uncor", "Tau_pt")
+               .Redefine("Tau_pt", tauES, {"Tau_pt", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt"})
+               .Redefine("Tau_mass", tauES, {"Tau_pt", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"})
+               .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt"});
 }
 
 /*
