@@ -107,11 +107,7 @@ private:
                 "jesAbsolute_2018up", "jesAbsolute_2018down", "jesBBEC1up", "jesBBEC1down",
                 "jesBBEC1_2018up", "jesBBEC1_2018down", "jesFlavorQCDup", "jesFlavorQCDdown",
                 "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2018up", "jesRelativeSample_2018down"};
-  //std::vector<JetCorrectionUncertainty*> regroupedUnc;
-  bool _isSystBtag = false;
-  bool _isSystJes = false;
-  bool _isSystUp = false;
-  bool _isSystDown = false;
+
 	std::string _jsonfname;
 	std::string _globaltag;
 	TFile *_inrootfile;
@@ -133,22 +129,11 @@ private:
 
 	Json::Value jsonroot;
 
-	// pile up weights
-	TH1D *_hpumc;
-	TH1D *_hpudata;
-	TH1D *_hpudata_plus;
-	TH1D *_hpudata_minus;
-	WeightCalculatorFromHistogram *_puweightcalc;
-	WeightCalculatorFromHistogram *_puweightcalc_plus;
-	WeightCalculatorFromHistogram *_puweightcalc_minus;
 	RNodeTree _rnt;
 	RNodeTree *currentnode;
 	bool isDefined(string v);
 
-	// Jet MET corrections
 	void setupJetMETCorrection(std::string globaltag, const std::vector<std::string> var = std::vector<std::string>(), std::string jetalgo="AK4PFchs", bool dataMc=false);
-	FactorizedJetCorrector *_jetCorrector;
-	JetCorrectionUncertainty *_jetCorrectionUncertainty;
 
 };
 

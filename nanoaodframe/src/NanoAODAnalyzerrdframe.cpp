@@ -23,7 +23,7 @@
 using namespace std;
 
 NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
-:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), _jetCorrector(0) {
+:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0) {
 
     // Skim switch
     if (_isSkim == true) {
@@ -61,10 +61,6 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
     if (_syst != "") {
         cout << "Systematics Information" << endl;
         cout << "Activated option --syst " << _syst << endl;
-        if (_syst.find("jes") != std::string::npos) {
-            _isSystJes = true;
-            cout << "    Apply JES uncertainty" << endl;
-        }
     } else {
         cout << "Nominal process without systematics" << endl;
     }
@@ -132,26 +128,26 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
             cout<<"Loading Pileup profiles"<<endl;
             // MC 2016pre = MC 2016post (same file)
             TFile tfmc(("data/Pileup/PileupMC_UL" + _year + ".root").c_str());
-            _hpumc = dynamic_cast<TH1D *>(tfmc.Get("pu_mc"));
+            TH1D* _hpumc = dynamic_cast<TH1D *>(tfmc.Get("pu_mc"));
             _hpumc->SetDirectory(0);
             tfmc.Close();
 
             TFile tfdata(("data/Pileup/PileupDATA_UL" + _year + ".root").c_str());
-            _hpudata = dynamic_cast<TH1D *>(tfdata.Get("pileup"));
-            _hpudata_plus = dynamic_cast<TH1D *>(tfdata.Get("pileup_plus"));
-            _hpudata_minus = dynamic_cast<TH1D *>(tfdata.Get("pileup_minus"));
+            TH1D* _hpudata = dynamic_cast<TH1D *>(tfdata.Get("pileup"));
+            TH1D* _hpudata_plus = dynamic_cast<TH1D *>(tfdata.Get("pileup_plus"));
+            TH1D* _hpudata_minus = dynamic_cast<TH1D *>(tfdata.Get("pileup_minus"));
 
             _hpudata->SetDirectory(0);
             _hpudata_plus->SetDirectory(0);
             _hpudata_minus->SetDirectory(0);
             tfdata.Close();
 
-            _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
-            _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
-            _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus);
+            WeightCalculatorFromHistogram* _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
+            WeightCalculatorFromHistogram* _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
+            WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus);
 
             _rlm = _rlm.Define("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
-                       .Define("puWeight", [this](float x) ->std::vector<float>
+                       .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->std::vector<float>
                               {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
         }
     }
@@ -283,6 +279,8 @@ void NanoAODAnalyzerrdframe::selectMET()
 void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector<std::string> jes_var, std::string jetalgo, bool dataMc) {
 
     std::vector<JetCorrectionUncertainty*> regroupedUnc;
+    FactorizedJetCorrector* _jetCorrector;
+
     if (_globaltag != "") {
         cout << "Applying new JetMET corrections. GT: " + _globaltag + " on jetAlgo: AK4PFchs" << endl;
         string basedirectory = "data/jme/";
@@ -338,8 +336,8 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 auto uncsource = src.substr(3, src.size()-2-3);
                 cout << "JEC Uncertainty Source : " + uncsource << endl;
                 string dbfilenameunc = basedirectory + "RegroupedV2_" + _globaltag + "_MC_UncertaintySources_AK4PFchs.txt";
-                JetCorrectorParameters *uncCorrPar = new JetCorrectorParameters(dbfilenameunc, uncsource);
-                _jetCorrectionUncertainty = new JetCorrectionUncertainty(*uncCorrPar);
+                JetCorrectorParameters* uncCorrPar = new JetCorrectorParameters(dbfilenameunc, uncsource);
+                JetCorrectionUncertainty* _jetCorrectionUncertainty = new JetCorrectionUncertainty(*uncCorrPar);
                 regroupedUnc.emplace_back(_jetCorrectionUncertainty);
             } else {
                 continue; //We only need var name, no up/down
@@ -347,7 +345,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         }
     }
 
-    auto applyJes = [this](floats jetpts, floats jetetas, floats jetAreas, floats jetrawf, float rho, floats tocorrect)->floats {
+    auto applyJes = [this, _jetCorrector](floats jetpts, floats jetetas, floats jetAreas, floats jetrawf, float rho, floats tocorrect)->floats {
 
         floats corrfactors;
         corrfactors.reserve(jetpts.size());
@@ -593,19 +591,10 @@ void NanoAODAnalyzerrdframe::selectJets() {
 
     // apparently size() returns long int, which ROOT doesn't recognized for branch types
     // , so it must be cast into int if you want to save them later into a TTree
-    if (_globaltag != "") {
-        if (_isSystJes) {
-            if (_isSystUp) {
-                _rlm = _rlm.Define("Sys_jetpt","Jet_pt_up");
-                _rlm = _rlm.Define("Sys_METpt","MET_pt_up");
-                _rlm = _rlm.Define("Sys_METphi","MET_phi_up");
-            } else if (_isSystDown) {
-                _rlm = _rlm.Define("Sys_jetpt","Jet_pt_down");
-                _rlm = _rlm.Define("Sys_METpt","MET_pt_down");
-                _rlm = _rlm.Define("Sys_METphi","MET_phi_down");
-            }
-        }
-    }
+    //if (_globaltag != "") {
+    //    if (_isSystJes) {
+    //    }
+    //}
     _rlm = _rlm.Define("jetcuts", "Jet_pt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
     _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetcuts]")
                .Redefine("Jet_eta", "Jet_eta[jetcuts]")
