@@ -399,7 +399,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
 
     if (_globaltag != "") {
         cout << "Applying new JetMET corrections. GT: " + _globaltag + " on jetAlgo: AK4PFchs" << endl;
-        string basedirectory = "data/jme/";
+        string basedirectory = "data/jes/";
 
         string datamcflag = "";
         if (dataMc) datamcflag = "DATA";
