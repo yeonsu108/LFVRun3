@@ -196,9 +196,8 @@ def Nanoaodprocessor_singledir(outputroot, indir, outtree, intree, year, syst, j
     t = ROOT.TChain(intree)
     for afile in rootfilestoprocess:
         t.Add(afile)
-    #aproc = ROOT.LQtopAnalyzer(t, outputroot, year, syst, json, globaltag, split)
     aproc = None
-    aproc = ROOT.TopLFVAnalyzer(t, outputroot, year+analyzer, syst, json, globaltag, split)
+    aproc = ROOT.TopLFVAnalyzer(t, outputroot, year, syst, json, globaltag, split)
     aproc.setupAnalysis()
     aproc.run(saveallbranches, outtree)
 
@@ -240,7 +239,6 @@ if __name__=='__main__':
     parser.add_option("-A","--allinone", dest="allinone", action="store_true", default=False, help="Process all files and output a single root file. You must make sure MC and Data are not mixed together.")
     parser.add_option("--saveallbranches", dest="saveallbranches", action="store_true", default=False, help="Save all branches. False by default")
     parser.add_option("--globaltag", dest="globaltag", type="string", default="", help="Global tag to be used in JetMET corrections")
-    parser.add_option("--analyzer", dest="analyzer", type="string", default="", help="Anayzer selection (stlfv or ttlfv)")
     (options, args) = parser.parse_args()
 
     if len(args) < 1 :
@@ -260,4 +258,4 @@ if __name__=='__main__':
         n=Nanoaodprocessor(outdir, indir, outtree, intree, options.year, options.syst, options.json, options.split, options.skipold, options.recursive, options.saveallbranches, options.globaltag)
         n.process()
     else:
-        Nanoaodprocessor_singledir(outdir, indir, outtree, intree, options.year, options.syst, options.json,  options.split, options.recursive, options.saveallbranches, options.globaltag, options.analyzer) # although it says outdir, it should really be a output ROOT file name
+        Nanoaodprocessor_singledir(outdir, indir, outtree, intree, options.year, options.syst, options.json,  options.split, options.recursive, options.saveallbranches, options.globaltag) # although it says outdir, it should really be a output ROOT file name
