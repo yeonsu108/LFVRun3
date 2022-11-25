@@ -71,6 +71,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Jet_pt");
         addVartoStore("Jet_pt_uncorr");
         addVartoStore("Jet_pt_unc");
+        addVartoStore("Jet_jer");
         addVartoStore("Jet_eta");
         addVartoStore("Jet_phi");
         addVartoStore("Jet_mass");

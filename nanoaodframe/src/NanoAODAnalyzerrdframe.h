@@ -26,6 +26,7 @@
 #include "JetCorrectorParameters.h"
 #include "FactorizedJetCorrector.h"
 #include "JetCorrectionUncertainty.h"
+#include "JetResolution.h"
 #include "TauSFTool.h"
 
 using namespace ROOT::RDF;

@@ -10,6 +10,7 @@
 #include <iostream>
 #include <algorithm>
 #include <typeinfo>
+#include <random>
 
 #include "TCanvas.h"
 #include "Math/GenVector/VectorUtil.h"
@@ -446,17 +447,19 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         _jetCorrector = new FactorizedJetCorrector(jetc);
 
         // object to calculate uncertainty
-        cout<<"Applying JEC Uncertainty"<<endl;
-        for (std::string src : jes_var) {
-            if (src.find("up") != std::string::npos) {
-                auto uncsource = src.substr(3, src.size()-2-3);
-                cout << "JEC Uncertainty Source : " + uncsource << endl;
-                string dbfilenameunc = basedirectory + "RegroupedV2_" + _globaltag + "_MC_UncertaintySources_AK4PFchs.txt";
-                JetCorrectorParameters* uncCorrPar = new JetCorrectorParameters(dbfilenameunc, uncsource);
-                JetCorrectionUncertainty* _jetCorrectionUncertainty = new JetCorrectionUncertainty(*uncCorrPar);
-                regroupedUnc.emplace_back(_jetCorrectionUncertainty);
-            } else {
-                continue; //We only need var name, no up/down
+        if (!dataMc) {
+            cout<<"Applying JEC Uncertainty"<<endl;
+            for (std::string src : jes_var) {
+                if (src.find("up") != std::string::npos) {
+                    auto uncsource = src.substr(3, src.size()-2-3);
+                    cout << "JEC Uncertainty Source : " + uncsource << endl;
+                    string dbfilenameunc = basedirectory + "RegroupedV2_" + _globaltag + "_MC_UncertaintySources_AK4PFchs.txt";
+                    JetCorrectorParameters* uncCorrPar = new JetCorrectorParameters(dbfilenameunc, uncsource);
+                    JetCorrectionUncertainty* _jetCorrectionUncertainty = new JetCorrectionUncertainty(*uncCorrPar);
+                    regroupedUnc.emplace_back(_jetCorrectionUncertainty);
+                } else {
+                    continue; //We only need var name, no up/down
+                }
             }
         }
     }
@@ -585,13 +588,111 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         }
         _rlm = _rlm.Redefine("Jet_pt", "Jet_pt_corr");
     }
+
+
+    // JER
+    std::string jetResFilePath_ = "data/jer/";
+    std::string jetResSFFilePath_ = "data/jer/";
+    if (_isRun16pre) {
+        jetResFilePath_ += "Summer20UL16APV_JRV3_MC_PtResolution_AK4PFchs.txt";
+        jetResSFFilePath_ += "Summer20UL16APV_JRV3_MC_SF_AK4PFchs.txt";
+    } else if (_isRun16post) {
+        jetResFilePath_ += "Summer20UL16_JRV3_MC_PtResolution_AK4PFchs.txt";
+        jetResSFFilePath_ += "Summer20UL16_JRV3_MC_SF_AK4PFchs.txt";
+    } else if (_isRun17) {
+        jetResFilePath_ += "Summer19UL17_JRV2_MC_PtResolution_AK4PFchs.txt";
+        jetResSFFilePath_ += "Summer19UL17_JRV2_MC_SF_AK4PFchs.txt";
+    } else if (_isRun18) {
+        jetResFilePath_ += "Summer19UL18_JRV2_MC_PtResolution_AK4PFchs.txt";
+        jetResSFFilePath_ += "Summer19UL18_JRV2_MC_SF_AK4PFchs.txt";
+    }
+
+    JME::JetResolution jetResObj;
+    JME::JetResolutionScaleFactor jetResSFObj;
+    if (!_isData) {
+        jetResObj = JME::JetResolution(jetResFilePath_);
+        jetResSFObj = JME::JetResolutionScaleFactor(jetResSFFilePath_);
+    }
+
+    // Compute the JER and Unc ( v[pt][unc], unc = nom, up, down)
+    // cattool + PhysicsTools/PatUtils/interface/SmearedJetProducerT.h
+    auto applyJer = [this, jetResObj, jetResSFObj](floats jetpts, floats jetetas, floats jetphis, floats jetms,
+                    floats genjetpts, floats genjetetas, floats genjetphis, floats genjetms, ints genidx, float rho, unsigned long long event)
+                    ->std::vector<std::vector<float>> {
+
+        std::vector<std::vector<float>> out;
+        out.reserve(jetpts.size());
+        std::vector<float> var;
+        var.reserve(3);
+
+        if (jetpts.size() > 0) {
+            for (size_t i=0; i<jetpts.size(); i++) {
+
+                JME::JetParameters jetPars = {{JME::Binning::JetPt, jetpts[i]},
+                                              {JME::Binning::JetEta, jetetas[i]},
+                                              {JME::Binning::Rho, rho}};
+                const float jetRes = jetResObj.getResolution(jetPars); // Note: this is relative resolution.
+                const float cJER   = jetResSFObj.getScaleFactor(jetPars);
+                const float cJERUp = jetResSFObj.getScaleFactor(jetPars, Variation::UP);
+                const float cJERDn = jetResSFObj.getScaleFactor(jetPars, Variation::DOWN);
+
+                bool _isGenMatch = false;
+                ROOT::Math::PtEtaPhiMVector jetv(jetpts[i], jetetas[i], jetphis[i], jetms[i]);
+                ROOT::Math::PtEtaPhiMVector genv(genjetpts[i], genjetetas[i], genjetphis[i], genjetms[i]);
+                if (genidx[i] >= 0 && ROOT::Math::VectorUtil::DeltaR(jetv, genv) < 0.2 &&
+                    std::abs(genjetpts[i] - jetpts[i]) < jetRes * 3 * jetpts[i])
+                    _isGenMatch = true;
+
+
+                // JER - apply scaling method if matched genJet is found,
+                //       apply gaussian smearing method if unmatched
+                float jetpt = jetpts[i];
+                float genjetpt = genjetpts[i];
+                if (_isGenMatch) {
+                    float dPt = jetpt - genjetpt;
+                    float jersf = 1 + (dPt * (cJER - 1))/jetpt;
+                    float jersfup = 1 + (dPt * (cJERUp - 1))/jetpt;
+                    float jersfdn = 1 + (dPt * (cJERDn - 1))/jetpt;
+
+                    std::vector<float> tmpjers = {jersf, jersfup, jersfdn};
+                    for (size_t j=0; j<tmpjers.size(); j++) {
+                        float tmpjer = tmpjers[j];
+                        if (std::isnan(tmpjer) or std::isinf(tmpjer) or tmpjer<0 ) var.emplace_back(1.0f);
+                        else var.emplace_back(std::max(0.0f, tmpjer));
+                    }
+
+                } else if (cJER > 1){
+                    std::uint32_t seed = uint32_t(jetetas[0] * 100) + static_cast<unsigned int>(event);
+                    std::mt19937 m_random_generator = std::mt19937(seed);
+
+                    float sigma = jetRes * std::sqrt(cJER * cJER - 1);
+                    float sigmaUp = jetRes * std::sqrt(cJERUp * cJERUp - 1);
+                    float sigmaDn = jetRes * std::sqrt(cJERDn * cJERDn - 1);
+                    std::normal_distribution<float> d(0, sigma);
+                    std::normal_distribution<float> dup(0, sigmaUp);
+                    std::normal_distribution<float> ddn(0, sigmaDn);
+
+                    std::vector<float> tmpjers = {1.0f + d(m_random_generator), 1.0f + dup(m_random_generator), 1.0f + ddn(m_random_generator)};
+                    for (size_t j=0; j<tmpjers.size(); j++) {
+                        float tmpjer = tmpjers[j];
+                        if (std::isnan(tmpjer) or std::isinf(tmpjer) or tmpjer<0 ) var.emplace_back(1.0f);
+                        else var.emplace_back(std::max(0.0f, tmpjer));
+                    }
+                }
+                out.emplace_back(var);
+                var.clear();
+            }
+        }
+        return out;
+    };
+
+    if (!dataMc) {
+        _rlm = _rlm.Define("Jet_jer", applyJer, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass", "GenJet_pt", "GenJet_eta", "GenJet_phi", "GenJet_mass", "Jet_genJetIdx", "fixedGridRhoFastjetAll", "event"});
+    }
+
 }
 
 void NanoAODAnalyzerrdframe::skimJets() {
-
-    float jetPtCut = 30;
-    float jetEtaCut = 2.4;
-    int jetIdCut = 6;
 
     // input vector: vec[pt][vars]
     // vec<vec<float>> or similar form were not able to be skimmed!?
@@ -607,7 +708,6 @@ void NanoAODAnalyzerrdframe::skimJets() {
 
     // skim jet collection
     _rlm = _rlm.Define("jetcuts", "Jet_pt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6")
-               .Redefine("Jet_pt_unc", skimJetCol, {"Jet_pt_unc", "jetcuts"})
                .Redefine("Jet_pt", "Jet_pt[jetcuts]")
                .Redefine("Jet_eta", "Jet_eta[jetcuts]")
                .Redefine("Jet_phi", "Jet_phi[jetcuts]")
@@ -617,9 +717,13 @@ void NanoAODAnalyzerrdframe::skimJets() {
                .Redefine("Jet_pt_uncorr", "Jet_pt_uncorr[jetcuts]")
                .Redefine("Jet_rawFactor", "Jet_rawFactor[jetcuts]")
                .Redefine("Jet_btagDeepFlavB", "Jet_btagDeepFlavB[jetcuts]")
-               .Redefine("Jet_hadronFlavour","Jet_hadronFlavour[jetcuts]")
-               .Redefine("Jet_genJetIdx","Jet_genJetIdx[jetcuts]")
                .Redefine("nJet", "int(Jet_pt.size())");
+    if (!_isData) {
+        _rlm = _rlm.Redefine("Jet_pt_unc", skimJetCol, {"Jet_pt_unc", "jetcuts"})
+                   .Redefine("Jet_jer", skimJetCol, {"Jet_jer", "jetcuts"})
+                   .Redefine("Jet_hadronFlavour","Jet_hadronFlavour[jetcuts]")
+                   .Redefine("Jet_genJetIdx","Jet_genJetIdx[jetcuts]");
+    }
 
 }
 
@@ -671,7 +775,8 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
         return bSFs;
     };
 
-    auto btagweightgeneratorJes = [this, _btagcalibreaderJes](floats &pts, floats &etas, ints &hadflav, floats &btags, std::vector<std::vector<float>> jes, strings &var)->doubles {
+    auto btagweightgeneratorJes = [this, _btagcalibreaderJes](floats &pts, floats &etas, ints &hadflav,
+                                  floats &btags, std::vector<std::vector<float>> jes, strings &var)->doubles {
 
        doubles bSFs;
         for (size_t i=0; i<var.size(); i++) {
