@@ -912,7 +912,8 @@ void NanoAODAnalyzerrdframe::selectTaus() {
         for (size_t i=0; i<toSkim.size(); i++) {
             if (cut[i] > 0) out.emplace_back(toSkim[i]);
         }
-        return out;
+        if (out.size() > 0) return out;
+        else return {{1.0f, 1.0f, 1.0f}};
     };
 
     // Hadronic Tau Object Selections
@@ -1211,9 +1212,47 @@ void NanoAODAnalyzerrdframe::storeEvWeight() {
     //           .Redefine("Jet_mass", "Jet_mass * Jet_jer_toapply * Jet_pt_unc_toapply");
 
     //Tau SF -> apply skimcol
-    //_rlm = _rlm.Define("eventWeight","unitGenWeight * puWeight[0] * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0] * tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0] * btagWeight_DeepFlavB[0]");
-    _rlm = _rlm.Define("eventWeight","unitGenWeight");
+    _rlm = _rlm.Define("eventWeight", "one");
+    _rlm = _rlm.Define("puWeight_nom", "puWeight[0]")
+               .Define("puWeight_up", "puWeight[1]")
+               .Define("puWeight_down", "puWeight[2]")
+               .Define("muonWeightId_nom", "muonWeightId[0]")
+               .Define("muonWeightId_up", "muonWeightId[1]")
+               .Define("muonWeightI_down", "muonWeightId[2]")
+               .Define("muonWeightIso_nom", "muonWeightIso[0]")
+               .Define("muonWeightIso_up", "muonWeightIso[1]")
+               .Define("muonWeightIsod_down", "muonWeightIso[2]")
+               .Define("muonWeightTrg_nom", "muonWeightTrg[0]")
+               .Define("muonWeightTeg_up", "muonWeightTrg[1]")
+               .Define("muonWeightTrg_down", "muonWeightTrg[2]")
+               .Define("tauWeightIdVsJet_nom", "tauWeightIdVsJet[0][0]")
+               .Define("tauWeightIdVsJet_up", "tauWeightIdVsJet[0][1]")
+               .Define("tauWeightIdVsJet_down", "tauWeightIdVsJet[0][2]")
+               .Define("tauWeightIdVsEl_nom", "tauWeightIdVsEl[0][0]")
+               .Define("tauWeightIdVsEl_up", "tauWeightIdVsEl[0][1]")
+               .Define("tauWeightIdVsEl_down", "tauWeightIdVsEl[0][2]")
+               .Define("tauWeightIdVsMu_nom", "tauWeightIdVsMu[0][0]")
+               .Define("tauWeightIdVsMu_up", "tauWeightIdVsMu[0][1]")
+               .Define("tauWeightIdVsMu_down", "tauWeightIdVsMu[0][2]")
+               .Define("btagWeight_DeepFlavB_nom", "btagWeight_DeepFlavB[0]")
+               .Define("btagWeight_DeepFlavB_hfup", "btagWeight_DeepFlavB[1]")
+               .Define("btagWeight_DeepFlavB_hfdown", "btagWeight_DeepFlavB[2]")
+               .Define("btagWeight_DeepFlavB_lfup", "btagWeight_DeepFlavB[3]")
+               .Define("btagWeight_DeepFlavB_lfdown", "btagWeight_DeepFlavB[4]")
+               .Define("btagWeight_DeepFlavB_hfstats1up", "btagWeight_DeepFlavB[5]")
+               .Define("btagWeight_DeepFlavB_hfstats1down", "btagWeight_DeepFlavB[6]")
+               .Define("btagWeight_DeepFlavB_hfstats2up", "btagWeight_DeepFlavB[7]")
+               .Define("btagWeight_DeepFlavB_hfstats2down", "btagWeight_DeepFlavB[8]")
+               .Define("btagWeight_DeepFlavB_lfstats1up", "btagWeight_DeepFlavB[9]")
+               .Define("btagWeight_DeepFlavB_lfstats1down", "btagWeight_DeepFlavB[10]")
+               .Define("btagWeight_DeepFlavB_lfstats2up", "btagWeight_DeepFlavB[11]")
+               .Define("btagWeight_DeepFlavB_lfstats2down", "btagWeight_DeepFlavB[12]")
+               .Define("btagWeight_DeepFlavB_cferr1up", "btagWeight_DeepFlavB[13]")
+               .Define("btagWeight_DeepFlavB_cferr1down", "btagWeight_DeepFlavB[14]")
+               .Define("btagWeight_DeepFlavB_cferr2up", "btagWeight_DeepFlavB[15]")
+               .Define("btagWeight_DeepFlavB_cferr2down", "btagWeight_DeepFlavB[16]");
 
+    _rlm = _rlm.Redefine("eventWeight", "unitGenWeight * puWeight_nom * muonWeightId_nom * muonWeightIso_nom * muonWeightTrg_nom * tauWeightIdVsJet_nom * tauWeightIdVsEl_nom * tauWeightIdVsMu_nom * btagWeight_DeepFlavB_nom");
 }
 
 /*
