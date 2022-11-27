@@ -20,12 +20,12 @@ for year in years:
 	    os.makedirs(base_path + label + '/' + year + '_postprocess')
 
 # Systematic Sources => All systematics in one file.
-systs={'':'', 'puup':'puup', 'pudown':'puup',
+systs={'':'', 'puup':'puup', 'pudown':'pudown',
 'btagup_hf':'btaghfup','btagdown_hf':'btaghfdown','btagup_lf':'btaglfup','btagdown_lf':'btaglfdown',
 'btagup_hfstats1':'btaghfstats1up','btagdown_hfstats1':'btaghfstats1down',
 'btagup_lfstats1':'btaglfstats1up','btagdown_lfstats1':'btaglfstats1down',
 'btagup_hfstats2':'btaghfstats2up','btagdown_hfstats2':'btaghfstats2down',
-'btagup_lfstats2':'btaglfstats2up','btagdown_lfstats2':'btagdownlfstats2down',
+'btagup_lfstats2':'btaglfstats2up','btagdown_lfstats2':'btaglfstats2down',
 'btagup_cferr1':'btagcferr1up','btagdown_cferr1':'btagcferr1down',
 'btagup_cferr2':'btagcferr2up','btagdown_cferr2':'btagcferr2down',
 'up_jesAbsolute':'jesAbsoluteup','down_jesAbsolute':'jesAbsolutedown',
