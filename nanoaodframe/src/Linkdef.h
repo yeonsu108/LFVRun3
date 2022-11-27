@@ -10,6 +10,9 @@
 
 #pragma link C++ class std::vector<ROOT::Math::PtEtaPhiMVector>+;
 #pragma link C++ class std::vector<std::vector<float>>+;
+#pragma link C++ class ROOT::VecOps::RVec<float>+;
+#pragma link C++ class ROOT::VecOps::RVec<ROOT::VecOps::RVec<float>>+;
+#pragma link C++ class std::vector<ROOT::Math::PtEtaPhiMVector>+;
 #pragma link C++ class NanoAODAnalyzerrdframe +;
 #pragma link C++ class LQtopAnalyzer +;
 #pragma link C++ class TopLFVAnalyzer +;

@@ -22,24 +22,22 @@ import cppyy
 import ROOT
 
 
-def function_calling_PostProcessor(outdir, rootfileshere, outtreename, intreeename, year, syst, json, saveallbranches, globaltag):
+def function_calling_PostProcessor(outdir, rootfileshere, year, syst, json, saveallbranches, globaltag):
     for afile in rootfileshere:
         rootfname = re.split('\/', afile)[-1]
         withoutext = re.split('\.root', rootfname)[0]
         outfname = outdir + '/' + withoutext + '_analyzed.root'
         if saveallbranches:
-            subprocess.call(["./processonefile.py","--year=%s"%year,"--syt=%s"%syst, "--json=%s"%json, "--saveallbranches", "--globaltag=%s"%globaltag, afile, outfname, intreeename, outtreename])
+            subprocess.call(["./processonefile.py","--year=%s"%year,"--syt=%s"%syst, "--json=%s"%json, "--saveallbranches", "--globaltag=%s"%globaltag, afile, outfname])
         else:
-            subprocess.call(["./processonefile.py", "--year=%s"%year,"--syt=%s"%syst, "--json=%s"%json, "--globaltag=%s"%globaltag, afile, outfname, intreeename, outtreename])
+            subprocess.call(["./processonefile.py", "--year=%s"%year,"--syt=%s"%syst, "--json=%s"%json, "--globaltag=%s"%globaltag, afile, outfname])
     pass
 
 
 class Nanoaodprocessor:
-    def __init__(self, outdir, indir, outtree, intree, year, syst, json, split, skipold, recursive, saveallbranches, globaltag):
+    def __init__(self, outdir, indir, year, syst, json, split, skipold, recursive, saveallbranches, globaltag):
         self.outdir = outdir
         self.indir = indir
-        self.outtreename = outtree
-        self.intreeename = intree
         self.year = year
         self.syst = syst
         self.json = json
@@ -125,7 +123,7 @@ class Nanoaodprocessor:
                         filesforjob = rootfileshere[int(i*nfileperjob):int((i+1)*nfileperjob)]
                     else:
                         filesforjob = rootfileshere[int(i*nfileperjob):]
-                    p = Process(target=function_calling_PostProcessor, args=(outputdirectory, filesforjob, self.outtreename, self.intreeename, self.year, self.syst, self.json, self.saveallbranches, self.globaltag)) # positional arguments go into kwargs
+                    p = Process(target=function_calling_PostProcessor, args=(outputdirectory, filesforjob, "Events", "Events", self.year, self.syst, self.json, self.saveallbranches, self.globaltag)) # positional arguments go into kwargs
                     p.start()
                     ap.append(p)
                 for proc in ap:
@@ -137,7 +135,7 @@ class Nanoaodprocessor:
                     rootfname = re.split('\/', afile)[-1]
                     withoutext = re.split('\.root', rootfname)[0]
                     outfname = outputdirectory +'/'+ withoutext + '_analyzed.root'
-                    subprocess.call(["./processonefile.py", "--year=%s"%self.year, "--syst=%s"%self.syst, "--json=%s"%self.json, "--saveallbranches=%s"%self.saveallbranches, "--globaltag=%s"%self.globaltag, afile, outfname, self.intreeename, self.outtreename])
+                    subprocess.call(["./processonefile.py", "--year=%s"%self.year, "--syst=%s"%self.syst, "--json=%s"%self.json, "--saveallbranches=%s"%self.saveallbranches, "--globaltag=%s"%self.globaltag, afile, outfname, "Events", "Events"])
 
                     # the following works, but memory usage of this process grows with time.. Don't know how to solve it.
                     """
@@ -160,7 +158,7 @@ class Nanoaodprocessor:
             for indir, outdir in zip(subdirs, outsubdirs):
                 self._processROOTfiles(indir, outdir)
     
-def Nanoaodprocessor_singledir(outputroot, indir, outtree, intree, year, syst, json, split, recursive, saveallbranches, globaltag, analyzer):
+def Nanoaodprocessor_singledir(outputroot, indir, year, syst, json, split, recursive, saveallbranches, globaltag):
     """Runs nanoaod analyzer over ROOT files in indir (but doesn't search recursively)
     and run outputs into a signel ROOT file.
     
@@ -193,13 +191,13 @@ def Nanoaodprocessor_singledir(outputroot, indir, outtree, intree, year, syst, j
             rootfilestoprocess.append(fname)
     print("files to process")
     print(rootfilestoprocess)
-    t = ROOT.TChain(intree)
+    t = ROOT.TChain("Events")
     for afile in rootfilestoprocess:
         t.Add(afile)
     aproc = None
     aproc = ROOT.TopLFVAnalyzer(t, outputroot, year, syst, json, globaltag, split)
     aproc.setupAnalysis()
-    aproc.run(saveallbranches, outtree)
+    aproc.run(saveallbranches, "Events")
 
     # process input rootfiles to sum up all the counterhistograms
     counterhistogramsum = None
@@ -251,11 +249,8 @@ if __name__=='__main__':
     # load compiled C++ library into ROOT/python
     cppyy.load_reflection_info("libnanoadrdframe.so")
 
-    intree = "outputTree"
-    outtree = "outputTree2"
-
     if not options.allinone:
-        n=Nanoaodprocessor(outdir, indir, outtree, intree, options.year, options.syst, options.json, options.split, options.skipold, options.recursive, options.saveallbranches, options.globaltag)
+        n=Nanoaodprocessor(outdir, indir, options.year, options.syst, options.json, options.split, options.skipold, options.recursive, options.saveallbranches, options.globaltag)
         n.process()
     else:
-        Nanoaodprocessor_singledir(outdir, indir, outtree, intree, options.year, options.syst, options.json,  options.split, options.recursive, options.saveallbranches, options.globaltag) # although it says outdir, it should really be a output ROOT file name
+        Nanoaodprocessor_singledir(outdir, indir, options.year, options.syst, options.json,  options.split, options.recursive, options.saveallbranches, options.globaltag) # although it says outdir, it should really be a output ROOT file name
