@@ -45,7 +45,7 @@ public:
   bool readjson();
   void selectElectrons();
   void selectMuons();
-  void selectJets();
+  void selectJets(std::vector<std::string> jes_var);
   void skimJets();
   void applyBSFs(std::vector<string> jes_var);
   void selectTaus();
@@ -54,6 +54,7 @@ public:
   void removeOverlaps();
   void matchGenReco();
   void calculateEvWeight();
+  void storeEvWeight();
   virtual void defineMoreVars() = 0; // define higher-level variables from basic ones, you must implement this in your subclassed analysis code
 
   void addVar(varinfo v);
@@ -76,9 +77,10 @@ public:
   void setTree(TTree *t, std::string outfilename);
   void setupTree();
 
-  bool _isSkim;
+  bool _isSkim = false;
   bool _isHTstitching = false;
   std::string _outfilename;
+  std::string _syst;
 
 private:
   ROOT::RDataFrame _rd;
@@ -90,7 +92,6 @@ private:
   bool _isRun16 = false;
   bool _isRun17 = false;
   bool _isRun18 = false;
-  std::string _syst;
   // you MUST copy syst names from the output of 'python skimcsv.py'
   inline static std::vector<std::string> btag_var = {"central",
                 "hfup", "hfdown", "lfup", "lfdown", "hfstats1up", "hfstats1down",
@@ -108,7 +109,7 @@ private:
                 "jesAbsolute_2018up", "jesAbsolute_2018down", "jesBBEC1up", "jesBBEC1down",
                 "jesBBEC1_2018up", "jesBBEC1_2018down", "jesFlavorQCDup", "jesFlavorQCDdown",
                 "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2018up", "jesRelativeSample_2018down"};
-  std::vector<float> PDFWeights;
+  floats PDFWeights;
   std::string _jsonfname;
   std::string _globaltag;
   TFile *_inrootfile;
