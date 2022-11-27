@@ -34,7 +34,7 @@ systs={'':'', 'puup':'puup', 'pudown':'pudown',
 'up_jesBBEC1_year':'jesBBEC1yearup','down_jesBBEC1_year':'jesBBEC1yeardown',
 'up_jesEC2':'jesEC2up','down_jesEC2':'jesEC2down',
 'up_jesEC2_year':'jesEC2yearup','down_jesEC2_year':'jesEC2yeardown',
-'up_jesFlavorQCD':'jesFlavorQCDup','down_jesFlavorQCD':'jesFlavorQCD:down',
+'up_jesFlavorQCD':'jesFlavorQCDup','down_jesFlavorQCD':'jesFlavorQCDdown',
 'up_jesRelativeBal':'jesRelativeBalup','down_jesRelativeBal':'jesRelativeBaldown',
 'up_jesRelativeSample_year':'jesRelativeSampleyearup','down_jesRelativeSample_year':'jesRelativeSampleyeardown'}
 
