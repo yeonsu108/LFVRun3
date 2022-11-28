@@ -741,13 +741,13 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
     _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_UDSG, "iterativefit");
 
     // function to calculate event weight for MC events based on DeepJet algorithm
-    auto btagweightgenerator = [this, _btagcalibreader](floats &pts, floats &etas, ints &hadflav, floats &btags, strings &var)->doubles {
+    auto btagweightgenerator = [this, _btagcalibreader](floats &pts, floats &etas, ints &hadflav, floats &btags, strings &var, floatsVec &jer)->doubles {
 
         doubles bSFs;
         for (std::string src : var) {
             double bweight = 1.0;
             for (unsigned int i=0; i<pts.size(); i++) {
-                if (pts[i] < 40) continue;
+                if (pts[i]*jer[i][0] < 40) continue;
                 if (src.find("cferr") != std::string::npos and hadflav[i] != 4) continue;
                 if (src.find("cferr") == std::string::npos and hadflav[i] == 4) continue;
 
@@ -764,7 +764,7 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
     };
 
     auto btagweightgeneratorJes = [this, _btagcalibreaderJes](floats &pts, floats &etas, ints &hadflav,
-                                  floats &btags, floatsVec jes, strings &var)->doubles {
+                                  floats &btags, floatsVec jes, strings &var, floatsVec &jer)->doubles {
 
        doubles bSFs;
         for (size_t i=0; i<var.size(); i++) {
@@ -772,7 +772,7 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
             std::string src = var[i];
 
             for (unsigned int j=0; j<pts.size(); j++) {
-                auto newpt = pts[j] * jes[j][i];
+                auto newpt = pts[j] * jes[j][i] * jer[j][0];
                 if (newpt < 40) continue;
 
                 BTagEntry::JetFlavor hadfconv;
@@ -788,8 +788,8 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
     };
 
     cout << "Generate b-tagging weight" << endl;
-    _rlm = _rlm.Define("btagWeight_DeepFlavB", btagweightgenerator, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "btag_var"})
-               .Define("btagWeight_DeepFlavB_jes", btagweightgeneratorJes, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "Jet_pt_unc", "btag_jes_var"});
+    _rlm = _rlm.Define("btagWeight_DeepFlavB", btagweightgenerator, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "btag_var", "Jet_jer"})
+               .Define("btagWeight_DeepFlavB_jes", btagweightgeneratorJes, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "Jet_pt_unc", "btag_jes_var", "Jet_jer"});
 }
 
 void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {

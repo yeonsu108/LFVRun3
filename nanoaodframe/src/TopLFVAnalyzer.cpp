@@ -89,8 +89,6 @@ void TopLFVAnalyzer::defineMoreVars() {
 //    addVar({"chi2_wqq_dPhi","top_reco_prod[1]",""});
 //    addVar({"chi2_wqq_dR","top_reco_prod[2]",""});
 //
-//    addVar({"eventWeight_pglep","puGenWeight * evWeight_leptonSF"});
-//    addVar({"eventWeight", "puGenWeight * btagWeight_DeepFlavBrecalc * evWeight_leptonSF"});
 
     // EventWeights
     // Calculate product of weights and store for systematic study
