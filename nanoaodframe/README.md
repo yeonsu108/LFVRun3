@@ -6,6 +6,7 @@ With this package, we can do the following to NanoAOD files
 - Apply Jet/MET corrections
 - Skim events
 - Process events with applying selections
+- SF and uncertainty calculation
 
 For this, we use the data frame concept to simplify the code,
 but it requires to learn new way of using ROOT.
@@ -14,7 +15,6 @@ which means that result of applying a function should produce outputs and no int
 In ROOT, RDataFrame allows us to borrow the concept for analysis.
 
 This package code implements LFV analysis using NanoAOD format.
-This branch provides ST and TT LFV analyzers with different selections in one nanoaodframe.
 
 
 ## I. Introduction
@@ -53,10 +53,9 @@ The class has several methods:
 
 - Compile
   ``` bash
-    make clean
-    make -j 4   # max 6 effective.
+    make clean && make -j 4   # max 6 effective.
     ```
-    Need ROOT 6.17 or later then,
+    Need ROOT 6.26.06 or later then for correctionlib,
     this will compile and create a `libnanoaodrdframe.so` shared library that can be loaded in a ROOT session or macro:
     ```c++
     gSystem->Load("libnanoadrdframe.so");
@@ -66,11 +65,42 @@ The class has several methods:
 
 ## III. Running over large dataset
 
-`skimnanoaod.py` or `processnanoaod.py` scripts can automatically run over all ROOT files in an input directory.
+### Usage of scripts
+In the `scripts/` folder, there are scripts for skimming or processing the NanoAOD files.
+All of the options are set in the script files `scripts/*.sh`.
+
+#### Skim
+```bash
+# You are at LFVRun2/nanoaodframe/
+# First fetch dataset info from google spreadsheet:
+# https://docs.google.com/spreadsheets/d/1KNvsRvXi3sgU45T2qOUztFSX3As4elZB325WaPnSkA8/edit#gid=569299692
+# The argument will be the name of campaign in 'Campaign Summary' tab
+# This will create file lists in data/dataset
+
+python getDatasetInfo.py v8UL_2016pre
+
+# Now, run script submitting slurm job
+# arguments: folder, year (2016pre, 2016post, 2017, and 2018)
+# You can add data or mc flag at the end of command if needed
+
+python scripts/skim.py skim_test 2016pre
+
+OR
+python scripts/skim.py skim_test 2016pre data (mc)
+
+# To run specific datasets, add them in test_list of skim.py
+# This script uses slurm on htop.
+# Please specify which node to EXCLUDE from the batch job, in scripts/job_slurm_skim.sh
+```
+
+#### Processing
+`processnanoaod.py` scripts can automatically run over all ROOT files in an input directory.
 ``` txt
 Usage: processnanoaod.py [options] inputDir outputDir
 
 Options:
+  -I, --indir           Input directory containing root files
+  -O, --outdir          Output directory and file name 
   -h, --help            show this help message and exit
   -Y YEAR, --year=YEAR  Select 2016, 2017, or 2018 runs
   -S SYST, --syst=SYST  Systematic sources
@@ -84,7 +114,6 @@ Options:
   --saveallbranches     Save all branches. False by default
   --globaltag=GLOBALTAG
                         Global tag to be used in JetMET corrections
-  --analyzer=ANALYZER   Anayzer selection (stlfv or ttlfv)
 ```
   
 By default, it will go into subdirectories recursively and process ROOT files. 
@@ -99,12 +128,6 @@ It will create one output file per one input file, so there is one-to-one corres
 ### Usage of scripts
 In the `scripts/` folder, there are scripts for skimming or processing the NanoAOD files.
 All of the options are set in the script files `scripts/*.sh`.
-
-#### Skim
-```bash
-# You are at LFVRun2/nanoaodframe/
-source ./scripts/skimdata.sh # or skimmc.sh, skimlfv.sh
-```
 
 #### Process
 ```bash
