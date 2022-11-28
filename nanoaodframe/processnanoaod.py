@@ -46,7 +46,7 @@ class Nanoaodprocessor:
         self.recursive = recursive
         self.saveallbranches = saveallbranches
         self.globaltag = globaltag
-        
+
         # check whether input directory exists
         if not os.path.exists(self.indir):
             print ('Path '+indir+' does not exist')
@@ -203,7 +203,7 @@ def Nanoaodprocessor_singledir(outputroot, indir, year, syst, json, split, recur
     counterhistogramsum = None
     for arootfile in rootfilestoprocess:
         intf = ROOT.TFile(arootfile)
-        counterhistogram = intf.Get("hcounter_nocut")
+        counterhistogram = intf.Get("hcounter")
         if counterhistogram != None:
             if counterhistogramsum == None:
                 counterhistogramsum = counterhistogram.Clone()
@@ -227,7 +227,9 @@ if __name__=='__main__':
     from optparse import OptionParser
     # inputDir and lower directories contain input NanoAOD files
     # outputDir is where the outputs will be created
-    parser = OptionParser(usage="%prog [options] inputDir outputDir")
+    parser = OptionParser(usage="%prog [options]")
+    parser.add_option("-I", "--indir",  dest="indir", type="string", default="", help="Input directory")
+    parser.add_option("-O", "--outdir",  dest="outdir", type="string", default="", help="Output directory")
     parser.add_option("-Y", "--year",  dest="year", type="string", default="", help="Select 2016, 2017, or 2018 runs")
     parser.add_option("-S", "--syst",  dest="syst", type="string", default="", help="Systematic sources")
     parser.add_option("-J", "--json",  dest="json", type="string", default="", help="Select events using this JSON file, meaningful only for data")
@@ -239,18 +241,19 @@ if __name__=='__main__':
     parser.add_option("--globaltag", dest="globaltag", type="string", default="", help="Global tag to be used in JetMET corrections")
     (options, args) = parser.parse_args()
 
-    if len(args) < 1 :
-        parser.print_help()
-        sys.exit(1)
 
-    indir = args[0]
-    outdir = args[1]
+    if "SingleMuon2016" in options.indir:
+        options.json = "data/GoldenJSON/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt"
+    elif "SingleMuon2017" in options.indir:
+        options.json = "data/GoldenJSON/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt"
+    elif "SingleMuon2018" in options.indir:
+        options.json = "data/GoldenJSON/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt"
 
     # load compiled C++ library into ROOT/python
     cppyy.load_reflection_info("libnanoadrdframe.so")
 
     if not options.allinone:
-        n=Nanoaodprocessor(outdir, indir, options.year, options.syst, options.json, options.split, options.skipold, options.recursive, options.saveallbranches, options.globaltag)
+        n=Nanoaodprocessor(options.outdir, options.indir, options.year, options.syst, options.json, options.split, options.skipold, options.recursive, options.saveallbranches, options.globaltag)
         n.process()
     else:
-        Nanoaodprocessor_singledir(outdir, indir, options.year, options.syst, options.json,  options.split, options.recursive, options.saveallbranches, options.globaltag) # although it says outdir, it should really be a output ROOT file name
+        Nanoaodprocessor_singledir(options.outdir, options.indir, options.year, options.syst, options.json, options.split, options.recursive, options.saveallbranches, options.globaltag) # although it says outdir, it should really be a output ROOT file name

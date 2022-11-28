@@ -15,7 +15,7 @@ from ROOT import *
 
 if __name__=='__main__':
     from optparse import OptionParser
-    parser = OptionParser(usage="%prog [options] inputDir outputDir")
+    parser = OptionParser(usage="%prog [options]")
     parser.add_option("-I", "--infile",  dest="infile", type="string", default="", help="Input file name")
     parser.add_option("-O", "--outfile",  dest="outfile", type="string", default="", help="Output file name")
     parser.add_option("-Y", "--year",  dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")

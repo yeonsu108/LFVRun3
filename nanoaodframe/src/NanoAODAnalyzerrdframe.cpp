@@ -101,7 +101,6 @@ void NanoAODAnalyzerrdframe::setTree(TTree *t, std::string outfilename) {
 	_hist1dinfovector.clear();
 	_th1dhistos.clear();
 	_varstostore.clear();
-	_hist1dinfovector.clear();
 	_selections.clear();
 
 	this->setupAnalysis();
@@ -116,7 +115,7 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
     _rlm = _rlm.Define("one", "1.0");
     // Event weight for data it's always one. For MC, it depends on the sign
     if(_isSkim){
-        _rlm = _rlm.Define("eventWeight","one");
+        _rlm = _rlm.Define("unitGenWeight", "one");
 
         if(!_isData){
 
@@ -157,7 +156,7 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
             WeightCalculatorFromHistogram* _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
             WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus);
 
-            _rlm = _rlm.Define("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
+            _rlm = _rlm.Redefine("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
                        .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->floats
                               {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
         }
@@ -188,7 +187,6 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         selectJets(jes_var);
         selectTaus();
         removeOverlaps();
-        storeEvWeight();
     }
     defineMoreVars();
     defineCuts();
@@ -798,10 +796,13 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
 
     if (!_isData) {
 
-        int idx = 0; //nominal
+        auto syst_unc = _syst;
 
-        auto selectJer = [idx](floatsVec unc)->floats {
+        auto selectJer = [syst_unc](floatsVec unc)->floats {
 
+            int idx = 0;
+            if (syst_unc == "jerup") idx = 1;
+            else if (syst_unc == "jerdown") idx = 2;
             floats selected;
             selected.reserve(unc.size());
 
@@ -813,18 +814,18 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
 
         if (_syst.find("jes") != std::string::npos) {
 
-            auto selectJes = [](floatsVec unc, std::string syst, std::vector<std::string> vars)->floats {
+            auto selectJes = [syst_unc, jes_var](floatsVec unc)->floats {
 
                 floats selected;
                 selected.reserve(unc.size());
-                unsigned int idx = -1;
-                for (size_t i=0; i<vars.size(); i++) {
-                    if (vars[i] == syst) idx = i;
+                unsigned int jesidx = -1;
+                for (size_t i=0; i<jes_var.size(); i++) {
+                    if (jes_var[i] == syst_unc) jesidx = i;
                 }
-                if (idx == -1) cerr << "Found No JES Unc Name!!" << endl;
+                if (int(jesidx) == -1) cerr << "Found No JES Unc Name!!" << endl;
 
                 for (size_t i=0; i<unc.size(); i++) {
-                    selected.emplace_back(unc[i][idx]);
+                    selected.emplace_back(unc[i][jesidx]);
                 }
                 return selected;
 
@@ -835,16 +836,7 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
                        .Redefine("Jet_pt", "Jet_pt * Jet_jer_toapply * Jet_pt_unc_toapply")
                        .Redefine("Jet_mass", "Jet_mass * Jet_jer_toapply * Jet_pt_unc_toapply");
 
-        } else if (_syst.find("jer") != std::string::npos) {
-
-            if (_syst.find("up") != std::string::npos)        idx = 1;
-            else if (_syst.find("down") != std::string::npos) idx = 2;
-
-            _rlm = _rlm.Define("Jet_jer_toapply", selectJer, {"Jet_jer"})
-                       .Redefine("Jet_pt", "Jet_pt * Jet_jer_toapply")
-                       .Redefine("Jet_mass", "Jet_mass * Jet_jer_toapply");
         } else {
-            idx = 0;
             _rlm = _rlm.Define("Jet_jer_toapply", selectJer, {"Jet_jer"})
                        .Redefine("Jet_pt", "Jet_pt * Jet_jer_toapply")
                        .Redefine("Jet_mass", "Jet_mass * Jet_jer_toapply");
@@ -928,12 +920,15 @@ void NanoAODAnalyzerrdframe::selectTaus() {
                .Redefine("Tau_mass", "Tau_mass[seltaucuts]")
                .Redefine("Tau_charge", "Tau_charge[seltaucuts]")
                .Redefine("Tau_jetIdx", "Tau_jetIdx[seltaucuts]")
-               .Redefine("Tau_genPartFlav","Tau_genPartFlav[seltaucuts]")
-               .Redefine("tauWeightIdVsJet", skimCol, {"tauWeightIdVsJet", "seltaucuts"})
-               .Redefine("tauWeightIdVsEl", skimCol, {"tauWeightIdVsEl", "seltaucuts"})
-               .Redefine("tauWeightIdVsMu", skimCol, {"tauWeightIdVsMu", "seltaucuts"})
                .Define("ncleantaupass", "int(Tau_pt.size())")
                .Define("cleantau4vecs", ::gen4vec, {"Tau_pt", "Tau_eta", "Tau_phi", "Tau_mass"});
+
+    if (!_isData) {
+        _rlm = _rlm.Redefine("Tau_genPartFlav","Tau_genPartFlav[seltaucuts]")
+                   .Redefine("tauWeightIdVsJet", skimCol, {"tauWeightIdVsJet", "seltaucuts"})
+                   .Redefine("tauWeightIdVsEl", skimCol, {"tauWeightIdVsEl", "seltaucuts"})
+                   .Redefine("tauWeightIdVsMu", skimCol, {"tauWeightIdVsMu", "seltaucuts"});
+    }
 
 }
 
@@ -1189,72 +1184,6 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt"});
 }
 
-void NanoAODAnalyzerrdframe::storeEvWeight() {
-
-    // Calculate product of weights and store for systematic study
-    // Done in processing
-    // External systs: JES (+btag) (14), JER(2), TES(2), hdamp(2), TuneCP5(2)
-    // Weights systs: genWeight(1), PU(2), btag(16), muon Id(2)/Iso(2)/Trg(2), tauId(2*2*2), ME scale(6), PS scale(4), PDF(102)
-    // Not implemented: EEprefire, top pt reweighting,
-
-    //auto selectUnc = [](floatsVec unc, int selIdx)->floats {
-
-    //    floats selected;
-    //    selected.reserve(unc.size());
-    //    for (size_t i=0; i<unc.size(); i++)
-    //        selected.emplace_back(unc[i][selIdx]);
-    //    return selected
-    //};
-
-    //_rlm = _rlm.Define("Jet_pt_unc_toapply", selectJes, {"Jet_pt_unc"})
-    //           .Define("Jet_jer_toapply", selectJer[idx], {"Jet_jer"})
-    //           .Redefine("Jet_pt", "Jet_pt * Jet_jer_toapply * Jet_pt_unc_toapply")
-    //           .Redefine("Jet_mass", "Jet_mass * Jet_jer_toapply * Jet_pt_unc_toapply");
-
-    //Tau SF -> apply skimcol
-    _rlm = _rlm.Define("eventWeight", "one");
-    _rlm = _rlm.Define("puWeight_nom", "puWeight[0]")
-               .Define("puWeight_up", "puWeight[1]")
-               .Define("puWeight_down", "puWeight[2]")
-               .Define("muonWeightId_nom", "muonWeightId[0]")
-               .Define("muonWeightId_up", "muonWeightId[1]")
-               .Define("muonWeightI_down", "muonWeightId[2]")
-               .Define("muonWeightIso_nom", "muonWeightIso[0]")
-               .Define("muonWeightIso_up", "muonWeightIso[1]")
-               .Define("muonWeightIsod_down", "muonWeightIso[2]")
-               .Define("muonWeightTrg_nom", "muonWeightTrg[0]")
-               .Define("muonWeightTeg_up", "muonWeightTrg[1]")
-               .Define("muonWeightTrg_down", "muonWeightTrg[2]")
-               .Define("tauWeightIdVsJet_nom", "tauWeightIdVsJet[0][0]")
-               .Define("tauWeightIdVsJet_up", "tauWeightIdVsJet[0][1]")
-               .Define("tauWeightIdVsJet_down", "tauWeightIdVsJet[0][2]")
-               .Define("tauWeightIdVsEl_nom", "tauWeightIdVsEl[0][0]")
-               .Define("tauWeightIdVsEl_up", "tauWeightIdVsEl[0][1]")
-               .Define("tauWeightIdVsEl_down", "tauWeightIdVsEl[0][2]")
-               .Define("tauWeightIdVsMu_nom", "tauWeightIdVsMu[0][0]")
-               .Define("tauWeightIdVsMu_up", "tauWeightIdVsMu[0][1]")
-               .Define("tauWeightIdVsMu_down", "tauWeightIdVsMu[0][2]")
-               .Define("btagWeight_DeepFlavB_nom", "btagWeight_DeepFlavB[0]")
-               .Define("btagWeight_DeepFlavB_hfup", "btagWeight_DeepFlavB[1]")
-               .Define("btagWeight_DeepFlavB_hfdown", "btagWeight_DeepFlavB[2]")
-               .Define("btagWeight_DeepFlavB_lfup", "btagWeight_DeepFlavB[3]")
-               .Define("btagWeight_DeepFlavB_lfdown", "btagWeight_DeepFlavB[4]")
-               .Define("btagWeight_DeepFlavB_hfstats1up", "btagWeight_DeepFlavB[5]")
-               .Define("btagWeight_DeepFlavB_hfstats1down", "btagWeight_DeepFlavB[6]")
-               .Define("btagWeight_DeepFlavB_hfstats2up", "btagWeight_DeepFlavB[7]")
-               .Define("btagWeight_DeepFlavB_hfstats2down", "btagWeight_DeepFlavB[8]")
-               .Define("btagWeight_DeepFlavB_lfstats1up", "btagWeight_DeepFlavB[9]")
-               .Define("btagWeight_DeepFlavB_lfstats1down", "btagWeight_DeepFlavB[10]")
-               .Define("btagWeight_DeepFlavB_lfstats2up", "btagWeight_DeepFlavB[11]")
-               .Define("btagWeight_DeepFlavB_lfstats2down", "btagWeight_DeepFlavB[12]")
-               .Define("btagWeight_DeepFlavB_cferr1up", "btagWeight_DeepFlavB[13]")
-               .Define("btagWeight_DeepFlavB_cferr1down", "btagWeight_DeepFlavB[14]")
-               .Define("btagWeight_DeepFlavB_cferr2up", "btagWeight_DeepFlavB[15]")
-               .Define("btagWeight_DeepFlavB_cferr2down", "btagWeight_DeepFlavB[16]");
-
-    _rlm = _rlm.Redefine("eventWeight", "unitGenWeight * puWeight_nom * muonWeightId_nom * muonWeightIso_nom * muonWeightTrg_nom * tauWeightIdVsJet_nom * tauWeightIdVsEl_nom * tauWeightIdVsMu_nom * btagWeight_DeepFlavB_nom");
-}
-
 /*
 bool NanoAODAnalyzerrdframe::helper_1DHistCreator(std::string hname, std::string title, const int nbins, const double xlow, const double xhi, std::string rdfvar, std::string evWeight)
 {
@@ -1282,7 +1211,7 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
         std::string hpost = "";
 
         if (x.mincutstep.length()==0) {
-            helper_1DHistCreator(std::string(x.hmodel.fName)+hpost,  std::string(x.hmodel.fTitle)+hpost, x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname, &_rlm);
+            helper_1DHistCreator(std::string(x.hmodel.fName)+hpost+x.systname,  std::string(x.hmodel.fTitle)+hpost+x.systname, x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, &_rlm);
         }
     }
 
@@ -1300,7 +1229,7 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
         }
         for (auto &x : _hist1dinfovector) {
             if (acut.idx.compare(0, x.mincutstep.length(), x.mincutstep)==0) {
-                helper_1DHistCreator(std::string(x.hmodel.fName)+hpost,  std::string(x.hmodel.fTitle)+hpost, x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname, rnext);
+                helper_1DHistCreator(std::string(x.hmodel.fName)+hpost+x.systname,  std::string(x.hmodel.fTitle)+hpost+x.systname, x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, rnext);
             }
         }
         _rnt.addDaughter(rnext, acut.idx);
@@ -1322,9 +1251,9 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
     }
 }
 
-void NanoAODAnalyzerrdframe::add1DHist(TH1DModel histdef, std::string variable, std::string weight,string mincutstep) {
+void NanoAODAnalyzerrdframe::add1DHist(TH1DModel histdef, std::string variable, std::string weight, string syst, string mincutstep) {
 
-	_hist1dinfovector.push_back({histdef, variable, weight, mincutstep});
+	_hist1dinfovector.push_back({histdef, variable, weight, syst, mincutstep});
 }
 
 

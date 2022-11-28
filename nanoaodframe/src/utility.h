@@ -28,24 +28,25 @@ using FourVectorRVec = ROOT::VecOps::RVec<FourVector>;
 
 struct hist1dinfo
 {
-	ROOT::RDF::TH1DModel hmodel;
-	std::string varname;
-	std::string weightname;
-	std::string mincutstep;
+  ROOT::RDF::TH1DModel hmodel;
+  std::string varname;
+  std::string weightname;
+  std::string systname;
+  std::string mincutstep;
 } ;
 
 
 struct varinfo
 {
-	std::string varname;
-	std::string vardefinition;
-	std::string mincutstep;
+  std::string varname;
+  std::string vardefinition;
+  std::string mincutstep;
 };
 
 struct cutinfo
 {
-	std::string cutdefinition;
-	std::string idx;
+  std::string cutdefinition;
+  std::string idx;
 };
 
 

@@ -10,20 +10,19 @@
 
 #include "NanoAODAnalyzerrdframe.h"
 
-class TopLFVAnalyzer: public NanoAODAnalyzerrdframe
-{
-	public:
-		TopLFVAnalyzer(TTree *t, std::string outfilename, std::string year="", std::string syst="", std::string jsonfname="", string globaltag="", int nthreads=1);
-		void defineCuts();
-		void defineMoreVars(); // define higher-level variables from
-		void bookHists();
+class TopLFVAnalyzer: public NanoAODAnalyzerrdframe {
+
+public:
+    TopLFVAnalyzer(TTree *t, std::string outfilename, std::string year="", std::string syst="", std::string jsonfname="", string globaltag="", int nthreads=1);
+    void defineCuts();
+    void defineMoreVars(); // define higher-level variables from
+    void bookHists();
+    bool ext_syst = false;
 
 private:
     std::string _year;
     std::string _syst;
 
 };
-
-
 
 #endif /* TopLFVAnalyzer_H_ */
