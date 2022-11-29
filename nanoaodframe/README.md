@@ -71,6 +71,7 @@ All of the options are set in the script files `scripts/*.sh`.
 
 #### Skim
 ```bash
+# CAUTION::::::Create working directory under /data1 to reduce file i/o on disks
 # You are at LFVRun2/nanoaodframe/
 # First fetch dataset info from google spreadsheet:
 # https://docs.google.com/spreadsheets/d/1KNvsRvXi3sgU45T2qOUztFSX3As4elZB325WaPnSkA8/edit#gid=569299692
