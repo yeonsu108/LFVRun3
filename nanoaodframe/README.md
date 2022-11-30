@@ -95,43 +95,31 @@ python scripts/skim.py skim_test 2016pre data (mc)
 ```
 
 #### Processing
-`processnanoaod.py` scripts can automatically run over all ROOT files in an input directory.
+`scripts/process_allInOne.py` scripts can automatically run over all ROOT files in an input directory.
 ``` txt
-Usage: processnanoaod.py [options] inputDir outputDir
+Usage: python scripts/process_allInOne.py -V skim_test -O test -Y 2018
 
 Options:
-  -I, --indir           Input directory containing root files
-  -O, --outdir          Output directory and file name 
+  -V, --version         Skim version: folder under /data1/common/skimmed_NanoAOD/
+  -O, --outdir          Output folder in your working directory
   -h, --help            show this help message and exit
-  -Y YEAR, --year=YEAR  Select 2016, 2017, or 2018 runs
-  -S SYST, --syst=SYST  Systematic sources
-  -J JSON, --json=JSON  Select events using this JSON file, meaningful only
-                        for data
-  --split=SPLIT         How many jobs to split into
-  --skipold             Skip existing root files
-  --recursive           Process files in the subdirectories recursively
-  -A, --allinone        Process all files and output a single root file. You
-                        must make sure MC and Data are not mixed together.
-  --saveallbranches     Save all branches. False by default
-  --globaltag=GLOBALTAG
-                        Global tag to be used in JetMET corrections
+  -Y YEAR, --year=YEAR  Select 2016pre, 2016post, 2017, or 2018
+  -S SYST, --syst=SYST  Systematic: 'data' for Data, 'nosyst' for mc without uncertainties. Default is 'theory'. To run without theory unc for TT samples, put 'all'
+  -D, --dataset         Put dataset folder name (eg. -D TTTo2L2Nu,QCD_Pt1000_MuEnriched) to process specific dataset.
+  -F, --dataOrMC        Flag to choose Data or MC.
+```
+
+In some cases, you may want to submit single file per core using slurm.
+`scripts/process.py` will do the job
+``` txt
+Usage: python scripts/process.py skim_test test 2018 (data/mc)
+
 ```
   
 By default, it will go into subdirectories recursively and process ROOT files. 
 It will make the output directory to have the same  the directory structure as the input directory.
 It will create one output file per one input file, so there is one-to-one correspondence.
 
-`--split` option will allow multithreading you to use multiple CPUs to process the files. (e.g. `--split=5`)\
-`--skipold` option will let you skip files that were analyzed, by matching files that have _analyzed in the file names.\
-`--recursive` mode is on by default. If you don't want that, `--recursive=False`.\
-`--allinone` option will let you get a single output root file for all the files in the inputDir. In this mode, `--skipold` doesn't work
-
 ### Usage of scripts
 In the `scripts/` folder, there are scripts for skimming or processing the NanoAOD files.
 All of the options are set in the script files `scripts/*.sh`.
-
-#### Process
-```bash
-# You are at LFVRun2/nanoaodframe/
-source ./scripts/processdata.sh # or processmc.sh, processlfv.sh
-```
