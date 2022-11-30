@@ -25,19 +25,35 @@ if __name__=='__main__':
     parser.add_option("--globaltag", dest="globaltag", type="string", default="", help="Global tag to be used in JetMET corrections")
     (options, args) = parser.parse_args()
 
-    if "data/2016" in options.infile:
+    if "SingleMuon2016" in options.infile:
         options.json = "data/GoldenJSON/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt"
-    elif "data/2017" in options.infile:
+    elif "SingleMuon2017" in options.infile:
         options.json = "data/GoldenJSON/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt"
-    elif "data/2018" in options.infile:
+    elif "SingleMuon2018" in options.infile:
         options.json = "data/GoldenJSON/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt"
 
 
     # load compiled C++ library into ROOT/python
     cppyy.load_reflection_info("libnanoadrdframe.so")
     t = ROOT.TChain("Events")
-    t.Add(infile)
-    aproc = ROOT.TopLFVAnalyzer(t, outfile, options.year, options.syst, options.json, options.globaltag)
+    t.Add(options.infile)
+    aproc = ROOT.TopLFVAnalyzer(t, options.outfile, options.year, options.syst, options.json, options.globaltag)
     aproc.setupAnalysis()
     aproc.run(options.saveallbranches, "Events")
-    
+
+    # process input rootfiles to sum up all the counterhistograms
+    counterhistogramsum = None
+    intf = ROOT.TFile(options.infile)
+    counterhistogram = intf.Get("hcounter")
+    counterhistogramsum = counterhistogram.Clone()
+    counterhistogramsum.SetDirectory(0)
+    intf.Close()
+
+    if counterhistogramsum != None:
+        print("Updating with counter histogram")
+        outf = ROOT.TFile(options.outfile, "UPDATE")
+        counterhistogramsum.Write()
+        outf.Write("", ROOT.TObject.kOverwrite)
+        outf.Close()
+    else:
+        print("counter histogram not found")

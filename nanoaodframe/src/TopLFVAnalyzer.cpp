@@ -11,7 +11,7 @@
 TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string year, std::string syst, std::string jsonfname, string globaltag, int nthreads)
 :NanoAODAnalyzerrdframe(t, outfilename, year, syst, jsonfname, globaltag, nthreads), _syst(syst), _year(year)
 {
-    if(syst.find("jes") != std::string::npos or syst.find("jes") != std::string::npos or
+    if(syst.find("jes") != std::string::npos or syst.find("jer") != std::string::npos or
             syst.find("tes") != std::string::npos or syst.find("hdamp") != std::string::npos or syst.find("tune") != std::string::npos) {
         ext_syst = true;
     }
@@ -75,20 +75,20 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVar({"bJet1_mass", "bJet_mass[0]", ""});
 
     // Reconstruction
-//    defineVar("top_reco_whad", ::top_reconstruction_STLFV, {"cleanjet4vecs","cleanbjet4vecs","muon4vecs","cleantau4vecs"});
-//    addVar({"chi2","top_reco_whad[0]",""});
-//    addVar({"chi2_SMW_mass","top_reco_whad[1]",""});
-//    addVar({"chi2_SMTop_mass","top_reco_whad[2]",""});
-//    addVar({"chi2_wjet1_idx","top_reco_whad[3]",""});
-//    addVar({"chi2_wjet2_idx","top_reco_whad[4]",""});
-//    addVar({"chi2_SMW","top_reco_whad[5]",""});
-//    addVar({"chi2_SMTop","top_reco_whad[6]",""});
-//
-//    defineVar("top_reco_prod", ::top_reco_products_STLFV, {"cleanjet4vecs","muon4vecs","cleantau4vecs","top_reco_whad"});
-//    addVar({"chi2_wqq_dEta","top_reco_prod[0]",""});
-//    addVar({"chi2_wqq_dPhi","top_reco_prod[1]",""});
-//    addVar({"chi2_wqq_dR","top_reco_prod[2]",""});
-//
+    defineVar("top_reco_whad", ::top_reconstruction_STLFV, {"cleanjet4vecs","cleanbjet4vecs","muon4vecs","cleantau4vecs"});
+    addVar({"chi2", "top_reco_whad[0]",""});
+    addVar({"chi2_SMW_mass", "top_reco_whad[1]",""});
+    addVar({"chi2_SMTop_mass", "top_reco_whad[2]",""});
+    addVar({"chi2_wjet1_idx", "top_reco_whad[3]",""});
+    addVar({"chi2_wjet2_idx", "top_reco_whad[4]",""});
+    addVar({"chi2_SMW", "top_reco_whad[5]",""});
+    addVar({"chi2_SMTop", "top_reco_whad[6]",""});
+
+    defineVar("top_reco_prod", ::top_reco_products_STLFV, {"cleanjet4vecs","muon4vecs","cleantau4vecs","top_reco_whad"});
+    addVar({"chi2_wqq_dEta","top_reco_prod[0]",""});
+    addVar({"chi2_wqq_dPhi","top_reco_prod[1]",""});
+    addVar({"chi2_wqq_dR","top_reco_prod[2]",""});
+
 
     // EventWeights
     // Calculate product of weights and store for systematic study
@@ -172,6 +172,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("ncleanjetspass");
     addVartoStore("ncleanbjetspass");
     addVartoStore("ncleantaupass");
+    addVartoStore("Jet_pt");
     addVartoStore("Jet1_.*");
     addVartoStore("Jet2_.*");
     addVartoStore("Jet3_.*");
@@ -179,8 +180,9 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("Tau1.*");
     addVartoStore("Muon1.*");
     addVartoStore("mutau.*");
-    addVartoStore("MET.*");
-//    addVartoStore("chi2.*");
+    addVartoStore("MET_pt");
+    addVartoStore("MET_phi");
+    addVartoStore("chi2.*");
     addVartoStore("btagWeight_DeepFlavB");
     addVartoStore("eventWeight.*");
 }
@@ -197,28 +199,28 @@ void TopLFVAnalyzer::bookHists() {
                    "__btagcferr1up", "__btagcferr1down", "__btagcferr2up", "__btagcferr2down"};
 
     std::vector<std::string> theory_weight = {"__ps0", "__ps1", "__ps2", "__ps3",
-          "__scale0", "__scale1", "__scale2", "__scale3", "__scale4", "__scale5",
-          "__pdf1", "__pdf2", "__pdf3", "__pdf4", "__pdf5",
-          "__pdf6", "__pdf7", "__pdf8", "__pdf9", "__pdf10",
-          "__pdf11", "__pdf12", "__pdf13", "__pdf14", "__pdf15",
-          "__pdf16", "__pdf17", "__pdf18", "__pdf19", "__pdf20",
-          "__pdf21", "__pdf22", "__pdf23", "__pdf24", "__pdf25",
-          "__pdf26", "__pdf27", "__pdf28", "__pdf29", "__pdf30",
-          "__pdf31", "__pdf32", "__pdf33", "__pdf34", "__pdf35",
-          "__pdf36", "__pdf37", "__pdf38", "__pdf39", "__pdf40",
-          "__pdf41", "__pdf42", "__pdf43", "__pdf44", "__pdf45",
-          "__pdf46", "__pdf47", "__pdf48", "__pdf49", "__pdf50",
-          "__pdf51", "__pdf52", "__pdf53", "__pdf54", "__pdf55",
-          "__pdf56", "__pdf57", "__pdf58", "__pdf59", "__pdf60",
-          "__pdf61", "__pdf62", "__pdf63", "__pdf64", "__pdf65",
-          "__pdf66", "__pdf67", "__pdf68", "__pdf69", "__pdf70",
-          "__pdf71", "__pdf72", "__pdf73", "__pdf74", "__pdf75",
-          "__pdf76", "__pdf77", "__pdf78", "__pdf79", "__pdf80",
-          "__pdf81", "__pdf82", "__pdf83", "__pdf84", "__pdf85",
-          "__pdf86", "__pdf87", "__pdf88", "__pdf89", "__pdf90",
-          "__pdf91", "__pdf92", "__pdf93", "__pdf94", "__pdf95",
-          "__pdf96", "__pdf97", "__pdf98", "__pdf99", "__pdf100",
-          "__pdf101", "__pdf102"};
+                   "__scale0", "__scale1", "__scale2", "__scale3", "__scale4", "__scale5",
+                   "__pdf1", "__pdf2", "__pdf3", "__pdf4", "__pdf5",
+                   "__pdf6", "__pdf7", "__pdf8", "__pdf9", "__pdf10",
+                   "__pdf11", "__pdf12", "__pdf13", "__pdf14", "__pdf15",
+                   "__pdf16", "__pdf17", "__pdf18", "__pdf19", "__pdf20",
+                   "__pdf21", "__pdf22", "__pdf23", "__pdf24", "__pdf25",
+                   "__pdf26", "__pdf27", "__pdf28", "__pdf29", "__pdf30",
+                   "__pdf31", "__pdf32", "__pdf33", "__pdf34", "__pdf35",
+                   "__pdf36", "__pdf37", "__pdf38", "__pdf39", "__pdf40",
+                   "__pdf41", "__pdf42", "__pdf43", "__pdf44", "__pdf45",
+                   "__pdf46", "__pdf47", "__pdf48", "__pdf49", "__pdf50",
+                   "__pdf51", "__pdf52", "__pdf53", "__pdf54", "__pdf55",
+                   "__pdf56", "__pdf57", "__pdf58", "__pdf59", "__pdf60",
+                   "__pdf61", "__pdf62", "__pdf63", "__pdf64", "__pdf65",
+                   "__pdf66", "__pdf67", "__pdf68", "__pdf69", "__pdf70",
+                   "__pdf71", "__pdf72", "__pdf73", "__pdf74", "__pdf75",
+                   "__pdf76", "__pdf77", "__pdf78", "__pdf79", "__pdf80",
+                   "__pdf81", "__pdf82", "__pdf83", "__pdf84", "__pdf85",
+                   "__pdf86", "__pdf87", "__pdf88", "__pdf89", "__pdf90",
+                   "__pdf91", "__pdf92", "__pdf93", "__pdf94", "__pdf95",
+                   "__pdf96", "__pdf97", "__pdf98", "__pdf99", "__pdf100",
+                   "__pdf101", "__pdf102"};
 
     // TODO refine this
     std::vector<std::string> syst_weight;
@@ -246,11 +248,11 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_ncleanbjetspass", "Passing bjetcuts", 5, 0.0, 5.0}, "ncleanbjetspass", "eventWeight", weightstr, "0");
 
         add1DHist({"h_muon1_pt", "Muon pt", 30, 0, 600}, "Muon1_pt", "eventWeight", weightstr, "0");
-        add1DHist({"h_muon1_eta", "Muon eta", 20, -2.5, 2.5}, "Muon1_eta", "eventWeight", weightstr, "0");
+        add1DHist({"h_muon1_eta", "Muon eta", 20, -2.4, 2.4}, "Muon1_eta", "eventWeight", weightstr, "0");
         add1DHist({"h_muMET_mt", "Muon met mt", 20, 0, 400}, "muMET_mt", "eventWeight", weightstr, "0");
 
         add1DHist({"h_tau1_pt", "Tau pt", 20, 0, 400}, "Tau1_pt", "eventWeight", weightstr, "0");
-        add1DHist({"h_tau1_eta", "Tau eta", 20, -2.5, 2.5}, "Tau1_eta", "eventWeight", weightstr, "0");
+        add1DHist({"h_tau1_eta", "Tau eta", 20, -2.3, 2.3}, "Tau1_eta", "eventWeight", weightstr, "0");
         add1DHist({"h_tau1_mass", "Tau mass", 20, 0, 100}, "Tau1_mass", "eventWeight", weightstr, "0");
 
         add1DHist({"h_mutau_dEta", "dEta of muon and tau", 25, -5, 5}, "mutau_dEta", "eventWeight", weightstr, "00");
@@ -259,30 +261,31 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_mutau_mass", "Mass of muon and tau", 40, 0, 1000}, "mutau_mass", "eventWeight", weightstr, "00");
 
         add1DHist({"h_jet1_pt", "leading jet pt", 20, 0, 400}, "Jet1_pt", "eventWeight", weightstr, "0");
-        add1DHist({"h_jet1_eta", "leading jet eta", 20, -2.5, 2.5}, "Jet1_eta", "eventWeight", weightstr, "0");
+        add1DHist({"h_jet1_eta", "leading jet eta", 20, -2.4, 2.4}, "Jet1_eta", "eventWeight", weightstr, "0");
         add1DHist({"h_jet1_mass", "leading jet mass", 20, 0, 100}, "Jet1_mass", "eventWeight", weightstr, "0");
         add1DHist({"h_jet1_btag","btag discr of leading jet", 20, 0, 1.0}, "Jet1_btagDeepFlavB", "eventWeight", weightstr, "0");
 
         add1DHist({"h_jet2_pt", "sub-leading jet pt", 20, 0, 400}, "Jet2_pt", "eventWeight", weightstr, "0000");
-        add1DHist({"h_jet2_eta", "sub-leading jet eta", 20, -2.5, 2.5}, "Jet2_eta", "eventWeight", weightstr, "0000");
+        add1DHist({"h_jet2_eta", "sub-leading jet eta", 20, -2.4, 2.4}, "Jet2_eta", "eventWeight", weightstr, "0000");
         add1DHist({"h_jet2_mass", "sub-leading jet mass", 20, 0, 100}, "Jet2_mass", "eventWeight", weightstr, "0000");
         add1DHist({"h_jet2_btag","btag discr of sub-leading jet", 20, 0, 1.0}, "Jet2_btagDeepFlavB", "eventWeight", weightstr, "0000");
 
         add1DHist({"h_jet3_pt", "third jet pt", 20, 0, 400}, "Jet3_pt", "eventWeight", weightstr, "0000");
-        add1DHist({"h_jet3_eta", "third jet eta", 20, -2.5, 2.5}, "Jet3_eta", "eventWeight", weightstr, "0000");
+        add1DHist({"h_jet3_eta", "third jet eta", 20, -2.4, 2.4}, "Jet3_eta", "eventWeight", weightstr, "0000");
         add1DHist({"h_jet3_mass", "third jet mass", 20, 0, 100}, "Jet3_mass", "eventWeight", weightstr, "0000");
         add1DHist({"h_jet3_btag","btag discr of third jet", 20, 0, 1.0}, "Jet3_btagDeepFlavB", "eventWeight", weightstr, "0000");
 
         add1DHist({"h_bjet1_pt", "b jet pt", 20, 0, 400}, "bJet1_pt", "eventWeight", weightstr, "00000");
-        add1DHist({"h_bjet1_eta", "b jet eta", 20, -2.5, 2.5}, "bJet1_eta", "eventWeight", weightstr, "00000");
+        add1DHist({"h_bjet1_eta", "b jet eta", 20, -2.4, 2.4}, "bJet1_eta", "eventWeight", weightstr, "00000");
         add1DHist({"h_bjet1_mass", "b jet mass", 20, 0, 100}, "bJet1_mass", "eventWeight", weightstr, "00000");
+
+        // Histogram of Top mass reconstruction
+        add1DHist({"h_chi2", "Minimum chi2 for hadronic W", 20, 0, 1000}, "chi2", "eventWeight", weightstr, "00000");
+        add1DHist({"h_chi2_SMTop_mass", "chi2 SM Top mass", 20, 0, 400}, "chi2_SMTop_mass", "eventWeight", weightstr, "00000");
+        add1DHist({"h_chi2_SMW_mass", "chi2 SM W mass", 20, 0, 400}, "chi2_SMW_mass", "eventWeight", weightstr, "00000");
+        add1DHist({"h_chi2_wqq_dEta", "dEta of jets from W", 25, -5, 5}, "chi2_wqq_dEta", "eventWeight", weightstr, "00000");
+        add1DHist({"h_chi2_wqq_dPhi", "dPhi of jets from W", 20, -4, 4}, "chi2_wqq_dPhi", "eventWeight", weightstr, "00000");
+        add1DHist({"h_chi2_wqq_dR", "dR of jets from W", 20, 0, 4.0}, "chi2_wqq_dR", "eventWeight", weightstr, "00000");
     }
 
-//    // Histogram of Top mass reconstruction
-//    add1DHist({"h_chi2", "Minimum chi2 for hadronic W", 20, 0, 1000}, "chi2", "eventWeight","00000");
-//    add1DHist({"h_chi2_SMTop_mass", "chi2 SM Top mass", 20, 0, 400}, "chi2_SMTop_mass", "eventWeight","00000");
-//    add1DHist({"h_chi2_SMW_mass", "chi2 SM W mass", 20, 0, 400}, "chi2_SMW_mass", "eventWeight","00000");
-//    add1DHist({"h_chi2_wqq_dEta", "dEta of jets from W", 25, -5, 5}, "chi2_wqq_dEta", "eventWeight","00000");
-//    add1DHist({"h_chi2_wqq_dPhi", "dPhi of jets from W", 20, -4, 4}, "chi2_wqq_dPhi", "eventWeight","00000");
-//    add1DHist({"h_chi2_wqq_dR", "dR of jets from W", 20, 0, 4.0}, "chi2_wqq_dR", "eventWeight","00000");
 }
