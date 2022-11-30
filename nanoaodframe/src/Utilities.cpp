@@ -8,12 +8,6 @@
 #include <cmath>
 
 
-#ifdef STANDALONE
-#include <stdexcept>
-#else
-#include "FWCore/Utilities/interface/Exception.h"
-#endif
-
 namespace 
 {
   void handleError(const std::string& fClass, const std::string& fMessage);
@@ -87,13 +81,9 @@ namespace
   //------------------------------------------------------------------------ 
   void handleError(const std::string& fClass, const std::string& fMessage)
   {
-#ifdef STANDALONE 
     std::stringstream sserr;
     sserr<<fClass<<" ERROR: "<<fMessage;
     throw std::runtime_error(sserr.str());
-#else
-    throw cms::Exception(fClass)<<fMessage;
-#endif
   }
   //------------------------------------------------------------------------ 
   float quadraticInterpolation(float fZ, const float fX[3], const float fY[3])

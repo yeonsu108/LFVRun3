@@ -1,55 +1,54 @@
-#ifndef JETRESOLUTION_H
-#define JETRESOLUTION_H
+#ifndef JetResolution_h
+#define JetResolution_h
 
-#include <string>
-#include <vector>
+// If you want to use the JER code in standalone mode, you'll need to create a new define named 'STANDALONE'. If you use gcc for compiling, you'll need to add
+// -DSTANDALONE to the command line
+// In standalone mode, no reference to CMSSW exists, so the only way to retrieve resolutions and scale factors are from text files.
 
-#include <TF1.h>
-
-
-class JetCorrectorParameters;
+#include "JetResolutionObject.h"
 
 
-class JetResolution
-{
-  //
-  // construction / destruction
-  //
-public:
-  JetResolution();
-  JetResolution(const std::string& fileName,bool doGaussian=false);
-  virtual ~JetResolution();
-  
+namespace JME {
+  class JetResolution {
+  public:
+    JetResolution(const std::string& filename);
+    JetResolution(const JetResolutionObject& object);
+    JetResolution() {
+      // Empty
+    }
 
-  double parameterEtaEval(const std::string& parameterName,float eta, float pt);
+    float getResolution(const JetParameters& parameters) const;
 
-  //
-  // member functions
-  //
-public:
-  void initialize(const std::string& fileName,bool doGaussian=false);
-  
-  const std::string& name() const { return name_; }
-  
-  TF1* resolutionEtaPt(float eta,float pt) const;
-  TF1* resolution(const std::vector<float>&x, const std::vector<float>&y) const;
-  
-  TF1* parameterEta(const std::string& parameterName,float eta);
-  TF1* parameter(const std::string& parameterName,const std::vector<float>&x);
-  
-  const JetCorrectorParameters& parameters(int i) const { return *(parameters_[i]); }
-  
-  
-  //
-  // data members
-  //
-private:
-  std::string                          name_;
-  mutable TF1*                         resolutionFnc_;
-  std::vector<TF1*>                    parameterFncs_;
-  std::vector<JetCorrectorParameters*> parameters_;
-  
-};
+    void dump() const { m_object->dump(); }
 
+    // Advanced usage
+    const JetResolutionObject* getResolutionObject() const { return m_object.get(); }
+
+  private:
+    std::shared_ptr<JetResolutionObject> m_object;
+  };
+
+  class JetResolutionScaleFactor {
+  public:
+    JetResolutionScaleFactor(const std::string& filename);
+    JetResolutionScaleFactor(const JetResolutionObject& object);
+    JetResolutionScaleFactor() {
+      // Empty
+    }
+
+    float getScaleFactor(const JetParameters& parameters,
+                         Variation variation = Variation::NOMINAL,
+                         std::string uncertaintySource = "") const;
+
+    void dump() const { m_object->dump(); }
+
+    // Advanced usage
+    const JetResolutionObject* getResolutionObject() const { return m_object.get(); }
+
+  private:
+    std::shared_ptr<JetResolutionObject> m_object;
+  };
+
+};  // namespace JME
 
 #endif
