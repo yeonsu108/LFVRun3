@@ -15,7 +15,6 @@ import re
 import string
 import subprocess
 
-
 from importlib import import_module
 from multiprocessing import Process
 import cppyy
@@ -193,9 +192,11 @@ def Nanoaodprocessor_singledir(outputroot, indir, outtree, intree, year, syst, j
             rootfilestoprocess.append(fname)
     print("files to process")
     print(rootfilestoprocess)
+    print(intree) 
     t = ROOT.TChain(intree)
     for afile in rootfilestoprocess:
         t.Add(afile)
+    t.GetEntries() # I know this line is not doing anything, but do not remove it.
     #aproc = ROOT.LQtopAnalyzer(t, outputroot, year, syst, json, globaltag, split)
     aproc = None
     aproc = ROOT.TopLFVAnalyzer(t, outputroot, year+analyzer, syst, json, globaltag, split)

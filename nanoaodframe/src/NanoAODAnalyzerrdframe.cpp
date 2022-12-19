@@ -1017,17 +1017,26 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists()
 			helper_1DHistCreator(std::string(x.hmodel.fName)+hpost,  std::string(x.hmodel.fTitle)+hpost, x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname, &_rlm);
 		}
 	}
+	cout << "setting up definitions, cuts, and histograms stage 1" <<endl;
 
 	_rnt.setRNode(&_rlm);
 
+	cout << "setting up definitions, cuts, and histograms stage 2" <<endl;
 	for (auto acut : _cutinfovector)
 	{
 		std::string cutname = "cut"+ acut.idx;
+		cout << "setting up definitions, cuts, and histograms stage 3,"<< cutname <<endl;
     //std::string cutname = "S" + to_string(acut.idx.length());
 		std::string hpost = "_"+cutname;
+		cout << "setting up definitions, cuts, and histograms stage 3.0,"<< hpost <<endl;
+		cout << "setting up definitions, cuts, and histograms stage 3.0a,"<< acut.idx <<endl;
+		cout << "setting up definitions, cuts, and histograms stage 3.0b,"<< _rnt.getParent(acut.idx) <<endl;
 		RNode *r = _rnt.getParent(acut.idx)->getRNode();
+		cout << "setting up definitions, cuts, and histograms stage 3.1,"<< r <<endl;
 		auto rnext = new RNode(r->Define(cutname, acut.cutdefinition));
+		cout << "setting up definitions, cuts, and histograms stage 3.2," << acut.cutdefinition <<endl;
 		*rnext = rnext->Filter(cutname);
+		cout << "setting up definitions, cuts, and histograms stage 4," <<endl;
 
 		for ( auto &c : _varinfovector)
 		{
@@ -1060,6 +1069,7 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists()
 		_rnt.addDaughter(&_rlm, acut.idx);
 		*/
 	}
+	cout << "setting up definitions, cuts, and histograms, end of function" <<endl;
 }
 
 void NanoAODAnalyzerrdframe::add1DHist(TH1DModel histdef, std::string variable, std::string weight,string mincutstep)

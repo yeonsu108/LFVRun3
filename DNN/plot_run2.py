@@ -6,9 +6,12 @@ import argparse
 #labels = ['rerun_multi_Multiaug22','rerun_staug22','rerun_ttaug22']
 parser = argparse.ArgumentParser()
 parser.add_argument('-L', '--label', dest='label', type=str, default="rerun_staug22")
+parser.add_argument('-D', '--discriminator', dest='discriminator', type=str, default="")
+parser.add_argument('-A', '--alpha', dest='alpha', type=str, default="")
 args = parser.parse_args()
 label = args.label
-
+discriminator = args.discriminator
+alpha = args.alpha
 
 config_path = '../plotIt/configs/'
 common_syst = 'systematics:\n'
@@ -20,7 +23,8 @@ common_syst_list = ['pu', 'btaglf', 'btaghf', 'btaglfstat1',
                     'btaglfstat2', 'btaghfstat1', 'btaghfstat2', 'btagcferr1', 'btagcferr2',
                     'jesAbsolute', 'jesBBEC1', 'jesEC2', 'jesFlavorQCD', 'jesRelativeBal']
 syst = ['jesAbsoluteyear', 'jesBBEC1year', 'jesEC2year', 'jesRelativeSampleyear']
-
+#common_syst_list = []
+#syst = []
 years = {'16pre': 19502, '16post': 16812, '17': 41480, '18':59832}
 
 for sy in syst:
@@ -31,7 +35,8 @@ for sy in syst:
 
 reco_str = label
 
-dest_path = reco_str
+dest_path = reco_str + "/" + discriminator + "/"+alpha+"/"
+print(dest_path)
 if not os.path.exists(os.path.join(dest_path, 'figures')):
   try: os.makedirs(os.path.join(dest_path, 'figures'))
   except: pass
@@ -43,11 +48,11 @@ for item in common_syst_list:
   common_syst += '  - ' + item + '\n'
 
 string_for_files = ''
-dest_path = reco_str
-
+print("year loop starts")
 for year, lumi in years.items():
   #Firstly, merge file list + scale
   with open(config_path + 'files_' + year + '.yml') as f:
+    print("yml file opened")
     lines = f.readlines()
     skip_signal = False
     for line in lines:
@@ -57,7 +62,7 @@ for year, lumi in years.items():
       if 'hist_QCD' in line: skip_signal = True
       if '#' in line[0]: skip_signal = True
       if 'hist' in line:
-        line = line[0] + dest_path + '/' + year + '_postprocess/' + line[1:]
+        line = line[0] + reco_str + '/' + year + '_postprocess/'+ '/' + discriminator + '/' + alpha +'/' + line[1:]
         if not any(i in line for i in ['LFV', 'Run1']):
           line += '  scale: ' + str(int(lumi)/137570.0) + '\n'
       if not skip_signal and not any(i in line for i in ['yields-group']):
@@ -70,9 +75,9 @@ for year, lumi in years.items():
     for line in lines:
       if 'type' in line:
         if 'const' in line:
-          file_syst += line[:line.find(':')] + '_' + year + line[line.find(':'):line.find('hist')] + '/' + year + '_postprocess/' + line[line.find('hist'):]
+          file_syst += line[:line.find(':')] + '_' + year + line[line.find(':'):line.find('hist')] + '/' + year + '_postprocess/'+'/' + discriminator + '/' + alpha + '/' + line[line.find('hist'):]
         elif 'shape' in line:
-          file_syst += line[:line.find('hist')] + '/' + year + '_postprocess/' + line[line.find('hist'):]
+          file_syst += line[:line.find('hist')] + '/' + year + '_postprocess/'+'/' + discriminator + '/' +alpha + '/' + line[line.find('hist'):]
 
 
 with open(config_path + 'files_Run2.yml', 'w+') as fnew:
@@ -82,7 +87,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   pretty-name: 'LFVSTcv'
   cross-section: 0.0368
   generated-events: 12645000
-  scale: 500
+  scale: 100
   group: GLFVSTcv
   order: 1
 
@@ -91,7 +96,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   pretty-name: 'LFVSTuv'
   cross-section: 0.393
   generated-events: 12785962
-  scale: 500
+  scale: 100
   group: GLFVSTuv
   order: 2
 
@@ -100,7 +105,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   pretty-name: 'LFVTTcv'
   cross-section: 0.0215
   generated-events: 9725000
-  scale: 500
+  scale: 100
   group: GLFVTTcv
   order: 3
 
@@ -109,7 +114,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   pretty-name: 'LFVTTuv'
   cross-section: 0.0215
   generated-events: 11286000
-  scale: 500
+  scale: 100
   group: GLFVTTuv
   order: 4
   """.format(dest_path), file=fnew)
@@ -123,7 +128,10 @@ with open(config_path + 'template_Run2.yml') as f:
     f1.write(file_syst)
     f1.write("\nplots:\n  include: ['histos_dnn.yml']\n")
 
+print("before call")
+print(['../plotIt/plotIt', '-o ' + dest_path + '/figures', config_path + 'config_Run2.yml'])
 call(['../plotIt/plotIt', '-o ' + dest_path + '/figures', config_path + 'config_Run2.yml'], shell=False)
+print("after call")
 
 
 #For QCD
@@ -137,7 +145,7 @@ for year, lumi in years.items():
       if '#' in line[0]: skip_signal = True
       if skip_signal and 'hist_QCD' in line: skip_signal = False
       if 'hist_QCD' in line:
-        line = line[0] + dest_path + '/' + year + '_postprocess/' + line[1:]
+        line = line[0] + reco_str + '/' + year + '_postprocess/' + discriminator + '/' + alpha +'/' + line[1:]
         if not any(i in line for i in ['LFV', 'Run1']):
           line += '  scale: ' + str(int(lumi)/137570.0) + '\n'
       if not skip_signal and not any(i in line for i in ['yields-group']): string_for_qcd += line

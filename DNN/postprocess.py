@@ -8,24 +8,28 @@ import argparse
 base_path = './'
 parser = argparse.ArgumentParser()
 parser.add_argument('-L', '--label', dest='label', type=str, default="rerun_staug22")
+parser.add_argument('-D', '--discriminator', dest='discriminator', type=str, default="p_st_tt_ob")
+parser.add_argument('-A', '--alpha', dest='alpha', type=str, default="1p0")
 args = parser.parse_args()
 label = args.label
+discriminator = args.discriminator
+alpha = args.alpha
 #labels = ['rerun_multi_Multiaug22','rerun_staug22', 'rerun_ttaug22']
 # Set Runs
 years = ['16pre', '16post', '17', '18']
 
 # Set output folders
 for year in years:
-	if not os.path.exists(base_path + label + '/' + year + '_postprocess'):
-	    os.makedirs(base_path + label + '/' + year + '_postprocess')
+	if not os.path.exists(base_path + label + '/' + year + '_postprocess/' + discriminator + '/' + alpha + '/'):
+	    os.makedirs(base_path + label + '/' + year + '_postprocess/' + discriminator + '/' + alpha + '/')
 
 # Systematic Sources => All systematics in one file.
-systs={'':'', 'puup':'puup', 'pudown':'puup',
+systs={'':'', 'puup':'puup', 'pudown':'pudown',
 'btagup_hf':'btaghfup','btagdown_hf':'btaghfdown','btagup_lf':'btaglfup','btagdown_lf':'btaglfdown',
 'btagup_hfstats1':'btaghfstats1up','btagdown_hfstats1':'btaghfstats1down',
 'btagup_lfstats1':'btaglfstats1up','btagdown_lfstats1':'btaglfstats1down',
 'btagup_hfstats2':'btaghfstats2up','btagdown_hfstats2':'btaghfstats2down',
-'btagup_lfstats2':'btaglfstats2up','btagdown_lfstats2':'btagdownlfstats2down',
+'btagup_lfstats2':'btaglfstats2up','btagdown_lfstats2':'btaglfstats2down',
 'btagup_cferr1':'btagcferr1up','btagdown_cferr1':'btagcferr1down',
 'btagup_cferr2':'btagcferr2up','btagdown_cferr2':'btagcferr2down',
 'up_jesAbsolute':'jesAbsoluteup','down_jesAbsolute':'jesAbsolutedown',
@@ -34,11 +38,10 @@ systs={'':'', 'puup':'puup', 'pudown':'puup',
 'up_jesBBEC1_year':'jesBBEC1yearup','down_jesBBEC1_year':'jesBBEC1yeardown',
 'up_jesEC2':'jesEC2up','down_jesEC2':'jesEC2down',
 'up_jesEC2_year':'jesEC2yearup','down_jesEC2_year':'jesEC2yeardown',
-'up_jesFlavorQCD':'jesFlavorQCDup','down_jesFlavorQCD':'jesFlavorQCD:down',
+'up_jesFlavorQCD':'jesFlavorQCDup','down_jesFlavorQCD':'jesFlavorQCDdown',
 'up_jesRelativeBal':'jesRelativeBalup','down_jesRelativeBal':'jesRelativeBaldown',
 'up_jesRelativeSample_year':'jesRelativeSampleyearup','down_jesRelativeSample_year':'jesRelativeSampleyeardown'}
 
-#systs=['puup']
 # Produce dictionary for file lists.
 
 nom_path = base_path + label
@@ -48,17 +51,18 @@ else:
     print("Start postprocessing for '{}'.".format(nom_path))
 
 file_list = {}
+print(os.listdir(nom_path+'/'+year+'/preds/'+discriminator+'/'+alpha +'/'))
 for year in years:
-    if "multi" in label: file_list[year] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+year+'/preds/') if '.root' in i and '__' not in i]
+    if "multi" in label.lower(): file_list[year] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+year+'/preds/'+discriminator+'/'+alpha +'/') if '.root' in i and '__' not in i]
     else: file_list[year] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+year) if '.root' in i and '__' not in i]
 print(file_list)
 
 def collect_systhists(outfile, fname, hlists, syst, syst_, year):
     if 'Run' not in fname and syst != '':
         try:
-          tmpf = TFile.Open(os.path.join(nom_path, year, fname + '__' + syst + '.root'), 'READ')
+          tmpf = TFile.Open(os.path.join(nom_path, year, fname + '__' + syst.replace("year",year) + '.root'), 'READ')
         except:
-          print("No file: " + nom_path + year + fname+'.root')
+          print("No file: " + os.path.join(nom_path, year, fname + '__' + syst.replace("year",year) + '.root'))
           return
     else: tmpf = TFile.Open(os.path.join(nom_path, year, fname + '.root'), 'READ')
     for histname in hlists:
@@ -82,9 +86,9 @@ def get_bSFratio(infile):
 
 # Loop over all files.
 for year in years:
-    out_path = nom_path + '/' + year + '_postprocess'
+    out_path = nom_path + '/' + year + '_postprocess/' + discriminator + '/' + alpha + '/'
     for fname in file_list[year]:
-        if "multi" in label : infile = TFile.Open(os.path.join(nom_path, year, "preds", fname+'.root'), 'READ')
+        if "multi" in label.lower() : infile = TFile.Open(os.path.join(nom_path, year, "preds",discriminator , alpha , fname+'.root'), 'READ')
         else : infile = TFile.Open(os.path.join(nom_path, year, fname+'.root'), 'READ')
         hlists = [ h.GetName() for h in infile.GetListOfKeys() if any(i in h.GetName() for i in ['dnn_pred', 'counter']) ]
         # Get ratio for rescaling with b-tagSF.
@@ -100,7 +104,7 @@ for year in years:
             if "year" in syst:
               syst = syst.replace('year', year)
               syst_ = syst_.replace('year', year)
-            if "multi" in label: collect_systhists(outfile, fname, hlists, syst, syst_, year+"/preds/")
+            if "multi" in label.lower(): collect_systhists(outfile, fname, hlists, syst, syst_, year+"/preds/"+discriminator+"/"+alpha+"/")
             else: collect_systhists(outfile, fname, hlists, syst, syst_, year)
         outhlists = [ h.GetName() for h in outfile.GetListOfKeys() if 'cut' in h.GetName() ]
         for h in outhlists:

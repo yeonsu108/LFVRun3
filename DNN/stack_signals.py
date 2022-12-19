@@ -11,14 +11,18 @@ import argparse
 #labels = ['rerun_multi_Multiaug22','rerun_staug22','rerun_ttaug22']
 parser = argparse.ArgumentParser()
 parser.add_argument('-L', '--label', dest='label', type=str, default="rerun_staug22")
+parser.add_argument('-D', '--discriminator', dest='discriminator', type=str, default="")
+parser.add_argument('-A', '--alpha', dest='alpha', type=str, default="")
 args = parser.parse_args()
 label = args.label
+discriminator = args.discriminator
+alpha = args.alpha
 
 lumi_dict = {'16pre': 19502, '16post': 16812, '17': 41480, '18':59832}#16: 36314, run2:137625
 file_names = collections.OrderedDict()
 
-if not os.path.exists(label + "/Run2"):
-  try: os.makedirs(label + "/Run2")
+if not os.path.exists(label +"/" +discriminator + "/" + alpha + "/Run2/"):
+  try: os.makedirs(label + "/" +discriminator + "/" + alpha + "/Run2/")
   except: pass
 
 def store_file(it):
@@ -35,7 +39,7 @@ def store_file(it):
 
     ntmp = ftmp.Get("hcounter_nocut").GetBinContent(2)
 
-    dest_name = path.split('/')[0] + '/Run2/' + f
+    dest_name = path.split('/')[0] + '/' +discriminator + "/" + alpha + '/Run2/' + f
     dest = TFile.Open(dest_name, 'RECREATE')
 
     print('Writing scaled histogram to ' + dest_name)
@@ -52,7 +56,7 @@ def store_file(it):
 if __name__ == '__main__':
 
   for era in ['16pre', '16post', '17', '18']:
-     dir_path = os.path.join(label, era+'_postprocess')
+     dir_path = os.path.join(label, era+'_postprocess', discriminator , alpha)
      dirs = os.listdir(dir_path)
      print("POST process path: " , dir_path)
      dirs[:] = [item.replace('.root', '_' + era + '.root') for item in dirs if any(i in item for i in ['LFV'])] #avoid TTTH merged
@@ -70,5 +74,5 @@ if __name__ == '__main__':
          'TT_LFV_TToUMuTau_Scalar', 'TT_LFV_TToUMuTau_Tensor', 'TT_LFV_TToUMuTau_Vector']
 
   for ch in chs:
-    print(label + '/Run2/hist_' + ch + '_1*.root')
-    check_call(['hadd','-f', label + '/Run2/hist_' + ch + '.root'] +  glob.glob(label + '/Run2/hist_' + ch + '_1*.root'))
+    print(label + "/" + discriminator + "/" + alpha +  '/Run2/hist_' + ch + '_1*.root')
+    check_call(['hadd','-f', label + '/' + discriminator + "/" + alpha + '/Run2/hist_' + ch + '.root'] +  glob.glob(label + '/' + discriminator + "/" + alpha + '/Run2/hist_' + ch + '_1*.root'))

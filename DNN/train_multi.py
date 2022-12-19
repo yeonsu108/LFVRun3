@@ -23,7 +23,7 @@ root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
 processed = "aug22"
 syst = "nom"
-label = "rerun_multi"
+label = "rerun_merged_3"
 class_names = ["bkg","sigTT", "sigST"]
 
 print("Start multi LFV Training")
@@ -61,15 +61,16 @@ kfold = KFold(n_splits=10, shuffle=True)
 
 #project_dir = "nanoaodframe_"+p+"LFV/"+processed+"_"+syst+"/"
 #sig_filedir = root_dir+project_dir+p+"_LFV_nom.root"
-project_dir = "/home/itseyes/github/LFVRun2_ndf_integration/nanoaodframe/aug22_ttlfv/nom/"
+#project_dir = "/home/itseyes/github/LFVRun2_ndf_integration/nanoaodframe/aug22_ttlfv/nom/"
+project_dir = "/data1/users/itseyes/LFV/processed_LFV/nov16/nom/"
 sig_filedir_tt = project_dir+"TT"+"_LFV_nom.root"
 bkg1_filedir_tt = project_dir+"TTTo2L2Nu_nom.root"
 bkg2_filedir_tt = project_dir+"TTToSemiLeptonic_nom.root"
 
-project_dir = "/home/itseyes/github/LFVRun2_ndf_integration/nanoaodframe/aug22_stlfv/nom/"
+#project_dir = "/home/itseyes/github/LFVRun2_ndf_integration/nanoaodframe/aug22_stlfv/nom/"
 sig_filedir_st = project_dir+"ST"+"_LFV_nom.root"
-bkg1_filedir_st = project_dir+"TTTo2L2Nu_nom.root"
-bkg2_filedir_st = project_dir+"TTToSemiLeptonic_nom.root"
+#bkg1_filedir_st = project_dir+"TTTo2L2Nu_nom.root"
+#bkg2_filedir_st = project_dir+"TTToSemiLeptonic_nom.root"
 #bkg1_filedir = root_dir+project_dir+"TTTo2L2Nu_nom.root"
 #bkg2_filedir = root_dir+project_dir+"TTToSemiLeptonic_nom.root"
 train_outdir = label+"_"+"Multi"+processed+"/"+syst
@@ -77,18 +78,19 @@ os.makedirs(train_outdir, exist_ok=True)
 
 sig_tree_st = uproot.open(sig_filedir_st)["outputTree2"]
 sig_tree_tt = uproot.open(sig_filedir_tt)["outputTree2"]
-bkg1_tree_st = uproot.open(bkg1_filedir_st)["outputTree2"]
-bkg2_tree_st = uproot.open(bkg2_filedir_st)["outputTree2"]
+#bkg1_tree_st = uproot.open(bkg1_filedir_st)["outputTree2"]
+#bkg2_tree_st = uproot.open(bkg2_filedir_st)["outputTree2"]
 bkg1_tree_tt = uproot.open(bkg1_filedir_tt)["outputTree2"]
 bkg2_tree_tt = uproot.open(bkg2_filedir_tt)["outputTree2"]
 
 df_sig_st = sig_tree_st.arrays(inputvars_st,library="pd")
-df_bkg1_st = bkg1_tree_st.arrays(inputvars_st,library="pd")
-df_bkg2_st = bkg2_tree_st.arrays(inputvars_st,library="pd")
+#df_bkg1_st = bkg1_tree_st.arrays(inputvars_st,library="pd")
+#df_bkg2_st = bkg2_tree_st.arrays(inputvars_st,library="pd")
 df_sig_tt = sig_tree_tt.arrays(inputvars_tt,library="pd")
 df_bkg1_tt = bkg1_tree_tt.arrays(inputvars_tt,library="pd")
 df_bkg2_tt = bkg2_tree_tt.arrays(inputvars_tt,library="pd")
-df_bkg = pd.concat([df_bkg1_st,df_bkg2_st,df_bkg1_tt,df_bkg2_tt])
+#df_bkg = pd.concat([df_bkg1_st,df_bkg2_st,df_bkg1_tt,df_bkg2_tt])
+df_bkg = pd.concat([df_bkg1_tt,df_bkg2_tt])
 
 ntotsig_tt = len(df_sig_st)
 ntotsig_st = len(df_sig_tt)
@@ -96,7 +98,8 @@ ntotbkg = len(df_bkg)
 print(df_bkg.replace(np.nan, 0))
 print(df_sig_st.replace(np.nan, 0))
 print(df_sig_tt.replace(np.nan, 0))
-print("4 bkg component:",len(df_bkg1_st),len(df_bkg2_st),len(df_bkg1_tt),len(df_bkg2_tt))
+#print("4 bkg component:",len(df_bkg1_st),len(df_bkg2_st),len(df_bkg1_tt),len(df_bkg2_tt))
+print("2 bkg component:",len(df_bkg1_tt),len(df_bkg2_tt))
 print("sig tt:", ntotsig_tt)
 print("sig st:",ntotsig_st)
 print("tot bkg:",ntotbkg)
@@ -175,7 +178,7 @@ x_val = x_total[trainlen:,0::]
 y_val = y_total[trainlen:]
 '''
 
-patience_epoch = 30
+patience_epoch = 10
 # Early Stopping with Validation Loss for Best Model
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=patience_epoch)
 mc = ModelCheckpoint(train_outdir+'/best_model.h5', monitor='val_loss', mode='min', save_best_only=True)
