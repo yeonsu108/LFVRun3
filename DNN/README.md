@@ -59,7 +59,7 @@ The `plot_run2.py` will read information from existing configs for each year, th
 
 ```{.Bash}
 python haddToMergeBkg.py
-python eval.py
+python eval_multi.py
 python postprocess.py -L rerun_multi_Multiaug22
 python haddToMergeSig.py
 python stack_signals.py -L rerun_multi_Multiaug22

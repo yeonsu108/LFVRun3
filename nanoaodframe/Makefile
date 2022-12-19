@@ -33,7 +33,7 @@ libnanoadrdframe.so: $(OBJS)
 	$(LD) $(SOFLAGS) $(LIBS) -o $@ $^ 
 
 
-$(SRCDIR)/JetMETObjects_dict.C: $(SRCDIR)/JetCorrectorParameters.h $(SRCDIR)/SimpleJetCorrector.h $(SRCDIR)/FactorizedJetCorrector.h $(SRCDIR)/LinkdefJetmet.h
+$(SRCDIR)/JetMETObjects_dict.C: $(SRCDIR)/JetCorrectorParameters.h $(SRCDIR)/SimpleJetCorrector.h $(SRCDIR)/FactorizedJetCorrector.h $(SRCDIR)/JetResolutionObject.h $(SRCDIR)/LinkdefJetmet.h
 	rm -f $@
 	$(ROOTSYS)/bin/rootcint -f $@ -c $(rootflags2) $^
 	ln -s $(SRCDIR)/JetMETObjects_dict_rdict.pcm .
