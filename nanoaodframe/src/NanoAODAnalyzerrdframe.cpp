@@ -288,10 +288,10 @@ void NanoAODAnalyzerrdframe::selectMuons() {
     TFile *muoniso;
 
     if (_isRun16pre) {
-        muonFile = "2016_UL_HIPM_";
+        muonFile = "2016_UL_HIPM";
         muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
     } else if (_isRun16post) {
-        muonFile = "2016_UL_";
+        muonFile = "2016_UL";
         muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
     } else if (_isRun17) {
         muonTrgHist = "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";

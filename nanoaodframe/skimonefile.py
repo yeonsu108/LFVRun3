@@ -35,9 +35,9 @@ if __name__=='__main__':
 
     if any(i in options.infile for i in ["Run2016B", "Run2016B", "Run2016D"]):
         options.globaltag = "Summer19UL16APV_RunBCD_V7"
-    elif any(i in options.infile for i in ["Run2016E", "Run2016Fpre"]):
+    elif any(i in options.infile for i in ["Run2016E", "Run2016F"]) and options.year == "2016pre":
         options.globaltag = "Summer19UL16APV_RunEF_V7"
-    elif any(i in options.infile for i in ["Run2016Fpost", "Run2016G", "Run2016H"]):
+    elif any(i in options.infile for i in ["Run2016F", "Run2016G", "Run2016H"]) and options.year == "2016post":
         options.globaltag = "Summer19UL16_RunFGH_V7"
     elif any(i in options.infile for i in ["Run2017", "Run2018"]):
         era = options.infile[options.infile.find("Run" + options.year)+7]
