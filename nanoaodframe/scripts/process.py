@@ -1,17 +1,20 @@
-import os, sys
+import os, sys, argparse
 from subprocess import call
 
-version = sys.argv[1] #folder under /data1/common/skimmed_NanoAOD/
-output = sys.argv[2] #output folder in your working directory
-year = sys.argv[3]
-syst = sys.argv[4]
-if len(sys.argv) > 5:
-    dataOrMC = sys.argv[5] #'data' or 'mc'
+parser = argparse.ArgumentParser(usage="%prog [options]")
+parser.add_argument("-V", "--version", dest="version", type=str, default="", help="Skim version: folder under /data1/common/skimmed_NanoAOD/")
+parser.add_argument("-O", "--outdir", dest="outdir", type=str, default="test", help="Output folder in your working directory")
+parser.add_argument("-Y", "--year", dest="year", type=str, default="", help="Select 2016pre, 2016post, 2017, or 2018 runs")
+parser.add_argument("-S", "--syst", dest="syst", type=str, default="theory", help="Systematic: 'data' for Data, 'nosyst' for mc without uncertainties. Default is 'theory'. To run without theory unc for TT samples, put 'all'.")
+parser.add_argument("-D", "--dataset", dest="dataset", action="store", nargs="+", default=[], help="Put dataset folder name (eg. TTTo2L2Nu) to process specific one.")
+parser.add_argument("-F", "--dataOrMC", dest="dataOrMC", type=str, default="", help="data or mc flag, if you want to process data-only or mc-only")
+options = parser.parse_args()
 
+year = options.year
 workdir = os.getcwd()
-indir = os.path.join('/data1/common/skimmed_NanoAOD/', version)
-tgdir = os.path.join(workdir, output, year)
-logdir = os.path.join(workdir, output, year, 'log')
+indir = os.path.join('/data1/common/skimmed_NanoAOD/', options.version)
+tgdir = os.path.join(workdir, options.outdir, year)
+logdir = os.path.join(workdir, options.outdir, year, 'log')
 
 os.makedirs(tgdir, exist_ok=True)
 os.makedirs(logdir, exist_ok=True)
@@ -37,44 +40,45 @@ syst_ext = ["__tuneup", "__tunedown", "__hdampup", "__hdampdown",]
 # To calculate theory uncertainties (PDF, ME, PS, if available), put 'theory'
 # Data should use systematic flag "data" not to construct event weights
 
-parameters = [] #order: (tgdir, indir, year, syst, json, False)
+parameters = [] #order: (tgdir, indir, year, syst)
 for ds in dataset_list:
 
     #if len(options.dataset) > 0 and not any(i in ds for i in options.dataset): continue
 
     for src in syst_list:
 
-        if len(sys.argv) > 5 and dataOrMC == 'data':
+        if options.dataOrMC == 'data':
             if 'data' not in ds[5:]: continue
-        elif len(sys.argv) > 5 and dataOrMC == 'mc':
+        elif options.dataOrMC == 'mc':
             if 'mc' not in ds[5:]: continue
 
         dataset_name = ds.split('/')[-1]
-        outfname = os.path.join(tgdir, dataset_name + src + '.root')
+        outdir = tgdir
+        outfname = dataset_name + src + '.root'
 
         if 'data' in ds[5:]:
             if src == "":
-                parameters.append([outfname, ds, year, "data"])
+                parameters.append([year, ds, outdir, outfname, "data"])
             else: continue
 
         else:
            if src == "":
-              if syst == "all":
-                  parameters.append((outfname, ds, year, "all", "", False))
-              elif syst == "theory":
+              if options.syst == "all":
+                  parameters.append((year, ds, outdir, outfname, "all", "", False))
+              elif options.syst == "theory":
                   if any(i in dataset_name for i in ["TTTo", "TT_LFV", "ST_LFV"]): #include TTW,TTZ for theory unc?
-                      parameters.append([outfname, ds, year, "theory"])
-                  else: parameters.append([outfname, ds, year, "all"])
-              elif syst == "nosyst":
-                  parameters.append([outfname, ds, year, "nosyst"])
+                      parameters.append([year, ds, outdir, outfname, "theory"])
+                  else: parameters.append([year, ds, outdir, outfname, "all"])
+              elif options.syst == "nosyst":
+                  parameters.append([year, ds, outdir, outfname, "nosyst"])
            else:
               #os.makedir(os.path.join(tgdir, dataset_name+src)
               if any(i in dataset_name for i in syst_ext): continue
-              parameters.append([outfname, ds, year, src[2:]])
+              parameters.append([year, ds, outdir, outfname, src[2:]])
 
 
 for item in parameters:
-    runString = "sbatch scripts/job_slurm_process.sh " + item[2] + " " + item[1] + " " + item[0] + " " + logdir + " " + item[3]
+    runString = "sbatch scripts/job_slurm_process.sh " + item[0] + " " + item[1] + " " + item[2] + " " + item[3] + " " + workdir + " " +logdir + " " + item[4]
 
     print(runString)
     #call([runString], shell=True)

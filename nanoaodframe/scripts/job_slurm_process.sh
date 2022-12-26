@@ -15,12 +15,14 @@
 
 year=$1
 indir=$2
-outfile=$3
-logdir=$4
-syst=$5
+outpath=$3
+outfile=$4
+workdir=$5
+logdir=$6
+syst=$7
 
 source /opt/ohpc/pub/utils/conda/anaconda3/etc/profile.d/conda.sh
 cd $workdir
 conda activate py36
-echo "python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log"
-python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log
+echo "python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log"
+python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log

@@ -95,14 +95,13 @@ python scripts/skim.py skim_test 2016pre data (mc)
 ```
 
 #### Processing
-`scripts/process_allInOne.py` scripts can automatically run over all ROOT files in an input directory.
+`scripts/process.py` scripts can automatically run over all ROOT files in an input directory.
 ``` txt
-Usage: python scripts/process_allInOne.py -V skim_test -O test -Y 2018
+Usage: python scripts/process.py -V skim_test -O test -Y 2018 -S theory
 
 Options:
   -V, --version         Skim version: folder under /data1/common/skimmed_NanoAOD/
   -O, --outdir          Output folder in your working directory
-  -h, --help            show this help message and exit
   -Y YEAR, --year=YEAR  Select 2016pre, 2016post, 2017, or 2018
   -S SYST, --syst=SYST  Systematic: 'data' for Data, 'nosyst' for mc without uncertainties. Default is 'theory'. To run without theory unc for TT samples, put 'all'
   -D, --dataset         Put dataset folder name (eg. -D TTTo2L2Nu,QCD_Pt1000_MuEnriched) to process specific dataset.
