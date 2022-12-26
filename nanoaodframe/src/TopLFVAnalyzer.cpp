@@ -3,6 +3,7 @@
  *
  *  Created on: April 9, 2020
  *      Author: Tae Jeong Kim
+ *      Refactored: Jiwon Park
  */
 
 #include "TopLFVAnalyzer.h"
@@ -104,6 +105,7 @@ void TopLFVAnalyzer::defineMoreVars() {
         addVar({"eventWeight__tau", "tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
         addVar({"eventWeight__nopu", "unitGenWeight * eventWeight__mu * eventWeight__tau * btagWeight_DeepFlavB[0]"});
         addVar({"eventWeight__nobtag", "eventWeight__genpu * eventWeight__mu * eventWeight__tau"});
+        addVar({"eventWeight__notau", "eventWeight__genpu * eventWeight__mu * btagWeight_DeepFlavB[0]"});
 
         if (_syst == "" or ext_syst) {
             // for external syst, we only need nominal weight
@@ -190,7 +192,7 @@ void TopLFVAnalyzer::defineMoreVars() {
 void TopLFVAnalyzer::bookHists() {
 
     std::vector<std::string> init_weight = {""};
-    std::vector<std::string> sf_weight = {"", "__nobtag", "__nopu", "__puup", "__pudown",
+    std::vector<std::string> sf_weight = {"", "__nobtag", "__nopu", "__notau", "__puup", "__pudown",
                    "__muidup", "__muiddown", "__muisoup", "__muisodown", "__mutrgup", "__mutrgdown",
                    "__tauidjetup", "__tauidjetdown", "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown", 
                    "__btaghfup", "__btaghfdown", "__btaglfup", "__btaglfdown",
@@ -222,7 +224,7 @@ void TopLFVAnalyzer::bookHists() {
                    "__pdf96", "__pdf97", "__pdf98", "__pdf99", "__pdf100",
                    "__pdf101", "__pdf102"};
 
-    // TODO refine this
+    // TODO refine this. Too heavy? we will see.
     std::vector<std::string> syst_weight;
     if (_syst == "" or _syst == "nosyst" or _syst == "data" or ext_syst) syst_weight = init_weight;
     else {

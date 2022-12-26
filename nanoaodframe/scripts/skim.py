@@ -16,7 +16,7 @@ os.makedirs(log, exist_ok=True)
 
 for fn in os.listdir("data/dataset/v8UL_" + year):
     if 'json' in fn: continue
-    fname = fn.lstrip('dataset_').rstrip('.txt')
+    fname = fn.replace('dataset_', '').replace('.txt', '')
     test_list = []
     #test_list = ['TTToSemiLeptonic']
     if len(test_list) > 0:
