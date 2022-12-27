@@ -2,6 +2,9 @@ DNN/utils/__pycache__/*.pyc
 *.pyc
 nanoaodframe_*TLFV/src/*.o
 *.pcm
+JetMETObjects_dict.C
+rootdict.C
+*.swp
 # Prerequisites
 *.d
 
@@ -10,6 +13,10 @@ nanoaodframe_*TLFV/src/*.o
 *.lo
 *.o
 *.obj
+JetMETObjects_dict_rdict.pcm
+rootdict_rdict.pcm
+libnanoaodrdframe.so
+nanoaodrdataframe
 
 # Precompiled Headers
 *.gch
