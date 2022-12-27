@@ -63,7 +63,13 @@ if __name__=='__main__':
     cppyy.load_reflection_info("libnanoadrdframe.so")
     t = ROOT.TChain("Events")
     for afile in rootfilestoprocess:
-        t.Add(afile)
+        tmpf = ROOT.TFile.Open(afile)
+        tmpt = tmpf.Get("Events")
+        if tmpt.GetEntries() > 0:
+            t.Add(afile)
+    if t.GetEntries() == 0:
+        print("There is NO EVENT to process, ending the processing!!")
+        sys.exit()
     aproc = None
     aproc = ROOT.TopLFVAnalyzer(t, outputroot, year, syst, json, "", 1)
     aproc.setupAnalysis()

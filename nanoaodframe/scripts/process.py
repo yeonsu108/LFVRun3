@@ -54,7 +54,7 @@ for ds in dataset_list:
 
         dataset_name = ds.split('/')[-1]
         outdir = tgdir
-        outfname = dataset_name + src + '.root'
+        outfname = 'hist_' + dataset_name + src + '.root'
 
         if 'data' in ds[5:]:
             if src == "":
