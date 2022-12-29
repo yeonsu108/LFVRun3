@@ -109,9 +109,38 @@ void TopLFVAnalyzer::defineMoreVars() {
 
         if (_syst == "" or ext_syst) {
             // for external syst, we only need nominal weight
-            addVar({"eventWeight", "eventWeight__genpu * eventWeight__mu * eventWeight__tau * btagWeight_DeepFlavB[0]"});
+            if (_syst.find("jesAbsoluteup") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[0]"});
+            else if (_syst.find("jesAbsolutedown") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[1]"});
+            else if (_syst.find("jesAbsolute_" + _year.substr(0,4) + "up") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[2]"});
+            else if (_syst.find("jesAbsolute_" + _year.substr(0,4) + "down") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[3]"});
+            else if (_syst.find("jesBBEC1up") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[4]"});
+            else if (_syst.find("jesBBEC1down") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[5]"});
+            else if (_syst.find("jesBBEC1_" + _year.substr(0,4) + "up") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[6]"});
+            else if (_syst.find("jesBBEC1_" + _year.substr(0,4) + "down") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[7]"});
+            else if (_syst.find("jesFlavorQCDup") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[8]"});
+            else if (_syst.find("jesFlavorQCDdown") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[9]"});
+            else if (_syst.find("jesRelativeBalup") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[10]"});
+            else if (_syst.find("jesRelativeBaldown") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[11]"});
+            else if (_syst.find("jesRelativeSample_" + _year.substr(0,4) + "up") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[12]"});
+            else if (_syst.find("jesRelativeSample_" + _year.substr(0,4) + "down") != std::string::npos)
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[13]"});
+            else
+                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB[0]"});
         } else {
-            addVar({"eventWeight", "eventWeight__genpu * eventWeight__mu * eventWeight__tau * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight__puup", "unitGenWeight * puWeight[1] * eventWeight__mu * eventWeight__tau * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight__pudown", "unitGenWeight * puWeight[2] * eventWeight__mu * eventWeight__tau * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight__muidup", "eventWeight__genpu * muonWeightId[1] * muonWeightIso[0] * muonWeightTrg[0] * eventWeight__tau * btagWeight_DeepFlavB[0]"});
@@ -185,7 +214,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("MET_pt");
     addVartoStore("MET_phi");
     addVartoStore("chi2.*");
-    addVartoStore("btagWeight_DeepFlavB");
+    addVartoStore("btagWeight_DeepFlavB.*");
     addVartoStore("eventWeight.*");
 }
 
@@ -226,7 +255,13 @@ void TopLFVAnalyzer::bookHists() {
 
     // TODO refine this. Too heavy? we will see.
     std::vector<std::string> syst_weight;
-    if (_syst == "" or _syst == "nosyst" or _syst == "data" or ext_syst) syst_weight = init_weight;
+    if (_syst == "" or _syst == "nosyst" or _syst == "data" or ext_syst) {
+        syst_weight = init_weight;
+        if (_syst != "data") {
+            //We anyway need this for bSF rescaling
+            add1DHist({"h_nevents", "Number of Events", 2, -0.5, 1.5}, "one", "eventWeight", "__nobtag", "0");
+        }
+    }
     else {
         syst_weight = sf_weight;
         if (_syst == "theory") syst_weight.insert(syst_weight.end(), theory_weight.begin(),  theory_weight.end());
@@ -238,7 +273,7 @@ void TopLFVAnalyzer::bookHists() {
 
     for (std::string weightstr : syst_weight) {
         add1DHist({"h_nevents", "Number of Events", 2, -0.5, 1.5}, "one", "eventWeight", weightstr, "0");
-        add1DHist({"h_nvtx", "Number of Primary Vertex", 100, 0.0, 100.0}, "PV_npvsGood", "eventWeight", weightstr, "0");
+        add1DHist({"h_nvtx", "Number of Primary Vertex", 70, 0.0, 70.0}, "PV_npvsGood", "eventWeight", weightstr, "0");
 
         add1DHist({"h_met_pt", "MET pt", 20, 0, 400}, "MET_pt", "eventWeight", weightstr, "0");
         add1DHist({"h_sum_et", "Sum ET", 50, 0.0, 5000.0}, "MET_sumEt", "eventWeight", weightstr, "0");
