@@ -747,15 +747,18 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
         for (std::string src : var) {
             double bweight = 1.0;
             for (unsigned int i=0; i<pts.size(); i++) {
-                if (pts[i]*jer[i][0] < 40) continue;
-                if (src.find("cferr") != std::string::npos and hadflav[i] != 4) continue;
-                if (src.find("cferr") == std::string::npos and hadflav[i] == 4) continue;
+                auto newpt = pts[i]*jer[i][0];
+                if (newpt < 40) continue;
+
+                std::string unc = src;
+                if (src.find("cferr") != std::string::npos and hadflav[i] != 4) unc = "central";
+                if (src.find("cferr") == std::string::npos and hadflav[i] == 4) unc = "central";
 
                 BTagEntry::JetFlavor hadfconv;
                 if      (hadflav[i]==5) hadfconv=BTagEntry::FLAV_B;
                 else if (hadflav[i]==4) hadfconv=BTagEntry::FLAV_C;
                 else                    hadfconv=BTagEntry::FLAV_UDSG;
-                double w = _btagcalibreader.eval_auto_bounds(src, hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                double w = _btagcalibreader.eval_auto_bounds(unc, hadfconv, fabs(etas[i]), newpt, btags[i]);
                 bweight *= w;
             }
             bSFs.emplace_back(bweight);
@@ -775,11 +778,14 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
                 auto newpt = pts[j] * jes[j][i] * jer[j][0];
                 if (newpt < 40) continue;
 
+                std::string unc = src;
+                if (hadflav[j] == 4) unc = "central";
+
                 BTagEntry::JetFlavor hadfconv;
                 if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
                 else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
                 else                    hadfconv=BTagEntry::FLAV_UDSG;
-                double w = _btagcalibreaderJes.eval_auto_bounds(src, hadfconv, fabs(etas[j]), newpt, btags[j]);
+                double w = _btagcalibreaderJes.eval_auto_bounds(unc, hadfconv, fabs(etas[j]), newpt, btags[j]);
                 bweight *= w;
             }
             bSFs.emplace_back(bweight);
@@ -1088,9 +1094,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                 uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i])));
                 uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i]), "Up"));
                 uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i]), "Down"));
+                wVec.emplace_back(uncSources);
+                uncSources.clear();
             }
-            wVec.emplace_back(uncSources);
-            uncSources.clear();
         }
         return wVec;
     };
@@ -1107,9 +1113,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                 uncSources.emplace_back(_tauidSFele->getSFvsEta(abs(eta[i]), int(genid[i])));
                 uncSources.emplace_back(_tauidSFele->getSFvsEta(abs(eta[i]), int(genid[i]), "Up"));
                 uncSources.emplace_back(_tauidSFele->getSFvsEta(abs(eta[i]), int(genid[i]), "Down"));
+                wVec.emplace_back(uncSources);
+                uncSources.clear();
             }
-            wVec.emplace_back(uncSources);
-            uncSources.clear();
         }
         return wVec;
     };
@@ -1126,9 +1132,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                 uncSources.emplace_back(_tauidSFmu->getSFvsEta(abs(eta[i]), int(genid[i])));
                 uncSources.emplace_back(_tauidSFmu->getSFvsEta(abs(eta[i]), int(genid[i]), "Up"));
                 uncSources.emplace_back(_tauidSFmu->getSFvsEta(abs(eta[i]), int(genid[i]), "Down"));
+                wVec.emplace_back(uncSources);
+                uncSources.clear();
             }
-            wVec.emplace_back(uncSources);
-            uncSources.clear();
         }
         return wVec;
     };
@@ -1179,9 +1185,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     };
 
     _rlm = _rlm.Define("Tau_pt_uncor", "Tau_pt")
-               .Redefine("Tau_pt", tauES, {"Tau_pt", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt"})
-               .Redefine("Tau_mass", tauES, {"Tau_pt", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"})
-               .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt"});
+               .Redefine("Tau_pt", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"})
+               .Redefine("Tau_mass", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"})
+               .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"});
 }
 
 /*
@@ -1218,7 +1224,8 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
     _rnt.setRNode(&_rlm);
 
     for (auto acut : _cutinfovector) {
-        std::string cutname = "S" + to_string(acut.idx.length()-1);
+        //std::string cutname = "S" + to_string(acut.idx.length()-1);
+        std::string cutname = "S" + to_string(acut.idx.length());
         std::string hpost = "_"+cutname;
         RNode *r = _rnt.getParent(acut.idx)->getRNode();
         auto rnext = new RNode(r->Define(cutname, acut.cutdefinition));
