@@ -8,6 +8,7 @@ parser.add_argument("-Y", "--year", dest="year", type=str, default="", help="Sel
 parser.add_argument("-S", "--syst", dest="syst", type=str, default="theory", help="Systematic: 'data' for Data, 'nosyst' for mc without uncertainties. Default is 'theory'. To run without theory unc for TT samples, put 'all'.")
 parser.add_argument("-D", "--dataset", dest="dataset", action="store", nargs="+", default=[], help="Put dataset folder name (eg. TTTo2L2Nu) to process specific one.")
 parser.add_argument("-F", "--dataOrMC", dest="dataOrMC", type=str, default="", help="data or mc flag, if you want to process data-only or mc-only")
+parser.add_argument("--dry", dest="dry", action="store_true", default=False, help="dryrun: not submitting jobs to slurm")
 options = parser.parse_args()
 
 year = options.year
@@ -39,11 +40,12 @@ syst_ext = ["__tuneup", "__tunedown", "__hdampup", "__hdampdown",]
 # To run central values only, pass "nosyst"
 # To calculate theory uncertainties (PDF, ME, PS, if available), put 'theory'
 # Data should use systematic flag "data" not to construct event weights
+if options.syst == "nosyst": syst_list = [""]
 
 parameters = [] #order: (tgdir, indir, year, syst)
 for ds in dataset_list:
 
-    #if len(options.dataset) > 0 and not any(i in ds for i in options.dataset): continue
+    if len(options.dataset) > 0 and not any(i in ds for i in options.dataset): continue
 
     for src in syst_list:
 
@@ -78,7 +80,8 @@ for ds in dataset_list:
 
 
 for item in parameters:
-    runString = "sbatch scripts/job_slurm_process.sh " + item[0] + " " + item[1] + " " + item[2] + " " + item[3] + " " + workdir + " " +logdir + " " + item[4]
+    runString = "sbatch -J " + item[3] + " scripts/job_slurm_process.sh " + item[0] + " " + item[1] + " " + item[2] + " " + item[3] + " " + workdir + " " +logdir + " " + item[4]
 
     print(runString)
-    #call([runString], shell=True)
+    if not options.dry:
+        call([runString], shell=True)
