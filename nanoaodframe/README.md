@@ -84,10 +84,11 @@ python getDatasetInfo.py v8UL_2016pre
 # arguments: folder, year (2016pre, 2016post, 2017, and 2018)
 # You can add data or mc flag at the end of command if needed
 
-python scripts/skim.py skim_test 2016pre
+python scripts/skim.py -V skim_test -Y 2018
 
 OR
-python scripts/skim.py skim_test 2016pre data (mc)
+
+python scripts/skim.py -V skim_test -F mc -Y 2018
 
 # To run specific datasets, add them in test_list of skim.py
 # This script uses slurm on htop.
@@ -112,12 +113,17 @@ In some cases, you may want to submit single file per core using slurm.
 `scripts/process.py` will do the job
 ``` txt
 Usage: python scripts/process.py skim_test test 2018 (data/mc)
-
 ```
-  
-By default, it will go into subdirectories recursively and process ROOT files. 
-It will make the output directory to have the same  the directory structure as the input directory.
-It will create one output file per one input file, so there is one-to-one correspondence.
+Now, apply b SF rescaling, compute uncertainty envelope, etc. Let the `test\2018` is the folder containing histograms.
+``` txt
+python postprocess.py test 2018
+```
+Drawing histogram by plotIt
+``` txt
+cd 2018_postprocess
+mkdir ../figure_2018
+../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/config_18.yml
+```
 
 ### Usage of scripts
 In the `scripts/` folder, there are scripts for skimming or processing the NanoAOD files.
