@@ -1,0 +1,286 @@
+#jet multiplicities
+'h_ncleanjetspass_S1':
+  #x-axis: "Jet multiplicity"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  log-y: true 
+  sort-by-yields: true 
+  save-extensions: ['pdf']
+
+'h_ncleanjetspass_S2':
+  #x-axis: "Jet multiplicity"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  log-y: true 
+  sort-by-yields: true 
+  save-extensions: ['pdf']
+
+'h_ncleanjetspass_S3':
+  #x-axis: "Jet multiplicity"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  log-y: true 
+  sort-by-yields: true 
+  save-extensions: ['pdf']
+
+'h_ncleanjetspass_S4':
+  #x-axis: "Jet multiplicity"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  log-y: true 
+  sort-by-yields: true 
+  save-extensions: ['pdf']
+
+'h_ncleanjetspass_S5':
+  #x-axis: "Jet multiplicity"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  log-y: true
+  sort-by-yields: true
+  save-extensions: ['pdf']
+
+#b jet multiplicities
+'h_ncleanbjetspass_S1':
+  x-axis: "b-tagged jet multiplicity"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  log-y: true
+  sort-by-yields: true
+  save-extensions: ['pdf']
+
+'h_ncleanbjetspass_S2':
+  x-axis: "b-tagged jet multiplicity"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  log-y: true
+  sort-by-yields: true
+  save-extensions: ['pdf']
+
+'h_ncleanbjetspass_S3':
+  x-axis: "b-tagged jet multiplicity"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  log-y: true
+  sort-by-yields: true
+  save-extensions: ['pdf']
+
+'h_ncleanbjetspass_S4':
+  x-axis: "b-tagged jet multiplicity"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  log-y: true
+  sort-by-yields: true
+  save-extensions: ['pdf']
+
+'h_ncleanbjetspass_S5':
+  x-axis: "b-tagged jet multiplicity"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  log-y: true
+  sort-by-yields: true
+  save-extensions: ['pdf']
+
+#PV
+'h_nvtx_S1':
+  x-axis: "Good PV"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_nvtx_S2':
+  x-axis: "Good PV"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_nvtx_S3':
+  x-axis: "Good PV"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_nvtx_S4':
+  x-axis: "Good PV"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_nvtx_S5':
+  x-axis: "Good PV"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+#MET pt
+'h_met_pt_S1':
+  x-axis: "MET (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_met_pt_S2':
+  x-axis: "MET (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_met_pt_S3':
+  x-axis: "MET (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_met_pt_S4':
+  x-axis: "MET (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_met_pt_S5':
+  x-axis: "MET (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+#MET phi
+'h_met_phi_S1':
+  x-axis: "MET #phi"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_met_phi_S2':
+  x-axis: "MET #phi"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_met_phi_S3':
+  x-axis: "MET #phi"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_met_phi_S4':
+  x-axis: "MET #phi"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_met_phi_S5':
+  x-axis: "MET #phi"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+#Muon pt
+'h_muon1_pt_S1':
+  x-axis: "Muon p_{T} (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_muon1_pt_S2':
+  x-axis: "Muon p_{T} (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_muon1_pt_S3':
+  x-axis: "Muon p_{T} (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_muon1_pt_S4':
+  x-axis: "Muon p_{T} (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_muon1_pt_S5':
+  x-axis: "Muon p_{T} (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+#Muon eta
+'h_muon1_eta_S1':
+  x-axis: "Muon #eta"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_muon1_eta_S2':
+  x-axis: "Muon #eta"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_muon1_eta_S3':
+  x-axis: "Muon #eta"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_muon1_eta_S4':
+  x-axis: "Muon #eta"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_muon1_eta_S5':
+  x-axis: "Muon #eta"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+#tau pt
+'h_tau1_pt_S2':
+  x-axis: "#tau_{h} p_{T} (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_tau1_pt_S3':
+  x-axis: "#tau_{h} p_{T} (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_tau1_pt_S4':
+  x-axis: "#tau_{h} p_{T} (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_tau1_pt_S5':
+  x-axis: "#tau_{h} p_{T} (GeV)"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+#tau eta
+'h_tau1_eta_S2':
+  x-axis: "#tau_{h} #eta"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_tau1_eta_S3':
+  x-axis: "#tau_{h} #eta"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_tau1_eta_S4':
+  x-axis: "#tau_{h} #eta"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
+
+'h_tau1_eta_S5':
+  x-axis: "#tau_{h} #eta"
+  y-axis: "Events"
+  y-axis-format: "%1% / %2$.2f"
+  save-extensions: ['pdf']
