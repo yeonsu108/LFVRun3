@@ -33,7 +33,7 @@ if __name__=='__main__':
     #elif "Run2018" in options.infile:
     #    options.json = "data/GoldenJSON/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt"
 
-    if any(i in options.infile for i in ["Run2016B", "Run2016B", "Run2016D"]):
+    if any(i in options.infile for i in ["Run2016B", "Run2016C", "Run2016D"]):
         options.globaltag = "Summer19UL16APV_RunBCD_V7"
     elif any(i in options.infile for i in ["Run2016E", "Run2016F"]) and options.year == "2016pre":
         options.globaltag = "Summer19UL16APV_RunEF_V7"
