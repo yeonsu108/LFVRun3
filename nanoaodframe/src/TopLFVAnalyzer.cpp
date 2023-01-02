@@ -259,7 +259,7 @@ void TopLFVAnalyzer::bookHists() {
         syst_weight = init_weight;
         if (_syst != "data") {
             //We anyway need this for bSF rescaling
-            add1DHist({"h_nevents", "Number of Events", 2, -0.5, 1.5}, "one", "eventWeight", "__nobtag", "0");
+            add1DHist({"h_nevents", ";Number of events w/o b SF;Events", 2, -0.5, 1.5}, "one", "eventWeight", "__nobtag", "0", "");
         }
     }
     else {
@@ -271,58 +271,64 @@ void TopLFVAnalyzer::bookHists() {
     for (auto i : syst_weight) cout << i << " ";
     cout << endl;
 
+
+
+
+    //for all the other nominal histograms
+    maxstep = "";
+
     for (std::string weightstr : syst_weight) {
-        add1DHist({"h_nevents", "Number of Events", 2, -0.5, 1.5}, "one", "eventWeight", weightstr, "0");
-        add1DHist({"h_nvtx", "Number of Primary Vertex", 70, 0.0, 70.0}, "PV_npvsGood", "eventWeight", weightstr, "0");
+        add1DHist({"h_nevents", ";Number of events;Events", 2, -0.5, 1.5}, "one", "eventWeight", weightstr, "0", maxstep);
+        add1DHist({"h_nvtx", ";Number of primary vertex;Events", 70, 0.0, 70.0}, "PV_npvsGood", "eventWeight", weightstr, "0", maxstep);
 
-        add1DHist({"h_met_pt", "MET pt", 20, 0, 400}, "MET_pt", "eventWeight", weightstr, "0");
-        add1DHist({"h_sum_et", "Sum ET", 50, 0.0, 5000.0}, "MET_sumEt", "eventWeight", weightstr, "0");
-        add1DHist({"h_met_phi", "MET phi", 20, -3.2, 3.2}, "MET_phi", "eventWeight", weightstr, "0");
+        add1DHist({"h_met_pt", ";MET (GeV);Events", 20, 0, 400}, "MET_pt", "eventWeight", weightstr, "0", maxstep);
+        add1DHist({"h_sum_et", ";Sum ET;Events", 50, 0.0, 5000.0}, "MET_sumEt", "eventWeight", weightstr, "0", maxstep);
+        add1DHist({"h_met_phi", ";MET #phi;Events", 20, -3.2, 3.2}, "MET_phi", "eventWeight", weightstr, "0", maxstep);
 
-        add1DHist({"h_nmuonpass", "Passing muoncuts", 5, 0.0, 5.0}, "nmuonpass", "eventWeight", weightstr, "0");
-        add1DHist({"h_ncleantaupass", "Passing taucuts", 5, 0.0, 5.0}, "ncleantaupass", "eventWeight", weightstr, "0");
-        add1DHist({"h_ncleanjetspass", "Passing jetcuts", 10, 0.0, 10.0}, "ncleanjetspass", "eventWeight", weightstr, "0");
-        add1DHist({"h_ncleanbjetspass", "Passing bjetcuts", 5, 0.0, 5.0}, "ncleanbjetspass", "eventWeight", weightstr, "0");
+        add1DHist({"h_nmuonpass", ";Muon multiplicity;Events", 5, 0.0, 5.0}, "nmuonpass", "eventWeight", weightstr, "0", maxstep);
+        add1DHist({"h_ncleantaupass", ";#tau_{h} multiplicity;Events", 5, 0.0, 5.0}, "ncleantaupass", "eventWeight", weightstr, "0", maxstep);
+        add1DHist({"h_ncleanjetspass", ";Jet multiplicity;Events", 10, 0.0, 10.0}, "ncleanjetspass", "eventWeight", weightstr, "0", maxstep);
+        add1DHist({"h_ncleanbjetspass", ";b-tagged jet multiplicity;Events", 5, 0.0, 5.0}, "ncleanbjetspass", "eventWeight", weightstr, "0", maxstep);
 
-        add1DHist({"h_muon1_pt", "Muon pt", 30, 0, 600}, "Muon1_pt", "eventWeight", weightstr, "0");
-        add1DHist({"h_muon1_eta", "Muon eta", 20, -2.4, 2.4}, "Muon1_eta", "eventWeight", weightstr, "0");
-        add1DHist({"h_muMET_mt", "Muon met mt", 20, 0, 400}, "muMET_mt", "eventWeight", weightstr, "0");
+        add1DHist({"h_muon1_pt", ";Muon p_{T} (GeV);Events", 30, 0, 600}, "Muon1_pt", "eventWeight", weightstr, "0", maxstep);
+        add1DHist({"h_muon1_eta", ";Muon #eta;Events", 20, -2.4, 2.4}, "Muon1_eta", "eventWeight", weightstr, "0", maxstep);
+        add1DHist({"h_muMET_mt", ";m_{T}(#mu, MET) (GeV);Events", 20, 0, 400}, "muMET_mt", "eventWeight", weightstr, "0", maxstep);
 
-        add1DHist({"h_tau1_pt", "Tau pt", 20, 0, 400}, "Tau1_pt", "eventWeight", weightstr, "00");
-        add1DHist({"h_tau1_eta", "Tau eta", 20, -2.3, 2.3}, "Tau1_eta", "eventWeight", weightstr, "00");
-        add1DHist({"h_tau1_mass", "Tau mass", 20, 0, 100}, "Tau1_mass", "eventWeight", weightstr, "00");
+        add1DHist({"h_tau1_pt", ";#tau_{h} p_{T} (GeV);Events", 20, 0, 400}, "Tau1_pt", "eventWeight", weightstr, "00", maxstep);
+        add1DHist({"h_tau1_eta", ";#tau_{h} #eta;Events", 20, -2.3, 2.3}, "Tau1_eta", "eventWeight", weightstr, "00", maxstep);
+        add1DHist({"h_tau1_mass", ";m_{#tau_{h}} (GeV);Events", 20, 0, 100}, "Tau1_mass", "eventWeight", weightstr, "00", maxstep);
 
-        add1DHist({"h_mutau_dEta", "dEta of muon and tau", 25, -5, 5}, "mutau_dEta", "eventWeight", weightstr, "00");
-        add1DHist({"h_mutau_dPhi", "dPhi of muon and tau", 20, -3.2, 3.2}, "mutau_dPhi", "eventWeight", weightstr, "00");
-        add1DHist({"h_mutau_dR", "dR of muon and tau", 20, 0, 4.0}, "mutau_dR", "eventWeight", weightstr, "00");
-        add1DHist({"h_mutau_mass", "Mass of muon and tau", 40, 0, 1000}, "mutau_mass", "eventWeight", weightstr, "00");
+        add1DHist({"h_mutau_dEta", ";#Delta#eta(#mu, #tau_{h});Events", 25, -5, 5}, "mutau_dEta", "eventWeight", weightstr, "00", maxstep);
+        add1DHist({"h_mutau_dPhi", ";#Delta#phi(#mu, #tau_{h});Events", 20, -3.2, 3.2}, "mutau_dPhi", "eventWeight", weightstr, "00", maxstep);
+        add1DHist({"h_mutau_dR", ";#Delta R(#mu, #tau_{h});Events", 20, 0, 4.0}, "mutau_dR", "eventWeight", weightstr, "00", maxstep);
+        add1DHist({"h_mutau_mass", ";Mass of #mu + #tau_{h} (GeV);Events", 40, 0, 1000}, "mutau_mass", "eventWeight", weightstr, "00", maxstep);
 
-        add1DHist({"h_jet1_pt", "leading jet pt", 20, 0, 400}, "Jet1_pt", "eventWeight", weightstr, "0");
-        add1DHist({"h_jet1_eta", "leading jet eta", 20, -2.4, 2.4}, "Jet1_eta", "eventWeight", weightstr, "0");
-        add1DHist({"h_jet1_mass", "leading jet mass", 20, 0, 100}, "Jet1_mass", "eventWeight", weightstr, "0");
-        add1DHist({"h_jet1_btag","btag discr of leading jet", 20, 0, 1.0}, "Jet1_btagDeepFlavB", "eventWeight", weightstr, "0");
+        add1DHist({"h_jet1_pt", ";Leading jet p_{T} (GeV);Events", 20, 0, 400}, "Jet1_pt", "eventWeight", weightstr, "0", maxstep);
+        add1DHist({"h_jet1_eta", ";Leading jet #eta;Events", 20, -2.4, 2.4}, "Jet1_eta", "eventWeight", weightstr, "0", maxstep);
+        add1DHist({"h_jet1_mass", ";Leading jet mass (GeV);Events", 20, 0, 100}, "Jet1_mass", "eventWeight", weightstr, "0", maxstep);
+        add1DHist({"h_jet1_btag",";DeepFlavour score of leading jet;Events", 20, 0, 1.0}, "Jet1_btagDeepFlavB", "eventWeight", weightstr, "0", maxstep);
 
-        add1DHist({"h_jet2_pt", "sub-leading jet pt", 20, 0, 400}, "Jet2_pt", "eventWeight", weightstr, "0000");
-        add1DHist({"h_jet2_eta", "sub-leading jet eta", 20, -2.4, 2.4}, "Jet2_eta", "eventWeight", weightstr, "0000");
-        add1DHist({"h_jet2_mass", "sub-leading jet mass", 20, 0, 100}, "Jet2_mass", "eventWeight", weightstr, "0000");
-        add1DHist({"h_jet2_btag","btag discr of sub-leading jet", 20, 0, 1.0}, "Jet2_btagDeepFlavB", "eventWeight", weightstr, "0000");
+        add1DHist({"h_jet2_pt", ";Subleading jet p_{T} (GeV);Events", 20, 0, 400}, "Jet2_pt", "eventWeight", weightstr, "0000", maxstep);
+        add1DHist({"h_jet2_eta", ";Subleading jet #eta;Events", 20, -2.4, 2.4}, "Jet2_eta", "eventWeight", weightstr, "0000", maxstep);
+        add1DHist({"h_jet2_mass", ";Subleading jet mass (GeV);Events", 20, 0, 100}, "Jet2_mass", "eventWeight", weightstr, "0000", maxstep);
+        add1DHist({"h_jet2_btag",";DeepFlavour score of subleading jet;Events", 20, 0, 1.0}, "Jet2_btagDeepFlavB", "eventWeight", weightstr, "0000", maxstep);
 
-        add1DHist({"h_jet3_pt", "third jet pt", 20, 0, 400}, "Jet3_pt", "eventWeight", weightstr, "0000");
-        add1DHist({"h_jet3_eta", "third jet eta", 20, -2.4, 2.4}, "Jet3_eta", "eventWeight", weightstr, "0000");
-        add1DHist({"h_jet3_mass", "third jet mass", 20, 0, 100}, "Jet3_mass", "eventWeight", weightstr, "0000");
-        add1DHist({"h_jet3_btag","btag discr of third jet", 20, 0, 1.0}, "Jet3_btagDeepFlavB", "eventWeight", weightstr, "0000");
+        add1DHist({"h_jet3_pt", ";Subsubleading jet p_{T} (GeV);Events", 20, 0, 400}, "Jet3_pt", "eventWeight", weightstr, "0000", maxstep);
+        add1DHist({"h_jet3_eta", ";Subsubleading jet #eta;Events", 20, -2.4, 2.4}, "Jet3_eta", "eventWeight", weightstr, "0000", maxstep);
+        add1DHist({"h_jet3_mass", ";Subsubleading jet mass (GeV);Events", 20, 0, 100}, "Jet3_mass", "eventWeight", weightstr, "0000", maxstep);
+        add1DHist({"h_jet3_btag",";DeepFlavour score of subsubleading jet;Events", 20, 0, 1.0}, "Jet3_btagDeepFlavB", "eventWeight", weightstr, "0000", maxstep);
 
-        add1DHist({"h_bjet1_pt", "b jet pt", 20, 0, 400}, "bJet1_pt", "eventWeight", weightstr, "00000");
-        add1DHist({"h_bjet1_eta", "b jet eta", 20, -2.4, 2.4}, "bJet1_eta", "eventWeight", weightstr, "00000");
-        add1DHist({"h_bjet1_mass", "b jet mass", 20, 0, 100}, "bJet1_mass", "eventWeight", weightstr, "00000");
+        add1DHist({"h_bjet1_pt", ";b-tagged jet p_{T} (GeV);Events", 20, 0, 400}, "bJet1_pt", "eventWeight", weightstr, "00000", maxstep);
+        add1DHist({"h_bjet1_eta", ";b-tagged jet #eta;Events", 20, -2.4, 2.4}, "bJet1_eta", "eventWeight", weightstr, "00000", maxstep);
+        add1DHist({"h_bjet1_mass", ";b-tagged jet mass (GeV);Events", 20, 0, 100}, "bJet1_mass", "eventWeight", weightstr, "00000", maxstep);
 
         // Histogram of Top mass reconstruction
-        add1DHist({"h_chi2", "Minimum chi2 for hadronic W", 20, 0, 1000}, "chi2", "eventWeight", weightstr, "00000");
-        add1DHist({"h_chi2_SMTop_mass", "chi2 SM Top mass", 20, 0, 400}, "chi2_SMTop_mass", "eventWeight", weightstr, "00000");
-        add1DHist({"h_chi2_SMW_mass", "chi2 SM W mass", 20, 0, 400}, "chi2_SMW_mass", "eventWeight", weightstr, "00000");
-        add1DHist({"h_chi2_wqq_dEta", "dEta of jets from W", 25, -5, 5}, "chi2_wqq_dEta", "eventWeight", weightstr, "00000");
-        add1DHist({"h_chi2_wqq_dPhi", "dPhi of jets from W", 20, -4, 4}, "chi2_wqq_dPhi", "eventWeight", weightstr, "00000");
-        add1DHist({"h_chi2_wqq_dR", "dR of jets from W", 20, 0, 4.0}, "chi2_wqq_dR", "eventWeight", weightstr, "00000");
+        add1DHist({"h_chi2", ";Minimum #chi^{2};Events", 20, 0, 1000}, "chi2", "eventWeight", weightstr, "00000", maxstep);
+        add1DHist({"h_chi2_SMTop_mass", ";SM top quark mass (GeV);Events", 20, 0, 400}, "chi2_SMTop_mass", "eventWeight", weightstr, "00000", maxstep);
+        add1DHist({"h_chi2_SMW_mass", ";SM W_{had} mass (GeV);Events", 20, 0, 400}, "chi2_SMW_mass", "eventWeight", weightstr, "00000", maxstep);
+        add1DHist({"h_chi2_wqq_dEta", ";#Delta#eta of jets from W;Events", 25, -5, 5}, "chi2_wqq_dEta", "eventWeight", weightstr, "00000", maxstep);
+        add1DHist({"h_chi2_wqq_dPhi", ";#Delta#phi of jets from W;Events;", 20, -4, 4}, "chi2_wqq_dPhi", "eventWeight", weightstr, "00000", maxstep);
+        add1DHist({"h_chi2_wqq_dR", ";#Delta R of jets from W;Events", 20, 0, 4.0}, "chi2_wqq_dR", "eventWeight", weightstr, "00000", maxstep);
     }
 
 }

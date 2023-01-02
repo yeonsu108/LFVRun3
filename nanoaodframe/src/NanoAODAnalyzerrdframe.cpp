@@ -1217,7 +1217,7 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
         std::string hpost = "";
 
         if (x.mincutstep.length()==0) {
-            helper_1DHistCreator(std::string(x.hmodel.fName)+hpost+x.systname,  std::string(x.hmodel.fTitle)+hpost+x.systname, x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, &_rlm);
+            helper_1DHistCreator(std::string(x.hmodel.fName)+hpost+x.systname,  std::string(x.hmodel.fTitle), x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, &_rlm);
         }
     }
 
@@ -1235,8 +1235,11 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
             if (acut.idx.compare(c.mincutstep)==0) *rnext = rnext->Define(c.varname, c.vardefinition);
         }
         for (auto &x : _hist1dinfovector) {
+            bool reachedMax = false;
             if (acut.idx.compare(0, x.mincutstep.length(), x.mincutstep)==0) {
-                helper_1DHistCreator(std::string(x.hmodel.fName)+hpost+x.systname,  std::string(x.hmodel.fTitle)+hpost+x.systname, x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, rnext);
+                if (x.maxcutstep.length() > 0 and acut.idx.compare(0, x.maxcutstep.length(), x.maxcutstep)==0) reachedMax = true;
+                if (!reachedMax)
+                    helper_1DHistCreator(std::string(x.hmodel.fName)+hpost+x.systname,  std::string(x.hmodel.fTitle), x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, rnext);
             }
         }
         _rnt.addDaughter(rnext, acut.idx);
@@ -1258,9 +1261,9 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
     }
 }
 
-void NanoAODAnalyzerrdframe::add1DHist(TH1DModel histdef, std::string variable, std::string weight, string syst, string mincutstep) {
+void NanoAODAnalyzerrdframe::add1DHist(TH1DModel histdef, std::string variable, std::string weight, string syst, string mincutstep, string maxcutstep) {
 
-	_hist1dinfovector.push_back({histdef, variable, weight, syst, mincutstep});
+	_hist1dinfovector.push_back({histdef, variable, weight, syst, mincutstep, maxcutstep});
 }
 
 

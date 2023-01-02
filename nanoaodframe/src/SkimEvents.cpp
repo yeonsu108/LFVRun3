@@ -13,7 +13,7 @@ SkimEvents::SkimEvents(TTree *t, std::string outfilename, std::string year, std:
 {
   _isSkim = true;
   _isHTstitching = false;
-  if (_outfilename.find("WJetsToLNu-HT0To100") != string::npos) {
+  if (_outfilename.find("WJetsToLNu_HT0To100") != string::npos) {
       _isHTstitching = true;
   }
 }
@@ -132,5 +132,5 @@ void SkimEvents::bookHists()
 	//
 	// The braces are used to initalize the struct
 	// TH1D
-  add1DHist( {"hcounter", "Number of events", 2, -0.5, 1.5}, "one", "unitGenWeight", "", "");
+  add1DHist( {"hcounter", "Number of events", 2, -0.5, 1.5}, "one", "unitGenWeight", "", "", "");
 }
