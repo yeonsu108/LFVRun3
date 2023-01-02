@@ -112,7 +112,7 @@ Options:
 In some cases, you may want to submit single file per core using slurm.
 `scripts/process.py` will do the job
 ``` txt
-Usage: python scripts/process.py skim_test test 2018 (data/mc)
+Usage: python scripts/process.py -V skim_test -O test -Y 2018 -S theory (-F data/mc)
 ```
 Now, apply b SF rescaling, compute uncertainty envelope, etc. Let the `test\2018` is the folder containing histograms.
 ``` txt
@@ -122,7 +122,7 @@ Drawing histogram by plotIt
 ``` txt
 cd 2018_postprocess
 mkdir ../figure_2018
-../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/config_18.yml
+../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/config_18.yml -y -s
 ```
 
 ### Usage of scripts
