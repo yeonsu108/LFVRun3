@@ -37,7 +37,7 @@ def get_bSFratio(inputf, inputh):
     step = inputh[inputh.rfind('_S')+1:inputh.rfind('_S')+3]
 
     # This depends on cutflow
-    if int(step[-1]) < 3: step = 'S1'
+    if int(step[-1]) < 4: step = 'S' + step[-1]
     else                : step = 'S4'
 
     posthist = inputf.Get('h_nevents_' + step)
@@ -56,6 +56,7 @@ for fname in file_list:
     #if not any(i in fname for i in ['TTTo2L2Nu', 'TTToSemiLeptonic']): continue
     infile = TFile.Open(os.path.join(nom_path, fname + '.root'), 'READ')
     hlists = [ h.GetName() for h in infile.GetListOfKeys() if '_S' in h.GetName() ]
+    hlists.append("hcounter")
 
     # Get ratio for rescaling with b-tagSF.
     if not '__' in fname: bSFfile = infile
