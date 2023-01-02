@@ -13,6 +13,7 @@ class CommandLineCfg {
         bool verbose = false;
         bool do_plots = true;
         bool do_yields = false;
+        bool do_systematics = false;
         bool unblind = false;
         bool systematicsBreakdown = false;
         std::string era = "";

@@ -92,6 +92,7 @@ namespace plotIt {
       // Plot method
       bool plot(Plot& plot);
       bool yields(std::vector<Plot>::iterator plots_begin, std::vector<Plot>::iterator plots_end);
+      bool systematics(std::vector<Plot>::iterator plots_begin, std::vector<Plot>::iterator plots_end);
 
       bool expandFiles();
       bool expandObjects(File& file, std::vector<Plot>& plots);
