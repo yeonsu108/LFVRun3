@@ -6,46 +6,46 @@
 #  group: GLFVSTcs
 #  order: 1
 
-'hist_ST_LFV_TCMuTau_Vector.root':
+#'hist_ST_LFV_TCMuTau_Vector.root':
+#  type: signal
+#  pretty-name: 'LFVSTcv'
+#  cross-section: 0.0368
+#  generated-events: #FIXME
+#  group: GLFVSTcv
+#  order: 1
+
+'hist_ST_LFV_TCMuTau_Tensor.root':
   type: signal
-  pretty-name: 'LFVSTcv'
-  cross-section: 0.0368
-  generated-events: 4856000.0
-  group: GLFVSTcv
+  pretty-name: 'LFVSTct'
+  cross-section: 0.1784
+  generated-events: 3404000.0
+  group: GLFVSTct
   order: 1
 
-#'hist_ST_LFV_TCMuTau_Tensor.root':
-#  type: signal
-#  pretty-name: 'LFVSTct'
-#  cross-section: 0.1784
-#  generated-events: 3404000.0
-#  group: GLFVSTct
-#  order: 1
-#
 #'hist_ST_LFV_TUMuTau_Scalar.root':
 #  type: signal
 #  pretty-name: 'LFVSTus'
 #  cross-section: 0.0838
-#  generated-events: 4807000.0
+#  generated-events: #FIXME
 #  group: GLFVSTus
 #  order: 1
 
-'hist_ST_LFV_TUMuTau_Vector.root':
-  type: signal
-  pretty-name: 'LFVSTuv'
-  cross-section: 0.393
-  generated-events: 4897981.0
-  group: GLFVSTuv
-  order: 2
-
-#'hist_ST_LFV_TUMuTau_Tensor.root':
+#'hist_ST_LFV_TUMuTau_Vector.root':
 #  type: signal
-#  pretty-name: 'LFVSTut'
-#  cross-section: 1.796
-#  generated-events: 3478000.0
-#  group: GLFVSTut
-#  order: 1
-#
+#  pretty-name: 'LFVSTuv'
+#  cross-section: 0.393
+#  generated-events: #FIXME
+#  group: GLFVSTuv
+#  order: 2
+
+'hist_ST_LFV_TUMuTau_Tensor.root':
+  type: signal
+  pretty-name: 'LFVSTut'
+  cross-section: 1.796
+  generated-events: 3478000.0
+  group: GLFVSTut
+  order: 1
+
 #'hist_TT_LFV_TCMuTau_Scalar.root':
 #  type: signal
 #  pretty-name: 'LFVTTcs'

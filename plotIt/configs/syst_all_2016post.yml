@@ -1,30 +1,3 @@
-configuration:
-  width: 450
-  height: 450
-  luminosity-label: '%1$.1f fb^{-1} (13 TeV)'
-  experiment: " CMS"
-  experiment-label-paper: true
-  extra-label: "Preliminary"
-  root: ''
-  luminosity: 41480
-  luminosity-error: 0.023
-  error-fill-style: 3254
-  error-fill-color: "#ee556270"
-  staterror-fill-style: 3145
-  staterror-fill-color: 7
-  ratio-fit-error-fill-style: 1001
-  ratio-fit-error-fill-color: "#aa556270"
-  ratio-fit-line-color: "#0B486B"
-  blinded-range-fill-color: "#29556270"
-  blinded-range-fill-style: 1001
-  yields-table-align: v
-  book-keeping-file: 'plots.root'
-  yields-table-numerical-precision-yields: 2
-
-files: 
-  include: ['files_17.yml']
-
-systematics:
   - ttLJ_xsec:   {type: const, value: 1.055, on: 'hist_TTToSemiLeptonic.root'}
   - ttLL_xsec:   {type: const, value: 1.055, on: 'hist_TTTo2L2Nu.root'}
   - ttHad_xsec:  {type: const, value: 1.055, on: 'hist_TTToHadronic.root'}
@@ -52,14 +25,15 @@ systematics:
   - other_xsec22:  {type: const, value: 1.1, on: 'hist_WW.root'}
   - other_xsec23:  {type: const, value: 1.1, on: 'hist_WZ.root'}
   - other_xsec24:  {type: const, value: 1.1, on: 'hist_ZZ.root'}
+  - tes
   - jer
   - jesAbsolute
-  - jesAbsolute_2017
+  - jesAbsolute_2016
   - jesBBEC1
-  - jesBBEC1_2017
+  - jesBBEC1_2016
   - jesFlavorQCD
   - jesRelativeBal
-  - jesRelativeSample_2017
+  - jesRelativeSample_2016
   - btaghf
   - btaglf
   - btaghfstats1
@@ -126,15 +100,3 @@ systematics:
 #  - py8tune: {type: shape, on: 'hist_TTToSemiLeptonic.root'}
 #  - py8tune: {type: shape, on: 'hist_TTTo2L2Nu.root'}
 #  - py8tune: {type: shape, on: 'hist_TTToHadronic.root'}
-
-plots:
-  include: ['histos_control.yml']
-  include: ['histos_yield.yml']
-
-legend:
-  #position: [0.18, 0.70, 0.96, 0.88]
-  position: [0.35, 0.70, 0.96, 0.88]
-  columns: 4
-
-groups:
-  include: ['groups.yml']

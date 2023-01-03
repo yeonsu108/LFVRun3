@@ -6,8 +6,8 @@ configuration:
   experiment-label-paper: true
   extra-label: "Preliminary"
   root: ''
-  luminosity: 59832
-  luminosity-error: 0.025
+  luminosity: 16812
+  luminosity-error: 0.012
   error-fill-style: 3254
   error-fill-color: "#ee556270"
   staterror-fill-style: 3145
@@ -22,7 +22,7 @@ configuration:
   yields-table-numerical-precision-yields: 2
 
 files: 
-  include: ['files_18.yml']
+  include: ['files_16post.yml']
 
 systematics:
   - ttLJ_xsec:   {type: const, value: 1.055, on: 'hist_TTToSemiLeptonic.root'}
@@ -52,14 +52,15 @@ systematics:
   - other_xsec22:  {type: const, value: 1.1, on: 'hist_WW.root'}
   - other_xsec23:  {type: const, value: 1.1, on: 'hist_WZ.root'}
   - other_xsec24:  {type: const, value: 1.1, on: 'hist_ZZ.root'}
+  - tes
   - jer
   - jesAbsolute
-  - jesAbsolute_2018
+  - jesAbsolute_2016
   - jesBBEC1
-  - jesBBEC1_2018
+  - jesBBEC1_2016
   - jesFlavorQCD
   - jesRelativeBal
-  - jesRelativeSample_2018
+  - jesRelativeSample_2016
   - btaghf
   - btaglf
   - btaghfstats1
@@ -128,8 +129,7 @@ systematics:
 #  - py8tune: {type: shape, on: 'hist_TTToHadronic.root'}
 
 plots:
-  include: ['histos_control.yml']
-  include: ['histos_yield.yml']
+  include: ['histos_control.yml', 'histos_yield.yml']
 
 legend:
   #position: [0.18, 0.70, 0.96, 0.88]
