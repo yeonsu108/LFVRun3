@@ -22,7 +22,7 @@ configuration:
   yields-table-numerical-precision-yields: 2
 
 files: 
-  include: ['files_16pre.yml']
+  include: ['files_2016pre.yml']
 
 systematics:
   - ttLJ_xsec:   {type: const, value: 1.055, on: 'hist_TTToSemiLeptonic.root'}

@@ -123,6 +123,10 @@ Drawing histogram by plotIt
 cd 2018_postprocess
 mkdir ../figure_2018
 ../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/config_18.yml -y -s
+
+#For Run2,
+python stack_signals.py -I test
+python plot_run2.py -I test
 ```
 
 ### Usage of scripts
