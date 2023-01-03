@@ -41,7 +41,7 @@ def get_bSFratio(inputf, inputh):
     else                : step = 'S4'
 
     posthist = inputf.Get('h_nevents_' + step)
-    prehist = inputf.Get('h_nevents_' + step + '__nobtag')
+    prehist = inputf.Get('h_nevents_' + step + '_nobtag')
     if '__btag' in inputh:
         posthist = inputf.Get('h_nevents_' + step + '__' + str(inputh.split('__')[-1]))
     if prehist.Integral() * posthist.Integral() == 0:
@@ -72,7 +72,7 @@ for fname in file_list:
 
     for hname in hlists:
         h = infile.Get(hname)
-        if any(i in hname for i in ['event', 'counter', '__nobtag', 'LHEPdfWeightSum']): pass
+        if any(i in hname for i in ['event', 'counter', '_nobtag', 'LHEPdfWeightSum']): pass
         elif '201' in fname and 'jes' not in fname: pass
         else:
             ratio = get_bSFratio(bSFfile, hname)

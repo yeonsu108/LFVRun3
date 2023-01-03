@@ -96,81 +96,127 @@ void TopLFVAnalyzer::defineMoreVars() {
     // External systs: JES (+btag) (14), JER(2), TES(2), hdamp(2), TuneCP5(2)
     // Weights systs: genWeight(1), PU(2), btag(16), muon Id(2)/Iso(2)/Trg(2), tauId(2*2*2), ME scale(6), PS scale(4), PDF(102)
     // Not implemented: EEprefire, top pt reweighting,
+    // eventWeight_xx : xxweight
+    // eventWeight__xx: xx unc.
 
     if (_syst == "data") {
         addVar({"eventWeight", "1.0"});
     } else {
-        addVar({"eventWeight__genpu", "unitGenWeight * puWeight[0]"});
-        addVar({"eventWeight__mu", "muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0]"});
-        addVar({"eventWeight__tau", "tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
-        addVar({"eventWeight__nopu", "unitGenWeight * eventWeight__mu * eventWeight__tau * btagWeight_DeepFlavB[0]"});
-        addVar({"eventWeight__nobtag", "eventWeight__genpu * eventWeight__mu * eventWeight__tau"});
-        addVar({"eventWeight__notau", "eventWeight__genpu * eventWeight__mu * btagWeight_DeepFlavB[0]"});
+        addVar({"eventWeight_genpu", "unitGenWeight * puWeight[0]"});
+        addVar({"eventWeight_mu", "muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0]"});
+        addVar({"eventWeight_tau", "tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
+        addVar({"eventWeight_genpumu", "unitGenWeight * puWeight[0] * eventWeight_mu"});
+        addVar({"eventWeight_genputau", "unitGenWeight * puWeight[0] * eventWeight_tau"});
+        addVar({"eventWeight_nobtag", "eventWeight_genpu * eventWeight_mu * eventWeight_tau"});
+        addVar({"eventWeight__nopu", "unitGenWeight * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
 
         if (_syst == "" or ext_syst) {
             // for external syst, we only need nominal weight
-            if (_syst.find("jesAbsoluteup") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[0]"});
-            else if (_syst.find("jesAbsolutedown") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[1]"});
-            else if (_syst.find("jesAbsolute_" + _year.substr(0,4) + "up") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[2]"});
-            else if (_syst.find("jesAbsolute_" + _year.substr(0,4) + "down") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[3]"});
-            else if (_syst.find("jesBBEC1up") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[4]"});
-            else if (_syst.find("jesBBEC1down") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[5]"});
-            else if (_syst.find("jesBBEC1_" + _year.substr(0,4) + "up") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[6]"});
-            else if (_syst.find("jesBBEC1_" + _year.substr(0,4) + "down") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[7]"});
-            else if (_syst.find("jesFlavorQCDup") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[8]"});
-            else if (_syst.find("jesFlavorQCDdown") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[9]"});
-            else if (_syst.find("jesRelativeBalup") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[10]"});
-            else if (_syst.find("jesRelativeBaldown") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[11]"});
-            else if (_syst.find("jesRelativeSample_" + _year.substr(0,4) + "up") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[12]"});
-            else if (_syst.find("jesRelativeSample_" + _year.substr(0,4) + "down") != std::string::npos)
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB_jes[13]"});
-            else
-                addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB[0]"});
+            if (_syst.find("jesAbsoluteup") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[0]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[0]"});
+            } else if (_syst.find("jesAbsolutedown") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[1]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[1]"});
+            } else if (_syst.find("jesAbsolute_" + _year.substr(0,4) + "up") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[2]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[2]"});
+            } else if (_syst.find("jesAbsolute_" + _year.substr(0,4) + "down") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[3]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[3]"});
+            } else if (_syst.find("jesBBEC1up") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[4]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[4]"});
+            } else if (_syst.find("jesBBEC1down") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[5]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[5]"});
+            } else if (_syst.find("jesBBEC1_" + _year.substr(0,4) + "up") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[6]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[6]"});
+            } else if (_syst.find("jesBBEC1_" + _year.substr(0,4) + "down") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[7]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[7]"});
+            } else if (_syst.find("jesFlavorQCDup") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[8]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[8]"});
+            } else if (_syst.find("jesFlavorQCDdown") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[9]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[9]"});
+            } else if (_syst.find("jesRelativeBalup") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[10]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[10]"});
+            } else if (_syst.find("jesRelativeBaldown") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[11]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[11]"});
+            } else if (_syst.find("jesRelativeSample_" + _year.substr(0,4) + "up") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[12]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[12]"});
+            } else if (_syst.find("jesRelativeSample_" + _year.substr(0,4) + "down") != std::string::npos) {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[13]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[13]"});
+            } else {
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB[0]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB[0]"});
+            }
         } else {
-            addVar({"eventWeight", "eventWeight__nobtag * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__puup", "unitGenWeight * puWeight[1] * eventWeight__mu * eventWeight__tau * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__pudown", "unitGenWeight * puWeight[2] * eventWeight__mu * eventWeight__tau * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__muidup", "eventWeight__genpu * muonWeightId[1] * muonWeightIso[0] * muonWeightTrg[0] * eventWeight__tau * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__muiddown", "eventWeight__genpu * muonWeightId[2] * muonWeightIso[0] * muonWeightTrg[0] * eventWeight__tau * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__muisoup", "eventWeight__genpu * muonWeightId[0] * muonWeightIso[1] * muonWeightTrg[0] * eventWeight__tau * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__muisodown", "eventWeight__genpu * muonWeightId[0] * muonWeightIso[2] * muonWeightTrg[0] * eventWeight__tau * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__mutrgup", "eventWeight__genpu * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[1] * eventWeight__tau * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__mutrgdown", "eventWeight__genpu * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[2] * eventWeight__tau * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__tauidjetup", "eventWeight__genpu * eventWeight__mu * tauWeightIdVsJet[0][1] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__tauidjetdown", "eventWeight__genpu * eventWeight__mu * tauWeightIdVsJet[0][2] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__tauidelup", "eventWeight__genpu * eventWeight__mu * tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][1] * tauWeightIdVsMu[0][0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__tauideldown", "eventWeight__genpu * eventWeight__mu * tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][2] * tauWeightIdVsMu[0][0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__tauidmuup", "eventWeight__genpu * eventWeight__mu * tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][1] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__tauidmudown", "eventWeight__genpu * eventWeight__mu * tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][2] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__btaghfup", "eventWeight__nobtag * btagWeight_DeepFlavB[1]"});
-            addVar({"eventWeight__btaghfdown", "eventWeight__nobtag * btagWeight_DeepFlavB[2]"});
-            addVar({"eventWeight__btaglfup", "eventWeight__nobtag * btagWeight_DeepFlavB[3]"});
-            addVar({"eventWeight__btaglfdown", "eventWeight__nobtag * btagWeight_DeepFlavB[4]"});
-            addVar({"eventWeight__btaghfstats1up", "eventWeight__nobtag * btagWeight_DeepFlavB[5]"});
-            addVar({"eventWeight__btaghfstats1down", "eventWeight__nobtag * btagWeight_DeepFlavB[6]"});
-            addVar({"eventWeight__btaghfstats2up", "eventWeight__nobtag * btagWeight_DeepFlavB[7]"});
-            addVar({"eventWeight__btaghfstats2down", "eventWeight__nobtag * btagWeight_DeepFlavB[8]"});
-            addVar({"eventWeight__btaglfstats1up", "eventWeight__nobtag * btagWeight_DeepFlavB[9]"});
-            addVar({"eventWeight__btaglfstats1down", "eventWeight__nobtag * btagWeight_DeepFlavB[10]"});
-            addVar({"eventWeight__btaglfstats2up", "eventWeight__nobtag * btagWeight_DeepFlavB[11]"});
-            addVar({"eventWeight__btaglfstats2down", "eventWeight__nobtag * btagWeight_DeepFlavB[12]"});
-            addVar({"eventWeight__btagcferr1up", "eventWeight__nobtag * btagWeight_DeepFlavB[13]"});
-            addVar({"eventWeight__btagcferr1down", "eventWeight__nobtag * btagWeight_DeepFlavB[14]"});
-            addVar({"eventWeight__btagcferr2up", "eventWeight__nobtag * btagWeight_DeepFlavB[15]"});
-            addVar({"eventWeight__btagcferr2down", "eventWeight__nobtag * btagWeight_DeepFlavB[16]"});
+            addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau", "eventWeight_genpu * eventWeight_mu * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__puup", "unitGenWeight * puWeight[1] * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__pudown", "unitGenWeight * puWeight[2] * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__muidup", "eventWeight_genputau * muonWeightId[1] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__muiddown", "eventWeight_genputau * muonWeightId[2] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__muisoup", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[1] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__muisodown", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[2] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__mutrgup", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[1] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__mutrgdown", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[2] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__tauidjetup", "eventWeight_genpumu * tauWeightIdVsJet[0][1] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__tauidjetdown", "eventWeight_genpumu * tauWeightIdVsJet[0][2] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__tauidelup", "eventWeight_genpumu * tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][1] * tauWeightIdVsMu[0][0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__tauideldown", "eventWeight_genpumu * tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][2] * tauWeightIdVsMu[0][0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__tauidmuup", "eventWeight_genpumu * tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][1] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__tauidmudown", "eventWeight_genpumu * tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][2] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__btaghfup", "eventWeight_nobtag * btagWeight_DeepFlavB[1]"});
+            addVar({"eventWeight__btaghfdown", "eventWeight_nobtag * btagWeight_DeepFlavB[2]"});
+            addVar({"eventWeight__btaglfup", "eventWeight_nobtag * btagWeight_DeepFlavB[3]"});
+            addVar({"eventWeight__btaglfdown", "eventWeight_nobtag * btagWeight_DeepFlavB[4]"});
+            addVar({"eventWeight__btaghfstats1up", "eventWeight_nobtag * btagWeight_DeepFlavB[5]"});
+            addVar({"eventWeight__btaghfstats1down", "eventWeight_nobtag * btagWeight_DeepFlavB[6]"});
+            addVar({"eventWeight__btaghfstats2up", "eventWeight_nobtag * btagWeight_DeepFlavB[7]"});
+            addVar({"eventWeight__btaghfstats2down", "eventWeight_nobtag * btagWeight_DeepFlavB[8]"});
+            addVar({"eventWeight__btaglfstats1up", "eventWeight_nobtag * btagWeight_DeepFlavB[9]"});
+            addVar({"eventWeight__btaglfstats1down", "eventWeight_nobtag * btagWeight_DeepFlavB[10]"});
+            addVar({"eventWeight__btaglfstats2up", "eventWeight_nobtag * btagWeight_DeepFlavB[11]"});
+            addVar({"eventWeight__btaglfstats2down", "eventWeight_nobtag * btagWeight_DeepFlavB[12]"});
+            addVar({"eventWeight__btagcferr1up", "eventWeight_nobtag * btagWeight_DeepFlavB[13]"});
+            addVar({"eventWeight__btagcferr1down", "eventWeight_nobtag * btagWeight_DeepFlavB[14]"});
+            addVar({"eventWeight__btagcferr2up", "eventWeight_nobtag * btagWeight_DeepFlavB[15]"});
+            addVar({"eventWeight__btagcferr2down", "eventWeight_nobtag * btagWeight_DeepFlavB[16]"});
+
+            // no tau - nominal is eventWeight_notau
+            addVar({"eventWeight_notau__puup", "unitGenWeight * puWeight[1] * eventWeight_mu * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__pudown", "unitGenWeight * puWeight[2] * eventWeight_mu * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__muidup", "eventWeight_genpu * muonWeightId[1] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__muiddown", "eventWeight_genpu * muonWeightId[2] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__muisoup", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[1] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__muisodown", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[2] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__mutrgup", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[1] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__mutrgdown", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[2] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__btaghfup", "eventWeight_genpumu * btagWeight_DeepFlavB[1]"});
+            addVar({"eventWeight_notau__btaghfdown", "eventWeight_genpumu * btagWeight_DeepFlavB[2]"});
+            addVar({"eventWeight_notau__btaglfup", "eventWeight_genpumu * btagWeight_DeepFlavB[3]"});
+            addVar({"eventWeight_notau__btaglfdown", "eventWeight_genpumu * btagWeight_DeepFlavB[4]"});
+            addVar({"eventWeight_notau__btaghfstats1up", "eventWeight_genpumu * btagWeight_DeepFlavB[5]"});
+            addVar({"eventWeight_notau__btaghfstats1down", "eventWeight_genpumu * btagWeight_DeepFlavB[6]"});
+            addVar({"eventWeight_notau__btaghfstats2up", "eventWeight_genpumu * btagWeight_DeepFlavB[7]"});
+            addVar({"eventWeight_notau__btaghfstats2down", "eventWeight_genpumu * btagWeight_DeepFlavB[8]"});
+            addVar({"eventWeight_notau__btaglfstats1up", "eventWeight_genpumu * btagWeight_DeepFlavB[9]"});
+            addVar({"eventWeight_notau__btaglfstats1down", "eventWeight_genpumu * btagWeight_DeepFlavB[10]"});
+            addVar({"eventWeight_notau__btaglfstats2up", "eventWeight_genpumu * btagWeight_DeepFlavB[11]"});
+            addVar({"eventWeight_notau__btaglfstats2down", "eventWeight_genpumu * btagWeight_DeepFlavB[12]"});
+            addVar({"eventWeight_notau__btagcferr1up", "eventWeight_genpumu * btagWeight_DeepFlavB[13]"});
+            addVar({"eventWeight_notau__btagcferr1down", "eventWeight_genpumu * btagWeight_DeepFlavB[14]"});
+            addVar({"eventWeight_notau__btagcferr2up", "eventWeight_genpumu * btagWeight_DeepFlavB[15]"});
+            addVar({"eventWeight_notau__btagcferr2down", "eventWeight_genpumu * btagWeight_DeepFlavB[16]"});
 
             if (_syst == "theory") {
                 // ME: [0] is renscfact=0.5d0 facscfact=0.5d0 ; [1] is renscfact=0.5d0 facscfact=1d0 ; [3] is renscfact=1d0 facscfact=0.5d0 ;
@@ -181,15 +227,28 @@ void TopLFVAnalyzer::defineMoreVars() {
                 addVar({"eventWeight__scale3", "eventWeight * LHEScaleWeight[5]"});
                 addVar({"eventWeight__scale4", "eventWeight * LHEScaleWeight[7]"});
                 addVar({"eventWeight__scale5", "eventWeight * LHEScaleWeight[8]"});
+                // notau
+                addVar({"eventWeight_notau__scale0", "eventWeight_notau * LHEScaleWeight[0]"});
+                addVar({"eventWeight_notau__scale1", "eventWeight_notau * LHEScaleWeight[1]"});
+                addVar({"eventWeight_notau__scale2", "eventWeight_notau * LHEScaleWeight[3]"});
+                addVar({"eventWeight_notau__scale3", "eventWeight_notau * LHEScaleWeight[5]"});
+                addVar({"eventWeight_notau__scale4", "eventWeight_notau * LHEScaleWeight[7]"});
+                addVar({"eventWeight_notau__scale5", "eventWeight_notau * LHEScaleWeight[8]"});
                 // PS: [0] is ISR=2 FSR=1; [1] is ISR=1 FSR=2[2] is ISR=0.5 FSR=1; [3] is ISR=1 FSR=0.5;
                 addVar({"eventWeight__ps0", "eventWeight * PSWeight[0]"});
                 addVar({"eventWeight__ps1", "eventWeight * PSWeight[1]"});
                 addVar({"eventWeight__ps2", "eventWeight * PSWeight[2]"});
                 addVar({"eventWeight__ps3", "eventWeight * PSWeight[3]"});
+                // notau
+                addVar({"eventWeight_notau__ps0", "eventWeight_notau * PSWeight[0]"});
+                addVar({"eventWeight_notau__ps1", "eventWeight_notau * PSWeight[1]"});
+                addVar({"eventWeight_notau__ps2", "eventWeight_notau * PSWeight[2]"});
+                addVar({"eventWeight_notau__ps3", "eventWeight_notau * PSWeight[3]"});
                 // PDF: LHA IDs 306000 - 306102. 306000 = nominal.
                 // TODO Check if always 103 entries are stored. unless code will crash.
                 for (int i=1; i<=102; i++) {
                     addVar({"eventWeight__pdf" + std::to_string(i), "eventWeight * LHEPdfWeight[" + std::to_string(i) + "]"});
+                    addVar({"eventWeight_notau__pdf" + std::to_string(i), "eventWeight_notau * LHEPdfWeight[" + std::to_string(i) + "]"});
                 }
             }
         }
@@ -221,13 +280,14 @@ void TopLFVAnalyzer::defineMoreVars() {
 void TopLFVAnalyzer::bookHists() {
 
     std::vector<std::string> init_weight = {""};
-    std::vector<std::string> sf_weight = {"", "__nobtag", "__nopu", "__notau", "__puup", "__pudown",
+    std::vector<std::string> sf_weight = {"", "_nobtag", "__nopu", "__notau", "__puup", "__pudown",
                    "__muidup", "__muiddown", "__muisoup", "__muisodown", "__mutrgup", "__mutrgdown",
-                   "__tauidjetup", "__tauidjetdown", "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown", 
+                   //"__tauidjetup", "__tauidjetdown", "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown", 
                    "__btaghfup", "__btaghfdown", "__btaglfup", "__btaglfdown",
                    "__btaghfstats1up", "__btaghfstats1down", "__btaghfstats2up", "__btaghfstats2down",
                    "__btaglfstats1up", "__btaglfstats1down", "__btaglfstats2up", "__btaglfstats2down",
                    "__btagcferr1up", "__btagcferr1down", "__btagcferr2up", "__btagcferr2down"};
+    std::vector<std::string> sf_weight_tau = {"__tauidjetup", "__tauidjetdown", "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown"};
 
     std::vector<std::string> theory_weight = {"__ps0", "__ps1", "__ps2", "__ps3",
                    "__scale0", "__scale1", "__scale2", "__scale3", "__scale4", "__scale5"};//,
@@ -259,22 +319,47 @@ void TopLFVAnalyzer::bookHists() {
         syst_weight = init_weight;
         if (_syst != "data") {
             //We anyway need this for bSF rescaling
-            add1DHist({"h_nevents", ";Number of events w/o b SF;Events", 2, -0.5, 1.5}, "one", "eventWeight", "__nobtag", "0", "");
+            add1DHist({"h_nevents", ";Number of events w/o b SF;Events", 2, -0.5, 1.5}, "one", "eventWeight", "_nobtag", "0", "");
         }
     }
     else {
         syst_weight = sf_weight;
-        if (_syst == "theory") syst_weight.insert(syst_weight.end(), theory_weight.begin(),  theory_weight.end());
+        if (_syst == "theory") syst_weight.insert(syst_weight.end(), theory_weight.begin(), theory_weight.end());
     }
 
     cout << "Variations to take care :";
     for (auto i : syst_weight) cout << i << " ";
     cout << endl;
 
+    // S1 w/o tau SF
+    maxstep = "00"; //Must be +1 step than its cut
+    for (std::string weightstr : syst_weight) {
+        add1DHist({"h_nevents_notausf", ";Number of events;Events", 2, -0.5, 1.5}, "one", "eventWeight_notau", weightstr, "0", maxstep);
+        add1DHist({"h_nvtx_notausf", ";Number of primary vertex;Events", 70, 0.0, 70.0}, "PV_npvsGood", "eventWeight_notau", weightstr, "0", maxstep);
+
+        add1DHist({"h_met_pt_notausf", ";MET (GeV);Events", 20, 0, 400}, "MET_pt", "eventWeight_notau", weightstr, "0", maxstep);
+        add1DHist({"h_sum_et_notausf", ";Sum ET;Events", 50, 0.0, 5000.0}, "MET_sumEt", "eventWeight_notau", weightstr, "0", maxstep);
+        add1DHist({"h_met_phi_notausf", ";MET #phi;Events", 20, -3.2, 3.2}, "MET_phi", "eventWeight_notau", weightstr, "0", maxstep);
+
+        add1DHist({"h_nmuonpass_notausf", ";Muon multiplicity;Events", 5, 0.0, 5.0}, "nmuonpass", "eventWeight_notau", weightstr, "0", maxstep);
+        add1DHist({"h_ncleantaupass_notausf", ";#tau_{h} multiplicity;Events", 5, 0.0, 5.0}, "ncleantaupass", "eventWeight_notau", weightstr, "0", maxstep);
+        add1DHist({"h_ncleanjetspass_notausf", ";Jet multiplicity;Events", 10, 0.0, 10.0}, "ncleanjetspass", "eventWeight_notau", weightstr, "0", maxstep);
+        add1DHist({"h_ncleanbjetspass_notausf", ";b-tagged jet multiplicity;Events", 5, 0.0, 5.0}, "ncleanbjetspass", "eventWeight_notau", weightstr, "0", maxstep);
+
+        add1DHist({"h_muon1_pt_notausf", ";Muon p_{T} (GeV);Events", 30, 0, 600}, "Muon1_pt", "eventWeight_notau", weightstr, "0", maxstep);
+        add1DHist({"h_muon1_eta_notausf", ";Muon #eta;Events", 20, -2.4, 2.4}, "Muon1_eta", "eventWeight_notau", weightstr, "0", maxstep);
+        add1DHist({"h_muMET_mt_notausf", ";m_{T}(#mu, MET) (GeV);Events", 20, 0, 400}, "muMET_mt", "eventWeight_notau", weightstr, "0", maxstep);
+
+        add1DHist({"h_jet1_pt_notausf", ";Leading jet p_{T} (GeV);Events", 20, 0, 400}, "Jet1_pt", "eventWeight_notau", weightstr, "0", maxstep);
+        add1DHist({"h_jet1_eta_notausf", ";Leading jet #eta;Events", 20, -2.4, 2.4}, "Jet1_eta", "eventWeight_notau", weightstr, "0", maxstep);
+        add1DHist({"h_jet1_mass_notausf", ";Leading jet mass (GeV);Events", 20, 0, 100}, "Jet1_mass", "eventWeight_notau", weightstr, "0", maxstep);
+        add1DHist({"h_jet1_btag_notausf",";DeepFlavour score of leading jet;Events", 20, 0, 1.0}, "Jet1_btagDeepFlavB", "eventWeight_notau", weightstr, "0", maxstep);
+    }
 
 
+    //for all the other nominal histograms with tauSF
+    if (_syst == "all" or _syst == "theory") syst_weight.insert(syst_weight.end(), sf_weight_tau.begin(), sf_weight_tau.end());
 
-    //for all the other nominal histograms
     maxstep = "";
 
     for (std::string weightstr : syst_weight) {

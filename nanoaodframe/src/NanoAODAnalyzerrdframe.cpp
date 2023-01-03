@@ -1235,9 +1235,9 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
             if (acut.idx.compare(c.mincutstep)==0) *rnext = rnext->Define(c.varname, c.vardefinition);
         }
         for (auto &x : _hist1dinfovector) {
-            bool reachedMax = false;
             if (acut.idx.compare(0, x.mincutstep.length(), x.mincutstep)==0) {
-                if (x.maxcutstep.length() > 0 and acut.idx.compare(0, x.maxcutstep.length(), x.maxcutstep)==0) reachedMax = true;
+                bool reachedMax = false;
+                if (x.maxcutstep.length() > 0 and acut.idx.compare(0, x.maxcutstep.length(), x.maxcutstep)>=0) reachedMax = true;
                 if (!reachedMax)
                     helper_1DHistCreator(std::string(x.hmodel.fName)+hpost+x.systname,  std::string(x.hmodel.fTitle), x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, rnext);
             }
