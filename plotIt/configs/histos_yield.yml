@@ -1,70 +1,49 @@
-'h_ncleanjetspass_S1':
+'h_ncleanjetspass_yield_S1':
   y-axis: "Events"
   y-axis-format: "%1% / %2$.2f"
-  log-y: true
   signal-normalize-data: false
   sort-by-yields: true 
   save-extensions: ['pdf']
   for-yields: true
   yields-table-order: 0
-  yields-title: 'S1'
-  rename:
-    - from: "h_ncleanjetspass_S1"
-      to: "h_ncleanjetspass_S1_yield"
+  yields-title: 'One muon'
 
-
-'h_ncleanjetspass_S2':
+'h_ncleanjetspass_yield_S2':
   y-axis: "Events"
   y-axis-format: "%1% / %2$.2f"
-  log-y: true
   signal-normalize-data: false
   sort-by-yields: true 
   save-extensions: ['pdf']
   for-yields: true
   yields-table-order: 1
-  yields-title: 'S2'
-  rename:
-    - from: "h_ncleanjetspass_S2"
-      to: "h_ncleanjetspass_S2_yield"
+  yields-title: 'One tau'
 
-'h_ncleanjetspass_S3':
+'h_ncleanjetspass_yield_S3':
   y-axis: "Events"
   y-axis-format: "%1% / %2$.2f"
-  log-y: true
   signal-normalize-data: false
   sort-by-yields: true 
   save-extensions: ['pdf']
   for-yields: true
   yields-table-order: 2
-  yields-title: 'S3'
-  rename:
-    - from: "h_ncleanjetspass_S3"
-      to: "h_ncleanjetspass_S3_yield"
+  yields-title: 'OS muon tau'
 
-'h_ncleanjetspass_S4':
+'h_ncleanjetspass_yield_S4':
   y-axis: "Events"
   y-axis-format: "%1% / %2$.2f"
-  log-y: true
   signal-normalize-data: false
   sort-by-yields: true 
   save-extensions: ['pdf']
   for-yields: true
   yields-table-order: 3
-  yields-title: 'S4'
-  rename:
-    - from: "h_ncleanjetspass_S4"
-      to: "h_ncleanjetspass_S4_yield"
+  yields-title: 'nJets\geq 3'
 
-'h_ncleanjetspass_S5':
+'h_ncleanjetspass_yield_S5':
   y-axis: "Events"
   y-axis-format: "%1% / %2$.2f"
-  log-y: true
   signal-normalize-data: false
   sort-by-yields: true
   save-extensions: ['pdf']
   for-yields: true
   yields-table-order: 4
-  yields-title: 'S5'
-  rename:
-    - from: "h_ncleanjetspass_S5"
-      to: "h_ncleanjetspass_S5_yield"
+  yields-title: 'One b-tagged jet'

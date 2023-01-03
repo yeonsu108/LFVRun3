@@ -78,6 +78,11 @@ for fname in file_list:
             ratio = get_bSFratio(bSFfile, hname)
             h.Scale(ratio)
         h.Write()
+
+        if 'ncleanjetspass' in hname:
+            h1 = h.Clone('h1')
+            h1.SetName(hname.replace('h_ncleanjetspass', 'h_ncleanjetspass_yield'))
+            h1.Write()
     infile.Close()
     outfile.Close()
 

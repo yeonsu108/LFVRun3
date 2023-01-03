@@ -53,11 +53,13 @@ for year, lumi in years.items():
       if '#' in line[0]: skip_signal = True
       if 'hist' in line:
         line = line[0] + dest_path + '/' + year + '_postprocess/' + line[1:]
-        if not any(i in line for i in ['LFV', 'Run1']):
+        if not any(i in line for i in ['LFV', 'SingleMuon']):
           line += '  scale: ' + str(int(lumi)/137570.0) + '\n'
-      if not skip_signal and not any(i in line for i in ['yields-group']):
-        if 'group' in line and not any(i in line for i in groups): string_for_files += '  group: Gother \n'
-        else: string_for_files += line
+      #if not skip_signal and not any(i in line for i in ['yields-group']):
+      if not skip_signal:
+        #if 'group' in line and not any(i in line for i in groups): string_for_files += '  group: Gother \n'
+        #else: string_for_files += line
+        string_for_files += line
 
   file_syst = ''
   with open(config_path + 'config_' + year + '.yml') as f:
@@ -119,7 +121,7 @@ with open(config_path + 'template_Run2.yml') as f:
     #f1.write("\nplots:\n  include: ['histos_dnn.yml']\n")
     f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_yield.yml']\n")
 
-call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
+#call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
 
 
 #For QCD
@@ -134,9 +136,10 @@ for year, lumi in years.items():
       if skip_signal and 'hist_QCD' in line: skip_signal = False
       if 'hist_QCD' in line:
         line = line[0] + dest_path + '/' + year + '_postprocess/' + line[1:]
-        if not any(i in line for i in ['LFV', 'Run1']):
+        if not any(i in line for i in ['LFV', 'SingleMuon']):
           line += '  scale: ' + str(int(lumi)/137570.0) + '\n'
-      if not skip_signal and not any(i in line for i in ['yields-group']): string_for_qcd += line
+      #if not skip_signal and not any(i in line for i in ['yields-group']): string_for_qcd += line
+      if not skip_signal: string_for_qcd += line
 
 
 with open(config_path + 'files_Run2.yml', 'a') as fnew:

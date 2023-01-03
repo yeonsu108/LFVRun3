@@ -1379,25 +1379,6 @@ namespace plotIt {
     std::string tab("    ");
 
     latexString << std::setiosflags(std::ios_base::fixed);
-    latexString << R"(% Yields table generated automatically by plotIt.
-% Needed packages:
-%    \usepackage{booktabs}
-%
-% Use the following if building a CMS document
-%
-% \makeatletter
-% \newcommand{\thickhline}{%
-%     \noalign {\ifnum 0=`}\fi \hrule height .08em
-%     \futurelet \reserved@a \@xhline
-% }
-% \newcommand{\thinhline}{%
-%     \noalign {\ifnum 0=`}\fi \hrule height .05em
-%     \futurelet \reserved@a \@xhline
-% }
-% \makeatother
-% \newcommand{\toprule}{\noalign{\vskip0pt}\thickhline\noalign{\vskip.65ex}}
-% \newcommand{\midrule}{\noalign{\vskip.4ex}\thinhline\noalign{\vskip.65ex}}
-% \newcommand{\bottomrule}{\noalign{\vskip.4ex}\thickhline\noalign{\vskip0pt}})" << std::endl << std::endl;
 
     auto format_number_with_errors = [](double number, double error_low, double error_high, uint8_t number_precision, uint8_t error_precision) -> std::string {
         std::stringstream ss;
@@ -1506,14 +1487,15 @@ namespace plotIt {
             if (i != (categories.size() - 1))
                 header += " & ";
         }
-        latexString << R"(@{}} \toprule)" << std::endl;
+        latexString << R"(@{}} \hline)" << std::endl;
         latexString << header << R"(\\)" << std::endl;
 
         latexString << std::setprecision(m_config.yields_table_num_prec_yields);
 
         // Start with signals
         if (!signal_processes.empty()) {
-            latexString << "Signal sample" << ((signal_processes.size() == 1) ? "" : "s") << R"( & \\ \midrule)" << std::endl;
+            //latexString << "Signal sample" << ((signal_processes.size() == 1) ? "" : "s") << R"( & \\ \hline)" << std::endl;
+            latexString << R"(\hline)" << std::endl;
 
             // Loop
             for (const auto& p: signal_processes) {
@@ -1537,7 +1519,8 @@ namespace plotIt {
 
         // Then MC samples
         if (!mc_processes.empty()) {
-            latexString << "SM sample" << ((mc_processes.size() == 1) ? "" : "s") << R"( & \\ \midrule)" << std::endl;
+            //latexString << "SM sample" << ((mc_processes.size() == 1) ? "" : "s") << R"( & \\ \hline)" << std::endl;
+            latexString << R"(\hline)" << std::endl;
 
             // Loop
             for (const auto& p: mc_processes) {
@@ -1555,11 +1538,13 @@ namespace plotIt {
             }
 
             // Space
-            latexString << R"( & \\)" << std::endl;
-            latexString << R"(Total {\scriptsize $\pm$ (stat.) $\pm$ (syst.)} & )";
+            latexString << R"( & \\ \hline)" << std::endl;
+            //latexString << R"(Total {\scriptsize $\pm$ (stat.) $\pm$ (syst.)} & )";
+            latexString << R"(Total {\scriptsize $\pm$ (stat.)} & )";
 
             for (const auto& c: categories) {
-                latexString << "$" << mc_total[c.second] << R"({\scriptstyle\ \pm\ )" << std::sqrt(mc_total_sqerrs[c.second]) << R"(\ \pm\ )" << std::sqrt(total_systematics_squared[c.second][MC]) << "}$ & ";
+                //latexString << "$" << mc_total[c.second] << R"({\scriptstyle\ \pm\ )" << std::sqrt(mc_total_sqerrs[c.second]) << R"(\ \pm\ )" << std::sqrt(total_systematics_squared[c.second][MC]) << "}$ & ";
+                latexString << "$" << mc_total[c.second] << R"({\scriptstyle\ \pm\ )" << std::sqrt(mc_total_sqerrs[c.second]) << "}$ & ";
             }
 
             latexString.seekp(latexString.tellp() - 2l);
@@ -1568,17 +1553,19 @@ namespace plotIt {
 
         // Print data
         if (has_data) {
-            latexString << R"(\midrule)" << std::endl;
-            latexString << R"(Data {\scriptsize $\pm$ (stat.)} & )";
+            latexString << R"(\hline)" << std::endl;
+            //latexString << R"(Data {\scriptsize $\pm$ (stat.)} & )";
+            latexString << R"(Data & )";
             latexString << std::setprecision(0);
 
             for (const auto& c: categories) {
                 // Compute poisson errors on the data yields
-                static const double alpha = 1. - 0.682689492;
+            //    static const double alpha = 1. - 0.682689492;
                 int64_t yield = data_yields[c.second];
-                double error_low = yield - ROOT::Math::gamma_quantile(alpha / 2., yield, 1.);
-                double error_high = ROOT::Math::gamma_quantile_c(alpha / 2., yield, 1.) - yield;
-                latexString << format_number_with_errors(yield, error_low, error_high, 0, m_config.yields_table_num_prec_yields) << " & ";
+            //    double error_low = yield - ROOT::Math::gamma_quantile(alpha / 2., yield, 1.);
+            //    double error_high = ROOT::Math::gamma_quantile_c(alpha / 2., yield, 1.) - yield;
+            //    latexString << format_number_with_errors(yield, error_low, error_high, 0, m_config.yields_table_num_prec_yields) << " & ";
+                latexString << yield << " & ";
             }
 
             latexString.seekp(latexString.tellp() - 2l);
@@ -1587,7 +1574,7 @@ namespace plotIt {
 
         // And finally data / MC
         if (!mc_processes.empty() && has_data) {
-            latexString << R"(\midrule)" << std::endl;
+            latexString << R"(\hline)" << std::endl;
             latexString << R"(Data / prediction & )";
             latexString << std::setprecision(m_config.yields_table_num_prec_ratio);
 
@@ -1596,23 +1583,24 @@ namespace plotIt {
                 int64_t data_yield = data_yields[categ];
                 double ratio = data_yield / mc_total[categ];
 
-                static const double alpha = 1. - 0.682689492;
-                double error_data_low = data_yield - ROOT::Math::gamma_quantile(alpha / 2., data_yield, 1.);
-                double error_data_high = ROOT::Math::gamma_quantile_c(alpha / 2., data_yield, 1.) - data_yield;
+            //    static const double alpha = 1. - 0.682689492;
+            //    double error_data_low = data_yield - ROOT::Math::gamma_quantile(alpha / 2., data_yield, 1.);
+            //    double error_data_high = ROOT::Math::gamma_quantile_c(alpha / 2., data_yield, 1.) - data_yield;
 
-                double error_mc = std::sqrt(mc_total_sqerrs[categ] + total_systematics_squared[categ][MC]);
+            //    double error_mc = std::sqrt(mc_total_sqerrs[categ] + total_systematics_squared[categ][MC]);
 
-                double error_low = ratio * std::sqrt(std::pow(error_data_low / data_yields[categ], 2) +  std::pow(error_mc / mc_total[categ], 2));
-                double error_high = ratio * std::sqrt(std::pow(error_data_high / data_yields[categ], 2) +  std::pow(error_mc / mc_total[categ], 2));
+            //    double error_low = ratio * std::sqrt(std::pow(error_data_low / data_yields[categ], 2) +  std::pow(error_mc / mc_total[categ], 2));
+            //    double error_high = ratio * std::sqrt(std::pow(error_data_high / data_yields[categ], 2) +  std::pow(error_mc / mc_total[categ], 2));
 
-                latexString << format_number_with_errors(ratio, error_low, error_high, m_config.yields_table_num_prec_ratio, m_config.yields_table_num_prec_ratio) << " & ";
+            //    latexString << format_number_with_errors(ratio, error_low, error_high, m_config.yields_table_num_prec_ratio, m_config.yields_table_num_prec_ratio) << " & ";
+                latexString << ratio << " & ";
             }
 
             latexString.seekp(latexString.tellp() - 2l);
             latexString << R"( \\ )" << std::endl;
         }
 
-        latexString << R"(\bottomrule)" << std::endl;
+        latexString << R"(\hline)" << std::endl;
         latexString << R"(\end{tabular})" << std::endl;
     } else {
       std::cerr << "Error: yields table alignment " << m_config.yields_table_align << " is not recognized (for now, only \"h\" and \"v\" are supported)" << std::endl;
