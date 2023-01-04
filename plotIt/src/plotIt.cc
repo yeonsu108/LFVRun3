@@ -1439,12 +1439,15 @@ namespace plotIt {
         latexString << std::setprecision(m_config.yields_table_num_prec_yields);
 
         for(auto &proc: signal_processes)
-          latexString << "$" << signal_yields[categ][proc].first << " \\pm " << std::sqrt(signal_yields[categ][proc].second + std::pow(process_systematics[std::make_tuple(SIGNAL, categ, proc)], 2)) << "$ & ";
+          latexString << "$" << signal_yields[categ][proc].first << " \\pm " << std::sqrt(signal_yields[categ][proc].second) << "$ & ";
+          //latexString << "$" << signal_yields[categ][proc].first << " \\pm " << std::sqrt(signal_yields[categ][proc].second + std::pow(process_systematics[std::make_tuple(SIGNAL, categ, proc)], 2)) << "$ & ";
 
         for(auto &proc: mc_processes)
-          latexString << "$" << mc_yields[categ][proc].first << " \\pm " << std::sqrt(mc_yields[categ][proc].second + std::pow(process_systematics[std::make_tuple(MC, categ, proc)], 2)) << "$ & ";
+          latexString << "$" << mc_yields[categ][proc].first << " \\pm " << std::sqrt(mc_yields[categ][proc].second) << "$ & ";
+          //latexString << "$" << mc_yields[categ][proc].first << " \\pm " << std::sqrt(mc_yields[categ][proc].second + std::pow(process_systematics[std::make_tuple(MC, categ, proc)], 2)) << "$ & ";
         if( mc_processes.size() )
-          latexString << "$" << mc_total[categ] << " \\pm " << std::sqrt(mc_total_sqerrs[categ] + total_systematics_squared[categ][MC]) << "$ & ";
+          latexString << "$" << mc_total[categ] << " \\pm " << std::sqrt(mc_total_sqerrs[categ]) << "$ & ";
+          //latexString << "$" << mc_total[categ] << " \\pm " << std::sqrt(mc_total_sqerrs[categ] + total_systematics_squared[categ][MC]) << "$ & ";
 
         if( has_data ) {
           static const double alpha = 1. - 0.682689492;
@@ -1505,7 +1508,8 @@ namespace plotIt {
                 for (const auto& c: categories) {
                     std::string categ = c.second;
 
-                    latexString << "$" << signal_yields[categ][p].first << R"( {\scriptstyle\ \pm\ )" << std::sqrt(signal_yields[categ][p].second + std::pow(process_systematics[std::make_tuple(SIGNAL, categ, p)], 2)) << "}$ & ";
+                    //latexString << "$" << signal_yields[categ][p].first << R"( {\scriptstyle\ \pm\ )" << std::sqrt(signal_yields[categ][p].second + std::pow(process_systematics[std::make_tuple(SIGNAL, categ, p)], 2)) << "}$ & ";
+                    latexString << "$" << signal_yields[categ][p].first << R"( {\scriptstyle\ \pm\ )" << std::sqrt(signal_yields[categ][p].second) << "}$ & ";
                 }
 
                 latexString.seekp(latexString.tellp() - 2l);
@@ -1530,7 +1534,8 @@ namespace plotIt {
                 for (const auto& c: categories) {
                     std::string categ = c.second;
 
-                    latexString << "$" << mc_yields[categ][p].first << R"( {\scriptstyle\ \pm\ )" << std::sqrt(mc_yields[categ][p].second + std::pow(process_systematics[std::make_tuple(MC, categ, p)], 2)) << "}$ & ";
+                    //latexString << "$" << mc_yields[categ][p].first << R"( {\scriptstyle\ \pm\ )" << std::sqrt(mc_yields[categ][p].second + std::pow(process_systematics[std::make_tuple(MC, categ, p)], 2)) << "}$ & ";
+                    latexString << "$" << mc_yields[categ][p].first << R"( {\scriptstyle\ \pm\ )" << std::sqrt(mc_yields[categ][p].second) << "}$ & ";
                 }
 
                 latexString.seekp(latexString.tellp() - 2l);
