@@ -72,7 +72,7 @@ systematics:
 #  - py8tune: {type: shape, on: 'TTTo'}
 
 plots:
-  include: ['histos_control.yml', 'histos_yield.yml']
+  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']
   #include: ['histos_yield.yml']
 
 legend:

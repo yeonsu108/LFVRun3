@@ -72,18 +72,23 @@
 #MET pt
 'h_met_pt_notausf_S1':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 'h_met_pt_S2':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 'h_met_pt_S3':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 'h_met_pt_S4':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 'h_met_pt_S5':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 
 #MET phi
@@ -106,18 +111,23 @@
 #Muon pt
 'h_muon1_pt_notausf_S1':
   save-extensions: ['pdf']
+  blinded-range: [250, 599]
 
 'h_muon1_pt_S2':
   save-extensions: ['pdf']
+  blinded-range: [250, 599]
 
 'h_muon1_pt_S3':
   save-extensions: ['pdf']
+  blinded-range: [250, 599]
 
 'h_muon1_pt_S4':
   save-extensions: ['pdf']
+  blinded-range: [250, 599]
 
 'h_muon1_pt_S5':
   save-extensions: ['pdf']
+  blinded-range: [250, 599]
 
 
 #Muon eta
@@ -140,32 +150,41 @@
 #Muon + MET MT
 'h_muMET_mt_notausf_S1':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 'h_muMET_mt_S2':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 'h_muMET_mt_S3':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 'h_muMET_mt_S4':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 'h_muMET_mt_S5':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 
 #tau pt
 'h_tau1_pt_S2':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 'h_tau1_pt_S3':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 'h_tau1_pt_S4':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 'h_tau1_pt_S5':
   save-extensions: ['pdf']
+  blinded-range: [200, 399]
 
 
 #tau eta
@@ -185,46 +204,59 @@
 #Muon tau dR
 'h_mutau_dR_S2':
   save-extensions: ['pdf']
+  blinded-range: [0, 1.9]
 
 'h_mutau_dR_S3':
   save-extensions: ['pdf']
+  blinded-range: [0, 1.9]
 
 'h_mutau_dR_S4':
   save-extensions: ['pdf']
+  blinded-range: [0, 1.9]
 
 'h_mutau_dR_S5':
   save-extensions: ['pdf']
+  blinded-range: [0, 1.9]
 
 
 #Muon tau mass
 'h_mutau_mass_S2':
   save-extensions: ['pdf']
+  blinded-range: [400, 999]
 
 'h_mutau_mass_S3':
   save-extensions: ['pdf']
+  blinded-range: [400, 999]
 
 'h_mutau_mass_S4':
   save-extensions: ['pdf']
+  blinded-range: [400, 999]
 
 'h_mutau_mass_S5':
   save-extensions: ['pdf']
+  blinded-range: [400, 999]
 
 
 #jet1 pt
 'h_jet1_pt_notausf_S1':
   save-extensions: ['pdf']
+  blinded-range: [300, 399]
 
 'h_jet1_pt_S2':
   save-extensions: ['pdf']
+  blinded-range: [300, 399]
 
 'h_jet1_pt_S3':
   save-extensions: ['pdf']
+  blinded-range: [300, 399]
 
 'h_jet1_pt_S4':
   save-extensions: ['pdf']
+  blinded-range: [300, 399]
 
 'h_jet1_pt_S5':
   save-extensions: ['pdf']
+  blinded-range: [300, 399]
 
 
 #jet1 eta
@@ -264,9 +296,11 @@
 #jet2 pt
 'h_jet2_pt_S4':
   save-extensions: ['pdf']
+  blinded-range: [300, 399]
 
 'h_jet2_pt_S5':
   save-extensions: ['pdf']
+  blinded-range: [300, 399]
 
 
 #jet2 eta
@@ -312,6 +346,7 @@
 #bjet at step5
 'h_bjet1_pt_S5':
   save-extensions: ['pdf']
+  blinded-range: [300, 399]
 
 'h_bjet1_eta_S5':
   save-extensions: ['pdf']
