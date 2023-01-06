@@ -101,14 +101,16 @@ void TopLFVAnalyzer::defineMoreVars() {
 
     if (_syst == "data") {
         addVar({"eventWeight", "1.0"});
+        addVar({"eventWeight_notau", "1.0"});
     } else {
         addVar({"eventWeight_genpu", "unitGenWeight * puWeight[0]"});
         addVar({"eventWeight_mu", "muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0]"});
         addVar({"eventWeight_tau", "tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
         addVar({"eventWeight_genpumu", "unitGenWeight * puWeight[0] * eventWeight_mu"});
+        addVar({"eventWeight_notau_nobtag", "eventWeight_genpumu"}); //didn't want to duplicate entry...
         addVar({"eventWeight_genputau", "unitGenWeight * puWeight[0] * eventWeight_tau"});
         addVar({"eventWeight_nobtag", "eventWeight_genpu * eventWeight_mu * eventWeight_tau"});
-        addVar({"eventWeight__nopu", "unitGenWeight * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
+        addVar({"eventWeight_nopu", "unitGenWeight * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
 
         if (_syst == "" or ext_syst) {
             // for external syst, we only need nominal weight
@@ -193,6 +195,7 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"eventWeight__btagcferr2down", "eventWeight_nobtag * btagWeight_DeepFlavB[16]"});
 
             // no tau - nominal is eventWeight_notau
+            addVar({"eventWeight_notau_nopu", "unitGenWeight * eventWeight_mu * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__puup", "unitGenWeight * puWeight[1] * eventWeight_mu * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__pudown", "unitGenWeight * puWeight[2] * eventWeight_mu * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__muidup", "eventWeight_genpu * muonWeightId[1] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
@@ -280,7 +283,7 @@ void TopLFVAnalyzer::defineMoreVars() {
 void TopLFVAnalyzer::bookHists() {
 
     std::vector<std::string> init_weight = {""};
-    std::vector<std::string> sf_weight = {"", "_nobtag", "__nopu", "__notau", "__puup", "__pudown",
+    std::vector<std::string> sf_weight = {"", "_nobtag", "_nopu", "_notau", "__puup", "__pudown",
                    "__muidup", "__muiddown", "__muisoup", "__muisodown", "__mutrgup", "__mutrgdown",
                    //"__tauidjetup", "__tauidjetdown", "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown", 
                    "__btaghfup", "__btaghfdown", "__btaglfup", "__btaglfdown",
@@ -320,6 +323,7 @@ void TopLFVAnalyzer::bookHists() {
         if (_syst != "data") {
             //We anyway need this for bSF rescaling
             add1DHist({"h_nevents", ";Number of events w/o b SF;Events", 2, -0.5, 1.5}, "one", "eventWeight", "_nobtag", "0", "");
+            add1DHist({"h_nevents_notausf", ";Number of events w/o b and tau SF;Events", 2, -0.5, 1.5}, "one", "eventWeight_notau", "_nobtag", "0", "00");
         }
     }
     else {
@@ -334,6 +338,8 @@ void TopLFVAnalyzer::bookHists() {
     // S1 w/o tau SF
     maxstep = "00"; //Must be +1 step than its cut
     for (std::string weightstr : syst_weight) {
+        if (weightstr.find("notau") != std::string::npos) continue;
+
         add1DHist({"h_nevents_notausf", ";Number of events;Events", 2, -0.5, 1.5}, "one", "eventWeight_notau", weightstr, "0", maxstep);
         add1DHist({"h_nvtx_notausf", ";Number of primary vertex;Events", 70, 0.0, 70.0}, "PV_npvsGood", "eventWeight_notau", weightstr, "0", maxstep);
 

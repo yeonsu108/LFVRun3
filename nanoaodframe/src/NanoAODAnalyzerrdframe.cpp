@@ -620,10 +620,10 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 JME::JetParameters jetPars = {{JME::Binning::JetPt, jetpts[i]},
                                               {JME::Binning::JetEta, jetetas[i]},
                                               {JME::Binning::Rho, rho}};
-                const float jetRes = jetResObj.getResolution(jetPars); // Note: this is relative resolution.
-                const float cJER   = jetResSFObj.getScaleFactor(jetPars);
-                const float cJERUp = jetResSFObj.getScaleFactor(jetPars, Variation::UP);
-                const float cJERDn = jetResSFObj.getScaleFactor(jetPars, Variation::DOWN);
+                const float jetRes = static_cast<float>(jetResObj.getResolution(jetPars)); // Note: this is relative resolution.
+                const float cJER   = static_cast<float>(jetResSFObj.getScaleFactor(jetPars));
+                const float cJERUp = static_cast<float>(jetResSFObj.getScaleFactor(jetPars, Variation::UP));
+                const float cJERDn = static_cast<float>(jetResSFObj.getScaleFactor(jetPars, Variation::DOWN));
 
                 bool _isGenMatch = false;
                 ROOT::Math::PtEtaPhiMVector jetv(jetpts[i], jetetas[i], jetphis[i], jetms[i]);
@@ -667,6 +667,8 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                         if (std::isnan(tmpjer) or std::isinf(tmpjer) or tmpjer<0 ) var.emplace_back(1.0f);
                         else var.emplace_back(std::max(0.0f, tmpjer));
                     }
+                } else {
+                    var = {1.0f, 1.0f, 1.0f};
                 }
                 out.emplace_back(var);
                 var.clear();
@@ -861,26 +863,28 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
 
 void NanoAODAnalyzerrdframe::selectTaus() {
 
+    auto syst_unc = _syst;
+
     //TES var.
     if (!_isData) {
 
-        int idx = -1;
+        auto selectTES = [syst_unc](floatsVec unc)->floats {
 
-        auto selectTES = [idx](floatsVec unc)->floats {
-
+            int idx = -1;
+            if (syst_unc.find("tesup") != std::string::npos) idx = 0;
+            else if (syst_unc.find("tesdown") != std::string::npos) idx = 1;
             floats selected;
             selected.reserve(unc.size());
 
             for (size_t i=0; i<unc.size(); i++) {
+                if (idx < 0) selected.emplace_back(1.0f);
                 selected.emplace_back(unc[i][idx]);
+                std::cout << idx << " " << unc[i][idx]  << endl;
             }
             return selected;
         };
 
-        if (_syst.find("tesup") != std::string::npos)        idx = 0;
-        else if (_syst.find("tesdown") != std::string::npos) idx = 1;
-
-        if (idx > -1) {
+        if (_syst.find("tes") != std::string::npos) {
           _rlm = _rlm.Define("Tau_pt_unc_toapply", selectTES, {"Tau_pt_unc"})
                      .Redefine("Tau_pt", "Tau_pt * Tau_pt_unc_toapply")
                      .Redefine("Tau_mass", "Tau_mass * Tau_pt_unc_toapply");
