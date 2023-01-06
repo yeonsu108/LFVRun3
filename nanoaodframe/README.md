@@ -127,6 +127,7 @@ mkdir ../figure_2018
 #For Run2,
 python stack_signals.py -I test
 python plot_run2.py -I test
+python print_syst_table.py -O test4 -Y 2018
 ```
 
 ### Usage of scripts

@@ -10,7 +10,7 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=1gb 
 #SBATCH --comment python
-#SBATCH --time 05:00:00
+#SBATCH --time 20:00:00
 #SBATCH --hint=compute_bound
 
 year=$1
