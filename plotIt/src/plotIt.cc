@@ -1442,9 +1442,13 @@ namespace plotIt {
           latexString << "$" << signal_yields[categ][proc].first << " \\pm " << std::sqrt(signal_yields[categ][proc].second) << "$ & ";
           //latexString << "$" << signal_yields[categ][proc].first << " \\pm " << std::sqrt(signal_yields[categ][proc].second + std::pow(process_systematics[std::make_tuple(SIGNAL, categ, proc)], 2)) << "$ & ";
 
-        for(auto &proc: mc_processes)
-          latexString << "$" << mc_yields[categ][proc].first << " \\pm " << std::sqrt(mc_yields[categ][proc].second) << "$ & ";
-          //latexString << "$" << mc_yields[categ][proc].first << " \\pm " << std::sqrt(mc_yields[categ][proc].second + std::pow(process_systematics[std::make_tuple(MC, categ, proc)], 2)) << "$ & ";
+        for(auto &proc: mc_processes) {
+          if(mc_yields[categ][proc].first > 0)
+            latexString << "$" << mc_yields[categ][proc].first << " \\pm " << std::sqrt(mc_yields[categ][proc].second) << "$ & ";
+            //latexString << "$" << mc_yields[categ][proc].first << " \\pm " << std::sqrt(mc_yields[categ][proc].second + std::pow(process_systematics[std::make_tuple(MC, categ, proc)], 2)) << "$ & ";
+          else
+            latexString << "$" << "0" << " \\pm " << std::sqrt(mc_yields[categ][proc].second) << "$ & ";
+        }
         if( mc_processes.size() )
           latexString << "$" << mc_total[categ] << " \\pm " << std::sqrt(mc_total_sqerrs[categ]) << "$ & ";
           //latexString << "$" << mc_total[categ] << " \\pm " << std::sqrt(mc_total_sqerrs[categ] + total_systematics_squared[categ][MC]) << "$ & ";
@@ -1534,8 +1538,11 @@ namespace plotIt {
                 for (const auto& c: categories) {
                     std::string categ = c.second;
 
-                    //latexString << "$" << mc_yields[categ][p].first << R"( {\scriptstyle\ \pm\ )" << std::sqrt(mc_yields[categ][p].second + std::pow(process_systematics[std::make_tuple(MC, categ, p)], 2)) << "}$ & ";
-                    latexString << "$" << mc_yields[categ][p].first << R"( {\scriptstyle\ \pm\ )" << std::sqrt(mc_yields[categ][p].second) << "}$ & ";
+                    if (mc_yields[categ][p].first > 0)
+                      //latexString << "$" << mc_yields[categ][p].first << R"( {\scriptstyle\ \pm\ )" << std::sqrt(mc_yields[categ][p].second + std::pow(process_systematics[std::make_tuple(MC, categ, p)], 2)) << "}$ & ";
+                      latexString << "$" << mc_yields[categ][p].first << R"( {\scriptstyle\ \pm\ )" << std::sqrt(mc_yields[categ][p].second) << "}$ & ";
+                    else
+                      latexString << "$" << "0" << R"( {\scriptstyle\ \pm\ )" << std::sqrt(mc_yields[categ][p].second) << "}$ & ";
                 }
 
                 latexString.seekp(latexString.tellp() - 2l);
@@ -1626,7 +1633,7 @@ namespace plotIt {
   }
 
 
-  // systematic table
+  // systematics table
   bool plotIt::systematics(std::vector<Plot>::iterator plots_begin, std::vector<Plot>::iterator plots_end){
     std::cout << "Producing LaTeX systematic table.\n";
 
@@ -1802,8 +1809,11 @@ namespace plotIt {
 
           for (const auto& c: categories) {
             std::string categ = c.second;
-            latexString << R"($\pm$ )" << std::setprecision(m_config.yields_table_num_prec_yields) << (std::sqrt(std::pow(process_systematics[std::make_tuple(MC, categ, p)], 2))/mc_yields[categ][p].first)*100 << R"(\% & )";
-            //latexString << R"($\pm$ )" << std::setprecision(m_config.yields_table_num_prec_yields) << (std::sqrt(std::pow(process_systematics[std::make_tuple(MC, categ, p)], 2))) << R"(\% & )";
+            if(mc_yields[categ][p].first > 0)
+              latexString << R"($\pm$ )" << std::setprecision(m_config.yields_table_num_prec_yields) << (std::sqrt(std::pow(process_systematics[std::make_tuple(MC, categ, p)], 2))/mc_yields[categ][p].first)*100 << R"(\% & )";
+              //latexString << R"($\pm$ )" << std::setprecision(m_config.yields_table_num_prec_yields) << (std::sqrt(std::pow(process_systematics[std::make_tuple(MC, categ, p)], 2))) << R"(\% & )";
+            else
+              latexString << R"($\pm$ )" << R"($-$ )" << R"(\% & )";
           }
 
           latexString.seekp(latexString.tellp() - 2l);
