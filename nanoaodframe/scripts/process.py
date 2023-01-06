@@ -27,7 +27,7 @@ mc_list = [os.path.join(mcdir, s) for s in os.listdir(mcdir)]
 
 dataset_list = data_list + mc_list
 
-syst_list = ["", "__jerup","__jerdown", "__jesAbsoluteup","__jesAbsolutedown",
+syst_list = ["", "__tesup", "__tesdown", "__jerup","__jerdown", "__jesAbsoluteup","__jesAbsolutedown",
              "__jesAbsolute_"+year[:4]+"up", "__jesAbsolute_"+year[:4]+"down",
              "__jesBBEC1up", "__jesBBEC1down", "__jesBBEC1_"+year[:4]+"up", "__jesBBEC1_"+year[:4]+"down",
              "__jesFlavorQCDup", "__jesFlavorQCDdown", "__jesRelativeBalup", "__jesRelativeBaldown",
@@ -80,7 +80,7 @@ for ds in dataset_list:
 
 
 for item in parameters:
-    runString = "sbatch -J " + item[3] + " scripts/job_slurm_process.sh " + item[0] + " " + item[1] + " " + item[2] + " " + item[3] + " " + workdir + " " +logdir + " " + item[4]
+    runString = "sbatch -J " + item[0] + '_' + item[3] + " scripts/job_slurm_process.sh " + item[0] + " " + item[1] + " " + item[2] + " " + item[3] + " " + workdir + " " +logdir + " " + item[4]
 
     print(runString)
     if not options.dry:
