@@ -24,6 +24,7 @@
   sort-by-yields: true
   save-extensions: ['pdf']
 
+
 #b jet multiplicities
 'h_ncleanbjetspass_notausf_S1':
   log-y: true
@@ -50,6 +51,7 @@
   sort-by-yields: true
   save-extensions: ['pdf']
 
+
 #PV
 'h_nvtx_notausf_S1':
   save-extensions: ['pdf']
@@ -65,6 +67,7 @@
 
 'h_nvtx_S5':
   save-extensions: ['pdf']
+
 
 #MET pt
 'h_met_pt_notausf_S1':
@@ -82,6 +85,7 @@
 'h_met_pt_S5':
   save-extensions: ['pdf']
 
+
 #MET phi
 'h_met_phi_notausf_S1':
   save-extensions: ['pdf']
@@ -97,6 +101,7 @@
 
 'h_met_phi_S5':
   save-extensions: ['pdf']
+
 
 #Muon pt
 'h_muon1_pt_notausf_S1':
@@ -114,6 +119,7 @@
 'h_muon1_pt_S5':
   save-extensions: ['pdf']
 
+
 #Muon eta
 'h_muon1_eta_notausf_S1':
   save-extensions: ['pdf']
@@ -130,6 +136,24 @@
 'h_muon1_eta_S5':
   save-extensions: ['pdf']
 
+
+#Muon + MET MT
+'h_muMET_mt_notausf_S1':
+  save-extensions: ['pdf']
+
+'h_muMET_mt_S2':
+  save-extensions: ['pdf']
+
+'h_muMET_mt_S3':
+  save-extensions: ['pdf']
+
+'h_muMET_mt_S4':
+  save-extensions: ['pdf']
+
+'h_muMET_mt_S5':
+  save-extensions: ['pdf']
+
+
 #tau pt
 'h_tau1_pt_S2':
   save-extensions: ['pdf']
@@ -143,6 +167,7 @@
 'h_tau1_pt_S5':
   save-extensions: ['pdf']
 
+
 #tau eta
 'h_tau1_eta_S2':
   save-extensions: ['pdf']
@@ -154,4 +179,139 @@
   save-extensions: ['pdf']
 
 'h_tau1_eta_S5':
+  save-extensions: ['pdf']
+
+
+#Muon tau dR
+'h_mutau_dR_S2':
+  save-extensions: ['pdf']
+
+'h_mutau_dR_S3':
+  save-extensions: ['pdf']
+
+'h_mutau_dR_S4':
+  save-extensions: ['pdf']
+
+'h_mutau_dR_S5':
+  save-extensions: ['pdf']
+
+
+#Muon tau mass
+'h_mutau_mass_S2':
+  save-extensions: ['pdf']
+
+'h_mutau_mass_S3':
+  save-extensions: ['pdf']
+
+'h_mutau_mass_S4':
+  save-extensions: ['pdf']
+
+'h_mutau_mass_S5':
+  save-extensions: ['pdf']
+
+
+#jet1 pt
+'h_jet1_pt_notausf_S1':
+  save-extensions: ['pdf']
+
+'h_jet1_pt_S2':
+  save-extensions: ['pdf']
+
+'h_jet1_pt_S3':
+  save-extensions: ['pdf']
+
+'h_jet1_pt_S4':
+  save-extensions: ['pdf']
+
+'h_jet1_pt_S5':
+  save-extensions: ['pdf']
+
+
+#jet1 eta
+'h_jet1_eta_notausf_S1':
+  save-extensions: ['pdf']
+
+'h_jet1_eta_S2':
+  save-extensions: ['pdf']
+
+'h_jet1_eta_S3':
+  save-extensions: ['pdf']
+
+'h_jet1_eta_S4':
+  save-extensions: ['pdf']
+
+'h_jet1_eta_S5':
+  save-extensions: ['pdf']
+
+
+#jet1 btag
+'h_jet1_btag_notausf_S1':
+  save-extensions: ['pdf']
+
+'h_jet1_btag_S2':
+  save-extensions: ['pdf']
+
+'h_jet1_btag_S3':
+  save-extensions: ['pdf']
+
+'h_jet1_btag_S4':
+  save-extensions: ['pdf']
+
+'h_jet1_btag_S5':
+  save-extensions: ['pdf']
+
+
+#jet2 pt
+'h_jet2_pt_S4':
+  save-extensions: ['pdf']
+
+'h_jet2_pt_S5':
+  save-extensions: ['pdf']
+
+
+#jet2 eta
+'h_jet2_eta_S4':
+  save-extensions: ['pdf']
+
+'h_jet2_eta_S5':
+  save-extensions: ['pdf']
+
+
+#jet2 btag
+'h_jet2_btag_S4':
+  save-extensions: ['pdf']
+
+'h_jet2_btag_S5':
+  save-extensions: ['pdf']
+
+
+#jet3 pt
+'h_jet3_pt_S4':
+  save-extensions: ['pdf']
+
+'h_jet3_pt_S5':
+  save-extensions: ['pdf']
+
+
+#jet3 eta
+'h_jet3_eta_S4':
+  save-extensions: ['pdf']
+
+'h_jet3_eta_S5':
+  save-extensions: ['pdf']
+
+
+#jet3 btag
+'h_jet3_btag_S4':
+  save-extensions: ['pdf']
+
+'h_jet3_btag_S5':
+  save-extensions: ['pdf']
+
+
+#bjet at step5
+'h_bjet1_pt_S5':
+  save-extensions: ['pdf']
+
+'h_bjet1_eta_S5':
   save-extensions: ['pdf']
