@@ -24,9 +24,7 @@ common_syst_list += ['jesAbsolute_2016', 'jesAbsolute_2017', 'jesAbsolute_2018',
 
 years = {'2016pre': 19502, '2016post': 16812, '2017': 41480, '2018':59832}
 
-reco_str = input
-
-dest_path = reco_str
+dest_path = input
 if not os.path.exists(os.path.join(dest_path, 'figure_run2')):
   try: os.makedirs(os.path.join(dest_path, 'figure_run2'))
   except: pass
@@ -38,7 +36,7 @@ for item in common_syst_list:
   common_syst += '  - ' + item + '\n'
 
 string_for_files = ''
-dest_path = reco_str
+file_syst = ''
 
 for year, lumi in years.items():
   #Firstly, merge file list + scale
@@ -61,15 +59,20 @@ for year, lumi in years.items():
         #else: string_for_files += line
         string_for_files += line
 
-  file_syst = ''
   with open(config_path + 'config_' + year + '.yml') as f:
     lines = f.readlines()
     for line in lines:
       if 'type' in line:
         if 'const' in line:
-          file_syst += line[:line.find(':')] + '_' + year + line[line.find(':'):line.find('hist')] + '/' + year + '_postprocess/' + line[line.find('hist'):]
+          #file_syst += line[:line.find(':')] + '_' + year + line[line.find(':'):line.find('hist')] + dest_path + '/' + year + '_postprocess/' + line[line.find('hist'):]
+          #file_syst += line[:line.find(':')] + '_' + year + line[line.find(':'):line.find('hist')] + line[line.find('hist'):]
+          if year == '2016pre':
+            file_syst += line
         elif 'shape' in line:
-          file_syst += line[:line.find('hist')] + '/' + year + '_postprocess/' + line[line.find('hist'):]
+          #file_syst += line[:line.find('hist')] + dest_path + '/' + year + '_postprocess/' + line[line.find('hist'):]
+          #file_syst += line[:line.find('hist')] + line[line.find('hist'):]
+          if year == '2016pre':
+            file_syst += line
 
 
 with open(config_path + 'files_Run2.yml', 'w+') as fnew:
@@ -119,7 +122,7 @@ with open(config_path + 'template_Run2.yml') as f:
     f1.write(common_syst)
     f1.write(file_syst)
     #f1.write("\nplots:\n  include: ['histos_dnn.yml']\n")
-    f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_yield.yml']\n")
+    f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']\n")
 
 #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
 
@@ -152,6 +155,6 @@ with open(config_path + 'template_Run2.yml') as f:
     f1.write(common_syst)
     f1.write(file_syst)
     #f1.write("\nplots:\n  include: ['histos_dnn.yml']\n")
-    f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_yield.yml']\n")
+    f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']\n")
 
 call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
