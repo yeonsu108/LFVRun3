@@ -288,10 +288,10 @@ void NanoAODAnalyzerrdframe::selectMuons() {
     TFile *muoniso;
 
     if (_isRun16pre) {
-        muonFile = "2016_UL_HIPM_";
+        muonFile = "2016_UL_HIPM";
         muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
     } else if (_isRun16post) {
-        muonFile = "2016_UL_";
+        muonFile = "2016_UL";
         muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
     } else if (_isRun17) {
         muonTrgHist = "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
@@ -620,10 +620,10 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 JME::JetParameters jetPars = {{JME::Binning::JetPt, jetpts[i]},
                                               {JME::Binning::JetEta, jetetas[i]},
                                               {JME::Binning::Rho, rho}};
-                const float jetRes = jetResObj.getResolution(jetPars); // Note: this is relative resolution.
-                const float cJER   = jetResSFObj.getScaleFactor(jetPars);
-                const float cJERUp = jetResSFObj.getScaleFactor(jetPars, Variation::UP);
-                const float cJERDn = jetResSFObj.getScaleFactor(jetPars, Variation::DOWN);
+                const float jetRes = static_cast<float>(jetResObj.getResolution(jetPars)); // Note: this is relative resolution.
+                const float cJER   = static_cast<float>(jetResSFObj.getScaleFactor(jetPars));
+                const float cJERUp = static_cast<float>(jetResSFObj.getScaleFactor(jetPars, Variation::UP));
+                const float cJERDn = static_cast<float>(jetResSFObj.getScaleFactor(jetPars, Variation::DOWN));
 
                 bool _isGenMatch = false;
                 ROOT::Math::PtEtaPhiMVector jetv(jetpts[i], jetetas[i], jetphis[i], jetms[i]);
@@ -667,6 +667,8 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                         if (std::isnan(tmpjer) or std::isinf(tmpjer) or tmpjer<0 ) var.emplace_back(1.0f);
                         else var.emplace_back(std::max(0.0f, tmpjer));
                     }
+                } else {
+                    var = {1.0f, 1.0f, 1.0f};
                 }
                 out.emplace_back(var);
                 var.clear();
@@ -747,15 +749,18 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
         for (std::string src : var) {
             double bweight = 1.0;
             for (unsigned int i=0; i<pts.size(); i++) {
-                if (pts[i]*jer[i][0] < 40) continue;
-                if (src.find("cferr") != std::string::npos and hadflav[i] != 4) continue;
-                if (src.find("cferr") == std::string::npos and hadflav[i] == 4) continue;
+                auto newpt = pts[i]*jer[i][0];
+                if (newpt < 40) continue;
+
+                std::string unc = src;
+                if (src.find("cferr") != std::string::npos and hadflav[i] != 4) unc = "central";
+                if (src.find("cferr") == std::string::npos and hadflav[i] == 4) unc = "central";
 
                 BTagEntry::JetFlavor hadfconv;
                 if      (hadflav[i]==5) hadfconv=BTagEntry::FLAV_B;
                 else if (hadflav[i]==4) hadfconv=BTagEntry::FLAV_C;
                 else                    hadfconv=BTagEntry::FLAV_UDSG;
-                double w = _btagcalibreader.eval_auto_bounds(src, hadfconv, fabs(etas[i]), pts[i], btags[i]);
+                double w = _btagcalibreader.eval_auto_bounds(unc, hadfconv, fabs(etas[i]), newpt, btags[i]);
                 bweight *= w;
             }
             bSFs.emplace_back(bweight);
@@ -775,11 +780,14 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
                 auto newpt = pts[j] * jes[j][i] * jer[j][0];
                 if (newpt < 40) continue;
 
+                std::string unc = src;
+                if (hadflav[j] == 4) unc = "central";
+
                 BTagEntry::JetFlavor hadfconv;
                 if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
                 else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
                 else                    hadfconv=BTagEntry::FLAV_UDSG;
-                double w = _btagcalibreaderJes.eval_auto_bounds(src, hadfconv, fabs(etas[j]), newpt, btags[j]);
+                double w = _btagcalibreaderJes.eval_auto_bounds(unc, hadfconv, fabs(etas[j]), newpt, btags[j]);
                 bweight *= w;
             }
             bSFs.emplace_back(bweight);
@@ -855,26 +863,28 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
 
 void NanoAODAnalyzerrdframe::selectTaus() {
 
+    auto syst_unc = _syst;
+
     //TES var.
     if (!_isData) {
 
-        int idx = -1;
+        auto selectTES = [syst_unc](floatsVec unc)->floats {
 
-        auto selectTES = [idx](floatsVec unc)->floats {
-
+            int idx = -1;
+            if (syst_unc.find("tesup") != std::string::npos) idx = 0;
+            else if (syst_unc.find("tesdown") != std::string::npos) idx = 1;
             floats selected;
             selected.reserve(unc.size());
 
             for (size_t i=0; i<unc.size(); i++) {
+                if (idx < 0) selected.emplace_back(1.0f);
                 selected.emplace_back(unc[i][idx]);
+                std::cout << idx << " " << unc[i][idx]  << endl;
             }
             return selected;
         };
 
-        if (_syst.find("tesup") != std::string::npos)        idx = 0;
-        else if (_syst.find("tesdown") != std::string::npos) idx = 1;
-
-        if (idx > -1) {
+        if (_syst.find("tes") != std::string::npos) {
           _rlm = _rlm.Define("Tau_pt_unc_toapply", selectTES, {"Tau_pt_unc"})
                      .Redefine("Tau_pt", "Tau_pt * Tau_pt_unc_toapply")
                      .Redefine("Tau_mass", "Tau_mass * Tau_pt_unc_toapply");
@@ -1088,9 +1098,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                 uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i])));
                 uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i]), "Up"));
                 uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i]), "Down"));
+                wVec.emplace_back(uncSources);
+                uncSources.clear();
             }
-            wVec.emplace_back(uncSources);
-            uncSources.clear();
         }
         return wVec;
     };
@@ -1107,9 +1117,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                 uncSources.emplace_back(_tauidSFele->getSFvsEta(abs(eta[i]), int(genid[i])));
                 uncSources.emplace_back(_tauidSFele->getSFvsEta(abs(eta[i]), int(genid[i]), "Up"));
                 uncSources.emplace_back(_tauidSFele->getSFvsEta(abs(eta[i]), int(genid[i]), "Down"));
+                wVec.emplace_back(uncSources);
+                uncSources.clear();
             }
-            wVec.emplace_back(uncSources);
-            uncSources.clear();
         }
         return wVec;
     };
@@ -1126,9 +1136,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                 uncSources.emplace_back(_tauidSFmu->getSFvsEta(abs(eta[i]), int(genid[i])));
                 uncSources.emplace_back(_tauidSFmu->getSFvsEta(abs(eta[i]), int(genid[i]), "Up"));
                 uncSources.emplace_back(_tauidSFmu->getSFvsEta(abs(eta[i]), int(genid[i]), "Down"));
+                wVec.emplace_back(uncSources);
+                uncSources.clear();
             }
-            wVec.emplace_back(uncSources);
-            uncSources.clear();
         }
         return wVec;
     };
@@ -1179,9 +1189,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     };
 
     _rlm = _rlm.Define("Tau_pt_uncor", "Tau_pt")
-               .Redefine("Tau_pt", tauES, {"Tau_pt", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt"})
-               .Redefine("Tau_mass", tauES, {"Tau_pt", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"})
-               .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt"});
+               .Redefine("Tau_pt", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"})
+               .Redefine("Tau_mass", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"})
+               .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"});
 }
 
 /*
@@ -1211,14 +1221,15 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
         std::string hpost = "";
 
         if (x.mincutstep.length()==0) {
-            helper_1DHistCreator(std::string(x.hmodel.fName)+hpost+x.systname,  std::string(x.hmodel.fTitle)+hpost+x.systname, x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, &_rlm);
+            helper_1DHistCreator(std::string(x.hmodel.fName)+hpost+x.systname,  std::string(x.hmodel.fTitle), x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, &_rlm);
         }
     }
 
     _rnt.setRNode(&_rlm);
 
     for (auto acut : _cutinfovector) {
-        std::string cutname = "S" + to_string(acut.idx.length()-1);
+        //std::string cutname = "S" + to_string(acut.idx.length()-1);
+        std::string cutname = "S" + to_string(acut.idx.length());
         std::string hpost = "_"+cutname;
         RNode *r = _rnt.getParent(acut.idx)->getRNode();
         auto rnext = new RNode(r->Define(cutname, acut.cutdefinition));
@@ -1229,7 +1240,10 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
         }
         for (auto &x : _hist1dinfovector) {
             if (acut.idx.compare(0, x.mincutstep.length(), x.mincutstep)==0) {
-                helper_1DHistCreator(std::string(x.hmodel.fName)+hpost+x.systname,  std::string(x.hmodel.fTitle)+hpost+x.systname, x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, rnext);
+                bool reachedMax = false;
+                if (x.maxcutstep.length() > 0 and acut.idx.compare(0, x.maxcutstep.length(), x.maxcutstep)>=0) reachedMax = true;
+                if (!reachedMax)
+                    helper_1DHistCreator(std::string(x.hmodel.fName)+hpost+x.systname,  std::string(x.hmodel.fTitle), x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, rnext);
             }
         }
         _rnt.addDaughter(rnext, acut.idx);
@@ -1251,9 +1265,9 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
     }
 }
 
-void NanoAODAnalyzerrdframe::add1DHist(TH1DModel histdef, std::string variable, std::string weight, string syst, string mincutstep) {
+void NanoAODAnalyzerrdframe::add1DHist(TH1DModel histdef, std::string variable, std::string weight, string syst, string mincutstep, string maxcutstep) {
 
-	_hist1dinfovector.push_back({histdef, variable, weight, syst, mincutstep});
+	_hist1dinfovector.push_back({histdef, variable, weight, syst, mincutstep, maxcutstep});
 }
 
 

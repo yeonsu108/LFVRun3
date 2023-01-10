@@ -22,6 +22,7 @@ public:
 private:
     std::string _year;
     std::string _syst;
+    std::string maxstep;
 
 };
 

@@ -408,6 +408,9 @@ namespace plotIt {
 
     bool no_systematics = false;
 
+    double h_data_integral = 1.0;
+    if (has_data) h_data_integral = h_data->Integral();
+
     if (plot.normalized) {
         // Normalize each plot
         for (auto& file: m_plotIt.getFiles()) {
@@ -600,7 +603,8 @@ namespace plotIt {
           std::vector<float> sigMax;
           for (File& signal: signal_files) {
             TH1* h_sig_temp = dynamic_cast<TH1*>(signal.object);
-            if (plot.signal_normalize_data and !plot.no_data) h_sig_temp->Scale(h_data->Integral()/h_sig_temp->Integral());
+            //if (plot.signal_normalize_data and !plot.no_data) h_sig_temp->Scale(h_data->Integral()/h_sig_temp->Integral());
+            if (plot.signal_normalize_data and !plot.no_data) h_sig_temp->Scale(h_data_integral/h_sig_temp->Integral());
             else if (plot.signal_normalize_data and plot.no_data) {
                 auto& mc_stack_tmp = mc_stacks.begin()->second;
                 h_sig_temp->Scale(mc_stack_tmp.stat_only.get()->Integral()/h_sig_temp->Integral());
@@ -684,7 +688,8 @@ namespace plotIt {
       std::string options = m_plotIt.getPlotStyle(signal)->drawing_options + " same";
       if (plot.signal_normalize_data and !plot.no_data) {
         TH1* h_sig_temp = dynamic_cast<TH1*>(signal.object);
-        h_sig_temp->Scale(h_data->Integral()/h_sig_temp->Integral());
+        //h_sig_temp->Scale(h_data->Integral()/h_sig_temp->Integral());
+        h_sig_temp->Scale(h_data_integral/h_sig_temp->Integral());
         h_sig_temp->Draw(options.c_str());
       }
       else if (plot.signal_normalize_data and plot.no_data) {
@@ -723,28 +728,41 @@ namespace plotIt {
         float y_start = gPad->GetUymin();
         float y_end = gPad->GetUymax();
 
-        std::string options = "NB";
+        float lm = gPad->GetLeftMargin();
+        float rm = 1. - gPad->GetRightMargin();
+        float tm = 1. - gPad->GetTopMargin();
+        float bm = gPad->GetBottomMargin();
+
+        x_start = (rm - lm) * ((x_start - gPad->GetUxmin()) / (gPad->GetUxmax() - gPad->GetUxmin())) + lm;
+        x_end = (rm - lm) * ((x_end - gPad->GetUxmin()) / (gPad->GetUxmax() - gPad->GetUxmin())) + lm;
+
+        Position legend_position = plot.legend_position;
+        y_start = bm;
+        y_end = legend_position.y1;
+
+        std::string options = "NB NDC";
 
         if (plot.log_y) {
-            options = options + " NDC";
+            //options = options + " NDC";
 
-            float lm = gPad->GetLeftMargin();
-            float rm = 1. - gPad->GetRightMargin();
-            float tm = 1. - gPad->GetTopMargin();
-            float bm = gPad->GetBottomMargin();
+            //float lm = gPad->GetLeftMargin();
+            //float rm = 1. - gPad->GetRightMargin();
+            //float tm = 1. - gPad->GetTopMargin();
+            //float bm = gPad->GetBottomMargin();
 
             if (plot.log_x) {
                 Range x_range = getXRange(toDraw[0].first);
 
                 x_start = (rm - lm) * ((std::log(x_start) - std::log(x_range.start)) / (std::log(x_range.end) - std::log(x_range.start))) + lm;
                 x_end = (rm - lm) * ((std::log(x_end) - std::log(x_range.start)) / (std::log(x_range.end) - std::log(x_range.start))) + lm;
-            } else {
-                x_start = (rm - lm) * ((x_start - gPad->GetUxmin()) / (gPad->GetUxmax() - gPad->GetUxmin())) + lm;
-                x_end = (rm - lm) * ((x_end - gPad->GetUxmin()) / (gPad->GetUxmax() - gPad->GetUxmin())) + lm;
-            }
+            }// else {
+            //    x_start = (rm - lm) * ((x_start - gPad->GetUxmin()) / (gPad->GetUxmax() - gPad->GetUxmin())) + lm;
+            //    x_end = (rm - lm) * ((x_end - gPad->GetUxmin()) / (gPad->GetUxmax() - gPad->GetUxmin())) + lm;
+            //}
 
             y_start = bm;
-            y_end = tm;
+            //y_end = tm;
+            y_end = legend_position.y1;
         }
 
         std::shared_ptr<TPave> blinded_area(new TPave(x_start, y_start, x_end, y_end, 0, options.c_str()));

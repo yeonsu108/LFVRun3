@@ -84,10 +84,11 @@ python getDatasetInfo.py v8UL_2016pre
 # arguments: folder, year (2016pre, 2016post, 2017, and 2018)
 # You can add data or mc flag at the end of command if needed
 
-python scripts/skim.py skim_test 2016pre
+python scripts/skim.py -V skim_test -Y 2018
 
 OR
-python scripts/skim.py skim_test 2016pre data (mc)
+
+python scripts/skim.py -V skim_test -F mc -Y 2018
 
 # To run specific datasets, add them in test_list of skim.py
 # This script uses slurm on htop.
@@ -95,14 +96,13 @@ python scripts/skim.py skim_test 2016pre data (mc)
 ```
 
 #### Processing
-`scripts/process_allInOne.py` scripts can automatically run over all ROOT files in an input directory.
+`scripts/process.py` scripts can automatically run over all ROOT files in an input directory.
 ``` txt
-Usage: python scripts/process_allInOne.py -V skim_test -O test -Y 2018
+Usage: python scripts/process.py -V skim_test -O test -Y 2018 -S theory
 
 Options:
   -V, --version         Skim version: folder under /data1/common/skimmed_NanoAOD/
   -O, --outdir          Output folder in your working directory
-  -h, --help            show this help message and exit
   -Y YEAR, --year=YEAR  Select 2016pre, 2016post, 2017, or 2018
   -S SYST, --syst=SYST  Systematic: 'data' for Data, 'nosyst' for mc without uncertainties. Default is 'theory'. To run without theory unc for TT samples, put 'all'
   -D, --dataset         Put dataset folder name (eg. -D TTTo2L2Nu,QCD_Pt1000_MuEnriched) to process specific dataset.
@@ -112,13 +112,23 @@ Options:
 In some cases, you may want to submit single file per core using slurm.
 `scripts/process.py` will do the job
 ``` txt
-Usage: python scripts/process.py skim_test test 2018 (data/mc)
-
+Usage: python scripts/process.py -V skim_test -O test -Y 2018 -S theory (-F data/mc)
 ```
-  
-By default, it will go into subdirectories recursively and process ROOT files. 
-It will make the output directory to have the same  the directory structure as the input directory.
-It will create one output file per one input file, so there is one-to-one correspondence.
+Now, apply b SF rescaling, compute uncertainty envelope, etc. Let the `test\2018` is the folder containing histograms.
+``` txt
+python postprocess.py test 2018
+```
+Drawing histogram by plotIt
+``` txt
+cd 2018_postprocess
+mkdir ../figure_2018
+../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/config_18.yml -y -s
+
+#For Run2,
+python stack_signals.py -I test
+python plot_run2.py -I test
+python print_syst_table.py -O test4 -Y 2018
+```
 
 ### Usage of scripts
 In the `scripts/` folder, there are scripts for skimming or processing the NanoAOD files.
