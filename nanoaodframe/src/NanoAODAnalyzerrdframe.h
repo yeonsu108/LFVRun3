@@ -68,7 +68,7 @@ public:
   void addVartoStore(std::string varname);
   void addCuts(std::string cut, std::string idx);
   virtual void defineCuts() = 0; // define a series of cuts from defined variables only. you must implement this in your subclassed analysis code
-  void add1DHist(TH1DModel histdef, std::string variable, std::string weight, string syst="", string mincutstep="");
+  void add1DHist(TH1DModel histdef, std::string variable, std::string weight, string syst="", string mincutstep="", string maxcutstep="");
   virtual void bookHists() = 0; // book histograms, you must implement this in your subclassed analysis code
 
   void setupCuts_and_Hists();

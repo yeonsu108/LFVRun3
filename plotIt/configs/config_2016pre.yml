@@ -1,0 +1,84 @@
+configuration:
+  width: 450
+  height: 450
+  luminosity-label: '%1$.1f fb^{-1} (13 TeV)'
+  experiment: " CMS"
+  experiment-label-paper: true
+  extra-label: "Preliminary"
+  root: ''
+  luminosity: 19502
+  luminosity-error: 0.012
+  error-fill-style: 3254
+  error-fill-color: "#ee556270"
+  staterror-fill-style: 3145
+  staterror-fill-color: 7
+  ratio-fit-error-fill-style: 1001
+  ratio-fit-error-fill-color: "#aa556270"
+  ratio-fit-line-color: "#0B486B"
+  blinded-range-fill-color: "#29556270"
+  blinded-range-fill-style: 1001
+  yields-table-align: v
+  book-keeping-file: 'plots.root'
+  yields-table-numerical-precision-yields: 2
+
+files: 
+  include: ['files_2016pre.yml']
+
+systematics:
+  - tt_xsec: {type: const, value: 1.055, on: 'TTTo'}
+  - other_xsec1: {type: const, value: 1.1, on: 'DYJetsToLL'}
+  - other_xsec2: {type: const, value: 1.1, on: 'ST_s'}
+  - other_xsec3: {type: const, value: 1.1, on: 'ST_t'}
+  - other_xsec4: {type: const, value: 1.1, on: 'ST_tW'}
+  - other_xsec5: {type: const, value: 1.1, on: 'ttH'}
+  - other_xsec6: {type: const, value: 1.1, on: 'TTWJets'}
+  - other_xsec7: {type: const, value: 1.1, on: 'TTZ'}
+  - other_xsec8: {type: const, value: 1.1, on: 'WJetsToLNu'}
+  - other_xsec9: {type: const, value: 1.1, on: 'WW'}
+  - other_xsec10: {type: const, value: 1.1, on: 'WZ'}
+  - other_xsec11: {type: const, value: 1.1, on: 'ZZ'}
+  - qcd_xsec: {type: const, value: 1.5, on: 'QCD'}
+  - tes
+  - jer
+  - jesAbsolute
+  - jesAbsolute_2016
+  - jesBBEC1
+  - jesBBEC1_2016
+  - jesFlavorQCD
+  - jesRelativeBal
+  - jesRelativeSample_2016
+  - btaghf
+  - btaglf
+  - btaghfstats1
+  - btaglfstats1
+  - btaghfstats2
+  - btaglfstats2
+  - btagcferr1
+  - btagcferr2
+  - pu
+  - muid
+  - muiso
+  - mutrg
+  - tauidjet
+  - tauidmu
+  - tauidel
+  - scale: {type: shape, on: 'TTTo'}
+  - scale: {type: shape, on: 'LFV'}
+  - ps: {type: shape, on: 'TTTo'}
+  - ps: {type: shape, on: 'LFV'}
+#  - pdf: {type: shape, on: 'TTTo'}
+#  - pdf: {type: shape, on: 'LFV'}
+#  - hdamp: {type: shape, on: 'TTTo'}
+#  - py8tune: {type: shape, on: 'TTTo'}
+
+plots:
+  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']
+  #include: ['histos_yield.yml']
+
+legend:
+  #position: [0.18, 0.70, 0.96, 0.88]
+  position: [0.35, 0.70, 0.96, 0.88]
+  columns: 4
+
+groups:
+  include: ['groups.yml']

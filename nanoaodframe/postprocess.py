@@ -1,127 +1,180 @@
-import os
-import sys
+import os, sys, glob
 import ROOT
 from ROOT import *
 import numpy as np
+import subprocess
 
+input = sys.argv[1]
+year = sys.argv[2]
+if year not in ['2016pre', '2016post', '2017', '2018']:
+    print('Wrong year, check again')
+    sys.exit()
+
+yield_name = 'h_ncleanjetspass'
 base_path = './'
-label = 'aug22_stlfv'
-nom_path = base_path + label + '/nom/'
+nom_path = os.path.join(base_path, input, year)
 if not os.path.exists(nom_path):
     print("Folder '{}' does not exists.".format(nom_path))
+    sys.exit()
 else:
     print("Start postprocessing at '{}'.".format(nom_path))
 
-# Set Runs
-runs = ['16pre', '16post', '17', '18']
-#runs = ['18']
 
 # Set output folders
-out_path = base_path + label + '/postprocess'
+out_path = os.path.join(base_path, input, year + '_postprocess')
 if not os.path.exists(out_path):
-    for run in runs:
-        os.makedirs(out_path + '/' + run)
+    os.makedirs(out_path)
 
-# Systematic Sources => All systematics in one file.
-systs = ['nom','puup','pudown',
-'btagup_hf','btagdown_hf','btagup_lf','btagdown_lf',
-'btagup_hfstats1','btagdown_hfstats1',
-'btagup_hfstats2','btagdown_hfstats2',
-'btagup_lfstats1','btagdown_lfstats1',
-'btagup_lfstats2','btagdown_lfstats2',
-'btagup_cferr1','btagdown_cferr1',
-'btagup_cferr2','btagdown_cferr2',
-'up_jesAbsolute','down_jesAbsolute',
-]
+file_list = [i.replace('.root', '') for i in os.listdir(nom_path) if '.root' in i]
+data_list = [i[:i.find('201')] for i in os.listdir(nom_path) if '.root' in i and '201' in i and 'jes' not in i]
+data_list = list(set(data_list))
+#print(data_list)
+#print(file_list)
 
-systs=['nom','puup','pudown',
-'btagup_hf','btagdown_hf','btagup_lf','btagdown_lf',
-'btagup_hfstats1','btagdown_hfstats1','btagup_lfstats1','btagdown_lfstats1',
-'btagup_hfstats2','btagdown_hfstats2','btagup_lfstats2','btagdown_lfstats2',
-'btagup_cferr1','btagdown_cferr1','btagup_cferr2','btagdown_cferr2',
-'up_jesAbsolute','down_jesAbsolute','up_jesAbsolute_year','down_jesAbsolute_year',
-'up_jesBBEC1','down_jesBBEC1','up_jesBBEC1_year','down_jesBBEC1_year',
-'up_jesEC2','down_jesEC2','up_jesEC2_year','down_jesEC2_year',
-'up_jesFlavorQCD','down_jesFlavorQCD','up_jesRelativeBal','down_jesRelativeBal',]
 
-#systs=['puup']
-# Produce dictionary for file lists.
-file_list = {}
-for run in runs:
-    file_list[run] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+run) if '.root' in i]
+def get_bSFratio(inputf, inputh):
+    # ref: https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagShapeCalibration
+    # rescale histogram by Sum(event weights before applying b weight)/Sum(weights with b weight)
+    # This should be done per jet bin - nojet / 3jet
 
-def collect_systhists(outfile,fname,hlists,syst,run):
-    fname = fname.replace(fname.split('_')[-1],'')
-    syst_path = base_path+label+'/'+syst
-    tmpf = TFile.Open(os.path.join(syst_path,run,fname+syst+'.root'), 'READ')
-    for histname in hlists:
-        tmpf.cd()
-        tmphist = tmpf.Get(histname)
-        if (syst == "nom") or ("Run" in fname):
-            newtmphist = tmphist
-        else:
-            newsyst = syst
-            if 'btag' in syst:
-                if 'up' in syst:
-                    newsyst = 'btag_' + syst.split('_')[-1] + 'up'
-                elif 'down' in syst:
-                    newsyst = 'btag_' + syst.split('_')[-1] + 'down'
-            if 'jes' in syst:
-                if 'up' in syst:
-                    newsyst = syst.replace('up_','') + 'up'
-                elif 'down' in syst:
-                    newsyst = syst.replace('down_','') + 'down' 
-            if 'year' in syst:
-                if '16' in run:
-                    newsyst = syst.replace('year','2016')
-                elif '17' in run:
-                    newsyst = syst.replace('year','2017')
-                elif '18' in run:
-                    newsyst = syst.replace('year','2018')
-            newtmphist = tmphist.Clone(histname + '__' + newsyst)
-        outfile.cd()
-        newtmphist.Write()
-    tmpf.Close()
-    return
+    step = inputh[inputh.rfind('_S')+1:inputh.rfind('_S')+3]
 
-def get_bSFratio(infile):
-    prehist = infile.Get('hnevents_pglep_cut0000')
-    posthist = infile.Get('hnevents_cut0000')
+    # This depends on cutflow
+    if int(step[-1]) < 4: step = 'S' + step[-1]
+    else                : step = 'S4'
+
+    posthist = inputf.Get('h_nevents_' + step)
+    prehist = inputf.Get('h_nevents_' + step + '_nobtag')
+    if '__btag' in inputh:
+        posthist = inputf.Get('h_nevents_' + step + '__' + str(inputh.split('__')[-1]))
     if prehist.Integral() * posthist.Integral() == 0:
-        return 1
-    return posthist.Integral() / prehist.Integral()
+        return 1.0
+    #print(prehist.Integral() / posthist.Integral())
+    return prehist.Integral(0, prehist.GetNbinsX()+1) / posthist.Integral(0, prehist.GetNbinsX()+1)
+
+
+def write_envelope(inputh, inputf, syst, nhists, sumW, new_sumW):
+
+  if (inputh + "__" + syst + "0")  in hlists:
+    var_list = []
+    for x in range(0,nhists):
+      h = inputf.Get(inputh + "__" + syst + str(x))
+      if any(x in syst for x in ['scale', 'ps']):
+        pass
+      elif 'pdf' in syst:
+        if x == 0: continue
+        h.Scale(sumW.GetBinContent(2) / new_sumW.GetBinContent(1))
+      else: h.Scale(sumW.GetBinContent(2) / new_sumW.GetBinContent(x+1))
+      #h.Rebin(nrebin)
+      var_list.append(h)
+
+    nominal = inputf.Get(inputh)
+    nominal.SetDirectory(ROOT.nullptr)
+    #nominal.Rebin(nrebin)
+    n_bins = nominal.GetNcells()
+    up = nominal.Clone()
+    up.SetDirectory(ROOT.nullptr)
+    up.Reset()
+    dn = nominal.Clone()
+    dn.SetDirectory(ROOT.nullptr)
+    dn.Reset()
+
+    for i in range(0, n_bins+2):
+      minimum = float("inf")
+      maximum = float("-inf")
+
+      for v in var_list:
+        c = v.GetBinContent(i)
+        minimum = min(minimum, c)
+        maximum = max(maximum, c)
+
+      up.SetBinContent(i, maximum)
+      dn.SetBinContent(i, minimum)
+
+    up.Scale(get_bSFratio(bSFfile, up.GetName()))
+    dn.Scale(get_bSFratio(bSFfile, dn.GetName()))
+    up.SetName(inputh + "__" + syst + "up")
+    dn.SetName(inputh + "__" + syst + "down")
+    #We don't draw pdf in full ana due to computing resources
+
+    up.Write()
+    dn.Write()
+
+    if yield_name in inputh:
+      up_yield = up.Clone('up_yield')
+      dn_yield = dn.Clone('dn_yield')
+      up_yield.SetName(inputh.replace(yield_name, yield_name + '_yield') + "__" + syst + "up")
+      dn_yield.SetName(inputh.replace(yield_name, yield_name + '_yield') + "__" + syst + "down")
+      up_yield.Write()
+      dn_yield.Write()
+
+
 
 # Loop over all files.
-for run in runs:
-    for fname in file_list[run]:
-        #print(os.path.join(nom_path,run,fname))
-        infile = TFile.Open(os.path.join(nom_path,run,fname+'.root'), 'READ')
-        hlists = [ h.GetName() for h in infile.GetListOfKeys() if 'cut' in h.GetName() ]
-        # Get ratio for rescaling with b-tagSF.
-        ratio = get_bSFratio(infile)
-        outfname = fname.replace("_"+run+"_"+fname.split("_")[-1],"")
-        if "Run" in fname:
-            outfname = fname.replace("_"+fname.split("_")[-1],"")
-        print("Saving histograms at {}/{}/hist_{}.root".format(out_path,run,outfname))
-        # Collecting Histograms in outfile.
-        outfile = TFile.Open(os.path.join(out_path,run,"hist_"+outfname+'.root'), 'RECREATE')
-        # Looping over all systematics.
-        for syst in systs:
-            if ("Run" in fname) and (syst != "nom"): continue  # Skip DATA
-            collect_systhists(outfile,fname,hlists,syst,run)
-        outhlists = [ h.GetName() for h in outfile.GetListOfKeys() if 'cut' in h.GetName() ]
-        for h in outhlists:
-            if "Run" in fname:
-                continue
-            if ('event' in h) or ('counter' in h):
-                continue
-            if ('nobweight' in h) and ('hncleanbjetspass' not in h):
-                continue
-            if ('cut00000' in h) or ('hncleanbjetspass' in h):
-                outfile.cd()
-                newhist = outfile.Get(h)
-                ratio = 1
-                newhist.Scale(1/ratio)
-                newhist.Write()
-        infile.Close()
-        outfile.Close()
+for fname in file_list:
+    #print(os.path.join(nom_path, fname))
+    #if not any(i in fname for i in ['TTTo2L2Nu', 'TTToSemiLeptonic']): continue
+    infile = TFile.Open(os.path.join(nom_path, fname + '.root'), 'READ')
+    hlists = [ h.GetName() for h in infile.GetListOfKeys() if '_S' in h.GetName() ]
+    hlists.append("hcounter")
+
+    # Get ratio for rescaling with b-tagSF.
+    if not '__' in fname: bSFfile = infile
+    elif '__' in fname and any(i in fname for i in ['hdamp', 'tune', 'jes']):
+        bSFfile = infile
+    else:
+        bSFfname = fname.replace('__' + fname.split('__')[1], '')
+        bSFfile = TFile.Open(os.path.join(nom_path, bSFfname + '.root'), 'READ')
+
+    # Collecting Histograms in outfile.
+    print("Saving histograms at {}/{}.root".format(out_path, fname))
+    outfile = TFile.Open(os.path.join(out_path, fname+'.root'), 'RECREATE')
+
+    nominal_list = []
+    isScale = False
+    isPS = False
+    if any('__scale' in i for i in hlists): isScale = True
+    if any('__ps' in i for i in hlists): isPS = True
+
+    #print(isScale, isPS)
+
+    for hname in hlists:
+        if "__" not in hname: nominal_list.append(hname)
+        h = infile.Get(hname)
+        if yield_name in hname:
+            h1 = h.Clone('h1')
+            h1.SetName(hname.replace(yield_name, yield_name + '_yield'))
+            if "__" not in h1.GetName():
+                nominal_list.append(h1.GetName())
+            if '201' not in fname or 'jes' in fname: h1.Scale(get_bSFratio(bSFfile, hname))
+            h1.Write()
+        if any(i in hname for i in ['event', 'counter', '_nobtag', 'LHEPdfWeightSum']): pass
+        elif any(i in hname for i in ['__scale', '__ps', '__pdf']): continue
+        elif '201' in fname and 'jes' not in fname: pass
+        else:
+            ratio = get_bSFratio(bSFfile, hname)
+            h.Scale(ratio)
+        h.Write()
+
+    hcounter = infile.Get('hcounter')
+    nominal_list = list(set(nominal_list))
+
+    for hname2 in nominal_list:
+
+      if isScale: write_envelope(hname2, bSFfile, "scale", 6, hcounter, hcounter)
+      if isPS: write_envelope(hname2, bSFfile, "ps", 4, hcounter, hcounter)
+      #if isPDF:
+      #  if 'STTH' in files: write_envelope(hname2, hcounter, "pdf", 30, LHEPdfWeightSum)
+      #  else:               write_envelope(hname2, hcounter, "pdf", 103, LHEPdfWeightSum)
+      #if run_on_syst: rescale([], nom_EventInfo) #placeholder for hdamp and py8tune
+
+
+    infile.Close()
+    outfile.Close()
+
+
+for dataname in data_list:
+    try:
+        subprocess.call(['rm', os.path.join(out_path, dataname + year + '.root')])
+    except: pass
+    subprocess.check_call( ["hadd", "-f", os.path.join(out_path, dataname + year + '.root')] + glob.glob(os.path.join(out_path, dataname) + '201*') )

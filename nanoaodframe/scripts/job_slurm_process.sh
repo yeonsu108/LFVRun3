@@ -10,11 +10,11 @@
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=1gb 
 #SBATCH --comment python
-#SBATCH --time 03:00:00
+#SBATCH --time 20:00:00
 #SBATCH --hint=compute_bound
 
 year=$1
-infile=$2
+indir=$2
 outpath=$3
 outfile=$4
 workdir=$5
@@ -24,5 +24,5 @@ syst=$7
 source /opt/ohpc/pub/utils/conda/anaconda3/etc/profile.d/conda.sh
 cd $workdir
 conda activate py36
-echo "python processonefile.py -Y $year -S ${syst} -I $infile -O ${outpath}/${outfile} > ${logdir}/${outfile%%root}log"
-python processonefile.py -Y $year -S ${syst} -I $infile -O ${outpath}/${outfile} > ${logdir}/${outfile%%root}log
+echo "python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log"
+python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log

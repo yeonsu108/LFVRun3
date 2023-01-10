@@ -38,51 +38,51 @@ GQCD:
   fill-color: '#d0cfd4'
   legend: 'QCD'
 
-#GLFVSTcs:
-#  line-color: '#d0cfd4'
-#  legend: 'STLFVc_s'
+GLFVSTcs:
+  line-color: '#99CC66'
+  legend: 'STLFVc_s'
 
 GLFVSTcv:
   line-color: '#99CC66'
   legend: 'STLFVc_v'
 
-#GLFVSTct:
-#  line-color: '#d0cfd4'
-#  legend: 'STLFVc_t'
-#
-#GLFVSTus:
-#  line-color: '#d0cfd4'
-#  legend: 'STLFVu_s'
+GLFVSTct:
+  line-color: '#99CC66'
+  legend: 'STLFVc_t'
+
+GLFVSTus:
+  line-color: '#6B8551'
+  legend: 'STLFVu_s'
 
 GLFVSTuv:
   line-color: '#6B8551'
   legend: 'STLFVu_v'
 
-#GLFVSTut:
-#  line-color: '#d0cfd4'
-#  legend: 'STLFVu_t'
-#
-#GLFVTTcs:
-#  line-color: '#d0cfd4'
-#  legend: 'TTLFVc_s'
+GLFVSTut:
+  line-color: '#6B8551'
+  legend: 'STLFVu_t'
+
+GLFVTTcs:
+  line-color: '#908DCC'
+  legend: 'TTLFVc_s'
 
 GLFVTTcv:
   line-color: '#908DCC'
   legend: 'TTLFVc_v'
 
-#GLFVTTct:
-#  line-color: '#d0cfd4'
-#  legend: 'TTLFVc_t'
-#
-#GLFVTTus:
-#  line-color: '#d0cfd4'
-#  legend: 'TTLFVu_s'
+GLFVTTct:
+  line-color: '#908DCC'
+  legend: 'TTLFVc_t'
+
+GLFVTTus:
+  line-color: '#4F4D80'
+  legend: 'TTLFVu_s'
 
 GLFVTTuv:
   line-color: '#4F4D80'
   legend: 'TTLFVu_v'
 
-#GLFVTTut:
-#  line-color: '#d0cfd4'
-#  legend: 'TTLFVu_t'
+GLFVTTut:
+  line-color: '#4F4D80'
+  legend: 'TTLFVu_t'
 

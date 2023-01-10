@@ -33,6 +33,7 @@ struct hist1dinfo
   std::string weightname;
   std::string systname;
   std::string mincutstep;
+  std::string maxcutstep;
 } ;
 
 
