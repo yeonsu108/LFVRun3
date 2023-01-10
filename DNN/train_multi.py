@@ -21,9 +21,9 @@ from sklearn.model_selection import cross_val_score, GridSearchCV
 
 root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
-processed = "aug22"
+processed = "nov29"
 syst = "nom"
-label = "rerun_merged_3"
+label = "top_lfv_multiClass"
 class_names = ["bkg","sigTT", "sigST"]
 
 print("Start multi LFV Training")
@@ -62,7 +62,8 @@ kfold = KFold(n_splits=10, shuffle=True)
 #project_dir = "nanoaodframe_"+p+"LFV/"+processed+"_"+syst+"/"
 #sig_filedir = root_dir+project_dir+p+"_LFV_nom.root"
 #project_dir = "/home/itseyes/github/LFVRun2_ndf_integration/nanoaodframe/aug22_ttlfv/nom/"
-project_dir = "/data1/users/itseyes/LFV/processed_LFV/nov16/nom/"
+#project_dir = "/data1/users/itseyes/LFV/processed_LFV/nov16/nom/"
+project_dir = "/data1/users/itseyes/LFV/processed_LFV/nov29/nom/"
 sig_filedir_tt = project_dir+"TT"+"_LFV_nom.root"
 bkg1_filedir_tt = project_dir+"TTTo2L2Nu_nom.root"
 bkg2_filedir_tt = project_dir+"TTToSemiLeptonic_nom.root"
@@ -73,7 +74,7 @@ sig_filedir_st = project_dir+"ST"+"_LFV_nom.root"
 #bkg2_filedir_st = project_dir+"TTToSemiLeptonic_nom.root"
 #bkg1_filedir = root_dir+project_dir+"TTTo2L2Nu_nom.root"
 #bkg2_filedir = root_dir+project_dir+"TTToSemiLeptonic_nom.root"
-train_outdir = label+"_"+"Multi"+processed+"/"+syst
+train_outdir = label+"_"+processed+"/"+syst
 os.makedirs(train_outdir, exist_ok=True)
 
 sig_tree_st = uproot.open(sig_filedir_st)["outputTree2"]

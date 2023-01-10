@@ -8,7 +8,8 @@
   for-yields: true
   yields-table-order: 0
   yields-title: 'DNN'
-  ratio-y-axis-auto-range: true
+  ratio-y-axis-range: [0.01, 2]
+  ratio-y-axis-auto-range: false
   signal-normalize-data: false
 #blinded-range: [0.700001,1.0]
 # log-x: true

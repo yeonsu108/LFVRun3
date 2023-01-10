@@ -12,8 +12,8 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 import multiprocessing
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
-processed = "aug22"
-label = "rerun_merged_3"
+processed = "nov29"
+label = "top_lfv_multiClass"
 systs = ['nom','puup', 'pudown', 'btagup_hf', 'btagdown_hf', 'btagup_lf', 'btagdown_lf', 'btagup_hfstats1', 'btagdown_hfstats1', 'btagup_hfstats2', 'btagdown_hfstats2', 'btagup_lfstats1', 'btagdown_lfstats1', 'btagup_lfstats2', 'btagdown_lfstats2', 'btagup_cferr1', 'btagdown_cferr1', 'btagup_cferr2', 'btagdown_cferr2', 'up_jesAbsolute', 'down_jesAbsolute', 'up_jesBBEC1', 'down_jesBBEC1', 'up_jesEC2', 'down_jesEC2', 'up_jesFlavorQCD', 'down_jesFlavorQCD', 'up_jesRelativeBal', 'down_jesRelativeBal', 'up_jesAbsolute_year', 'down_jesAbsolute_year', 'up_jesBBEC1_year', 'down_jesBBEC1_year', 'up_jesEC2_year', 'down_jesEC2_year', 'up_jesRelativeSample_year', 'down_jesRelativeSample_year']
 
 inputvars = ["Sel_muon1pt","Sel_muon1eta",
@@ -51,7 +51,7 @@ def run(inputs):
     #if ch=="bkg" :
     #project_dir = "/data1/users/ecasilar/processed_LFV/aug22_mergedlfv/"+syst+"/"+year+"/"
     #project_dir = "/data1/users/itseyes/LFV/processed_LFV/merged//"+syst+"/"+year+"/"
-    project_dir = "/data1/users/itseyes/LFV/processed_LFV/nov16//"+syst+"/"+year+"/"
+    project_dir = "/data1/users/itseyes/LFV/processed_LFV/nov29/"+syst+"/"+year+"/"
     path = project_dir
     flist = os.listdir(path)
     flist = [i for i in flist if ".root" in i]
@@ -63,12 +63,12 @@ def run(inputs):
     #flist = [i for i in flist if ("LFV" in i) and (".root" in i)]
     print(flist)
     
-    model_dir = label+"_"+p+processed+"/nom/best_model.h5"
+    model_dir = label+"_"+processed+"/nom/best_model.h5"
     #print(model_dir)
     model = tf.keras.models.load_model(model_dir)
     #model.summary()
     
-    eval_dir = label+"_"+p+processed+"/"
+    eval_dir = label+"_"+processed+"/"
     
     weights = ["evWeight"]
     hists_path = eval_dir+"/"+year+"/preds/"+discriminator_key+"/"+str(alpha).replace(".","p")+"/"
