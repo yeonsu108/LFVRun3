@@ -51,7 +51,6 @@ public:
   void selectTaus();
   void selectMET();
   void selectFatJets();
-  void removeOverlaps();
   void matchGenReco();
   void calculateEvWeight();
   void storeEvWeight();

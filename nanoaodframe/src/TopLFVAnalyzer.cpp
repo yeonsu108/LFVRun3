@@ -112,7 +112,7 @@ void TopLFVAnalyzer::defineMoreVars() {
         addVar({"eventWeight_nobtag", "eventWeight_genpu * eventWeight_mu * eventWeight_tau"});
         addVar({"eventWeight_nopu", "unitGenWeight * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
 
-        if (_syst == "" or ext_syst) {
+        if (_syst == "" or _syst == "nosyst" or ext_syst) {
             // for external syst, we only need nominal weight
             if (_syst.find("jesAbsoluteup") != std::string::npos) {
                 addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[0]"});
@@ -276,7 +276,8 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("MET_pt");
     addVartoStore("MET_phi");
     addVartoStore("chi2.*");
-    addVartoStore("btagWeight_DeepFlavB.*");
+    addVartoStore("btagWeight_DeepFlavB");
+    addVartoStore("btagWeight_DeepFlavB_jes");
     addVartoStore("eventWeight.*");
 }
 
