@@ -91,6 +91,7 @@ for key, value in unc_cat.items():
                 if 'luminosity-error:' in line:
                     line = line[:line.find(':')+2]
                     line += "0.0\n"
+                    line += "  syst-only: true\n"
                 if 'root:' in line:
                     line = line[:line.find(':')+2]
                     line += "'" + os.path.join(dest_path, year + "_postprocess") + "'\n"

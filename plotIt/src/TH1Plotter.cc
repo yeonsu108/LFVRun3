@@ -907,13 +907,17 @@ namespace plotIt {
 
           // relative error, delta X / X
           float syst = 0.;
+          const auto& config = m_plotIt.getConfiguration();
           if (plot.ratio_draw_mcstat_error or !plot.post_fit)
             syst = sqrt(pow(mc_stack.syst_only->GetBinError(i),2) + pow(mc_stack.stat_only->GetBinError(i),2)) / mc_stack.syst_only->GetBinContent(i);
-          else syst = mc_stack.syst_only->GetBinError(i) / mc_stack.syst_only->GetBinContent(i);
+          else if (config.syst_only) syst = mc_stack.syst_only->GetBinError(i) / mc_stack.syst_only->GetBinContent(i);
+          else syst = mc_stack.stat_and_syst->GetBinError(i) / mc_stack.syst_only->GetBinContent(i);
+
+          //std::cout << mc_stack.stat_and_syst->GetBinError(i) - mc_stack.syst_only->GetBinError(i) << std::endl;
 
           h_systematics->SetBinContent(i, 1);
-          //h_systematics->SetBinError(i, syst);
-          if (h_data.get()->GetBinContent(i) > 0) h_systematics->SetBinError(i, syst);
+          h_systematics->SetBinError(i, syst);
+          //if (h_data.get()->GetBinContent(i) > 0) h_systematics->SetBinError(i, syst);
 
           has_syst = true;
         }

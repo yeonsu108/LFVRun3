@@ -421,6 +421,7 @@ namespace plotIt {
 
     // Systematics
     float luminosity_error_percent = 0;
+    bool syst_only = false;
 
     std::string y_axis_format = "%1% / %2$.2f";
     //std::string ratio_y_axis_title = "Data / MC";
