@@ -821,11 +821,11 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
     };
 
     // input vector: vec[pt][vars]
-    auto calcBSF = [this](doublesVec perJetSF)->doubles {
+    auto calcBSF = [this](doublesVec perJetSF, int nvar)->doubles {
 
         doubles out;
-        out.reserve(perJetSF[0].size());
-        for (size_t i=0; i<perJetSF[0].size(); i++) {
+        out.reserve(nvar);
+        for (size_t i=0; i<nvar; i++) {
             double bSF = 1.0;
             for (size_t j=0; j<perJetSF.size(); j++) {
                 if (perJetSF[j].empty()) continue;
@@ -929,10 +929,14 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
                .Define("Jet_HT", "Sum(Jet_pt)");
 
     if (!_isData) {
+        int nbsf_var = btag_var.size();
+        int njes_var = jes_var.size();
         _rlm = _rlm.Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlap"})
                    .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetoverlap"})
-                   .Define("btagWeight_DeepFlavB", calcBSF, {"btagWeight_DeepFlavB_perJet"})
-                   .Define("btagWeight_DeepFlavB_jes", calcBSF, {"btagWeight_DeepFlavB_jes_perJet"});
+                   .Define("nbsf_var", [nbsf_var](){return int(nbsf_var);})
+                   .Define("njes_var", [njes_var](){return int(njes_var);})
+                   .Define("btagWeight_DeepFlavB", calcBSF, {"btagWeight_DeepFlavB_perJet", "nbsf_var"})
+                   .Define("btagWeight_DeepFlavB_jes", calcBSF, {"btagWeight_DeepFlavB_jes_perJet", "njes_var"});
     }
 
 
