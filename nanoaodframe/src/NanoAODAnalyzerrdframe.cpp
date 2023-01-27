@@ -753,17 +753,17 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
             for (size_t i=0; i<var.size(); i++) {
                 double bweight = 1.0;
                 auto newpt = pts[j]*jer[j][0];
-                if (newpt < 40) continue;
+                if (newpt > 40) {
+                    std::string unc = var[i];
+                    if (unc.find("cferr") != std::string::npos and hadflav[j] != 4) unc = "central";
+                    if (unc.find("cferr") == std::string::npos and hadflav[j] == 4) unc = "central";
 
-                std::string unc = var[i];
-                if (unc.find("cferr") != std::string::npos and hadflav[j] != 4) unc = "central";
-                if (unc.find("cferr") == std::string::npos and hadflav[j] == 4) unc = "central";
-
-                BTagEntry::JetFlavor hadfconv;
-                if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
-                else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
-                else                    hadfconv=BTagEntry::FLAV_UDSG;
-                bweight = _btagcalibreader.eval_auto_bounds(unc, hadfconv, fabs(etas[j]), newpt, btags[j]);
+                    BTagEntry::JetFlavor hadfconv;
+                    if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
+                    else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
+                    else                    hadfconv=BTagEntry::FLAV_UDSG;
+                    bweight = _btagcalibreader.eval_auto_bounds(unc, hadfconv, fabs(etas[j]), newpt, btags[j]);
+                }
                 bSFs.emplace_back(bweight);
             }
             out.emplace_back(bSFs);
@@ -784,16 +784,16 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
             for (size_t i=0; i<var.size(); i++) {
                 double bweight = 1.0;
                 auto newpt = pts[j] * jes[j][i] * jer[j][0];
-                if (newpt < 40) continue;
+                if (newpt > 40) {
+                    std::string unc = var[i];
+                    if (hadflav[j] == 4) unc = "central";
 
-                std::string unc = var[i];
-                if (hadflav[j] == 4) unc = "central";
-
-                BTagEntry::JetFlavor hadfconv;
-                if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
-                else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
-                else                    hadfconv=BTagEntry::FLAV_UDSG;
-                bweight = _btagcalibreaderJes.eval_auto_bounds(unc, hadfconv, fabs(etas[j]), newpt, btags[j]);
+                    BTagEntry::JetFlavor hadfconv;
+                    if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
+                    else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
+                    else                    hadfconv=BTagEntry::FLAV_UDSG;
+                    bweight = _btagcalibreaderJes.eval_auto_bounds(unc, hadfconv, fabs(etas[j]), newpt, btags[j]);
+                }
                 bSFs.emplace_back(bweight);
             }
             out.emplace_back(bSFs);
@@ -825,10 +825,10 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
 
         doubles out;
         out.reserve(perJetSF[0].size());
-
         for (size_t i=0; i<perJetSF[0].size(); i++) {
             double bSF = 1.0;
             for (size_t j=0; j<perJetSF.size(); j++) {
+                if (perJetSF[j].empty()) continue;
                 bSF *= perJetSF[j][i];
             }
             out.emplace_back(bSF);

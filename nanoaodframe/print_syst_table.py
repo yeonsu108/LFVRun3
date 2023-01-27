@@ -4,14 +4,14 @@ from collections import OrderedDict
 
 from optparse import OptionParser
 parser = OptionParser(usage="%prog [options]")
-parser.add_option("-O", "--output",  dest="output", type="string", default="", help="Output folder name")
+parser.add_option("-I", "--input",  dest="input", type="string", default="", help="Input folder name")
 parser.add_option("-Y", "--year",  dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")
 (options, args) = parser.parse_args()
 
 year = options.year
 
 config_path = '../plotIt/configs/'
-dest_path = os.path.join('./', options.output)
+dest_path = os.path.join('./', options.input)
 tmp_file_name = 'temp_' + year + '_forSyst.yml'
 string_to_add = 'systematics:\n'
 plot_to_add = "plots:\n  include: ['histos_yield.yml']\n\n"
