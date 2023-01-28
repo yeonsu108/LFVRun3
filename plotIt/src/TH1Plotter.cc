@@ -493,9 +493,9 @@ namespace plotIt {
 
     // Store all the histograms to draw, and find the one with the highest maximum
     std::vector<std::pair<TObject*, std::string>> toDraw = { std::make_pair(h_data.get(), data_drawing_options) };
-    for (File& signal: signal_files) {
-      toDraw.push_back(std::make_pair(signal.object, m_plotIt.getPlotStyle(signal)->drawing_options));
-    }
+    //for (File& signal: signal_files) {
+    //  toDraw.push_back(std::make_pair(signal.object, m_plotIt.getPlotStyle(signal)->drawing_options));
+    //}
 
     for (auto& mc_stack: mc_stacks) {
         toDraw.push_back(std::make_pair(mc_stack.second.stack.get(), ""));
@@ -610,7 +610,7 @@ namespace plotIt {
                 h_sig_temp->Scale(mc_stack_tmp.stat_only.get()->Integral()/h_sig_temp->Integral());
             }
             sigMax.push_back(h_sig_temp->GetMaximum());
-          }          
+          }
           max_sig = *std::max_element(sigMax.begin(), sigMax.end());
         }
         auto& mc_stack = mc_stacks.begin()->second;
@@ -630,10 +630,10 @@ namespace plotIt {
         else {
           if (plot.log_y) {
             maxfrac = 1000;
-            setMaximum(toDraw[0].first, max_sig + max_sig*maxfrac);
             minimum = 0.5;
           }
-          else setMaximum(toDraw[0].first, max_sig*1.5);
+          if (max_sig > max_data) setMaximum(toDraw[0].first, max_sig + max_sig*maxfrac);
+          else setMaximum(toDraw[0].first, max_data + max_data*maxfrac);
         }
       }
 
@@ -688,7 +688,6 @@ namespace plotIt {
       std::string options = m_plotIt.getPlotStyle(signal)->drawing_options + " same";
       if (plot.signal_normalize_data and !plot.no_data) {
         TH1* h_sig_temp = dynamic_cast<TH1*>(signal.object);
-        //h_sig_temp->Scale(h_data->Integral()/h_sig_temp->Integral());
         h_sig_temp->Scale(h_data_integral/h_sig_temp->Integral());
         h_sig_temp->Draw(options.c_str());
       }
