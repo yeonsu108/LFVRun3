@@ -29,11 +29,10 @@ systematics:
   - other_xsec1: {type: const, value: 1.1, on: 'DYJetsToLL'}
   - other_xsec2: {type: const, value: 1.1, on: 'ST_s'}
   - other_xsec3: {type: const, value: 1.1, on: 'ST_t'}
-  - other_xsec4: {type: const, value: 1.1, on: 'ST_tW'}
   - other_xsec5: {type: const, value: 1.1, on: 'ttH'}
   - other_xsec6: {type: const, value: 1.1, on: 'TTWJets'}
   - other_xsec7: {type: const, value: 1.1, on: 'TTZ'}
-  - other_xsec8: {type: const, value: 1.1, on: 'WJetsToLNu'}
+  - other_xsec8: {type: const, value: 1.1, on: 'WJetsToLNu_HT'}
   - other_xsec9: {type: const, value: 1.1, on: 'WW'}
   - other_xsec10: {type: const, value: 1.1, on: 'WZ'}
   - other_xsec11: {type: const, value: 1.1, on: 'ZZ'}

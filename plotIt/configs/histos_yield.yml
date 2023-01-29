@@ -39,7 +39,7 @@
   save-extensions: ['pdf', 'png']
   for-yields: true
   yields-table-order: 3
-  yields-title: 'nJets\geq 3'
+  yields-title: 'nJets$\geq$ 3'
   #post-fit: true
 
 'h_ncleanjetspass_yield_S5':
