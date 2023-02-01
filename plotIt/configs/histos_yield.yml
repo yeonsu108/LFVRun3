@@ -3,7 +3,7 @@
   y-axis-format: "%1% / %2$.2f"
   signal-normalize-data: false
   sort-by-yields: true 
-  save-extensions: ['pdf']
+  save-extensions: ['pdf', 'png']
   for-yields: true
   yields-table-order: 0
   yields-title: 'One muon'
@@ -14,7 +14,7 @@
   y-axis-format: "%1% / %2$.2f"
   signal-normalize-data: false
   sort-by-yields: true 
-  save-extensions: ['pdf']
+  save-extensions: ['pdf', 'png']
   for-yields: true
   yields-table-order: 1
   yields-title: 'One tau'
@@ -25,7 +25,7 @@
   y-axis-format: "%1% / %2$.2f"
   signal-normalize-data: false
   sort-by-yields: true 
-  save-extensions: ['pdf']
+  save-extensions: ['pdf', 'png']
   for-yields: true
   yields-table-order: 2
   yields-title: 'OS muon tau'
@@ -36,10 +36,10 @@
   y-axis-format: "%1% / %2$.2f"
   signal-normalize-data: false
   sort-by-yields: true 
-  save-extensions: ['pdf']
+  save-extensions: ['pdf', 'png']
   for-yields: true
   yields-table-order: 3
-  yields-title: 'nJets\geq 3'
+  yields-title: 'nJets$\geq$ 3'
   #post-fit: true
 
 'h_ncleanjetspass_yield_S5':
@@ -47,7 +47,7 @@
   y-axis-format: "%1% / %2$.2f"
   signal-normalize-data: false
   sort-by-yields: true
-  save-extensions: ['pdf']
+  save-extensions: ['pdf', 'png']
   for-yields: true
   yields-table-order: 4
   yields-title: 'One b-tagged jet'
