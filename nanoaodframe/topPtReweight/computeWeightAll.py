@@ -67,7 +67,7 @@ for coup in coupls:
             hs[0].SetTitle('Ratio between MG5 signal and Powheg NLO tt+LL')
             hs[0].SetLineColor(col)
             hs[0].SetLineWidth(2)
-            hs[0].GetYaxis().SetRangeUser(0.8,1.4)
+            hs[0].GetYaxis().SetRangeUser(0.5,1.4)
             hs[0].Draw('ep')
 
             for i in range(1, len(hs)):
