@@ -282,7 +282,7 @@
 'hist_WJetsToLNu_HT100To200.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT100To200'
-  cross-section: 1519.76 # 1256.0 * 1.21 * 1.000
+  cross-section: 1519.76 # 1256.0 * 1.21
   generated-events: 47691676.0
   group: GWJets
   yields-group: '6W+Jets'
@@ -291,7 +291,7 @@
 'hist_WJetsToLNu_HT200To400.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT200To400'
-  cross-section: 407.98 # 335.5 * 1.21 * 1.005
+  cross-section: 406 # 335.5 * 1.21
   generated-events: 42400350.0
   group: GWJets
   yields-group: '6W+Jets'
@@ -300,7 +300,7 @@
 'hist_WJetsToLNu_HT400To600.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT400To600'
-  cross-section: 53.986 # 45.25 * 1.21 * 0.986
+  cross-section: 54.75 # 45.25 * 1.21
   generated-events: 5470704.0
   group: GWJets
   yields-group: '6W+Jets'
@@ -309,7 +309,7 @@
 'hist_WJetsToLNu_HT600To800.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT600To800'
-  cross-section: 13.91 # 12.05 * 1.21 * 0.954
+  cross-section: 14.58 # 12.05 * 1.21
   generated-events: 5484477.0
   group: GWJets
   yields-group: '6W+Jets'
@@ -318,7 +318,7 @@
 'hist_WJetsToLNu_HT800To1200.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT800To1200'
-  cross-section: 6.19 # 5.501 * 1.21 * 0.930
+  cross-section: 6.656 # 5.501 * 1.21
   generated-events: 5389834.0
   group: GWJets
   yields-group: '6W+Jets'
@@ -327,7 +327,7 @@
 'hist_WJetsToLNu_HT1200To2500.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT1200To2500'
-  cross-section: 1.199 # 1.16 * 1.21 * 0.854
+  cross-section: 1.404 # 1.16 * 1.21
   generated-events: 4935967.0
   group: GWJets
   yields-group: '6W+Jets'
@@ -336,7 +336,7 @@
 'hist_WJetsToLNu_HT2500ToInf.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT2500ToInf'
-  cross-section: 0.0267 # 0.026 * 1.21 * 0.849
+  cross-section: 0.03146 # 0.026 * 1.21
   generated-events: 1185699.0
   group: GWJets
   yields-group: '6W+Jets'
