@@ -25,7 +25,7 @@ hbkg17 = h.Clone('hbkg17')
 hbkg17.SetDirectory(0)
 
 c = TCanvas('c','c',400,400)
-sum_weight = []
+sum_weight = [0] * (len(arr)-1)
 
 for coup in coupls:
     for rank in ranks:
@@ -63,25 +63,24 @@ for coup in coupls:
                     hs.append(htmp2)
                     l.AddEntry(htmp2, 'Powheg+P8/' + year + '_' + coup + '_' + rank, 'l')
 
-            col = 1
-            hs[0].SetTitle('Ratio between MG5 signal and Powheg NLO tt+LL')
-            hs[0].SetLineColor(col)
-            hs[0].SetLineWidth(2)
-            hs[0].GetYaxis().SetRangeUser(0.5,1.4)
-            hs[0].Draw('ep')
+        col = 1
+        hs[0].SetTitle('Ratio between MG5 signal and Powheg NLO tt+LL')
+        hs[0].SetLineColor(col)
+        hs[0].SetLineWidth(2)
+        hs[0].GetYaxis().SetRangeUser(0.5,1.4)
+        hs[0].Draw('ep')
 
-            for i in range(1, len(hs)):
-                col += 1
-                hs[i].SetLineColor(col)
-                hs[i].SetLineWidth(2)
-                hs[i].Draw('ep same')
+        for nbin in range(hs[0].GetNbinsX()):
+            sum_weight[nbin] += hs[0].GetBinContent(nbin+1)
 
-                if len(sum_weight) == 0:
-                    for nbin in range(hs[i].GetNbinsX()):
-                        sum_weight.append(hs[i].GetBinContent(nbin+1))
-                else:
-                    for nbin in range(hs[i].GetNbinsX()):
-                        sum_weight[nbin] += hs[i].GetBinContent(nbin+1)
+        for i in range(1, len(hs)):
+            col += 1
+            hs[i].SetLineColor(col)
+            hs[i].SetLineWidth(2)
+            hs[i].Draw('ep same')
+
+            for nbin in range(hs[i].GetNbinsX()):
+                sum_weight[nbin] += hs[i].GetBinContent(nbin+1)
 
         l.Draw('same')
         c.Print(coup + '_' + rank + '_ratios.pdf')
