@@ -1,4 +1,3 @@
-from __future__ import print_function
 from ROOT import *
 import ROOT
 import sys, os
@@ -26,6 +25,7 @@ hbkg17 = h.Clone('hbkg17')
 hbkg17.SetDirectory(0)
 
 c = TCanvas('c','c',400,400)
+sum_weight = []
 
 for coup in coupls:
     for rank in ranks:
@@ -76,5 +76,19 @@ for coup in coupls:
                 hs[i].SetLineWidth(2)
                 hs[i].Draw('ep same')
 
+                if len(sum_weight) == 0:
+                    for nbin in range(hs[i].GetNbinsX()):
+                        sum_weight.append(hs[i].GetBinContent(nbin+1))
+                else:
+                    for nbin in range(hs[i].GetNbinsX()):
+                        sum_weight[nbin] += hs[i].GetBinContent(nbin+1)
+
         l.Draw('same')
         c.Print(coup + '_' + rank + '_ratios.pdf')
+
+
+average_weight = []
+for i in sum_weight:
+    average_weight.append(round(i/24.0, 4))
+
+print(average_weight)

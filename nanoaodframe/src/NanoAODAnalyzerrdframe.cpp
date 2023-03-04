@@ -186,6 +186,9 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         selectElectrons();
         selectTaus();
         selectJets(jes_var);
+        if (!_isData){
+            topPtReweight();
+        }
     }
     defineMoreVars();
     defineCuts();
@@ -901,7 +904,7 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
     // for checking overlapped jets with leptons
     auto checkoverlap = [](FourVectorVec &seljets, FourVectorVec &sellep) {
 
-        doubles mindrlepton;
+        ints mindrlepton;
         for (auto ajet: seljets) {
             auto mindr = 6.0;
             for ( auto alepton : sellep ) {
@@ -1096,6 +1099,56 @@ void NanoAODAnalyzerrdframe::selectFatJets() {
                .Define("nfatjetspass", "int(Sel_fatjetpt.size())")
                //.Define("Sel_fatjetweight", "std::vector<double>(nfatjetspass, evWeight)")
                .Define("Sel_fatjet4vecs", ::gen4vec, {"Sel_fatjetpt", "Sel_fatjeteta", "Sel_fatjetphi", "Sel_fatjetmass"});
+}
+
+void NanoAODAnalyzerrdframe::topPtReweight() {
+
+    _rlm = _rlm.Define("gentopcut", "abs(GenPart_pdgId) == 6 && GenPart_statusFlags & (1 << 13)")
+               .Define("GenPart_top_pt", "GenPart_pt[gentopcut]");
+
+    // To be updated for nanoaod n9
+    auto topPtLOtoNLO = [](floats toppt)->float {
+
+        float out = 1.0;
+        std::vector<float> xbins = {0,50,100,150,200,250,300,350,400,450,500,550,600,800,1000,2000};
+        std::vector<float> sfs = {1.7304, 1.5865, 1.4895, 1.4067, 1.3332, 1.2668, 1.2115, 1.1694, 1.1312, 1.106, 1.0851, 1.0824, 1.0661, 1.0776, 1.091};
+
+        if (toppt.size() != 2) out = 1.0;
+        else {
+            float pt1 = toppt[0];
+            float pt2 = toppt[1];
+            int xbin1 = (std::upper_bound(xbins.begin(), xbins.end(), pt1)-1) - xbins.begin();
+            int xbin2 = (std::upper_bound(xbins.begin(), xbins.end(), pt2)-1) - xbins.begin();
+            out = std::sqrt( sfs.at(xbin1) * sfs.at(xbin2));
+        }
+        return out;
+    };
+
+    auto topPtNLOtoNNLO = [](floats toppt)->float {
+
+        float out = 1.0;
+        if (toppt.size() != 2) out = 1.0;
+        else {
+            float pt1 = toppt[0];
+            float pt2 = toppt[1];
+            out = std::sqrt( (0.103 * std::exp(-0.0118 * pt1) - 0.000134 * pt1 + 0.973)\
+                           * (0.103 * std::exp(-0.0118 * pt2) - 0.000134 * pt2 + 0.973));
+        }
+        return out;
+    };
+
+    // NLO ttbar: NLO to theory weight
+    // https://twiki.cern.ch/twiki/bin/view/CMS/TopPtReweighting#TOP_PAG_corrections_based_on_the
+    if (_outfilename.find("TTTo") != std::string::npos) {
+        _rlm = _rlm.Define("TopPtWeight", topPtNLOtoNNLO, {"GenPart_top_pt"});
+    } else if (_outfilename.find("TT_LFV") != std::string::npos) {
+        _rlm = _rlm.Define("TopPtWeight_LO", topPtLOtoNLO, {"GenPart_top_pt"})
+                   .Define("TopPtWeight_NLO", topPtNLOtoNNLO, {"GenPart_top_pt"})
+                   .Define("TopPtWeight", "TopPtWeight_LO * TopPtWeight_NLO");
+    } else {
+        _rlm = _rlm.Define("TopPtWeight", "one");
+    }
+
 }
 
 void NanoAODAnalyzerrdframe::calculateEvWeight() {
