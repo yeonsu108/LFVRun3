@@ -75,7 +75,7 @@ class Stackhists:
             if cfile=="":
                 cfile = afile
             ctfile = ROOT.TFile(cfile)
-            ahist = ctfile.Get("hcount_nocut") # this should contain all entries before cuts
+            ahist = ctfile.Get("hcount_S0") # this should contain all entries before cuts
             if ahist == None:
                 print("counter histogram doesn\'t exist, will proceed with histintegaral=1. Be sure to put 1/histintegral in the scalefactor!")
                 self.sflist[id] *= xsec * self.integrlumi 

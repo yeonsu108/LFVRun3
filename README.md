@@ -1,35 +1,12 @@
 ## LFV Run2
 
-### About Repository
-> **Main features** are **two NanoAODFrames (STLFV, TTLFV)** and **DNN** environment.
-> 
-> Later, an initial script for compile nanoaodframes will be provided.
-> 
+### About the Repository
+> In this repository, analyze tools for TOP-22-011 [CMS CADI (internal)](https://cms.cern.ch/iCMS/analysisadmin/cadilines?line=TOP-22-011) are stored.\
+> `nanoaodframe` provides **skimming or processing** NanoAOD.\
+> `plotIt` makes **control plots** including statistical or systematic uncertainties.\
+> `DNN` provides environment for **training and validation** of events using DNN.\
+> `LFVshapecombine` is to **set the upperlimits** for each EFT operator of LFV using [CombineTool](https://cms-analysis.github.io/HiggsAnalysis-CombinedLimit/).\
+> `systematics`, `scripts`, and `MC` folders are archiving scripts.
 
-
-### CMSSW Settings
-```bash
-echo $SCRAM_ARCH
-cmsRel <CMSSW_version>
-cd <CMSSW_version>/src
-cmsenv
-```
-
-### Basic Workflows
-> 1. Compile NanoAODFrames
-> 2. Edit event selections and histograms in NanoAODFrames.
-> 3. Skim NanoAOD
-> 4. Process NanoAOD
-> 5. Draw data/MC histograms with processed NanoAOD.
-> 6. Run DNN
-> 7. Run Combine
-
-### 001. Compile
-```bash
-cd nanoaodframe_STLFV
-make clean
-make -j 4
-cd ../nanoaodframe_TTLFV
-make clean
-make -j 4
-```
+>
+> Each folders are independent, check for the `README.md` in each folder.

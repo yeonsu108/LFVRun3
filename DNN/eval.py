@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore")
+
 import os
 import sys
 os.environ["CUDA_VISIBLE_DEVICES"] = "3"
@@ -8,24 +11,18 @@ import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-from utils.hists import *
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
-processed = "mar_02"
+processed = "aug22"
 label = "rerun"
-systs = ["norm","jesup","jesdown",
-        "puup","pudown","btagup_jes","btagdown_jes",
-        "btagup_hf","btagdown_hf","btagup_lf","btagdown_lf",
-        ]
-#systs = ["jesup","jesdown",
-#systs = ["norm","jesup","jesdown","puup","pudown",]
-#systs = ["btagup_jes","btagdown_jes","btagup_hf","btagdown_hf","btagup_lf","btagdown_lf",]
+systs = ['nom', 'puup', 'pudown', 'btagup_hf', 'btagdown_hf', 'btagup_lf', 'btagdown_lf', 'btagup_hfstats1', 'btagdown_hfstats1', 'btagup_hfstats2', 'btagdown_hfstats2', 'btagup_lfstats1', 'btagdown_lfstats1', 'btagup_lfstats2', 'btagdown_lfstats2', 'btagup_cferr1', 'btagdown_cferr1', 'btagup_cferr2', 'btagdown_cferr2', 'up_jesAbsolute', 'down_jesAbsolute', 'up_jesBBEC1', 'down_jesBBEC1', 'up_jesEC2', 'down_jesEC2', 'up_jesFlavorQCD', 'down_jesFlavorQCD', 'up_jesRelativeBal', 'down_jesRelativeBal', 'up_jesAbsolute_year', 'down_jesAbsolute_year', 'up_jesBBEC1_year', 'down_jesBBEC1_year', 'up_jesEC2_year', 'down_jesEC2_year', 'up_jesRelativeSample_year', 'down_jesRelativeSample_year']
+
 for syst in systs:
-    for y in ["16pre","16post","17","18"]:
-        for p in ["ST","TT"]:
-            print("Start "+p+" LFV Evaluation")
+    for year in ["16pre","16post","17","18"]:
+        for ch in ["st","tt"]:
+            print("Start "+ch+" LFV Evaluation")
             inputvars = []
-            if p == "ST":
+            if ch == "st":
                 inputvars = ["Sel_muon1pt","Sel_muon1eta",
                     "Sel_tau1pt","Sel_tau1eta","Sel_tau1mass",
                     "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt",
@@ -37,7 +34,7 @@ for syst in systs:
                     "chi2_wqq_dEta","chi2_wqq_dPhi","chi2_wqq_dR",
                     "mutau_mass","mutau_dEta","mutau_dPhi","mutau_dR",
                     ]
-            elif p == "TT":
+            elif ch == "tt":
                 inputvars = ["Sel_muon1pt","Sel_muon1eta",
                     "Sel_tau1pt","Sel_tau1eta","Sel_tau1mass",
                     "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt","Sel2_jet4pt",
@@ -53,36 +50,43 @@ for syst in systs:
                     "mutau_mass","mutau_dEta","mutau_dPhi","mutau_dR",
                     ]
 
-            project_dir = "nanoaodframe_"+p+"LFV/"+processed+"_"+syst+"/"+y+"/"    # MODIFY!!!
-            path = base_dir+project_dir
+            #project_dir = "nanoaodframe/"+processed+"_"+ch+"/"+year+"/"    #FIXME
+            project_dir = "/home/itseyes/github/LFVRun2_ndf_integration/nanoaodframe/aug22_"+ch+"lfv/"+syst+"/"+year+"/" 
+            #path = base_dir+project_dir
+            path = project_dir
             flist = os.listdir(path)
             flist = [i for i in flist if ".root" in i]
             
-            model_dir = label+"_"+p+processed+"/norm/best_model.h5"
+            model_dir = label+"_"+ch+processed+"/nom/best_model.h5"
             #print(model_dir)
             model = tf.keras.models.load_model(model_dir)
             #model.summary()
             
-            eval_dir = label+"_"+p+processed+"/"+syst
+            eval_dir = label+"_"+ch+processed + "/" + year + "/"
 
             weights = ["evWeight"]
-            hists_path = eval_dir+"/pred_hists/"+y+"/"
+            hists_path = eval_dir
             if not os.path.isdir(hists_path):
                 os.makedirs(hists_path)
 
             for f in flist:
-                fdict = f.split("_"+y)[0]
+                syst_ = ""
+                if syst == "nom": syst_ = ""
+                else: syst_ = "__" + syst
+                if 'year' in syst_: syst_ = syst_.replace('year', year)
+                fdict = f.replace('_'+year+'_'+syst+'.root', syst_+'.root')
                 f_dir = path+f
-                outf_dir = hists_path+f.replace(".root","")+"_pred.root"
+                outf_dir = hists_path + fdict
+                print(outf_dir)
                 infile = uproot.open(f_dir)
                 tree = infile["outputTree2"]
                 hnocut = infile["hcounter_nocut"]
                 hpglepweight = infile["hnevents_pglep_cut0000"]
                 hfullweight = infile["hnevents_cut0000"]
                 hfinal = None
-                if p == "ST":
+                if ch == "st":
                     hfinal = infile["hnevents_cut00000"]
-                elif p == "TT":
+                elif ch == "tt":
                     hfinal = infile["hnevents_cut000000"]
                 if len(tree) == 0:
                     print("No events : "+f)
