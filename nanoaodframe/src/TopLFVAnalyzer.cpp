@@ -52,6 +52,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVar({"Tau1_eta", "Tau_eta[0]", ""});
     addVar({"Tau1_mass", "Tau_mass[0]", ""});
     addVar({"Tau1_charge", "Tau_charge[0]", ""});
+    addVar({"Tau1_decayMode", "Tau_decayMode[0]", ""});
 
     addVar({"mutau_charge", "Muon1_charge * Tau1_charge", ""});
 
@@ -389,6 +390,7 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_tau1_pt", ";#tau_{h} p_{T} (GeV);Events", 20, 0, 400}, "Tau1_pt", "eventWeight", weightstr, "00", maxstep);
         add1DHist({"h_tau1_eta", ";#tau_{h} #eta;Events", 20, -2.3, 2.3}, "Tau1_eta", "eventWeight", weightstr, "00", maxstep);
         add1DHist({"h_tau1_mass", ";m_{#tau_{h}} (GeV);Events", 20, 0, 100}, "Tau1_mass", "eventWeight", weightstr, "00", maxstep);
+        add1DHist({"h_tau1_decayMode", ";decaymode_{#tau_{h}} (GeV);Events", 15, 0, 15}, "Tau1_decayMode", "eventWeight", weightstr, "00", maxstep);
 
         add1DHist({"h_mutau_dEta", ";#Delta#eta(#mu, #tau_{h});Events", 25, -5, 5}, "mutau_dEta", "eventWeight", weightstr, "00", maxstep);
         add1DHist({"h_mutau_dPhi", ";#Delta#phi(#mu, #tau_{h});Events", 20, -3.2, 3.2}, "mutau_dPhi", "eventWeight", weightstr, "00", maxstep);
