@@ -200,6 +200,18 @@
 'h_tau1_eta_S5':
   save-extensions: ['pdf', 'png']
 
+#tau decayMode
+'h_tau1_decayMode_S2':
+  save-extensions: ['pdf', 'png']
+
+'h_tau1_decayMode_S3':
+  save-extensions: ['pdf', 'png']
+
+'h_tau1_decayMode_S4':
+  save-extensions: ['pdf', 'png']
+
+'h_tau1_decayMode_S5':
+  save-extensions: ['pdf', 'png']
 
 #Muon tau dR
 'h_mutau_dR_S2':
