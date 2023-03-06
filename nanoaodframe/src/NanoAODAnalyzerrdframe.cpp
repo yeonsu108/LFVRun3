@@ -1023,7 +1023,7 @@ void NanoAODAnalyzerrdframe::selectTaus() {
     };
 
     // Hadronic Tau Object Selections
-    _rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
+    _rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
                .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64");
 
     // Hadronic Tau Selection
@@ -1034,6 +1034,7 @@ void NanoAODAnalyzerrdframe::selectTaus() {
                .Redefine("Tau_mass", "Tau_mass[seltaucuts]")
                .Redefine("Tau_charge", "Tau_charge[seltaucuts]")
                .Redefine("Tau_jetIdx", "Tau_jetIdx[seltaucuts]")
+               .Redefine("Tau_decayMode", "Tau_decayMode[seltaucuts]")
                .Define("ncleantaupass", "int(Tau_pt.size())")
                .Define("cleantau4vecs", ::gen4vec, {"Tau_pt", "Tau_eta", "Tau_phi", "Tau_mass"});
 
