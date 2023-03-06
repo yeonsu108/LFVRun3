@@ -281,6 +281,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("btagWeight_DeepFlavB");
     addVartoStore("btagWeight_DeepFlavB_jes");
     addVartoStore("eventWeight.*");
+    addVartoStore("TopPtWeight");
 }
 
 void TopLFVAnalyzer::bookHists() {
