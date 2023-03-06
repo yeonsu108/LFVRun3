@@ -21,74 +21,70 @@ from sklearn.model_selection import cross_val_score, GridSearchCV
 
 root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
-processed = "aug22"
+processed = "TESTtauDM_no5_6"
 syst = "nom"
-label = "rerun_multi"
+label = "top_lfv_multiClass"
 class_names = ["bkg","sigTT", "sigST"]
 
 print("Start multi LFV Training")
 epochs = 1000
-inputvars_st = ["Sel_muon1pt","Sel_muon1eta",
-        "Sel_tau1pt","Sel_tau1eta","Sel_tau1mass",
-        "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt",
-        "Sel2_jet1eta","Sel2_jet2eta","Sel2_jet3eta",
-        "Sel2_jet1mass","Sel2_jet2mass","Sel2_jet3mass",
-        "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag",
-        "Sys_METpt","Sys_METphi",
+inputvars_st = [ "Muon1_pt","Muon1_eta",
+        "Tau1_pt","Tau1_mass","Tau1_eta", 
+        "Jet1_pt","Jet1_mass","Jet1_eta","Jet1_btagDeepFlavB",
+        "Jet2_pt","Jet2_mass","Jet2_eta","Jet2_btagDeepFlavB",
+        "Jet3_pt","Jet3_mass","Jet3_eta","Jet3_btagDeepFlavB",
+        "MET_pt",
         "chi2","chi2_SMW_mass","chi2_SMTop_mass",
         "chi2_wqq_dEta","chi2_wqq_dPhi","chi2_wqq_dR",
         "mutau_mass","mutau_dEta","mutau_dPhi","mutau_dR",
         ]
-inputvars_tt = ["Sel_muon1pt","Sel_muon1eta",
-        "Sel_tau1pt","Sel_tau1eta","Sel_tau1mass",
-        "Sel2_jet1pt","Sel2_jet2pt","Sel2_jet3pt",
-        "Sel2_jet4pt","Sel2_jet4eta", "Sel2_jet4btag","Sel2_jet4mass",
-        "Sel2_jet1eta","Sel2_jet2eta","Sel2_jet3eta",
-        "Sel2_jet1mass","Sel2_jet2mass","Sel2_jet3mass",
-        "Sel2_jet1btag","Sel2_jet2btag","Sel2_jet3btag",
-        "Sys_METpt","Sys_METphi",
-        "chi2","chi2_lfvTop_mass","chi2_SMW_mass","chi2_SMTop_mass",
-        "chi2_wqq_dEta","chi2_wqq_dPhi","chi2_wqq_dR",
-        "chi2_lfvjmu_dEta","chi2_lfvjmu_dPhi","chi2_lfvjmu_dR","chi2_lfvjmu_mass",
-        "chi2_lfvjtau_dEta","chi2_lfvjtau_dPhi","chi2_lfvjtau_dR","chi2_lfvjtau_mass",
-        "chi2_lfvjmutau_dEta","chi2_lfvjmutau_dPhi","chi2_lfvjmutau_dR","chi2_lfvjmutau_mass",
-        "mutau_mass","mutau_dEta","mutau_dPhi","mutau_dR",
-        ]
-inputvars_tt = inputvars_st
 sbratio = 1 # sig:bkg = 1:1
 
 kfold = KFold(n_splits=10, shuffle=True)
 
-#project_dir = "nanoaodframe_"+p+"LFV/"+processed+"_"+syst+"/"
-#sig_filedir = root_dir+project_dir+p+"_LFV_nom.root"
-project_dir = "/home/itseyes/github/LFVRun2_ndf_integration/nanoaodframe/aug22_ttlfv/nom/"
-sig_filedir_tt = project_dir+"TT"+"_LFV_nom.root"
-bkg1_filedir_tt = project_dir+"TTTo2L2Nu_nom.root"
-bkg2_filedir_tt = project_dir+"TTToSemiLeptonic_nom.root"
-
-project_dir = "/home/itseyes/github/LFVRun2_ndf_integration/nanoaodframe/aug22_stlfv/nom/"
-sig_filedir_st = project_dir+"ST"+"_LFV_nom.root"
-bkg1_filedir_st = project_dir+"TTTo2L2Nu_nom.root"
-bkg2_filedir_st = project_dir+"TTToSemiLeptonic_nom.root"
-#bkg1_filedir = root_dir+project_dir+"TTTo2L2Nu_nom.root"
-#bkg2_filedir = root_dir+project_dir+"TTToSemiLeptonic_nom.root"
-train_outdir = label+"_"+"Multi"+processed+"/"+syst
+train_outdir = label+"_"+processed+"/"+syst
 os.makedirs(train_outdir, exist_ok=True)
 
-sig_tree_st = uproot.open(sig_filedir_st)["outputTree2"]
-sig_tree_tt = uproot.open(sig_filedir_tt)["outputTree2"]
-bkg1_tree_st = uproot.open(bkg1_filedir_st)["outputTree2"]
-bkg2_tree_st = uproot.open(bkg2_filedir_st)["outputTree2"]
-bkg1_tree_tt = uproot.open(bkg1_filedir_tt)["outputTree2"]
-bkg2_tree_tt = uproot.open(bkg2_filedir_tt)["outputTree2"]
+siglist_st = ["ST_LFV_TCMuTau_Scalar"]#,"ST_LFV_TCMuTau_Vector","ST_LFV_TCMuTau_Tensor","ST_LFV_TUMuTau_Vector","ST_LFV_TUMuTau_Scalar","ST_LFV_TUMuTau_Tensor"]
+siglist_tt = ['TT_LFV_TCMuTau_Scalar']#, 'TT_LFV_TCMuTau_Tensor', 'TT_LFV_TCMuTau_Vector', 'TT_LFV_TUMuTau_Scalar', 'TT_LFV_TUMuTau_Tensor', 'TT_LFV_TUMuTau_Vector']
+#years = ["2017","2018","2016pre","2016post"]
+years = ["2018"]
+#project_dir = "/data1/users/ecasilar/Jan03/"
+#project_dir = "/data1/users/ecasilar/skim_test2_v1_3j1b_tight/"
+project_dir = "/data1/users/ecasilar/work/nanoaodframe/with_tauDM_no5_6/"
 
-df_sig_st = sig_tree_st.arrays(inputvars_st,library="pd")
-df_bkg1_st = bkg1_tree_st.arrays(inputvars_st,library="pd")
-df_bkg2_st = bkg2_tree_st.arrays(inputvars_st,library="pd")
-df_sig_tt = sig_tree_tt.arrays(inputvars_tt,library="pd")
-df_bkg1_tt = bkg1_tree_tt.arrays(inputvars_tt,library="pd")
-df_bkg2_tt = bkg2_tree_tt.arrays(inputvars_tt,library="pd")
-df_bkg = pd.concat([df_bkg1_st,df_bkg2_st,df_bkg1_tt,df_bkg2_tt])
+
+df_sig_st_list = []
+df_sig_tt_list = []
+df_bkg_tt_list = []
+#We use all the years together
+for year in years:
+   project_dir_y = project_dir+"/"+year+"/"
+
+   #Concatinate ST signals
+   for sig_tree in siglist_st:
+      sig_tree_ = uproot.open(project_dir_y+"hist_"+sig_tree+".root")["Events"]
+      df_sig_ = sig_tree_.arrays(inputvars_st,library="pd")
+      df_sig_st_list.append(df_sig_)
+   
+   #Concatinate TT signals
+   for sig_tree in siglist_tt:
+      sig_tree_ = uproot.open(project_dir_y+"hist_"+sig_tree+".root")["Events"]
+      df_sig_ = sig_tree_.arrays(inputvars_st,library="pd")
+      df_sig_tt_list.append(df_sig_)
+
+   bkg1_filedir_tt = project_dir_y+"hist_TTTo2L2Nu.root"
+   bkg2_filedir_tt = project_dir_y+"hist_TTToSemiLeptonic.root"
+   bkg1_tree_tt = uproot.open(bkg1_filedir_tt)["Events"]
+   bkg2_tree_tt = uproot.open(bkg2_filedir_tt)["Events"]
+   df_bkg1_tt = bkg1_tree_tt.arrays(inputvars_st,library="pd")
+   df_bkg2_tt = bkg2_tree_tt.arrays(inputvars_st,library="pd")
+   df_bkg_tt_list.append(df_bkg1_tt)
+   df_bkg_tt_list.append(df_bkg2_tt)
+
+df_sig_st = pd.concat(df_sig_st_list)
+df_sig_tt = pd.concat(df_sig_tt_list)
+df_bkg = pd.concat(df_bkg_tt_list)
 
 ntotsig_tt = len(df_sig_st)
 ntotsig_st = len(df_sig_tt)
@@ -96,7 +92,6 @@ ntotbkg = len(df_bkg)
 print(df_bkg.replace(np.nan, 0))
 print(df_sig_st.replace(np.nan, 0))
 print(df_sig_tt.replace(np.nan, 0))
-print("4 bkg component:",len(df_bkg1_st),len(df_bkg2_st),len(df_bkg1_tt),len(df_bkg2_tt))
 print("sig tt:", ntotsig_tt)
 print("sig st:",ntotsig_st)
 print("tot bkg:",ntotbkg)
@@ -155,7 +150,7 @@ print(pd_data.head())
 #    scaler = MinMaxScaler()
 #    pd_data = pd.DataFrame(scaler.fit_transform(pd_data), columns=pd_data.columns)
 
-x_total = np.array(pd_data.filter(items = inputvars_tt))
+x_total = np.array(pd_data.filter(items = inputvars_st))
 y_total = np.array(pd_data.filter(items = ['category']))
 
 y_cat = to_categorical(y_total)
@@ -175,7 +170,7 @@ x_val = x_total[trainlen:,0::]
 y_val = y_total[trainlen:]
 '''
 
-patience_epoch = 30
+patience_epoch = 10
 # Early Stopping with Validation Loss for Best Model
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=patience_epoch)
 mc = ModelCheckpoint(train_outdir+'/best_model.h5', monitor='val_loss', mode='min', save_best_only=True)
