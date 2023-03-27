@@ -11,7 +11,7 @@
   ratio-y-axis-range: [0.01, 2]
   ratio-y-axis-auto-range: false
   signal-normalize-data: false
-#blinded-range: [0.700001,1.0]
+  blinded-range: [2.501,100]
 # log-x: true
 #  rebin: 4
 #  labels:

@@ -19,18 +19,20 @@ groups = ['GData', 'Gttll', 'Gttlj', 'Gttjj', 'GttV', 'GZJets', 'GWJets', 'GSing
           'GLFVSTcv', 'GLFVSTuv', 'GLFVTTcv', 'GLFVTTuv',]
 #not include prefire and elzvtx which exist only in 2017
 #common_syst_list = ['pu', 'muid', 'muiso', 'mutrg', 'elid', 'elreco', 'eltrg',
-common_syst_list = ['pu', 'btaglf', 'btaghf', 'btaglfstat1',
-                    'btaglfstat2', 'btaghfstat1', 'btaghfstat2', 'btagcferr1', 'btagcferr2',
-                    'jesAbsolute', 'jesBBEC1', 'jesEC2', 'jesFlavorQCD', 'jesRelativeBal']
-syst = ['jesAbsoluteyear', 'jesBBEC1year', 'jesEC2year', 'jesRelativeSampleyear']
+syst = ['jesAbsolute_year', 'jesBBEC1_year', 'jesRelativeSample_year'] #jesEC2year missing
+systs_tofile = ['jer',  'jesAbsolute', 'jesBBEC1', 'jesFlavorQCD', 'jesRelativeBal', 'tes']
+systs_toweight = ['btagcferr1', 'btagcferr2', 'btaghf', 'btaghfstats1', 'btaghfstats2', 'btaglf', 'btaglfstats1', 'btaglfstats2',   'muid', 'muiso', 'mutrg', 'pu', 'tauidel', 'tauidjet', 'tauidmu']
+common_syst_list = systs_tofile+systs_toweight
+
 #common_syst_list = []
 #syst = []
-years = {'16pre': 19502, '16post': 16812, '17': 41480, '18':59832}
+#years = {'2016pre': 19502, '2016post': 16812, '2017': 41480, '2018':59832}
+years = {'2018':59832}
 
 for sy in syst:
   if 'year' in sy:
     for year in years.keys():
-      common_syst_list.append(sy.replace('year', year))
+      common_syst_list.append(sy.replace('year', year[:4]))
   else: common_syst_list.append(sy)
 
 reco_str = label
@@ -62,12 +64,14 @@ for year, lumi in years.items():
       if 'hist_QCD' in line: skip_signal = True
       if '#' in line[0]: skip_signal = True
       if 'hist' in line:
-        line = line[0] + reco_str + '/' + year + '_postprocess/'+ '/' + discriminator + '/' + alpha +'/' + line[1:]
-        if not any(i in line for i in ['LFV', 'Run1']):
+        line = line[0] + reco_str + '/' + year + '_postprocess_2/'+ '/' + discriminator + '/' + alpha +'/' + line[1:]
+        if not any(i in line for i in ['LFV', 'SingleMuon2']):
           line += '  scale: ' + str(int(lumi)/137570.0) + '\n'
-      if not skip_signal and not any(i in line for i in ['yields-group']):
-        if 'group' in line and not any(i in line for i in groups): string_for_files += '  group: Gother \n'
-        else: string_for_files += line
+      if not skip_signal: # and not any(i in line for i in ['yields-group']):
+        #if 'group' in line and not any(i in line for i in groups): string_for_files += '  group: Gother \n'
+        #else: string_for_files += line
+        string_for_files += line
+
 
   file_syst = ''
   with open(config_path + 'config_' + year + '.yml') as f:
@@ -75,10 +79,14 @@ for year, lumi in years.items():
     for line in lines:
       if 'type' in line:
         if 'const' in line:
-          file_syst += line[:line.find(':')] + '_' + year + line[line.find(':'):line.find('hist')] + '/' + year + '_postprocess/'+'/' + discriminator + '/' + alpha + '/' + line[line.find('hist'):]
+          #file_syst += line[:line.find(':')] + '_' + year + line[line.find(':'):line.find('hist')] + '/' + year + '_postprocess_2/'+'/' + discriminator + '/' + alpha + '/' + line[line.find('hist'):]
+          if year == '2016pre':
+            file_syst += line
         elif 'shape' in line:
-          file_syst += line[:line.find('hist')] + '/' + year + '_postprocess/'+'/' + discriminator + '/' +alpha + '/' + line[line.find('hist'):]
-
+          #file_syst += line[:line.find('hist')] + '/' + year + '_postprocess_2/'+'/' + discriminator + '/' +alpha + '/' + line[line.find('hist'):]
+          if year == '2016pre':
+            file_syst += line
+  print("file_syst", file_syst)
 
 with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   print("""
@@ -100,7 +108,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVSTuv
   order: 2
 
-'{0}/Run2/hist_TT_LFV_TToCMuTau_Vector.root':
+'{0}/Run2/hist_TT_LFV_TCMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVTTcv'
   cross-section: 0.0215
@@ -109,7 +117,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVTTcv
   order: 3
 
-'{0}/Run2/hist_TT_LFV_TToUMuTau_Vector.root':
+'{0}/Run2/hist_TT_LFV_TUMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVTTuv'
   cross-section: 0.0215
@@ -145,11 +153,11 @@ for year, lumi in years.items():
       if '#' in line[0]: skip_signal = True
       if skip_signal and 'hist_QCD' in line: skip_signal = False
       if 'hist_QCD' in line:
-        line = line[0] + reco_str + '/' + year + '_postprocess/' + discriminator + '/' + alpha +'/' + line[1:]
-        if not any(i in line for i in ['LFV', 'Run1']):
+        line = line[0] + reco_str + '/' + year + '_postprocess_2/' + discriminator + '/' + alpha +'/' + line[1:]
+        if not any(i in line for i in ['LFV', 'SingleMuon2']):
           line += '  scale: ' + str(int(lumi)/137570.0) + '\n'
-      if not skip_signal and not any(i in line for i in ['yields-group']): string_for_qcd += line
-
+      #if not skip_signal and not any(i in line for i in ['yields-group']): string_for_qcd += line
+      if not skip_signal: string_for_qcd += line
 
 with open(config_path + 'files_Run2.yml', 'a') as fnew:
   fnew.write(string_for_qcd)
