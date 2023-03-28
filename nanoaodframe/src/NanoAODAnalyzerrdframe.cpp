@@ -154,8 +154,8 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
 
             WeightCalculatorFromHistogram* _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
             WeightCalculatorFromHistogram* _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
-            WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus);
-
+            WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus); 
+	    //Check Normalisation issue for genWeight 
             _rlm = _rlm.Redefine("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
                        .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->floats
                               {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
@@ -497,7 +497,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         return uncertainties;
     };
 
-    auto metCorr = [](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis)->float {
+    auto metCorr = [=](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis, int npv, int runnb)->float {
 
         auto metx = met * cos(metphi);
         auto mety = met * sin(metphi);
@@ -508,7 +508,56 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 mety -= (jetptsafter[i] - jetptsbefore[i])*sin(jetphis[i]);
             }
         }
-        return (float(sqrt(metx*metx + mety*mety)));
+
+	//starting phi modulation correction on met 
+	// https://lathomas.web.cern.ch/lathomas/METStuff/XYCorrections/XYMETCorrection_withUL17andUL18andUL16.h
+
+	auto uncormet = float(sqrt(metx*metx + mety*mety));
+	auto uncormet_phi = float(atan2(mety, metx));
+
+	if(npv>100) npv=100;
+	auto METxcorr(0.),METycorr(0.);
+	if (!_isData) {
+	//UL2016
+	if(_isRun16pre) METxcorr = -(-0.153497*npv +-0.231751);
+	if(_isRun16pre) METycorr = -(0.00731978*npv +0.243323);
+	if(_isRun16post) METxcorr = -(-0.188743*npv +0.136539);
+	if(_isRun16post) METycorr = -(0.0127927*npv +0.117747);	
+	//UL2017
+	if(_isRun17) METxcorr = -(-0.300155*npv +1.90608);
+	if(_isRun17) METycorr = -(0.300213*npv +-2.02232);
+	//UL2018
+	if(_isRun18) METxcorr = -(0.183518*npv +0.546754);
+	if(_isRun18) METycorr = -(0.192263*npv +-0.42121);
+	}
+	if (_isData) {
+	//UL2018
+	if(runnb >=315252 && runnb <=316995 ) {METxcorr = -(0.263733*npv +-1.91115);METycorr = -(0.0431304*npv +-0.112043);}
+	if(runnb >=316998 && runnb <=319312 ) {METxcorr = -(0.400466*npv +-3.05914);METycorr = -(0.146125*npv +-0.533233);}
+	if(runnb >=319313 && runnb <=320393 ) {METxcorr = -(0.430911*npv +-1.42865);METycorr = -(0.0620083*npv +-1.46021);}
+	if(runnb >=320394 && runnb <=325273 ) {METxcorr = -(0.457327*npv +-1.56856);METycorr = -(0.0684071*npv +-0.928372);}
+	//UL2017
+	if(runnb >=297020 && runnb <=299329 ) {METxcorr = -(-0.211161*npv +0.419333);METycorr = -(0.251789*npv +-1.28089);}
+	if(runnb >=299337 && runnb <=302029 ) {METxcorr = -(-0.185184*npv +-0.164009);METycorr = -(0.200941*npv +-0.56853);}
+	if(runnb >=302030 && runnb <=303434 ) {METxcorr = -(-0.201606*npv +0.426502);METycorr = -(0.188208*npv +-0.58313);}
+	if(runnb >=303435 && runnb <=304826 ) {METxcorr = -(-0.162472*npv +0.176329);METycorr = -(0.138076*npv +-0.250239);}
+	if(runnb >=304911 && runnb <=306462 ) {METxcorr = -(-0.210639*npv +0.72934);METycorr = -(0.198626*npv +1.028);}
+	//UL2016
+	if(runnb >=272007 && runnb <=275376 ) {METxcorr = -(-0.0214894*npv +-0.188255);METycorr = -(0.0876624*npv +0.812885);}
+	if(runnb >=275657 && runnb <=276283 ) {METxcorr = -(-0.032209*npv +0.067288);METycorr = -(0.113917*npv +0.743906);}
+	if(runnb >=276315 && runnb <=276811 ) {METxcorr = -(-0.0293663*npv +0.21106);METycorr = -(0.11331*npv +0.815787);}
+	if(runnb >=276831 && runnb <=277420 ) {METxcorr = -(-0.0132046*npv +0.20073);METycorr = -(0.134809*npv +0.679068);}
+	if(((runnb >=277772 && runnb <=278768) || runnb==278770)) {METxcorr = -(-0.0543566*npv +0.816597);METycorr = -(0.114225*npv +1.17266);};
+	if(((runnb >=278801 && runnb <=278808) || runnb==278769)) {METxcorr = -(0.134616*npv +-0.89965);METycorr = -(0.0397736*npv +1.0385);};
+	if(runnb >=278820 && runnb <=280385 ) {METxcorr = -(0.121809*npv +-0.584893);METycorr = -(0.0558974*npv +0.891234);};
+	if(runnb >=280919 && runnb <=284044 ) {METxcorr = -(0.0868828*npv +-0.703489);METycorr = -(0.0888774*npv +0.902632);};
+        }
+	auto CorrectedMET_x = uncormet *cos( uncormet_phi)+METxcorr;
+	auto CorrectedMET_y = uncormet *sin( uncormet_phi)+METycorr;
+
+	float CorrectedMET = sqrt(CorrectedMET_x*CorrectedMET_x+CorrectedMET_y*CorrectedMET_y);
+
+        return CorrectedMET;
     };
 
     auto metUnc = [](float met, float metphi, floats jetptsbefore, floatsVec jetptscorr, floats jetphis)->floats {
@@ -531,7 +580,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         return corrfactors;
     };
 
-    auto metPhiCorr = [](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis)->float {
+    auto metPhiCorr = [=](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis, int npv, int runnb)->float {
 
         auto metx = met * cos(metphi);
         auto mety = met * sin(metphi);
@@ -542,7 +591,63 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 mety -= (jetptsafter[i] - jetptsbefore[i])*sin(jetphis[i]);
             }
         }
-        return float(atan2(mety, metx));
+	//starting phi modulation correction on met phi 
+	// https://lathomas.web.cern.ch/lathomas/METStuff/XYCorrections/XYMETCorrection_withUL17andUL18andUL16.h
+
+	auto uncormet = float(sqrt(metx*metx + mety*mety));
+	auto uncormet_phi = float(atan2(mety, metx));
+
+	if(npv>100) npv=100;
+	auto METxcorr(0.),METycorr(0.);
+	if (!_isData) {
+	//UL2016
+	if(_isRun16pre) METxcorr = -(-0.153497*npv +-0.231751);
+	if(_isRun16pre) METycorr = -(0.00731978*npv +0.243323);
+	if(_isRun16post) METxcorr = -(-0.188743*npv +0.136539);
+	if(_isRun16post) METycorr = -(0.0127927*npv +0.117747);	
+	//UL2017
+	if(_isRun17) METxcorr = -(-0.300155*npv +1.90608);
+	if(_isRun17) METycorr = -(0.300213*npv +-2.02232);
+	//UL2018
+	if(_isRun18) METxcorr = -(0.183518*npv +0.546754);
+	if(_isRun18) METycorr = -(0.192263*npv +-0.42121);
+	}
+	if (_isData) {
+	//UL2018
+	if(runnb >=315252 && runnb <=316995 ) {METxcorr = -(0.263733*npv +-1.91115);METycorr = -(0.0431304*npv +-0.112043);}
+	if(runnb >=316998 && runnb <=319312 ) {METxcorr = -(0.400466*npv +-3.05914);METycorr = -(0.146125*npv +-0.533233);}
+	if(runnb >=319313 && runnb <=320393 ) {METxcorr = -(0.430911*npv +-1.42865);METycorr = -(0.0620083*npv +-1.46021);}
+	if(runnb >=320394 && runnb <=325273 ) {METxcorr = -(0.457327*npv +-1.56856);METycorr = -(0.0684071*npv +-0.928372);}
+	//UL2017
+	if(runnb >=297020 && runnb <=299329 ) {METxcorr = -(-0.211161*npv +0.419333);METycorr = -(0.251789*npv +-1.28089);}
+	if(runnb >=299337 && runnb <=302029 ) {METxcorr = -(-0.185184*npv +-0.164009);METycorr = -(0.200941*npv +-0.56853);}
+	if(runnb >=302030 && runnb <=303434 ) {METxcorr = -(-0.201606*npv +0.426502);METycorr = -(0.188208*npv +-0.58313);}
+	if(runnb >=303435 && runnb <=304826 ) {METxcorr = -(-0.162472*npv +0.176329);METycorr = -(0.138076*npv +-0.250239);}
+	if(runnb >=304911 && runnb <=306462 ) {METxcorr = -(-0.210639*npv +0.72934);METycorr = -(0.198626*npv +1.028);}
+	//UL2016
+	if(runnb >=272007 && runnb <=275376 ) {METxcorr = -(-0.0214894*npv +-0.188255);METycorr = -(0.0876624*npv +0.812885);}
+	if(runnb >=275657 && runnb <=276283 ) {METxcorr = -(-0.032209*npv +0.067288);METycorr = -(0.113917*npv +0.743906);}
+	if(runnb >=276315 && runnb <=276811 ) {METxcorr = -(-0.0293663*npv +0.21106);METycorr = -(0.11331*npv +0.815787);}
+	if(runnb >=276831 && runnb <=277420 ) {METxcorr = -(-0.0132046*npv +0.20073);METycorr = -(0.134809*npv +0.679068);}
+	if(((runnb >=277772 && runnb <=278768) || runnb==278770)) {METxcorr = -(-0.0543566*npv +0.816597);METycorr = -(0.114225*npv +1.17266);};
+	if(((runnb >=278801 && runnb <=278808) || runnb==278769)) {METxcorr = -(0.134616*npv +-0.89965);METycorr = -(0.0397736*npv +1.0385);};
+	if(runnb >=278820 && runnb <=280385 ) {METxcorr = -(0.121809*npv +-0.584893);METycorr = -(0.0558974*npv +0.891234);};
+	if(runnb >=280919 && runnb <=284044 ) {METxcorr = -(0.0868828*npv +-0.703489);METycorr = -(0.0888774*npv +0.902632);};
+        }
+
+	auto CorrectedMET_x = uncormet *cos( uncormet_phi)+METxcorr;
+	auto CorrectedMET_y = uncormet *sin( uncormet_phi)+METycorr;
+
+        float CorrectedMETPhi;
+
+        if(CorrectedMET_x==0 && CorrectedMET_y>0) CorrectedMETPhi = TMath::Pi();
+        else if(CorrectedMET_x==0 && CorrectedMET_y<0 )CorrectedMETPhi = -TMath::Pi();
+        else if(CorrectedMET_x >0) CorrectedMETPhi = TMath::ATan(CorrectedMET_y/CorrectedMET_x);
+        else if(CorrectedMET_x <0&& CorrectedMET_y>0) CorrectedMETPhi = TMath::ATan(CorrectedMET_y/CorrectedMET_x) + TMath::Pi();
+        else if(CorrectedMET_x <0&& CorrectedMET_y<0) CorrectedMETPhi = TMath::ATan(CorrectedMET_y/CorrectedMET_x) - TMath::Pi();
+        else CorrectedMETPhi =0;
+
+        return CorrectedMETPhi;
     };
 
     auto metPhiUnc = [](float met, float metphi, floats jetptsbefore, floatsVec jetptscorr, floats jetphis)->floats {
@@ -570,8 +675,8 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         _rlm = _rlm.Define("Jet_pt_uncorr", "Jet_pt");
         _rlm = _rlm.Define("Jet_pt_corr", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_pt"})
                    .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_mass"})
-                   .Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"})
-                   .Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"});
+                   .Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi","PV_npvsGood", "run"})
+                   .Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi", "PV_npvsGood", "run"});
         if (!dataMc) {
             _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
                        .Define("MET_pt_unc", metUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"})
@@ -1026,7 +1131,8 @@ void NanoAODAnalyzerrdframe::selectTaus() {
     };
 
     // Hadronic Tau Object Selections
-    _rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
+    //_rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
+    _rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
                .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64");
 
     // Hadronic Tau Selection
@@ -1294,6 +1400,8 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                .Redefine("Tau_mass", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"})
                .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"});
 }
+
+
 
 /*
 bool NanoAODAnalyzerrdframe::helper_1DHistCreator(std::string hname, std::string title, const int nbins, const double xlow, const double xhi, std::string rdfvar, std::string evWeight)

@@ -29,8 +29,6 @@ void TopLFVAnalyzer::defineCuts() {
     addCuts("mutau_charge < 0", "000");
     addCuts("ncleanjetspass >= 3", "0000");
     addCuts("ncleanbjetspass == 1", "00000");
-    // Control Region
-    //addCuts("ncleanbjetspass > 1", "00000");
 }
 
 void TopLFVAnalyzer::defineMoreVars() {
