@@ -78,18 +78,18 @@ void TopLFVAnalyzer::defineMoreVars() {
 
     // Reconstruction
     defineVar("top_reco_whad", ::top_reconstruction_STLFV, {"cleanjet4vecs","cleanbjet4vecs","muon4vecs","cleantau4vecs"});
-   addVar({"chi2", "top_reco_whad[0]",""});
-   addVar({"chi2_SMW_mass", "top_reco_whad[1]",""});
-   addVar({"chi2_SMTop_mass", "top_reco_whad[2]",""});
-   addVar({"chi2_wjet1_idx", "top_reco_whad[3]",""});
-   addVar({"chi2_wjet2_idx", "top_reco_whad[4]",""});
-   addVar({"chi2_SMW", "top_reco_whad[5]",""});
-   addVar({"chi2_SMTop", "top_reco_whad[6]",""});
+    addVar({"chi2", "top_reco_whad[0]",""});
+    addVar({"chi2_SMW_mass", "top_reco_whad[1]",""});
+    addVar({"chi2_SMTop_mass", "top_reco_whad[2]",""});
+    addVar({"chi2_wjet1_idx", "top_reco_whad[3]",""});
+    addVar({"chi2_wjet2_idx", "top_reco_whad[4]",""});
+    addVar({"chi2_SMW", "top_reco_whad[5]",""});
+    addVar({"chi2_SMTop", "top_reco_whad[6]",""});
 
-   defineVar("top_reco_prod", ::top_reco_products_STLFV, {"cleanjet4vecs","muon4vecs","cleantau4vecs","top_reco_whad"});
-   addVar({"chi2_wqq_dEta","top_reco_prod[0]",""});
-   addVar({"chi2_wqq_dPhi","top_reco_prod[1]",""});
-   addVar({"chi2_wqq_dR","top_reco_prod[2]",""});
+    defineVar("top_reco_prod", ::top_reco_products_STLFV, {"cleanjet4vecs","muon4vecs","cleantau4vecs","top_reco_whad"});
+    addVar({"chi2_wqq_dEta","top_reco_prod[0]",""});
+    addVar({"chi2_wqq_dPhi","top_reco_prod[1]",""});
+    addVar({"chi2_wqq_dR","top_reco_prod[2]",""});
 
 
     // EventWeights
