@@ -25,14 +25,10 @@ void TopLFVAnalyzer::defineCuts() {
     //addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","0");
     // Wil remove PV cut after new skim
     addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0","0");
-    //addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","0");
     addCuts("ncleantaupass == 1", "00");
     addCuts("mutau_charge < 0", "000");
     addCuts("ncleanjetspass >= 3", "0000");
-    //addCuts("mutau_dR < 1.2", "00000");
     addCuts("ncleanbjetspass == 1", "00000");
-    // Control Region
-    //addCuts("ncleanbjetspass > 1", "00000");
 }
 
 void TopLFVAnalyzer::defineMoreVars() {
