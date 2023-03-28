@@ -489,7 +489,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 corrector->setJetPt(jetpts[i]);
                 corrector->setJetEta(jetetas[i]);
                 float unc = corrector->getUncertainty(true);
-                if (abs(unc) > 100.) corrfactor = 0.;
+                if (abs(unc) > 100.) unc = 0.;
                 uncSources.emplace_back(1.0f + unc);
                 uncSources.emplace_back(1.0f - unc);
             }
