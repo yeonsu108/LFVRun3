@@ -499,7 +499,9 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         return uncertainties;
     };
 
-    auto metCorr = [=](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis, int npv, int runnb)->float {
+    auto metCorr = [=](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis, int npv, unsigned int _runnb)->float {
+
+        int runnb = int(_runnb);
 
         auto metx = met * cos(metphi);
         auto mety = met * sin(metphi);
@@ -582,7 +584,9 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         return corrfactors;
     };
 
-    auto metPhiCorr = [=](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis, int npv, int runnb)->float {
+    auto metPhiCorr = [=](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis, int npv, unsigned int _runnb)->float {
+
+        int runnb = int(_runnb);
 
         auto metx = met * cos(metphi);
         auto mety = met * sin(metphi);
