@@ -21,7 +21,7 @@ from sklearn.model_selection import cross_val_score, GridSearchCV
 
 root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
-processed = "TEST_2018_skim_test2_v1_with_tauDM_no5_6__noMETPhi_addTauDMtoDNN"
+processed = "Apr2023"
 syst = "nom"
 label = "top_lfv_multiClass"
 class_names = ["bkg","sigTT", "sigST"]
@@ -38,7 +38,6 @@ inputvars_st = [ "Muon1_pt","Muon1_eta",
         "chi2_wqq_dEta","chi2_wqq_dPhi","chi2_wqq_dR",
         "mutau_mass","mutau_dEta","mutau_dPhi","mutau_dR",
         ]
-#"MET_pt","MET_phi",
 sbratio = 1 # sig:bkg = 1:1
 
 kfold = KFold(n_splits=10, shuffle=True)
@@ -46,15 +45,10 @@ kfold = KFold(n_splits=10, shuffle=True)
 train_outdir = label+"_"+processed+"/"+syst
 os.makedirs(train_outdir, exist_ok=True)
 
-siglist_st = ["ST_LFV_TCMuTau_Scalar"]#,"ST_LFV_TCMuTau_Vector","ST_LFV_TCMuTau_Tensor","ST_LFV_TUMuTau_Vector","ST_LFV_TUMuTau_Scalar","ST_LFV_TUMuTau_Tensor"]
-siglist_tt = ['TT_LFV_TCMuTau_Scalar']#, 'TT_LFV_TCMuTau_Tensor', 'TT_LFV_TCMuTau_Vector', 'TT_LFV_TUMuTau_Scalar', 'TT_LFV_TUMuTau_Tensor', 'TT_LFV_TUMuTau_Vector']
-#years = ["2017","2018","2016pre","2016post"]
-years = ["2018"]
-#project_dir = "/data1/users/ecasilar/Jan03/"
-#project_dir = "/data1/users/ecasilar/skim_test2_v1_3j1b_tight/"
-project_dir = "/data1/users/ecasilar/work/nanoaodframe/with_tauDM_no5_6/"
-#project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/skim_test2_v1_3j1b_tight/"
-#project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/skim_test2_v1/"
+siglist_st = ["ST_LFV_TCMuTau_Scalar","ST_LFV_TCMuTau_Vector","ST_LFV_TCMuTau_Tensor","ST_LFV_TUMuTau_Vector","ST_LFV_TUMuTau_Scalar","ST_LFV_TUMuTau_Tensor"]
+siglist_tt = ['TT_LFV_TCMuTau_Scalar', 'TT_LFV_TCMuTau_Tensor', 'TT_LFV_TCMuTau_Vector', 'TT_LFV_TUMuTau_Scalar', 'TT_LFV_TUMuTau_Tensor', 'TT_LFV_TUMuTau_Vector']
+years = ["2017","2018","2016pre","2016post"]
+project_dir = "/data1/users/itseyes/LFV/processed_LFV/v9test2_theory/"
 
 
 df_sig_st_list = []
@@ -206,7 +200,6 @@ model.add(tf.keras.layers.Dense(50, activation=activation_function, kernel_regul
 ###############    Output Layer     ###############
 model.add(tf.keras.layers.Dense(3, activation="softmax"))
 batch_size = 1024
-print("BS :", batch_size)
 model.compile(optimizer=tf.keras.optimizers.Adam(clipvalue=0.5), loss="categorical_crossentropy", metrics = ["accuracy"])
 
 model.summary()

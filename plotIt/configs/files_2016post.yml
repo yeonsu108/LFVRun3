@@ -126,7 +126,7 @@
   yields-group: '3\ttbar Had'
   order: 8
 
-#'hist_ttHJetTobb.root':
+#'hist_ttHTobb.root':
 #  type: mc
 #  pretty-name: 'ttHTobb'
 #  cross-section: 0.5023
@@ -135,7 +135,7 @@
 #  yields-group: '7tt+X'
 #  order: 9
 #
-#'hist_ttHJetToNonbb.root':
+#'hist_ttHToNonbb.root':
 #  type: mc
 #  pretty-name: 'ttHToNonbb'
 #  cross-section: 0.5066

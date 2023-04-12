@@ -12,12 +12,12 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 import multiprocessing
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
-processed = "TEST_2018_skim_test2_v1_with_tauDM_no5_6__noMETPhi_addTauDMtoDNN"
+processed = "Apr2023"
 label = "top_lfv_multiClass"
 systs_tofile = ['jerdown', 'jerup', 'jesAbsolute_yeardown', 'jesAbsolute_yearup', 'jesAbsolutedown', 'jesAbsoluteup', 'jesBBEC1_yeardown', 'jesBBEC1_yearup', 'jesBBEC1down', 'jesBBEC1up', 'jesFlavorQCDdown', 'jesFlavorQCDup', 'jesRelativeBaldown', 'jesRelativeBalup', 'jesRelativeSample_yeardown', 'jesRelativeSample_yearup', 'tesdown', 'tesup']
 systs_toweight = ['btagcferr1down', 'btagcferr1up', 'btagcferr2down', 'btagcferr2up', 'btaghfdown', 'btaghfstats1down', 'btaghfstats1up', 'btaghfstats2down', 'btaghfstats2up', 'btaghfup', 'btaglfdown', 'btaglfstats1down', 'btaglfstats1up', 'btaglfstats2down', 'btaglfstats2up', 'btaglfup', 'muiddown', 'muidup', 'muisodown', 'muisoup', 'mutrgdown', 'mutrgup', 'pudown', 'puup', 'tauideldown', 'tauidelup', 'tauidjetdown', 'tauidjetup', 'tauidmudown', 'tauidmuup']
-#systs = systs_tofile+systs_toweight+['nom'] 
-systs = ['nom'] 
+systs = systs_tofile+systs_toweight+['nom'] 
+#systs = ['nom'] 
 
 inputvars = [ "Muon1_pt","Muon1_eta",
         "Tau1_pt","Tau1_mass","Tau1_eta","Tau1_decayMode",
@@ -47,14 +47,11 @@ def run(inputs):
 
     binedges = [0,0.1,0.3,0.7,0.9,1.0]
     #if "ob" in discriminator_key : binedges = np.linspace(0.0, 200.0, num=21).tolist()
-    if "ob" in discriminator_key : binedges = [0,2.5,5,10,30,60,100] 
+    if "ob" in discriminator_key : binedges = [0,5,10,30,60,100] 
 
     p="Multi"
     print("Start "+p+" LFV Evaluation")
-    #project_dir = "/data1/users/ecasilar/Jan03/"+year+"/"
-    project_dir = "/data1/users/ecasilar/work/nanoaodframe/with_tauDM_no5_6/"+year+"/"
-    #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/skim_test2_v1_3j1b_tight/"+year+"/"
-    #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/skim_test2_v1/"+year+"/"
+    project_dir = "/data1/users/itseyes/LFV/processed_LFV/v9test2_theory/"+year+"/"
     path = project_dir
     flist = os.listdir(path)
     flist = [i for i in flist if (".root" in i) and not ("__" in i)]
@@ -141,12 +138,11 @@ if __name__ == '__main__':
     for discriminator in ["p_st_tt_ob"]: #,"p_st_tt","p_st_tt_ob"]:
        #for alpha in np.around(np.linspace(0.1, 0.9, num=9),decimals=1).tolist():
        for alpha in [0.1]:
-         #for year in ["2016pre","2016post","2017","2018"]:
-         for year in ["2018"]:
+         for year in ["2016pre","2016post","2017","2018"]:
             for syst in systs:
                parameters.append((year, syst, discriminator,alpha))
 
-    pool = multiprocessing.get_context("spawn").Pool(1)
+    pool = multiprocessing.get_context("spawn").Pool(10)
     pool.map(run, parameters)
     pool.close()
     pool.join()
