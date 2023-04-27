@@ -1365,12 +1365,19 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
 
         if (pt.size() > 0) {
             for (unsigned int i=0; i<pt.size(); i++) {
+                // TauSFTool will take care of pt > 140 SF by setting pT = 140
                 uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i])));
+
                 for (auto unc : uncerts) {
                     size_t pos = unc.find("dmX");
                     if (pos != std::string::npos) unc.replace(pos, 3, "dm"+std::to_string(dm[i]));
-                    uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_up"));
-                    uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_down"));
+                    if (pt[i] <= 140) {
+                        uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_up"));
+                        uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_down"));
+                    } else {
+                        uncSources.emplace_back(1.0 + (min(pt[i], static_cast<float>(500.)) - 40.) * (pt[i] > 40.) * 0.00018);
+                        uncSources.emplace_back(1.0 - (min(pt[i], static_cast<float>(500.)) - 40.) * (pt[i] > 40.) * 0.00018);
+                    }
                 }
                 wVec.emplace_back(uncSources);
                 uncSources.clear();
