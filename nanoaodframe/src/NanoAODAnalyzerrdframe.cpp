@@ -1271,9 +1271,73 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     // Put SFs that need to be calculated in skim:
     // e.g. tau selection is done at processing but we want to have SFs already
 
+    std::string tauYear = "";
+
+    if (_isRun16pre) {
+        tauYear = "UL2016_preVFP";
+    } else if (_isRun16post) {
+        tauYear = "UL2016_postVFP";
+    } else {
+        tauYear = "UL" + _year;
+    }
+
+    // Tau ES
+    TauESTool* _testool;
+    TauFESTool* _festool;
+
+    _testool = new TauESTool(tauYear, "DeepTau2017v2p1VSjet");
+    _festool = new TauFESTool(tauYear);
+
+    cout<<"Applying TauES on Genuine taus"<<endl;
+    auto tauES = [this, _testool, _festool](floats &pt, floats &eta, ints &dm, uchars &genid, floats &x)->floats {
+
+        floats xout;
+
+        for (unsigned int i=0; i<pt.size(); i++) {
+            float es = 1.0;
+            if (genid[i]==5) {
+                es = _testool->getTES(pt[i], dm[i], genid[i]);
+            } else if (genid[i]==1 || genid[i]==3){
+                es = _festool->getFES(eta[i], dm[i], genid[i]);
+            }
+            xout.emplace_back(x[i]*es);
+        }
+        return xout;
+    };
+
+    // return SF for pT and mass
+    auto tauESUnc = [this, _testool, _festool](floats &pt, floats &eta, ints &dm, uchars &genid, floats &x)->floatsVec {
+
+        floats uncSources;
+        uncSources.reserve(2);
+        floatsVec xout;
+        xout.reserve(pt.size());
+
+        for (unsigned int i=0; i<pt.size(); i++) {
+            if (genid[i]==5) {
+                uncSources.emplace_back(_testool->getTES(pt[i], dm[i], genid[i], "Up"));
+                uncSources.emplace_back(_testool->getTES(pt[i], dm[i], genid[i], "Down"));
+            } else if (genid[i]==1 || genid[i]==3){
+                uncSources.emplace_back(_festool->getFES(eta[i], dm[i], genid[i], "Up"));
+                uncSources.emplace_back(_festool->getFES(eta[i], dm[i], genid[i], "Down"));
+            }
+            else uncSources = {1.0f, 1.0f};
+            xout.emplace_back(uncSources);
+            uncSources.clear();
+        }
+        return xout;
+    };
+
+    _rlm = _rlm.Define("Tau_pt_uncor", "Tau_pt")
+               .Redefine("Tau_pt", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"})
+               .Redefine("Tau_mass", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"})
+               .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"});
+
+
     // Tau SF
     cout << "Loading Tau SF" << endl;
-    std::string tauid_vse = "VLoose";
+    //std::string tauid_vse = "VLoose";
+    std::string tauid_vse = "VVLoose";
     std::string tauid_vsmu = "Tight";
     std::string tauid_vsjet = "VTight";
 
@@ -1284,35 +1348,30 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     TauIDSFTool* _tauidSFjet;
     TauIDSFTool* _tauidSFele;
     TauIDSFTool* _tauidSFmu;
-    TauESTool* _testool;
-    TauFESTool* _festool;
-    std::string tauYear = "";
 
-    if (_isRun16pre) {
-        tauYear = "UL2016_preVFP";
-    } else if (_isRun16post) {
-        tauYear = "UL2016_postVFP";
-    } else {
-        tauYear = "UL" + _year;
-    }
     _tauidSFjet = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet);
-    _tauidSFele = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSe", tauid_vse);
-    _tauidSFmu = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSmu", tauid_vsmu);
-    _testool = new TauESTool(tauYear, "DeepTau2017v2p1VSjet");
-    _festool = new TauFESTool(tauYear);
+    _tauidSFele = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSe", tauid_vse, tauid_vse, false, false, false);
+    _tauidSFmu = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSmu", tauid_vsmu, tauid_vse, false, false, false);
 
-    auto tauSFIdVsJet = [this, _tauidSFjet](floats &pt, floats &eta, uchars &genid)->floatsVec {
+    auto tauSFIdVsJet = [this, _tauidSFjet, tauYear](floats &pt, floats &eta, uchars &genid, ints dm)->floatsVec {
 
         floats uncSources;
-        uncSources.reserve(3);
+        uncSources.reserve(11);
         floatsVec wVec;
         wVec.reserve(pt.size());
 
+        auto year_ = tauYear.substr(2);
+        std::vector<std::string> uncerts = {"uncert0", "uncert1", "syst_alleras", "syst_" + year_, "syst_dmX_" + year_};
+
         if (pt.size() > 0) {
             for (unsigned int i=0; i<pt.size(); i++) {
-                uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i])));
-                uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i]), "Up"));
-                uncSources.emplace_back(_tauidSFjet->getSFvsPT(pt[i], int(genid[i]), "Down"));
+                uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i])));
+                for (auto unc : uncerts) {
+                    size_t pos = unc.find("dmX");
+                    if (pos != std::string::npos) unc.replace(pos, 3, "dm"+std::to_string(dm[i]));
+                    uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_up"));
+                    uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_down"));
+                }
                 wVec.emplace_back(uncSources);
                 uncSources.clear();
             }
@@ -1358,55 +1417,10 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
         return wVec;
     };
 
-    _rlm = _rlm.Define("tauWeightIdVsJet", tauSFIdVsJet, {"Tau_pt","Tau_eta","Tau_genPartFlav"})
+    _rlm = _rlm.Define("tauWeightIdVsJet", tauSFIdVsJet, {"Tau_pt","Tau_eta","Tau_genPartFlav", "Tau_decayMode"})
                .Define("tauWeightIdVsEl", tauSFIdVsEl, {"Tau_pt","Tau_eta","Tau_genPartFlav"})
                .Define("tauWeightIdVsMu", tauSFIdVsMu, {"Tau_pt","Tau_eta","Tau_genPartFlav"});
 
-    // Tau ES
-    cout<<"Applying TauES on Genuine taus"<<endl;
-    auto tauES = [this, _testool, _festool](floats &pt, floats &eta, ints &dm, uchars &genid, floats &x)->floats {
-
-        floats xout;
-
-        for (unsigned int i=0; i<pt.size(); i++) {
-            float es = 1.0;
-            if (genid[i]==5) {
-                es = _testool->getTES(pt[i], dm[i], genid[i]);
-            } else if (genid[i]==1 || genid[i]==3){
-                es = _festool->getFES(eta[i], dm[i], genid[i]);
-            }
-            xout.emplace_back(x[i]*es);
-        }
-        return xout;
-    };
-
-    // return SF for pT and mass
-    auto tauESUnc = [this, _testool, _festool](floats &pt, floats &eta, ints &dm, uchars &genid, floats &x)->floatsVec {
-
-        floats uncSources;
-        uncSources.reserve(2);
-        floatsVec xout;
-        xout.reserve(pt.size());
-
-        for (unsigned int i=0; i<pt.size(); i++) {
-            if (genid[i]==5) {
-                uncSources.emplace_back(_testool->getTES(pt[i], dm[i], genid[i], "Up"));
-                uncSources.emplace_back(_testool->getTES(pt[i], dm[i], genid[i], "Down"));
-            } else if (genid[i]==1 || genid[i]==3){
-                uncSources.emplace_back(_festool->getFES(eta[i], dm[i], genid[i], "Up"));
-                uncSources.emplace_back(_festool->getFES(eta[i], dm[i], genid[i], "Down"));
-            }
-            else uncSources = {1.0f, 1.0f};
-            xout.emplace_back(uncSources);
-            uncSources.clear();
-        }
-        return xout;
-    };
-
-    _rlm = _rlm.Define("Tau_pt_uncor", "Tau_pt")
-               .Redefine("Tau_pt", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"})
-               .Redefine("Tau_mass", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"})
-               .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"});
 }
 
 
