@@ -1,19 +1,22 @@
 rootlibs:=$(shell root-config --libs)
 rootflags:=$(shell root-config --cflags)
 rootflags2 := -I${ROOTSYS}/include
+corlibincl := $(shell correction config --incdir)
+corliblib := $(shell correction config --libdir)
 corlibflag := $(shell correction config --cflags --ldflags --rpath)
 SOFLAGS       = -shared
 
-LD = g++ -g -Wall
+LD = g++ -m64 -g -Wall
 
-CXXFLAGS = -O2 -g -Wall -fmessage-length=0 $(rootflags) -fpermissive -fPIC -pthread -DSTANDALONE $(corlibflag) -I.
+CXXFLAGS = -O0 -g -Wall -fmessage-length=0 $(rootflags) -fpermissive -fPIC -pthread -DSTANDALONE -I. -I$(corlibincl)
 
 OBJDIR=src
 SRCDIR=src
 SRCS := $(wildcard $(SRCDIR)/*.cpp)
 OBJS := $(patsubst %.cpp,%.o,$(SRCS)) $(SRCDIR)/JetMETObjects_dict.o $(SRCDIR)/rootdict.o 
 
-LIBS = $(rootlibs) -lMathMore -lGenVector -ljsoncpp
+LIBS_EXE = $(rootlibs) -lMathMore -lGenVector -lcorrectionlib -L$(corliblib)
+LIBS = $(rootlibs)
 
 TARGET =	nanoaodrdataframe
 
@@ -25,7 +28,8 @@ clean:
 #$(SRCDIR)/rootdict.C: $(SRCDIR)/NanoAODAnalyzerrdframe.h $(SRCDIR)/LQtopAnalyzer.h $(SRCDIR)/SkimEvents.h $(SRCDIR)/Linkdef.h
 $(SRCDIR)/rootdict.C: $(SRCDIR)/NanoAODAnalyzerrdframe.h $(SRCDIR)/TopLFVAnalyzer.h $(SRCDIR)/SkimEvents.h $(SRCDIR)/Linkdef.h
 	rm -f $@
-	rootcint -v $@ -c $(rootflags2) $^
+	rootcint $@ -I$(corlibincl) -I$(SRCDIR) $^
+	rm -f rootdict_rdict.pcm
 	ln -s $(SRCDIR)/rootdict_rdict.pcm .
 
 	
@@ -48,5 +52,5 @@ $(OBJDIR)/%.o: $(SRCDIR)/%.cpp
 	$(CXX) -c -o $@ $(CXXFLAGS) $<
 	
 $(TARGET):	$(OBJS)
-	$(CXX) -o $(TARGET) $(OBJS) $(LIBS)
+	$(CXX) -o $(TARGET) $(OBJS) $(LIBS_EXE)
     
