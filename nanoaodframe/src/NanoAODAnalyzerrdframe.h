@@ -29,7 +29,11 @@
 #include "JetResolution.h"
 #include "TauSFTool.h"
 
+#include "correction.h"
+
 using namespace ROOT::RDF;
+using namespace correction;
+
 
 class NanoAODAnalyzerrdframe {
   using RDF1DHist = RResultPtr<TH1D>;
