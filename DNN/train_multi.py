@@ -21,7 +21,7 @@ from sklearn.model_selection import cross_val_score, GridSearchCV
 
 root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
-processed = "TESTtauDM_no5_6"
+processed = "May2023_fitfixed"
 syst = "nom"
 label = "top_lfv_multiClass"
 class_names = ["bkg","sigTT", "sigST"]
@@ -45,14 +45,11 @@ kfold = KFold(n_splits=10, shuffle=True)
 train_outdir = label+"_"+processed+"/"+syst
 os.makedirs(train_outdir, exist_ok=True)
 
-siglist_st = ["ST_LFV_TCMuTau_Scalar"]#,"ST_LFV_TCMuTau_Vector","ST_LFV_TCMuTau_Tensor","ST_LFV_TUMuTau_Vector","ST_LFV_TUMuTau_Scalar","ST_LFV_TUMuTau_Tensor"]
-siglist_tt = ['TT_LFV_TCMuTau_Scalar']#, 'TT_LFV_TCMuTau_Tensor', 'TT_LFV_TCMuTau_Vector', 'TT_LFV_TUMuTau_Scalar', 'TT_LFV_TUMuTau_Tensor', 'TT_LFV_TUMuTau_Vector']
-#years = ["2017","2018","2016pre","2016post"]
-years = ["2018"]
-#project_dir = "/data1/users/ecasilar/Jan03/"
-#project_dir = "/data1/users/ecasilar/skim_test2_v1_3j1b_tight/"
-project_dir = "/data1/users/ecasilar/work/nanoaodframe/with_tauDM_no5_6/"
-
+siglist_st = ["ST_LFV_TCMuTau_Scalar","ST_LFV_TCMuTau_Vector","ST_LFV_TCMuTau_Tensor","ST_LFV_TUMuTau_Vector","ST_LFV_TUMuTau_Scalar","ST_LFV_TUMuTau_Tensor"]
+siglist_tt = ['TT_LFV_TCMuTau_Scalar', 'TT_LFV_TCMuTau_Tensor', 'TT_LFV_TCMuTau_Vector', 'TT_LFV_TUMuTau_Scalar', 'TT_LFV_TUMuTau_Tensor', 'TT_LFV_TUMuTau_Vector']
+years = ["2017","2018","2016pre","2016post"]
+#project_dir = "/data1/users/itseyes/LFV/processed_LFV/v9test2_theory/"
+project_dir = "/data1/users/itseyes/LFV/processed_LFV/v9test2_fix_chi2/"
 
 df_sig_st_list = []
 df_sig_tt_list = []
@@ -170,7 +167,7 @@ x_val = x_total[trainlen:,0::]
 y_val = y_total[trainlen:]
 '''
 
-patience_epoch = 10
+patience_epoch = 30
 # Early Stopping with Validation Loss for Best Model
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=patience_epoch)
 mc = ModelCheckpoint(train_outdir+'/best_model.h5', monitor='val_loss', mode='min', save_best_only=True)
@@ -203,7 +200,6 @@ model.add(tf.keras.layers.Dense(50, activation=activation_function, kernel_regul
 ###############    Output Layer     ###############
 model.add(tf.keras.layers.Dense(3, activation="softmax"))
 batch_size = 1024
-print("BS :", batch_size)
 model.compile(optimizer=tf.keras.optimizers.Adam(clipvalue=0.5), loss="categorical_crossentropy", metrics = ["accuracy"])
 
 model.summary()

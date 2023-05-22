@@ -26,8 +26,7 @@ common_syst_list = systs_tofile+systs_toweight
 
 #common_syst_list = []
 #syst = []
-#years = {'2016pre': 19502, '2016post': 16812, '2017': 41480, '2018':59832}
-years = {'2018':59832}
+years = {'2016pre': 19502, '2016post': 16812, '2017': 41480, '2018':59832}
 
 for sy in syst:
   if 'year' in sy:

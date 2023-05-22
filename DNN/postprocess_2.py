@@ -16,9 +16,7 @@ discriminator = args.discriminator
 alpha = args.alpha
 #labels = ['rerun_multi_Multiaug22','rerun_staug22', 'rerun_ttaug22']
 # Set Runs
-#years = ['2016pre', '2016post', '2017','2018']
-years = ['2018']
-#years = ['2016post']#, '2017','2018']
+years = ['2016pre', '2016post', '2017','2018']
 
 # Set output folders
 for year in years:
