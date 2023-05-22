@@ -7,6 +7,9 @@ rootdict.C
 *.swp
 # Prerequisites
 *.d
+*/topPtReweight/*txt
+*/topPtReweight/*pdf
+
 
 # Compiled Object files
 *.slo

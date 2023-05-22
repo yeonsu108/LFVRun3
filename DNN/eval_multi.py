@@ -12,7 +12,7 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 import multiprocessing
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
-processed = "Apr2023"
+processed = "May2023_fitfixed"
 label = "top_lfv_multiClass"
 systs_tofile = ['jerdown', 'jerup', 'jesAbsolute_yeardown', 'jesAbsolute_yearup', 'jesAbsolutedown', 'jesAbsoluteup', 'jesBBEC1_yeardown', 'jesBBEC1_yearup', 'jesBBEC1down', 'jesBBEC1up', 'jesFlavorQCDdown', 'jesFlavorQCDup', 'jesRelativeBaldown', 'jesRelativeBalup', 'jesRelativeSample_yeardown', 'jesRelativeSample_yearup', 'tesdown', 'tesup']
 systs_toweight = ['btagcferr1down', 'btagcferr1up', 'btagcferr2down', 'btagcferr2up', 'btaghfdown', 'btaghfstats1down', 'btaghfstats1up', 'btaghfstats2down', 'btaghfstats2up', 'btaghfup', 'btaglfdown', 'btaglfstats1down', 'btaglfstats1up', 'btaglfstats2down', 'btaglfstats2up', 'btaglfup', 'muiddown', 'muidup', 'muisodown', 'muisoup', 'mutrgdown', 'mutrgup', 'pudown', 'puup', 'tauideldown', 'tauidelup', 'tauidjetdown', 'tauidjetup', 'tauidmudown', 'tauidmuup']
@@ -20,7 +20,7 @@ systs = systs_tofile+systs_toweight+['nom']
 #systs = ['nom'] 
 
 inputvars = [ "Muon1_pt","Muon1_eta",
-        "Tau1_pt","Tau1_mass","Tau1_eta","Tau1_decayMode",
+        "Tau1_pt","Tau1_mass","Tau1_eta",
         "Jet1_pt","Jet1_mass","Jet1_eta","Jet1_btagDeepFlavB",
         "Jet2_pt","Jet2_mass","Jet2_eta","Jet2_btagDeepFlavB",
         "Jet3_pt","Jet3_mass","Jet3_eta","Jet3_btagDeepFlavB",

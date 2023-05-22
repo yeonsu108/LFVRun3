@@ -4,14 +4,14 @@ from collections import OrderedDict
 
 from optparse import OptionParser
 parser = OptionParser(usage="%prog [options]")
-parser.add_option("-O", "--output",  dest="output", type="string", default="", help="Output folder name")
+parser.add_option("-I", "--input",  dest="input", type="string", default="", help="Input folder name")
 parser.add_option("-Y", "--year",  dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")
 (options, args) = parser.parse_args()
 
 year = options.year
 
 config_path = '../plotIt/configs/'
-dest_path = os.path.join('./', options.output)
+dest_path = os.path.join('./', options.input)
 tmp_file_name = 'temp_' + year + '_forSyst.yml'
 string_to_add = 'systematics:\n'
 plot_to_add = "plots:\n  include: ['histos_yield.yml']\n\n"
@@ -91,6 +91,7 @@ for key, value in unc_cat.items():
                 if 'luminosity-error:' in line:
                     line = line[:line.find(':')+2]
                     line += "0.0\n"
+                    line += "  syst-only: true\n"
                 if 'root:' in line:
                     line = line[:line.find(':')+2]
                     line += "'" + os.path.join(dest_path, year + "_postprocess") + "'\n"
@@ -116,13 +117,13 @@ for key, value in unc_cat.items():
     #Remove signals in TT specific sources
     with open(os.path.join(dest_path, 'figure_' + year, 'systematics.tex'), 'r') as f:
         with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + syst_postfix + '.tex'), 'w+') as f1:
-            isTT = False
-            if any(x in key for x in ['scale', 'ps', 'hdamp', 'py8tune', 'pdf', 'xsec']): isTT = True
-            #if any(x in key for x in ['hdamp', 'py8tune', 'xsec']): isTT = True
+            isTTsyst = False
+            if key in ['scale', 'ps', 'hdamp', 'py8tune', 'pdf']: isTTsyst = True
             for line in f:
-                if isTT and 'ttbar' in line: isTT = False
-                if isTT: continue
-                if any(x in line[0] for x in ['LFV','LL','LJ','Had']): line = line[1:]
+                isTT = False
+                if 'ttbar' in line or 'LFV' in line: isTT = True
+                if not isTT and isTTsyst and 'hline' not in line and 'Total' not in line: continue
+                if any(str(x) in line[0] for x in list(range(1,10))): line = line[1:]
                 f1.write(line)
 
     string_to_add = 'systematics:\n'
@@ -142,7 +143,8 @@ with open("total_syst_template.tex") as f:
     lines = f.readlines()
     with open(os.path.join(dest_path, 'figure_' + year, 'total_syst.tex'), "w") as f1:
         for line in lines:
-            if year != '2017' and 'Prefire' in line: continue
+            #if year != '2017' and 'Prefire' in line: continue
+            if 'Prefire' in line: continue
             for key, value in unc_summary.items():
                 if value in line:
                     with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + key + '.tex'),'r') as f2:

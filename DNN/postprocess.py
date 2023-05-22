@@ -1,15 +1,17 @@
-import os
-import sys
+import os, sys, glob
 import ROOT
 from ROOT import *
 import numpy as np
+import subprocess
 import argparse
+
 
 base_path = './'
 parser = argparse.ArgumentParser()
 parser.add_argument('-L', '--label', dest='label', type=str, default="rerun_staug22")
 parser.add_argument('-D', '--discriminator', dest='discriminator', type=str, default="p_st_tt_ob")
 parser.add_argument('-A', '--alpha', dest='alpha', type=str, default="1p0")
+
 args = parser.parse_args()
 label = args.label
 discriminator = args.discriminator
@@ -35,6 +37,7 @@ systs = systs_tofile+systs_toweight+['']
 nom_path = base_path + label
 if not os.path.exists(nom_path):
     print("Folder '{}' does not exists.".format(nom_path))
+    sys.exit()
 else:
     print("Start postprocessing for '{}'.".format(nom_path))
 

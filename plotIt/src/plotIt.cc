@@ -444,6 +444,9 @@ namespace plotIt {
       if (node["uncertainty-label"])
         m_config.uncertainty_label = node["uncertainty-label"].as<std::string>();
 
+      if (node["syst-only"])
+        m_config.syst_only = node["syst-only"].as<bool>();
+
       m_config.line_style.parse(node);
 
       if (node["labels"]) {

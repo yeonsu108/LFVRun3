@@ -51,10 +51,10 @@ public:
   void selectTaus();
   void selectMET();
   void selectFatJets();
-  void removeOverlaps();
   void matchGenReco();
   void calculateEvWeight();
   void storeEvWeight();
+  void topPtReweight();
   virtual void defineMoreVars() = 0; // define higher-level variables from basic ones, you must implement this in your subclassed analysis code
 
   void addVar(varinfo v);

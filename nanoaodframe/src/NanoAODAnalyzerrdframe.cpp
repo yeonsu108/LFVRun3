@@ -154,8 +154,8 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
 
             WeightCalculatorFromHistogram* _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
             WeightCalculatorFromHistogram* _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
-            WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus);
-
+            WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus); 
+	    //Check Normalisation issue for genWeight 
             _rlm = _rlm.Redefine("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
                        .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->floats
                               {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
@@ -184,9 +184,11 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         }
     } else {
         selectElectrons();
-        selectJets(jes_var);
         selectTaus();
-        removeOverlaps();
+        selectJets(jes_var);
+        if (!_isData){
+            topPtReweight();
+        }
     }
     defineMoreVars();
     defineCuts();
@@ -466,6 +468,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
             _jetCorrector->setJetA(jetAreas[i]);
             _jetCorrector->setRho(rho);
             float corrfactor = _jetCorrector->getCorrection();
+            if (abs(corrfactor) > 100.) corrfactor = 1.0;
             corrfactors.emplace_back(tocorrect[i] * rawfrac * corrfactor);
         }
         return corrfactors;
@@ -486,6 +489,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 corrector->setJetPt(jetpts[i]);
                 corrector->setJetEta(jetetas[i]);
                 float unc = corrector->getUncertainty(true);
+                if (abs(unc) > 100.) unc = 0.;
                 uncSources.emplace_back(1.0f + unc);
                 uncSources.emplace_back(1.0f - unc);
             }
@@ -495,7 +499,9 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         return uncertainties;
     };
 
-    auto metCorr = [](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis)->float {
+    auto metCorr = [=](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis, int npv, unsigned int _runnb)->float {
+
+        int runnb = int(_runnb);
 
         auto metx = met * cos(metphi);
         auto mety = met * sin(metphi);
@@ -506,7 +512,56 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 mety -= (jetptsafter[i] - jetptsbefore[i])*sin(jetphis[i]);
             }
         }
-        return (float(sqrt(metx*metx + mety*mety)));
+
+	//starting phi modulation correction on met 
+	// https://lathomas.web.cern.ch/lathomas/METStuff/XYCorrections/XYMETCorrection_withUL17andUL18andUL16.h
+
+	auto uncormet = float(sqrt(metx*metx + mety*mety));
+	auto uncormet_phi = float(atan2(mety, metx));
+
+	if(npv>100) npv=100;
+	auto METxcorr(0.),METycorr(0.);
+	if (!_isData) {
+	//UL2016
+	if(_isRun16pre) METxcorr = -(-0.153497*npv +-0.231751);
+	if(_isRun16pre) METycorr = -(0.00731978*npv +0.243323);
+	if(_isRun16post) METxcorr = -(-0.188743*npv +0.136539);
+	if(_isRun16post) METycorr = -(0.0127927*npv +0.117747);	
+	//UL2017
+	if(_isRun17) METxcorr = -(-0.300155*npv +1.90608);
+	if(_isRun17) METycorr = -(0.300213*npv +-2.02232);
+	//UL2018
+	if(_isRun18) METxcorr = -(0.183518*npv +0.546754);
+	if(_isRun18) METycorr = -(0.192263*npv +-0.42121);
+	}
+	if (_isData) {
+	//UL2018
+	if(runnb >=315252 && runnb <=316995 ) {METxcorr = -(0.263733*npv +-1.91115);METycorr = -(0.0431304*npv +-0.112043);}
+	if(runnb >=316998 && runnb <=319312 ) {METxcorr = -(0.400466*npv +-3.05914);METycorr = -(0.146125*npv +-0.533233);}
+	if(runnb >=319313 && runnb <=320393 ) {METxcorr = -(0.430911*npv +-1.42865);METycorr = -(0.0620083*npv +-1.46021);}
+	if(runnb >=320394 && runnb <=325273 ) {METxcorr = -(0.457327*npv +-1.56856);METycorr = -(0.0684071*npv +-0.928372);}
+	//UL2017
+	if(runnb >=297020 && runnb <=299329 ) {METxcorr = -(-0.211161*npv +0.419333);METycorr = -(0.251789*npv +-1.28089);}
+	if(runnb >=299337 && runnb <=302029 ) {METxcorr = -(-0.185184*npv +-0.164009);METycorr = -(0.200941*npv +-0.56853);}
+	if(runnb >=302030 && runnb <=303434 ) {METxcorr = -(-0.201606*npv +0.426502);METycorr = -(0.188208*npv +-0.58313);}
+	if(runnb >=303435 && runnb <=304826 ) {METxcorr = -(-0.162472*npv +0.176329);METycorr = -(0.138076*npv +-0.250239);}
+	if(runnb >=304911 && runnb <=306462 ) {METxcorr = -(-0.210639*npv +0.72934);METycorr = -(0.198626*npv +1.028);}
+	//UL2016
+	if(runnb >=272007 && runnb <=275376 ) {METxcorr = -(-0.0214894*npv +-0.188255);METycorr = -(0.0876624*npv +0.812885);}
+	if(runnb >=275657 && runnb <=276283 ) {METxcorr = -(-0.032209*npv +0.067288);METycorr = -(0.113917*npv +0.743906);}
+	if(runnb >=276315 && runnb <=276811 ) {METxcorr = -(-0.0293663*npv +0.21106);METycorr = -(0.11331*npv +0.815787);}
+	if(runnb >=276831 && runnb <=277420 ) {METxcorr = -(-0.0132046*npv +0.20073);METycorr = -(0.134809*npv +0.679068);}
+	if(((runnb >=277772 && runnb <=278768) || runnb==278770)) {METxcorr = -(-0.0543566*npv +0.816597);METycorr = -(0.114225*npv +1.17266);};
+	if(((runnb >=278801 && runnb <=278808) || runnb==278769)) {METxcorr = -(0.134616*npv +-0.89965);METycorr = -(0.0397736*npv +1.0385);};
+	if(runnb >=278820 && runnb <=280385 ) {METxcorr = -(0.121809*npv +-0.584893);METycorr = -(0.0558974*npv +0.891234);};
+	if(runnb >=280919 && runnb <=284044 ) {METxcorr = -(0.0868828*npv +-0.703489);METycorr = -(0.0888774*npv +0.902632);};
+        }
+	auto CorrectedMET_x = uncormet *cos( uncormet_phi)+METxcorr;
+	auto CorrectedMET_y = uncormet *sin( uncormet_phi)+METycorr;
+
+	float CorrectedMET = sqrt(CorrectedMET_x*CorrectedMET_x+CorrectedMET_y*CorrectedMET_y);
+
+        return CorrectedMET;
     };
 
     auto metUnc = [](float met, float metphi, floats jetptsbefore, floatsVec jetptscorr, floats jetphis)->floats {
@@ -529,7 +584,9 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         return corrfactors;
     };
 
-    auto metPhiCorr = [](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis)->float {
+    auto metPhiCorr = [=](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis, int npv, unsigned int _runnb)->float {
+
+        int runnb = int(_runnb);
 
         auto metx = met * cos(metphi);
         auto mety = met * sin(metphi);
@@ -540,7 +597,63 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 mety -= (jetptsafter[i] - jetptsbefore[i])*sin(jetphis[i]);
             }
         }
-        return float(atan2(mety, metx));
+	//starting phi modulation correction on met phi 
+	// https://lathomas.web.cern.ch/lathomas/METStuff/XYCorrections/XYMETCorrection_withUL17andUL18andUL16.h
+
+	auto uncormet = float(sqrt(metx*metx + mety*mety));
+	auto uncormet_phi = float(atan2(mety, metx));
+
+	if(npv>100) npv=100;
+	auto METxcorr(0.),METycorr(0.);
+	if (!_isData) {
+	//UL2016
+	if(_isRun16pre) METxcorr = -(-0.153497*npv +-0.231751);
+	if(_isRun16pre) METycorr = -(0.00731978*npv +0.243323);
+	if(_isRun16post) METxcorr = -(-0.188743*npv +0.136539);
+	if(_isRun16post) METycorr = -(0.0127927*npv +0.117747);	
+	//UL2017
+	if(_isRun17) METxcorr = -(-0.300155*npv +1.90608);
+	if(_isRun17) METycorr = -(0.300213*npv +-2.02232);
+	//UL2018
+	if(_isRun18) METxcorr = -(0.183518*npv +0.546754);
+	if(_isRun18) METycorr = -(0.192263*npv +-0.42121);
+	}
+	if (_isData) {
+	//UL2018
+	if(runnb >=315252 && runnb <=316995 ) {METxcorr = -(0.263733*npv +-1.91115);METycorr = -(0.0431304*npv +-0.112043);}
+	if(runnb >=316998 && runnb <=319312 ) {METxcorr = -(0.400466*npv +-3.05914);METycorr = -(0.146125*npv +-0.533233);}
+	if(runnb >=319313 && runnb <=320393 ) {METxcorr = -(0.430911*npv +-1.42865);METycorr = -(0.0620083*npv +-1.46021);}
+	if(runnb >=320394 && runnb <=325273 ) {METxcorr = -(0.457327*npv +-1.56856);METycorr = -(0.0684071*npv +-0.928372);}
+	//UL2017
+	if(runnb >=297020 && runnb <=299329 ) {METxcorr = -(-0.211161*npv +0.419333);METycorr = -(0.251789*npv +-1.28089);}
+	if(runnb >=299337 && runnb <=302029 ) {METxcorr = -(-0.185184*npv +-0.164009);METycorr = -(0.200941*npv +-0.56853);}
+	if(runnb >=302030 && runnb <=303434 ) {METxcorr = -(-0.201606*npv +0.426502);METycorr = -(0.188208*npv +-0.58313);}
+	if(runnb >=303435 && runnb <=304826 ) {METxcorr = -(-0.162472*npv +0.176329);METycorr = -(0.138076*npv +-0.250239);}
+	if(runnb >=304911 && runnb <=306462 ) {METxcorr = -(-0.210639*npv +0.72934);METycorr = -(0.198626*npv +1.028);}
+	//UL2016
+	if(runnb >=272007 && runnb <=275376 ) {METxcorr = -(-0.0214894*npv +-0.188255);METycorr = -(0.0876624*npv +0.812885);}
+	if(runnb >=275657 && runnb <=276283 ) {METxcorr = -(-0.032209*npv +0.067288);METycorr = -(0.113917*npv +0.743906);}
+	if(runnb >=276315 && runnb <=276811 ) {METxcorr = -(-0.0293663*npv +0.21106);METycorr = -(0.11331*npv +0.815787);}
+	if(runnb >=276831 && runnb <=277420 ) {METxcorr = -(-0.0132046*npv +0.20073);METycorr = -(0.134809*npv +0.679068);}
+	if(((runnb >=277772 && runnb <=278768) || runnb==278770)) {METxcorr = -(-0.0543566*npv +0.816597);METycorr = -(0.114225*npv +1.17266);};
+	if(((runnb >=278801 && runnb <=278808) || runnb==278769)) {METxcorr = -(0.134616*npv +-0.89965);METycorr = -(0.0397736*npv +1.0385);};
+	if(runnb >=278820 && runnb <=280385 ) {METxcorr = -(0.121809*npv +-0.584893);METycorr = -(0.0558974*npv +0.891234);};
+	if(runnb >=280919 && runnb <=284044 ) {METxcorr = -(0.0868828*npv +-0.703489);METycorr = -(0.0888774*npv +0.902632);};
+        }
+
+	auto CorrectedMET_x = uncormet *cos( uncormet_phi)+METxcorr;
+	auto CorrectedMET_y = uncormet *sin( uncormet_phi)+METycorr;
+
+        float CorrectedMETPhi;
+
+        if(CorrectedMET_x==0 && CorrectedMET_y>0) CorrectedMETPhi = TMath::Pi();
+        else if(CorrectedMET_x==0 && CorrectedMET_y<0 )CorrectedMETPhi = -TMath::Pi();
+        else if(CorrectedMET_x >0) CorrectedMETPhi = TMath::ATan(CorrectedMET_y/CorrectedMET_x);
+        else if(CorrectedMET_x <0&& CorrectedMET_y>0) CorrectedMETPhi = TMath::ATan(CorrectedMET_y/CorrectedMET_x) + TMath::Pi();
+        else if(CorrectedMET_x <0&& CorrectedMET_y<0) CorrectedMETPhi = TMath::ATan(CorrectedMET_y/CorrectedMET_x) - TMath::Pi();
+        else CorrectedMETPhi =0;
+
+        return CorrectedMETPhi;
     };
 
     auto metPhiUnc = [](float met, float metphi, floats jetptsbefore, floatsVec jetptscorr, floats jetphis)->floats {
@@ -568,8 +681,8 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         _rlm = _rlm.Define("Jet_pt_uncorr", "Jet_pt");
         _rlm = _rlm.Define("Jet_pt_corr", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_pt"})
                    .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_mass"})
-                   .Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"})
-                   .Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi"});
+                   .Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi","PV_npvsGood", "run"})
+                   .Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi", "PV_npvsGood", "run"});
         if (!dataMc) {
             _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
                        .Define("MET_pt_unc", metUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"})
@@ -743,64 +856,99 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
     _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_UDSG, "iterativefit");
 
     // function to calculate event weight for MC events based on DeepJet algorithm
-    auto btagweightgenerator = [this, _btagcalibreader](floats &pts, floats &etas, ints &hadflav, floats &btags, strings &var, floatsVec &jer)->doubles {
+    auto btagweightgenerator = [this, _btagcalibreader](floats &pts, floats &etas, ints &hadflav, floats &btags, strings &var, floatsVec &jer)->doublesVec {
 
         doubles bSFs;
-        for (std::string src : var) {
-            double bweight = 1.0;
-            for (unsigned int i=0; i<pts.size(); i++) {
-                auto newpt = pts[i]*jer[i][0];
-                if (newpt < 40) continue;
+        bSFs.reserve(var.size());
+        doublesVec out;
+        out.reserve(pts.size());
 
-                std::string unc = src;
-                if (src.find("cferr") != std::string::npos and hadflav[i] != 4) unc = "central";
-                if (src.find("cferr") == std::string::npos and hadflav[i] == 4) unc = "central";
+        for (unsigned int j=0; j<pts.size(); j++) {
+            for (size_t i=0; i<var.size(); i++) {
+                double bweight = 1.0;
+                auto newpt = pts[j]*jer[j][0];
+                if (newpt > 40) {
+                    std::string unc = var[i];
+                    if (unc.find("cferr") != std::string::npos and hadflav[j] != 4) unc = "central";
+                    if (unc.find("cferr") == std::string::npos and hadflav[j] == 4) unc = "central";
 
-                BTagEntry::JetFlavor hadfconv;
-                if      (hadflav[i]==5) hadfconv=BTagEntry::FLAV_B;
-                else if (hadflav[i]==4) hadfconv=BTagEntry::FLAV_C;
-                else                    hadfconv=BTagEntry::FLAV_UDSG;
-                double w = _btagcalibreader.eval_auto_bounds(unc, hadfconv, fabs(etas[i]), newpt, btags[i]);
-                bweight *= w;
+                    BTagEntry::JetFlavor hadfconv;
+                    if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
+                    else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
+                    else                    hadfconv=BTagEntry::FLAV_UDSG;
+                    bweight = _btagcalibreader.eval_auto_bounds(unc, hadfconv, fabs(etas[j]), newpt, btags[j]);
+                }
+                bSFs.emplace_back(bweight);
             }
-            bSFs.emplace_back(bweight);
+            out.emplace_back(bSFs);
+            bSFs.clear();
         }
-        return bSFs;
+        return out;
     };
 
     auto btagweightgeneratorJes = [this, _btagcalibreaderJes](floats &pts, floats &etas, ints &hadflav,
-                                  floats &btags, floatsVec jes, strings &var, floatsVec &jer)->doubles {
+                                  floats &btags, floatsVec jes, strings &var, floatsVec &jer)->doublesVec {
 
-       doubles bSFs;
-        for (size_t i=0; i<var.size(); i++) {
-            double bweight = 1.0;
-            std::string src = var[i];
+        doubles bSFs;
+        bSFs.reserve(var.size());
+        doublesVec out;
+        out.reserve(pts.size());
 
-            for (unsigned int j=0; j<pts.size(); j++) {
+        for (unsigned int j=0; j<pts.size(); j++) {
+            for (size_t i=0; i<var.size(); i++) {
+                double bweight = 1.0;
                 auto newpt = pts[j] * jes[j][i] * jer[j][0];
-                if (newpt < 40) continue;
+                if (newpt > 40) {
+                    std::string unc = var[i];
+                    if (hadflav[j] == 4) unc = "central";
 
-                std::string unc = src;
-                if (hadflav[j] == 4) unc = "central";
-
-                BTagEntry::JetFlavor hadfconv;
-                if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
-                else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
-                else                    hadfconv=BTagEntry::FLAV_UDSG;
-                double w = _btagcalibreaderJes.eval_auto_bounds(unc, hadfconv, fabs(etas[j]), newpt, btags[j]);
-                bweight *= w;
+                    BTagEntry::JetFlavor hadfconv;
+                    if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
+                    else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
+                    else                    hadfconv=BTagEntry::FLAV_UDSG;
+                    bweight = _btagcalibreaderJes.eval_auto_bounds(unc, hadfconv, fabs(etas[j]), newpt, btags[j]);
+                }
+                bSFs.emplace_back(bweight);
             }
-            bSFs.emplace_back(bweight);
+            out.emplace_back(bSFs);
+            bSFs.clear();
         }
-        return bSFs;
+        return out;
     };
 
     cout << "Generate b-tagging weight" << endl;
-    _rlm = _rlm.Define("btagWeight_DeepFlavB", btagweightgenerator, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "btag_var", "Jet_jer"})
-               .Define("btagWeight_DeepFlavB_jes", btagweightgeneratorJes, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "Jet_pt_unc", "btag_jes_var", "Jet_jer"});
+    _rlm = _rlm.Define("btagWeight_DeepFlavB_perJet", btagweightgenerator, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "btag_var", "Jet_jer"})
+               .Define("btagWeight_DeepFlavB_jes_perJet", btagweightgeneratorJes, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "Jet_pt_unc", "btag_jes_var", "Jet_jer"});
 }
 
 void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
+
+
+    // input vector: vec[pt][vars], for bSF
+    auto skimCol = [this](doublesVec toSkim, ints cut)->doublesVec {
+
+        doublesVec out;
+        for (size_t i=0; i<toSkim.size(); i++) {
+            if (cut[i] > 0) out.emplace_back(toSkim[i]);
+        }
+        return out;
+    };
+
+    // input vector: vec[pt][vars]
+    auto calcBSF = [this](doublesVec perJetSF, int nvar)->doubles {
+
+        doubles out;
+        out.reserve(nvar);
+        for (size_t i=0; i<nvar; i++) {
+            double bSF = 1.0;
+            for (size_t j=0; j<perJetSF.size(); j++) {
+                if (perJetSF[j].empty()) continue;
+                bSF *= perJetSF[j][i];
+            }
+            out.emplace_back(bSF);
+        }
+        return out;
+    };
 
     if (!_isData) {
 
@@ -857,8 +1005,78 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
                .Redefine("Jet_phi", "Jet_phi[jetcuts]")
                .Redefine("Jet_mass", "Jet_mass[jetcuts]")
                .Redefine("Jet_btagDeepFlavB", "Jet_btagDeepFlavB[jetcuts]")
-               .Redefine("nJet", "int(Jet_pt.size())")
                .Define("jet4vecs", ::gen4vec, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass"});
+
+    if (!_isData) {
+        _rlm = _rlm.Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetcuts"})
+                   .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetcuts"});
+    }
+
+    // for checking overlapped jets with leptons
+    auto checkoverlap = [](FourVectorVec &seljets, FourVectorVec &sellep) {
+
+        ints mindrlepton;
+        for (auto ajet: seljets) {
+            auto mindr = 6.0;
+            for ( auto alepton : sellep ) {
+                auto dr = ROOT::Math::VectorUtil::DeltaR(ajet, alepton);
+                if (dr < mindr) mindr = dr;
+            }
+            int out = mindr >= 0.4 ? 1 : 0;
+            mindrlepton.emplace_back(out);
+        }
+        return mindrlepton;
+    };
+
+    // Overlap removal with muon (used for btagging SF)
+    _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","muon4vecs"})
+               .Define("taujetoverlap", checkoverlap, {"jet4vecs","cleantau4vecs"})
+               .Define("jetoverlap","muonjetoverlap && taujetoverlap");
+
+    _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetoverlap]")
+               .Redefine("Jet_eta", "Jet_eta[jetoverlap]")
+               .Redefine("Jet_phi", "Jet_phi[jetoverlap]")
+               .Redefine("Jet_mass", "Jet_mass[jetoverlap]")
+               .Redefine("Jet_btagDeepFlavB", "Jet_btagDeepFlavB[jetoverlap]")
+               .Define("ncleanjetspass", "int(Jet_pt.size())")
+               .Define("cleanjet4vecs", ::gen4vec, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass"})
+               .Define("Jet_HT", "Sum(Jet_pt)");
+
+    if (!_isData) {
+        int nbsf_var = btag_var.size();
+        int njes_var = jes_var.size();
+        _rlm = _rlm.Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlap"})
+                   .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetoverlap"})
+                   .Define("nbsf_var", [nbsf_var](){return int(nbsf_var);})
+                   .Define("njes_var", [njes_var](){return int(njes_var);})
+                   .Define("btagWeight_DeepFlavB", calcBSF, {"btagWeight_DeepFlavB_perJet", "nbsf_var"})
+                   .Define("btagWeight_DeepFlavB_jes", calcBSF, {"btagWeight_DeepFlavB_jes_perJet", "njes_var"});
+    }
+
+
+    // b-tagging
+    if (_isRun16pre) {
+        //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16preVFP
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2598"); //l: 0.0508, m: 0.2598, t: 0.6502
+    } else if (_isRun16post) {
+        //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16postVFP#AK4_b_tagging
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2489"); //l: 0.0480, m: 0.2489, t: 0.6377
+    } else if (_isRun17) {
+        //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL17
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3040"); //l: 0.0532, m: 0.3040, t: 0.7476
+    } else if (_isRun18) {
+        //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL18
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2783"); //l: 0.0490, m: 0.2783, t: 0.7100
+    }
+
+    _rlm = _rlm.Define("bJet_pt", "Jet_pt[btagcuts]")
+               .Define("bJet_eta", "Jet_eta[btagcuts]")
+               .Define("bJet_phi", "Jet_phi[btagcuts]")
+               .Define("bJet_mass", "Jet_mass[btagcuts]")
+               .Define("bJet_btagDeepFlavB", "Jet_btagDeepFlavB[btagcuts]")
+               .Define("ncleanbjetspass", "int(bJet_pt.size())")
+               .Define("bJet_HT", "Sum(bJet_pt)")
+               .Define("cleanbjet4vecs", ::gen4vec, {"bJet_pt", "bJet_eta", "bJet_phi", "bJet_mass"});
 }
 
 void NanoAODAnalyzerrdframe::selectTaus() {
@@ -919,7 +1137,8 @@ void NanoAODAnalyzerrdframe::selectTaus() {
     };
 
     // Hadronic Tau Object Selections
-    _rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs")
+    //_rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
+    _rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
                .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64");
 
     // Hadronic Tau Selection
@@ -930,6 +1149,7 @@ void NanoAODAnalyzerrdframe::selectTaus() {
                .Redefine("Tau_mass", "Tau_mass[seltaucuts]")
                .Redefine("Tau_charge", "Tau_charge[seltaucuts]")
                .Redefine("Tau_jetIdx", "Tau_jetIdx[seltaucuts]")
+               .Redefine("Tau_decayMode", "Tau_decayMode[seltaucuts]")
                .Define("ncleantaupass", "int(Tau_pt.size())")
                .Define("cleantau4vecs", ::gen4vec, {"Tau_pt", "Tau_eta", "Tau_phi", "Tau_mass"});
 
@@ -939,63 +1159,6 @@ void NanoAODAnalyzerrdframe::selectTaus() {
                    .Redefine("tauWeightIdVsEl", skimCol, {"tauWeightIdVsEl", "seltaucuts"})
                    .Redefine("tauWeightIdVsMu", skimCol, {"tauWeightIdVsMu", "seltaucuts"});
     }
-
-}
-
-void NanoAODAnalyzerrdframe::removeOverlaps() {
-
-    // for checking overlapped jets with leptons
-    auto checkoverlap = [](FourVectorVec &seljets, FourVectorVec &sellep) {
-
-        doubles mindrlepton;
-        for (auto ajet: seljets) {
-            auto mindr = 6.0;
-            for ( auto alepton : sellep ) {
-                auto dr = ROOT::Math::VectorUtil::DeltaR(ajet, alepton);
-                if (dr < mindr) mindr = dr;
-            }
-            int out = mindr >= 0.4 ? 1 : 0;
-            mindrlepton.emplace_back(out);
-        }
-        return mindrlepton;
-    };
-
-    // Overlap removal with muon (used for btagging SF)
-    _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","muon4vecs"})
-               .Define("taujetoverlap", checkoverlap, {"jet4vecs","cleantau4vecs"})
-               .Define("jetoverlap","muonjetoverlap && taujetoverlap");
-
-    _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetoverlap]")
-               .Redefine("Jet_eta", "Jet_eta[jetoverlap]")
-               .Redefine("Jet_phi", "Jet_phi[jetoverlap]")
-               .Redefine("Jet_mass", "Jet_mass[jetoverlap]")
-               .Redefine("Jet_btagDeepFlavB", "Jet_btagDeepFlavB[jetoverlap]")
-               .Define("ncleanjetspass", "int(Jet_pt.size())")
-               .Define("cleanjet4vecs", ::gen4vec, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass"})
-               .Define("Jet_HT", "Sum(Jet_pt)");
-
-    if (_isRun16pre) {
-        //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16preVFP
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2598"); //l: 0.0508, m: 0.2598, t: 0.6502
-    } else if (_isRun16post) {
-        //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16postVFP#AK4_b_tagging
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2489"); //l: 0.0480, m: 0.2489, t: 0.6377
-    } else if (_isRun17) {
-        //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL17
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3040"); //l: 0.0532, m: 0.3040, t: 0.7476
-    } else if (_isRun18) {
-        //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL18
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2783"); //l: 0.0490, m: 0.2783, t: 0.7100
-    }
-
-    _rlm = _rlm.Define("bJet_pt", "Jet_pt[btagcuts]")
-               .Define("bJet_eta", "Jet_eta[btagcuts]")
-               .Define("bJet_phi", "Jet_phi[btagcuts]")
-               .Define("bJet_mass", "Jet_mass[btagcuts]")
-               .Define("bJet_btagDeepFlavB", "Jet_btagDeepFlavB[btagcuts]")
-               .Define("ncleanbjetspass", "int(bJet_pt.size())")
-               .Define("bJet_HT", "Sum(bJet_pt)")
-               .Define("cleanbjet4vecs", ::gen4vec, {"bJet_pt", "bJet_eta", "bJet_phi", "bJet_mass"});
 
 }
 
@@ -1049,6 +1212,58 @@ void NanoAODAnalyzerrdframe::selectFatJets() {
                .Define("nfatjetspass", "int(Sel_fatjetpt.size())")
                //.Define("Sel_fatjetweight", "std::vector<double>(nfatjetspass, evWeight)")
                .Define("Sel_fatjet4vecs", ::gen4vec, {"Sel_fatjetpt", "Sel_fatjeteta", "Sel_fatjetphi", "Sel_fatjetmass"});
+}
+
+void NanoAODAnalyzerrdframe::topPtReweight() {
+
+    _rlm = _rlm.Define("gentopcut", "abs(GenPart_pdgId) == 6 && GenPart_statusFlags & (1 << 13)")
+               .Define("GenPart_top_pt", "GenPart_pt[gentopcut]");
+
+    // To be updated for nanoaod n9
+    auto topPtLOtoNLO = [](floats toppt)->float {
+
+        float out = 1.0;
+        std::vector<float> xbins = {0,50,100,150,200,250,300,350,400,450,500,550,600,800,1000,2000};
+        std::vector<float> sfs = {1.1536, 1.0578, 0.993, 0.9373, 0.8881, 0.8456, 0.8087, 0.7809, 0.7559, 0.7388, 0.7247, 0.7245, 0.7124, 0.7284, 0.7317};
+
+        if (toppt.size() != 2) out = 1.0;
+        else {
+            float pt1 = toppt[0];
+            float pt2 = toppt[1];
+            if (pt1 > 2000) pt1 = 1999;
+            if (pt2 > 2000) pt2 = 1999;
+            int xbin1 = (std::upper_bound(xbins.begin(), xbins.end(), pt1)-1) - xbins.begin();
+            int xbin2 = (std::upper_bound(xbins.begin(), xbins.end(), pt2)-1) - xbins.begin();
+            out = std::sqrt( sfs.at(xbin1) * sfs.at(xbin2));
+        }
+        return out;
+    };
+
+    auto topPtNLOtoNNLO = [](floats toppt)->float {
+
+        float out = 1.0;
+        if (toppt.size() != 2) out = 1.0;
+        else {
+            float pt1 = toppt[0];
+            float pt2 = toppt[1];
+            out = std::sqrt( (0.103 * std::exp(-0.0118 * pt1) - 0.000134 * pt1 + 0.973)\
+                           * (0.103 * std::exp(-0.0118 * pt2) - 0.000134 * pt2 + 0.973));
+        }
+        return out;
+    };
+
+    // NLO ttbar: NLO to theory weight
+    // https://twiki.cern.ch/twiki/bin/view/CMS/TopPtReweighting#TOP_PAG_corrections_based_on_the
+    if (_outfilename.find("TTTo") != std::string::npos) {
+        _rlm = _rlm.Define("TopPtWeight", topPtNLOtoNNLO, {"GenPart_top_pt"});
+    } else if (_outfilename.find("TT_LFV") != std::string::npos) {
+        _rlm = _rlm.Define("TopPtWeight_LO", topPtLOtoNLO, {"GenPart_top_pt"})
+                   .Define("TopPtWeight_NLO", topPtNLOtoNNLO, {"GenPart_top_pt"})
+                   .Define("TopPtWeight", "TopPtWeight_LO * TopPtWeight_NLO");
+    } else {
+        _rlm = _rlm.Define("TopPtWeight", "one");
+    }
+
 }
 
 void NanoAODAnalyzerrdframe::calculateEvWeight() {
@@ -1193,6 +1408,8 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                .Redefine("Tau_mass", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"})
                .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"});
 }
+
+
 
 /*
 bool NanoAODAnalyzerrdframe::helper_1DHistCreator(std::string hname, std::string title, const int nbins, const double xlow, const double xhi, std::string rdfvar, std::string evWeight)
