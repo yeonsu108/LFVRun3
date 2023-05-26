@@ -52,6 +52,11 @@ The class has several methods:
   Look at `nanoaoddataframe.cpp` to find how to use within C++.
 
 - Compile
+  Make sure to source proper evnv (new!)
+  ``` bash
+    source /cvmfs/sft.cern.ch/lcg/views/LCG_103/x86_64-centos7-gcc12-opt/setup.sh
+  ```
+  Then compile
   ``` bash
     make clean && make -j 4   # max 6 effective.
     ```
