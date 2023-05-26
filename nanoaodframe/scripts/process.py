@@ -32,6 +32,8 @@ syst_list = ["", "__tesup", "__tesdown", "__jerup","__jerdown", "__jesAbsoluteup
              "__jesBBEC1up", "__jesBBEC1down", "__jesBBEC1_"+year[:4]+"up", "__jesBBEC1_"+year[:4]+"down",
              "__jesFlavorQCDup", "__jesFlavorQCDdown", "__jesRelativeBalup", "__jesRelativeBaldown",
              "__jesRelativeSample_"+year[:4]+"up", "__jesRelativeSample_"+year[:4]+"down"]
+if year == "2018": syst_list.append("__jesHEM")
+
 # tune and hdamp will appear as an individual dataset.
 # thus no need to run in loop, but left here for double check
 syst_ext = ["__tuneup", "__tunedown", "__hdampup", "__hdampdown",]

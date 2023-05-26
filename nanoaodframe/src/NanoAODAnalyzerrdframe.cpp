@@ -155,7 +155,7 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
             WeightCalculatorFromHistogram* _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
             WeightCalculatorFromHistogram* _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
             WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus); 
-	    //Check Normalisation issue for genWeight 
+            //Check Normalisation issue for genWeight
             _rlm = _rlm.Redefine("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
                        .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->floats
                               {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
@@ -475,7 +475,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     };
 
     // structure: jes[jetIdx][varIdx]
-    auto jesUnc = [this, regroupedUnc](floats jetpts, floats jetetas, floats jetAreas, floats jetrawf, float rho)->floatsVec {
+    auto jesUnc = [this, regroupedUnc](floats jetpts, floats jetetas, floats jetphis, floats jetAreas, floats jetrawf, float rho)->floatsVec {
 
         floats uncSources;
         uncSources.reserve(2 * regroupedUnc.size());
@@ -492,6 +492,14 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 if (abs(unc) > 100.) unc = 0.;
                 uncSources.emplace_back(1.0f + unc);
                 uncSources.emplace_back(1.0f - unc);
+            }
+            // HEM - consider 2018 only
+            if (_year == "2018") {
+                if (jetphis[i] > -1.57 && jetphis[i] < -0.87 && jetetas[i] > -2.5 && jetetas[i] < -1.3) {
+                    uncSources.emplace_back(0.8);
+                } else {
+                    uncSources.emplace_back(1.0);
+                }
             }
             uncertainties.emplace_back(uncSources);
             uncSources.clear();
@@ -686,7 +694,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                    .Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi","PV_npvsGood", "run"})
                    .Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi", "PV_npvsGood", "run"});
         if (!dataMc) {
-            _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
+            _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
                        .Define("MET_pt_unc", metUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"})
                        .Define("MET_phi_unc", metPhiUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"});
         }
