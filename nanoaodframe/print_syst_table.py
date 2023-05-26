@@ -30,6 +30,7 @@ unc_cat = OrderedDict([
          'scale', 'ps', 'pdf',
          'py8tune', 'hdamp',]),
 ('pu', ['pu']),
+('prefire', ['prefire']),
 ('xsec', ['xsec']),
 ('muon', ['muid', 'muiso', 'mutrg']),
 ('tauid', ['tauidjet', 'tauidel', 'tauidmu']),
@@ -60,11 +61,6 @@ unc_cat = OrderedDict([
 ('bAll', ['btaghf', 'btaglf', 'btaghfstats1', 'btaglfstats1',
           'btaghfstats2', 'btaglfstats2', 'btagcferr1', 'btagcferr2']),
 ])
-
-#FIXME don't forget this
-#if year == "2017":
-#  unc_cat['prefire'] = ['prefire']
-#  unc_cat['all'].append('prefire')
 
 #Create syst yaml everytime, to avoid crash due to different treatments
 with open(config_path + "config_" + year + ".yml") as f:
