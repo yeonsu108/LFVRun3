@@ -111,7 +111,8 @@ private:
   inline static std::vector<std::string> jes_var_2018 = {"jesAbsoluteup", "jesAbsolutedown",
                 "jesAbsolute_2018up", "jesAbsolute_2018down", "jesBBEC1up", "jesBBEC1down",
                 "jesBBEC1_2018up", "jesBBEC1_2018down", "jesFlavorQCDup", "jesFlavorQCDdown",
-                "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2018up", "jesRelativeSample_2018down"};
+                "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2018up", "jesRelativeSample_2018down",
+                "jesHEM"};
   floats PDFWeights;
   std::string _jsonfname;
   std::string _globaltag;

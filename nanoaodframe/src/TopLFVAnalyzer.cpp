@@ -166,6 +166,9 @@ void TopLFVAnalyzer::defineMoreVars() {
             } else if (_syst.find("jesRelativeSample_" + _year.substr(0,4) + "down") != std::string::npos) {
                 addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[13]"});
                 addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[13]"});
+            } else if (_syst.find("jesHEM") != std::string::npos && _year == "2018") { //HEM
+                addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[0]"});
+                addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[0]"});
             } else {
                 addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB[0]"});
                 addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB[0]"});
