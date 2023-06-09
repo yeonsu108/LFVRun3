@@ -20,6 +20,7 @@
 #include <TH1.h>     // TH1
 #include <TF1.h>     // TF1
 #include <TString.h> // Form
+#include <TGraph.h>
 #include <TGraphAsymmErrors.h> //TGraphError
 #include <string>    // std::string
 #include <vector>    // std::vector
@@ -34,6 +35,7 @@ class TauIDSFTool {
   protected:
 
     std::map<const std::string,const TF1*> func;
+    std::map<const std::string,const TGraph*> graph;
     TH1* hist;
     std::map<std::string, const TF1*> funcs_dm0;
     std::map<std::string, const TF1*> funcs_dm1;
@@ -49,16 +51,19 @@ class TauIDSFTool {
     std::vector<int> DMs;
     std::vector<int> genmatches;
     bool isVsPT  = false;
+    bool isHighPTVsPT = false;
     bool isVsDM  = false;
     bool isVsEta = false;
     bool isVsDMandPT  = false;
 
     TauIDSFTool(const std::string& year, const std::string& id="DeepTau2017v2p1VSjet", const std::string& wp="VTight", const std::string& wp_vsele="VVLoose",
-                const bool dm=false, const bool ptdm=true, const bool embedding=false);
+                const bool dm=false, const bool ptdm=true, const bool embedding=false, const bool highpT=false);
     ~TauIDSFTool() { }
 
     float getSFvsPT( double pt,          int genmatch, const std::string& unc="");
     float getSFvsPT( double pt,                        const std::string& unc="");
+    float getHighPTSFvsPT( double pt,          int genmatch, const std::string& unc="");
+    float getHighPTSFvsPT( double pt,          const std::string& unc="");
     float getSFvsDM( double pt,  int dm, int genmatch, const std::string& unc="") const;
     float getSFvsDM( double pt,  int dm,               const std::string& unc="") const;
     float getSFvsEta(double eta,         int genmatch, const std::string& unc="") const;
