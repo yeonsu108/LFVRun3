@@ -68,7 +68,10 @@ systematics:
   - tauidjetSystdm1UL2018
   - tauidjetSystdm10UL2018
   - tauidjetSystdm11UL2018
-  - tauidjetHighpt
+  - tauidjetHighptstat_bin1
+  - tauidjetHighptstat_bin2
+  - tauidjetHighptsyst
+  - tauidjetHighptextrap
   - tauidmu
   - tauidel
   - scale: {type: shape, on: 'TTTo'}
@@ -77,8 +80,8 @@ systematics:
   - ps: {type: shape, on: 'LFV'}
   - pdf: {type: shape, on: 'TTTo'}
 #  - pdf: {type: shape, on: 'LFV'}
-#  - hdamp: {type: shape, on: 'TTTo'}
-#  - tune: {type: shape, on: 'TTTo'}
+  - hdamp: {type: shape, on: 'TTTo'}
+  - tune: {type: shape, on: 'TTTo'}
 
 plots:
   #include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']

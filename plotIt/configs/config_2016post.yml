@@ -68,7 +68,10 @@ systematics:
   - tauidjetSystdm1UL2016_postVFP
   - tauidjetSystdm10UL2016_postVFP
   - tauidjetSystdm11UL2016_posrVFP
-  - tauidjetHighpt
+  - tauidjetHighptstat_bin1
+  - tauidjetHighptstat_bin2
+  - tauidjetHighptsyst
+  - tauidjetHighptextrap
   - tauidmu
   - tauidel
   - scale: {type: shape, on: 'TTTo'}
