@@ -20,7 +20,7 @@ TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string ye
 
     if (_year == "2016pre") {
         tauYear = "UL2016_preVFP";
-    } else if (_year == "2016pre") {
+    } else if (_year == "2016post") {
         tauYear = "UL2016_postVFP";
     } else {
         tauYear = "UL" + _year;

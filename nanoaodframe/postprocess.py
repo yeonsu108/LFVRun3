@@ -22,8 +22,12 @@ else:
 
 # Set output folders
 out_path = os.path.join(base_path, input, year + '_postprocess')
+fig_path = os.path.join(base_path, input, 'figure_' + year)
 if not os.path.exists(out_path):
     os.makedirs(out_path)
+if not os.path.exists(fig_path):
+    os.makedirs(fig_path)
+
 
 file_list = [i.replace('.root', '') for i in os.listdir(nom_path) if '.root' in i]
 data_list = [i[:i.find('201')] for i in os.listdir(nom_path) if '.root' in i and '201' in i and 'jes' not in i]
@@ -64,7 +68,8 @@ def rescale(inputh, inputf, sumW, nom_sumW): # rescale up/dn histos
         #h = h.Rebin(len(rebin[h.GetName().split('_')[2]])-1, h.GetName(), array.array('d',rebin[h.GetName().split('_')[2]]))
         if yield_name in inputh:
             h1 = h.Clone('h1')
-            h1.SetName(hname.replace(yield_name, yield_name + '_yield'))
+            h1.SetName(inputh.replace(yield_name, yield_name + '_yield'))
+            outfile.cd()
             h1.Write()
 
     outfile.cd()
@@ -132,7 +137,7 @@ def write_envelope(inputh, inputf, syst, nhists, sumW, new_sumW):
 for fname in file_list:
     #print(os.path.join(nom_path, fname))
     #if not any(i in fname for i in ['TTTo2L2Nu', 'TTToSemiLeptonic']): continue
-    if not any(i in fname for i in ['hdamp', 'tune']): continue
+    #if not any(i in fname for i in ['hdamp', 'tune']): continue
 
     #flag for ext. syst with different normalization
     run_on_syst = False
@@ -164,9 +169,7 @@ for fname in file_list:
     isPDF = False
     if any('__scale' in i for i in hlists): isScale = True
     if any('__ps' in i for i in hlists): isPS = True
-    if any('__pdf' in i for i in hlists): isPDF = True
-
-    #print(isScale, isPS)
+    #if any('__pdf' in i for i in hlists) and 'LFV' in fname: isPDF = True
 
     for hname in hlists:
         if "__" not in hname: nominal_list.append(hname)
@@ -195,8 +198,8 @@ for fname in file_list:
 
       if isScale: write_envelope(hname2, bSFfile, "scale", 6, hcounter, hcounter)
       if isPS: write_envelope(hname2, bSFfile, "ps", 4, hcounter, hcounter)
-      #For PDF: we take 101-102 only for control plots
-      #if isPDF: write_envelope(hname2, bSFfile, "pdf", 103, hcounter, LHEPdfWeightSum)
+      #For PDF: we take 101-102 only for control plots from ttbar
+      #if isPDF: write_envelope(hname2, bSFfile, "pdf", 101, hcounter, LHEPdfWeightSum) #sig: 101 / bkg: 103
       if run_on_syst: rescale(hname2, bSFfile, hcounter, hcounter_nom) #placeholder for hdamp and 8tune
 
 

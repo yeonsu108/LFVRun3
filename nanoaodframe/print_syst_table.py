@@ -29,7 +29,9 @@ unc_cat = OrderedDict([
          #'tauidjet', 'tauidel', 'tauidmu', 'tes',
          'tauidjetUncert0', 'tauidjetUncert1', 'tauidjetSystalleras',
          'tauidjetSyst'+tauYear, 'tauidjetSystdm0'+tauYear, 'tauidjetSystdm1'+tauYear,
-         'tauidjetSystdm10'+tauYear, 'tauidjetSystdm11'+tauYear, 'tauidjetHighpt',
+         'tauidjetSystdm10'+tauYear, 'tauidjetSystdm11'+tauYear,
+         'tauidjetHighptstat_bin1', 'tauidjetHighptstat_bin2',
+         'tauidjetHighptsyst', 'tauidjetHighptextrap',
          'tauidel', 'tauidmu', 'tes',
          'btaghf', 'btaglf', 'btaghfstats1', 'btaglfstats1',
          'btaghfstats2', 'btaglfstats2', 'btagcferr1', 'btagcferr2',
@@ -54,10 +56,15 @@ unc_cat = OrderedDict([
 ('tauidjetSystdm1'+tauYear, ['tauidjetSystdm1'+tauYear]),
 ('tauidjetSystdm10'+tauYear, ['tauidjetSystdm10'+tauYear]),
 ('tauidjetSystdm11'+tauYear, ['tauidjetSystdm11'+tauYear]),
-('tauidjetHighpt', ['tauidjetHighpt']),
+('tauidjetHighptstat_bin1', ['tauidjetHighptstat_bin1']),
+('tauidjetHighptstat_bin2', ['tauidjetHighptstat_bin2']),
+('tauidjetHighptsyst', ['tauidjetHighptsyst']),
+('tauidjetHighptextrap', ['tauidjetHighptextrap']),
 ('tauidjet', ['tauidjetUncert0', 'tauidjetUncert1', 'tauidjetSystalleras',
               'tauidjetSyst'+tauYear, 'tauidjetSystdm0'+tauYear, 'tauidjetSystdm1'+tauYear,
-              'tauidjetSystdm10'+tauYear, 'tauidjetSystdm11'+tauYear, 'tauidjetHighpt']),
+              'tauidjetSystdm10'+tauYear, 'tauidjetSystdm11'+tauYear,
+              'tauidjetHighptstat_bin1', 'tauidjetHighptstat_bin2',
+              'tauidjetHighptsyst', 'tauidjetHighptextrap']),
 ('tauidel', ['tauidel']),
 ('tauidmu', ['tauidmu']),
 ('tes', ['tes']),
@@ -165,7 +172,7 @@ with open("total_syst_template.tex") as f:
     with open(os.path.join(dest_path, 'figure_' + year, 'total_syst.tex'), "w") as f1:
         for line in lines:
             #if year != '2017' and 'Prefire' in line: continue
-            if 'Prefire' in line: continue
+            #if 'Prefire' in line: continue
             for key, value in unc_summary.items():
                 if value in line:
                     with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + key + '.tex'),'r') as f2:
