@@ -32,7 +32,7 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
     auto start = std::chrono::system_clock::now();
     std::time_t start_time = std::chrono::system_clock::to_time_t(start);
 
-    std::cout << "Start jon on: " << std::ctime(&start_time) << std::endl;
+    std::cout << "Start job on: " << std::ctime(&start_time) << std::endl;
 
     // Skim switch
     if (_isSkim == true) {
