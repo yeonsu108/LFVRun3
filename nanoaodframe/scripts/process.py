@@ -60,25 +60,30 @@ for ds in dataset_list:
         outdir = tgdir
         outfname = 'hist_' + dataset_name + src + '.root'
 
+        ext_syst = False
+        if any(i in dataset_name for i in syst_ext): ext_syst = True
+
         if 'data' in ds[5:]:
             if src == "":
                 parameters.append([year, ds, outdir, outfname, "data"])
             else: continue
 
         else:
-           if src == "":
-              if options.syst == "all":
-                  parameters.append((year, ds, outdir, outfname, "all", "", False))
-              elif options.syst == "theory":
-                  if any(i in dataset_name for i in ["TTTo", "TT_LFV", "ST_LFV"]): #include TTW,TTZ for theory unc?
-                      parameters.append([year, ds, outdir, outfname, "theory"])
-                  else: parameters.append([year, ds, outdir, outfname, "all"])
-              elif options.syst == "nosyst":
-                  parameters.append([year, ds, outdir, outfname, "nosyst"])
-           else:
-              #os.makedir(os.path.join(tgdir, dataset_name+src)
-              if any(i in dataset_name for i in syst_ext): continue
-              parameters.append([year, ds, outdir, outfname, src[2:]])
+            if src == "" and not ext_syst:
+                if options.syst == "all":
+                    parameters.append((year, ds, outdir, outfname, "all", "", False))
+                elif options.syst == "theory":
+                    if any(i in dataset_name for i in ["TTTo", "TT_LFV", "ST_LFV"]): #include TTW,TTZ for theory unc?
+                        parameters.append([year, ds, outdir, outfname, "theory"])
+                    else: parameters.append([year, ds, outdir, outfname, "all"])
+                elif options.syst == "nosyst":
+                    parameters.append([year, ds, outdir, outfname, "nosyst"])
+            elif src == "" and ext_syst:
+                parameters.append([year, ds, outdir, outfname, "nosyst"])
+            else:
+                #os.makedir(os.path.join(tgdir, dataset_name+src)
+                if any(i in dataset_name for i in syst_ext): continue
+                parameters.append([year, ds, outdir, outfname, src[2:]])
 
 
 for item in parameters:

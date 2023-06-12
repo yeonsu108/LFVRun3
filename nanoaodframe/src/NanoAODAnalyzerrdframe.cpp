@@ -11,6 +11,8 @@
 #include <algorithm>
 #include <typeinfo>
 #include <random>
+#include <chrono>
+#include <ctime>
 
 #include "TCanvas.h"
 #include "Math/GenVector/VectorUtil.h"
@@ -25,6 +27,12 @@ using namespace std;
 
 NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
 :_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), PDFWeights(103, 0.0) {
+
+    // record time
+    auto start = std::chrono::system_clock::now();
+    std::time_t start_time = std::chrono::system_clock::to_time_t(start);
+
+    std::cout << "Start job on: " << std::ctime(&start_time) << std::endl;
 
     // Skim switch
     if (_isSkim == true) {
@@ -845,6 +853,8 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
     cout << "Loading Btag SF" << endl;
     string btagpath = "data/btagSF/";
 
+    if (_year == "2018") jes_var.erase(std::remove(jes_var.begin(), jes_var.end(), "jesHEM"), jes_var.end());
+
     BTagCalibration _btagcalib = {"DeepJet", btagpath + "skimmed_btag_" + _year + ".csv"};
     cout << "    Loaded file : " << btagpath + "skimmed_btag_" + _year + ".csv" << endl;
     BTagCalibration _btagcalibJes = {"DeepJet", btagpath + "skimmed_jes_" + _year + ".csv"};
@@ -852,7 +862,6 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
 
     _rlm = _rlm.Define("btag_var", [](){return strings(btag_var);})
                .Define("btag_jes_var", [jes_var](){return strings(jes_var);});
-
 
     BTagCalibrationReader _btagcalibreader = {BTagEntry::OP_RESHAPING, "central", btag_var};
     BTagCalibrationReader _btagcalibreaderJes = {BTagEntry::OP_RESHAPING, "central", jes_var};
@@ -1388,47 +1397,53 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     */
 
     TauIDSFTool* _tauidSFjet;
-    _tauidSFjet = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet, tauid_vse, false, true, false);
+    TauIDSFTool* _tauidSFjetHighPt;
+    _tauidSFjet = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet, tauid_vse, false, true, false, false);
+    _tauidSFjetHighPt = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet, tauid_vse, false, false, false, true);
 
-    auto tauSFIdVsJet = [this, _tauidSFjet, tauYear](floats &pt, floats &eta, uchars &genid, ints dm)->floatsVec {
+    auto tauSFIdVsJet = [this, _tauidSFjet, _tauidSFjetHighPt, tauYear](floats &pt, floats &eta, uchars &genid, ints dm)->floatsVec {
 
         floats uncSources;
-        uncSources.reserve(19); //nom + syst 40 + highPT 2
+        uncSources.reserve(27); //nom + syst 40 + highPT 2
         floatsVec wVec;
         wVec.reserve(pt.size());
 
         auto year_ = tauYear.substr(2);
         std::vector<std::string> uncerts = {"uncert0", "uncert1", "syst_alleras", "syst_" + year_, "syst_dmX_" + year_};
+        std::vector<std::string> uncertsHighPt = {"stat","stat_bin1","stat_bin2","syst","extrap"};
 
         if (pt.size() > 0) {
             for (unsigned int i=0; i<pt.size(); i++) {
                 // TauSFTool will take care of pt > 140 SF by setting pT = 140
                 float nomsf = _tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]));
+                float nomsf_highpt = _tauidSFjetHighPt->getHighPTSFvsPT(pt[i], int(genid[i]));
                 uncSources.emplace_back(nomsf);
 
-                for (auto unc : uncerts) {
-                    size_t pos = unc.find("dmX");
-                    if (pos != std::string::npos) { //indices 9-16
-                        unc.replace(pos, 3, "dm"+std::to_string(dm[i]));
-                        float upsf = _tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_up");
-                        float dnsf = _tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_down");
-                        std::vector<float> dmsf;
-                        if (dm[i] == 0)  dmsf = {upsf, dnsf, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-                        if (dm[i] == 1)  dmsf = {1.0, 1.0, upsf, dnsf, 1.0, 1.0, 1.0, 1.0};
-                        if (dm[i] == 10) dmsf = {1.0, 1.0, 1.0, 1.0, upsf, dnsf, 1.0, 1.0};
-                        if (dm[i] == 11) dmsf = {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, upsf, dnsf};
-                        uncSources.insert(uncSources.end(), dmsf.begin(), dmsf.end());
-                    } else { //indices 1-8
-                        uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_up"));
-                        uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_down"));
+                if (pt[i] <= 140) {
+                    for (auto unc : uncerts) {
+                        size_t pos = unc.find("dmX");
+                        if (pos != std::string::npos) { //indices 9-16
+                            unc.replace(pos, 3, "dm"+std::to_string(dm[i]));
+                            float upsf = _tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_up");
+                            float dnsf = _tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_down");
+                            std::vector<float> dmsf;
+                            if      (dm[i] == 0)  dmsf = {upsf, dnsf, nomsf, nomsf, nomsf, nomsf, nomsf, nomsf};
+                            else if (dm[i] == 1)  dmsf = {nomsf, nomsf, upsf, dnsf, nomsf, nomsf, nomsf, nomsf};
+                            else if (dm[i] == 10) dmsf = {nomsf, nomsf, nomsf, nomsf, upsf, dnsf, nomsf, nomsf};
+                            else if (dm[i] == 11) dmsf = {nomsf, nomsf, nomsf, nomsf, nomsf, nomsf, upsf, dnsf};
+                            else                  dmsf = {nomsf, nomsf, nomsf, nomsf, nomsf, nomsf, nomsf, nomsf}; //placeholder
+                            uncSources.insert(uncSources.end(), dmsf.begin(), dmsf.end());
+                        } else { //indices 1-8
+                            uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_up"));
+                            uncSources.emplace_back(_tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]), unc + "_down"));
+                        }
                     }
-
-                    if (pt[i] <= 140) { //indices 17-18
-                        std::vector<float> dummysf = {1.0, 1.0};
-                        uncSources.insert(uncSources.end(), dummysf.begin(), dummysf.end());; //dummy for pt < 140
-                    } else {
-                        uncSources.emplace_back(1.0 + (min(pt[i], static_cast<float>(500.)) - 40.) * (pt[i] > 40.) * 0.00018);
-                        uncSources.emplace_back(1.0 - (min(pt[i], static_cast<float>(500.)) - 40.) * (pt[i] > 40.) * 0.00018);
+                    uncSources.insert(uncSources.end(), 10, nomsf);
+                } else {
+                    uncSources.insert(uncSources.end(), 16, nomsf_highpt);
+                    for (auto unc : uncertsHighPt) {
+                        uncSources.emplace_back(_tauidSFjetHighPt->getHighPTSFvsPT(pt[i], int(genid[i]), unc + "_up"));
+                        uncSources.emplace_back(_tauidSFjetHighPt->getHighPTSFvsPT(pt[i], int(genid[i]), unc + "_down"));
                     }
                 }
                 wVec.emplace_back(uncSources);
