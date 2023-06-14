@@ -450,6 +450,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
             cout<<"Applying JEC Uncertainty"<<endl;
             for (std::string src : jes_var) {
                 if (src.find("up") != std::string::npos) {
+                    if (src.find("HEM") != std::string::npos) continue;
                     auto uncsource = src.substr(3, src.size()-2-3);
                     cout << "JEC Uncertainty Source : " + uncsource << endl;
                     string dbfilenameunc = basedirectory + "RegroupedV2_" + _globaltag + "_MC_UncertaintySources_AK4PFchs.txt";
@@ -505,8 +506,9 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
             if (_year == "2018") {
                 if (jetphis[i] > -1.57 && jetphis[i] < -0.87 && jetetas[i] > -2.5 && jetetas[i] < -1.3) {
                     uncSources.emplace_back(0.8);
-                } else {
                     uncSources.emplace_back(1.0);
+                } else {
+                    uncSources.insert(uncSources.end(), 2, 1.0);
                 }
             }
             uncertainties.emplace_back(uncSources);
@@ -853,7 +855,10 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
     cout << "Loading Btag SF" << endl;
     string btagpath = "data/btagSF/";
 
-    if (_year == "2018") jes_var.erase(std::remove(jes_var.begin(), jes_var.end(), "jesHEM"), jes_var.end());
+    if (_year == "2018") {
+        jes_var.erase(std::remove(jes_var.begin(), jes_var.end(), "jesHEMup"), jes_var.end());
+        jes_var.erase(std::remove(jes_var.begin(), jes_var.end(), "jesHEMdown"), jes_var.end());
+    }
 
     BTagCalibration _btagcalib = {"DeepJet", btagpath + "skimmed_btag_" + _year + ".csv"};
     cout << "    Loaded file : " << btagpath + "skimmed_btag_" + _year + ".csv" << endl;
