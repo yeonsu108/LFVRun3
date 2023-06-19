@@ -95,6 +95,11 @@ unc_cat = OrderedDict([
           'btaghfstats2', 'btaglfstats2', 'btagcferr1', 'btagcferr2']),
 ])
 
+if year == "2018":
+  unc_cat['jesHEM'] = ['jesHEM']
+  unc_cat['jesAll'].append('jesHEM')
+  unc_cat['all'].append('jesHEM')
+
 #Create syst yaml everytime, to avoid crash due to different treatments
 with open(config_path + "config_" + year + ".yml") as f:
     lines = f.readlines()

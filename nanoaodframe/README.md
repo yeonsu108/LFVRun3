@@ -145,7 +145,7 @@ mkdir ../figure_2018
 ../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/config_18.yml -y -s
 
 #For Run2,
-python stack_signals.py -I test
+python stack_signals_v2.py -I test #use v2 for now, v1 cannot deal with year based uncertainties
 python plot_run2.py -I test
 python print_syst_table.py -I test4 -Y 2018
 ```
