@@ -45,6 +45,11 @@ def AddBkg(fname, name, color, xsection):
   tmp["hname"] = [x.GetName() for x in f.GetListOfKeys()]
   h = f.Get("hcounter")
   nevt = h.GetBinContent(2)
+  if "HT0to100" in fname:
+    if era == "2016pre": nevt = 72594985
+    if era == "2016post": nevt = 78691397
+    if era == "2017": nevt = 76114585
+    if era == "2018": nevt = 78781833
   try:
     tmp["hname"].remove("LHEPdfWeightSum")
     tmp["hname"].remove("Events")
@@ -79,45 +84,45 @@ def AddSig(fname, name, color, xsection):
   sigsamples[fname] = tmp
 
 ####Users should provide these information
-AddBkg("hist_TTToSemiLeptonic.root", "TTLJ", '#990000', 365.34)
-AddBkg("hist_TTTo2L2Nu.root", "TTLL", '#330000', 88.29)
-AddBkg("hist_TTToHadronic.root", "TTHad", '#cc0000', 377.96)
+AddBkg("hist_TTToSemiLeptonic.root", "TTLJ", '#990000', 366.34)
+AddBkg("hist_TTTo2L2Nu.root", "TTLL", '#330000', 88.51)
+AddBkg("hist_TTToHadronic.root", "TTHad", '#cc0000', 379.05)
 AddBkg("hist_ttHTobb.root", "ttV/H", '#ff66ff', 0.2934)
 AddBkg("hist_ttHToNonbb.root", "ttV/H", '#ff66ff', 0.2151)
-AddBkg("hist_TTWJetsToLNu.root", "ttV/H", '#ff66ff', 0.2043)
-AddBkg("hist_TTWJetsToQQ.root", "ttV/H", '#ff66ff', 0.4062)
-AddBkg("hist_TTZToLLNuNu.root", "ttV/H", '#ff66ff', 0.2529)
-AddBkg("hist_TTZToQQ.root", "ttV/H", '#ff66ff', 0.5297)
-AddBkg("hist_ST_s_4f_lepton.root", "ST", '#990099', 3.36)
-AddBkg("hist_ST_t_top_4f.root", "ST", '#990099', 136.02)
-AddBkg("hist_ST_t_antitop_4f.root", "ST", '#990099', 80.95)
-AddBkg("hist_ST_tW_top_5f.root", "ST", '#990099', 35.85)
-AddBkg("hist_ST_tW_antitop_5f.root", "ST", '#990099', 35.85)
+AddBkg("hist_TTWJetsToLNu.root", "ttV/H", '#ff66ff', 0.2163)
+AddBkg("hist_TTWJetsToQQ.root", "ttV/H", '#ff66ff', 0.4432)
+AddBkg("hist_TTZToLLNuNu.root", "ttV/H", '#ff66ff', 0.2439)
+AddBkg("hist_TTZToQQ.root", "ttV/H", '#ff66ff', 0.51137)
+AddBkg("hist_ST_s_4f_lepton.root", "ST", '#990099', 2.23)
+AddBkg("hist_ST_t_top_4f.root", "ST", '#990099', 134.2)
+AddBkg("hist_ST_t_antitop_4f.root", "ST", '#990099', 80.0)
+AddBkg("hist_ST_tW_top_5f.root", "ST", '#990099', 39.65)
+AddBkg("hist_ST_tW_antitop_5f.root", "ST", '#990099', 39.65)
 AddBkg("hist_WW.root", "VV", '#00cccc', 118.7)
-AddBkg("hist_WZ.root", "VV", '#00cccc', 47.13)
-AddBkg("hist_ZZ.root", "VV", '#00cccc', 16.523)
+AddBkg("hist_WZ.root", "VV", '#00cccc', 46.75)
+AddBkg("hist_ZZ.root", "VV", '#00cccc', 16.91)
 AddBkg("hist_DYJetsToLL_M10to50.root", "ZJets", '#000099', 18610.0)
 AddBkg("hist_DYJetsToLL_M50_amc.root", "ZJets", '#000099', 6077.22)
-AddBkg("hist_WJetsToLNu_HT0To100.root", "WJets", '#ff9933', 59373.3)
-AddBkg("hist_WJetsToLNu_HT100To200.root", "WJets", '#ff9933', 1335.585)
-AddBkg("hist_WJetsToLNu_HT200To400.root", "WJets", '#ff9933', 360.4194) 
-AddBkg("hist_WJetsToLNu_HT400To600.root", "WJets", '#ff9933', 49.35019)
-AddBkg("hist_WJetsToLNu_HT600To800.root", "WJets", '#ff9933', 13.4960)
-AddBkg("hist_WJetsToLNu_HT800To1200.root", "WJets", '#ff9933', 6.612202)
-AddBkg("hist_WJetsToLNu_HT1200To2500.root", "WJets", '#ff9933', 1.770228)
-AddBkg("hist_WJetsToLNu_HT2500ToInf.root", "WJets", '#ff9933', 0.135072)
+AddBkg("hist_WJetsToLNu_HT0To100.root", "WJets", '#ff9933', 65396.85)
+AddBkg("hist_WJetsToLNu_HT100To200.root", "WJets", '#ff9933', 1519.76)
+AddBkg("hist_WJetsToLNu_HT200To400.root", "WJets", '#ff9933', 406) 
+AddBkg("hist_WJetsToLNu_HT400To600.root", "WJets", '#ff9933', 54.75)
+AddBkg("hist_WJetsToLNu_HT600To800.root", "WJets", '#ff9933', 14.58)
+AddBkg("hist_WJetsToLNu_HT800To1200.root", "WJets", '#ff9933', 6.656)
+AddBkg("hist_WJetsToLNu_HT1200To2500.root", "WJets", '#ff9933', 1.404)
+AddBkg("hist_WJetsToLNu_HT2500ToInf.root", "WJets", '#ff9933', 0.03146)
 #AddBkg("hist_QCD_Pt15To20_MuEnriched.root","QCD", '#d0cfd4', 3819570)
-AddBkg("hist_QCD_Pt20To30_MuEnriched.root", "QCD", '#d0cfd4', 2960198.4)
-AddBkg("hist_QCD_Pt30To50_MuEnriched.root", "QCD", '#d0cfd4', 1652471.5)
-AddBkg("hist_QCD_Pt50To80_MuEnriched.root", "QCD", '#d0cfd4', 437504.1)
-AddBkg("hist_QCD_Pt80To120_MuEnriched.root", "QCD", '#d0cfd4', 106033.7)
-AddBkg("hist_QCD_Pt120To170_MuEnriched.root", "QCD", '#d0cfd4', 25190.5)
-AddBkg("hist_QCD_Pt170To300_MuEnriched.root", "QCD", '#d0cfd4', 8654.5)
-AddBkg("hist_QCD_Pt300To470_MuEnriched.root", "QCD", '#d0cfd4', 797.4)
-AddBkg("hist_QCD_Pt470To600_MuEnriched.root", "QCD", '#d0cfd4', 79)
-AddBkg("hist_QCD_Pt600To800_MuEnriched.root", "QCD", '#d0cfd4', 25.1)
-AddBkg("hist_QCD_Pt800To1000_MuEnriched.root", "QCD", '#d0cfd4', 4.7)
-AddBkg("hist_QCD_Pt1000_MuEnriched.root", "QCD", '#d0cfd4', 1.6) 
+#AddBkg("hist_QCD_Pt20To30_MuEnriched.root", "QCD", '#d0cfd4', 2960198.4)
+#AddBkg("hist_QCD_Pt30To50_MuEnriched.root", "QCD", '#d0cfd4', 1652471.5)
+#AddBkg("hist_QCD_Pt50To80_MuEnriched.root", "QCD", '#d0cfd4', 437504.1)
+#AddBkg("hist_QCD_Pt80To120_MuEnriched.root", "QCD", '#d0cfd4', 106033.7)
+#AddBkg("hist_QCD_Pt120To170_MuEnriched.root", "QCD", '#d0cfd4', 25190.5)
+#AddBkg("hist_QCD_Pt170To300_MuEnriched.root", "QCD", '#d0cfd4', 8654.5)
+#AddBkg("hist_QCD_Pt300To470_MuEnriched.root", "QCD", '#d0cfd4', 797.4)
+#AddBkg("hist_QCD_Pt470To600_MuEnriched.root", "QCD", '#d0cfd4', 79)
+#AddBkg("hist_QCD_Pt600To800_MuEnriched.root", "QCD", '#d0cfd4', 25.1)
+#AddBkg("hist_QCD_Pt800To1000_MuEnriched.root", "QCD", '#d0cfd4', 4.7)
+#AddBkg("hist_QCD_Pt1000_MuEnriched.root", "QCD", '#d0cfd4', 1.6) 
 
 if era == "2016pre":
   SetData("hist_SingleMuon2016pre.root","data", 19502)
@@ -207,7 +212,7 @@ for i in range(0, N_hist):
 
   printHistName = "ncleanbjetspass"
   if len(hnames) < 2: continue
-  if any(i in hnames for i in [printHistName, 'DNN']):
+  if any(i in hnames for i in ['h_tau1_gen_pt_S1', 'h_tau1_pt_S1', printHistName, 'DNN']):
     print(hnames)
     string_fname += "%s \n" %hnames
     string_nevt += "%s \n" %hnames
@@ -255,7 +260,7 @@ for i in range(0, N_hist):
     numevt = h_tmp.Integral()
     rawevt = h_tmp.GetEntries()
     ntotalbkg = ntotalbkg + numevt
-    if any(i in hnames for i in [printHistName, 'DNN']):
+    if any(i in hnames for i in ['h_tau1_gen_pt_S1', 'h_tau1_pt_S1', printHistName, 'DNN']):
       string_nevt += "%f \n"%(numevt)
       string_fname += "%s :  %s = %f \n"%(fname,bkgsamples[fname]["name"],numevt)
       print(fname, " : ", bkgsamples[fname]["name"], " = ", "{0:.10g}".format(numevt), " scale : " ,"{0:.3g}".format(scale))
@@ -295,7 +300,7 @@ for i in range(0, N_hist):
     ## print out number of events
     numevt = h_sig.Integral()
     rawevt = h_sig.GetEntries()
-    if any(i in hnames for i in [printHistName, 'DNN']):
+    if any(i in hnames for i in ['h_tau1_gen_pt_S1', 'h_tau1_pt_S1', printHistName, 'DNN']):
       string_nevt += "%f \n"%(numevt)
       string_fname += "%s :  %s = %f \n"%(fname,sigsamples[fname]["name"],numevt)
       print(fname, " : ", sigsamples[fname]["name"], " = ", "{0:.10g}".format(numevt), " scale : " ,"{0:.3g}".format(scale))
@@ -310,7 +315,7 @@ for i in range(0, N_hist):
 
   ndata= h_data.Integral()
   nsub = ndata-ntotalbkg
-  if any(i in hnames for i in [printHistName, 'DNN']):
+  if any(i in hnames for i in ['h_tau1_gen_pt_S1', 'h_tau1_pt_S1', printHistName, 'DNN']):
     string_nevt += "%f \n" % ntotalbkg
     string_nevt += "%d \n" % ndata
     string_nevt += "%f \n" % nsub

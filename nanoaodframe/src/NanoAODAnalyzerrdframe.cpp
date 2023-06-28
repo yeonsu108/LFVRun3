@@ -1160,13 +1160,33 @@ void NanoAODAnalyzerrdframe::selectTaus() {
         else return {{1.0f, 1.0f, 1.0f}};
     };
 
+    // Fake factor study - loose but not tight
+
+
     // Hadronic Tau Object Selections
-    //_rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
     _rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
-               .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64");
+               .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64")
+               .Define("deeptauidcuts_loose","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 8");
 
     // Hadronic Tau Selection
+    _rlm = _rlm.Define("seltaucuts_loose","taucuts && deeptauidcuts_loose && mutauoverlap")
+               .Define("Tau_pt_loose", "Tau_pt[seltaucuts_loose]")
+               .Define("Tau_pt_loose_gen", "Tau_pt[seltaucuts_loose]")
+               .Define("Tau_charge_loose", "Tau_charge[seltaucuts_loose]")
+               .Define("Tau_decayMode_loose", "Tau_decayMode[seltaucuts_loose]")
+               .Define("nloosetaupass", "int(Tau_pt_loose.size())");
+
+    if (!_isData) {
+        _rlm = _rlm.Define("Tau_genPartFlav_loose","Tau_genPartFlav[seltaucuts_loose]")
+                   .Define("taugencut_loose","Tau_genPartFlav_loose == 5")
+                   .Redefine("Tau_pt_loose_gen", "Tau_pt_loose_gen[taugencut_loose]")
+                   .Redefine("tauWeightIdVsJet_loose", skimCol, {"tauWeightIdVsJet_loose", "seltaucuts_loose"})
+                   .Define("tauWeightIdVsEl_loose", skimCol, {"tauWeightIdVsEl", "seltaucuts_loose"})
+                   .Define("tauWeightIdVsMu_loose", skimCol, {"tauWeightIdVsMu", "seltaucuts_loose"});
+    }
+
     _rlm = _rlm.Define("seltaucuts","taucuts && deeptauidcuts && mutauoverlap")
+               .Define("Tau_pt_gen", "Tau_pt[seltaucuts]")
                .Redefine("Tau_pt", "Tau_pt[seltaucuts]")
                .Redefine("Tau_eta", "Tau_eta[seltaucuts]")
                .Redefine("Tau_phi", "Tau_phi[seltaucuts]")
@@ -1179,6 +1199,8 @@ void NanoAODAnalyzerrdframe::selectTaus() {
 
     if (!_isData) {
         _rlm = _rlm.Redefine("Tau_genPartFlav","Tau_genPartFlav[seltaucuts]")
+                   .Define("taugencut","Tau_genPartFlav == 5")
+                   .Redefine("Tau_pt_gen", "Tau_pt[taugencut]")
                    .Redefine("tauWeightIdVsJet", skimCol, {"tauWeightIdVsJet", "seltaucuts"})
                    .Redefine("tauWeightIdVsEl", skimCol, {"tauWeightIdVsEl", "seltaucuts"})
                    .Redefine("tauWeightIdVsMu", skimCol, {"tauWeightIdVsMu", "seltaucuts"});
@@ -1499,6 +1521,12 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     _rlm = _rlm.Define("tauWeightIdVsJet", tauSFIdVsJet, {"Tau_pt","Tau_eta","Tau_genPartFlav", "Tau_decayMode"})
                .Define("tauWeightIdVsEl", tauSFIdVsEl, {"Tau_pt","Tau_eta","Tau_genPartFlav"})
                .Define("tauWeightIdVsMu", tauSFIdVsMu, {"Tau_pt","Tau_eta","Tau_genPartFlav"});
+
+    tauid_vsjet = "Loose";
+    _tauidSFjet = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet, tauid_vse, false, true, false, false);
+    _tauidSFjetHighPt = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet, tauid_vse, false, false, false, true);
+
+    _rlm = _rlm.Define("tauWeightIdVsJet_loose", tauSFIdVsJet, {"Tau_pt","Tau_eta","Tau_genPartFlav", "Tau_decayMode"});
 
 }
 
