@@ -490,3 +490,26 @@ floats addMuonUnc( floats &input ) {
     out.emplace_back(input[0] - sqrt(pow(input[2] - input[0], 2) + pow(0.005, 2)));
     return out;
 }
+
+//Temporary Fix for ANv11. Only one tau
+floatsVec fixtausf( floatsVec &input, floats &pts) {
+    floatsVec out;
+
+    if (pts.size() > 0) {
+        float pt = pts[0];
+
+        if ( pt <= 140 ) out = input;
+        else {
+            floats uncSources;
+            uncSources.insert(uncSources.end(), 17, input[0][1]);
+            for (int i = 17; i < 27; i++) uncSources.emplace_back(input[0][i]);
+            out.emplace_back(uncSources);
+        }
+    }
+    else {
+        floats uncSources;
+        uncSources.insert(uncSources.end(), 27, 1.0);
+        out.emplace_back(uncSources);
+    }
+    return out;
+}
