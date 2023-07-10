@@ -19,6 +19,8 @@ if not os.path.exists(nom_path):
 else:
     print("Start postprocessing at '{}'.".format(nom_path))
 
+isFakeRate = False
+if 'fake' in input: isFakeRate = True
 
 # Set output folders
 out_path = os.path.join(base_path, input, year + '_postprocess')
@@ -46,6 +48,8 @@ def get_bSFratio(inputf, inputh):
     # This depends on cutflow
     if int(step[-1]) < 4: step = 'S' + step[-1]
     else                : step = 'S4'
+
+    if isFakeRate: step = 'S1'
 
     posthist = inputf.Get('h_nevents_' + step)
     prehist = inputf.Get('h_nevents_' + step + '_nobtag')

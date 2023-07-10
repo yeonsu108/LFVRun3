@@ -9,6 +9,7 @@ parser.add_argument("-S", "--syst", dest="syst", type=str, default="theory", hel
 parser.add_argument("-D", "--dataset", dest="dataset", action="store", nargs="+", default=[], help="Put dataset folder name (eg. TTTo2L2Nu) to process specific one.")
 parser.add_argument("-F", "--dataOrMC", dest="dataOrMC", type=str, default="", help="data or mc flag, if you want to process data-only or mc-only")
 parser.add_argument("--dry", dest="dry", action="store_true", default=False, help="dryrun: not submitting jobs to slurm")
+parser.add_argument("-M", "--mode", dest="mode", type=str, default="", help="Only for fake rate: lss, los, tss, tos")
 options = parser.parse_args()
 
 year = options.year
@@ -79,7 +80,8 @@ for ds in dataset_list:
                 elif options.syst == "nosyst":
                     parameters.append([year, ds, outdir, outfname, "nosyst"])
             elif src == "" and ext_syst:
-                parameters.append([year, ds, outdir, outfname, "nosyst"])
+                if any(i in dataset_name for i in syst_ext) and options.syst == "nosyst": continue
+                else: parameters.append([year, ds, outdir, outfname, "nosyst"])
             else:
                 #os.makedir(os.path.join(tgdir, dataset_name+src)
                 if any(i in dataset_name for i in syst_ext): continue
@@ -88,6 +90,7 @@ for ds in dataset_list:
 
 for item in parameters:
     runString = "sbatch -J " + item[0] + '_' + item[3] + " scripts/job_slurm_process.sh " + item[0] + " " + item[1] + " " + item[2] + " " + item[3] + " " + workdir + " " +logdir + " " + item[4]
+    if len(options.mode) > 0: runString += " " + options.mode
 
     print(runString)
     if not options.dry:

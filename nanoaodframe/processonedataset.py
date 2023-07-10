@@ -19,12 +19,14 @@ if __name__=='__main__':
     parser.add_argument("-S", "--syst", dest="syst", type=str, default="theory", help="Systematic: 'data' for Data, 'nosyst' for mc without uncertainties. Default is 'theory'. To run without theory unc for TT samples, put 'all'.")
     parser.add_argument("-D", "--dataset", dest="dataset", action="store", nargs="+", default=[], help="Put dataset folder name (eg. TTTo2L2Nu) to process specific one.")
     parser.add_argument("-F", "--dataOrMC", dest="dataOrMC", type=str, default="", help="data or mc flag, if you want to process data-only or mc-only")
+    parser.add_argument("-M", "--mode", dest="mode", type=str, default="", help="Only for fake rate: lss, los, tss, tos")
     options = parser.parse_args()
 
     outputroot = options.outputroot
     indir = options.indir
     year = options.year
     syst = options.syst
+    mode = options.mode
 
     workdir = os.getcwd()
 
@@ -71,7 +73,10 @@ if __name__=='__main__':
         print("There is NO EVENT to process, ending the processing!!")
         sys.exit()
     aproc = None
-    aproc = ROOT.TopLFVAnalyzer(t, outputroot, year, syst, json, "", 1)
+    if len(mode) > 1:
+        aproc = ROOT.TauFakeFactorAnalyzer(t, outputroot, year, syst, json, "", 1, mode)
+    else:
+        aproc = ROOT.TopLFVAnalyzer(t, outputroot, year, syst, json, "", 1)
     aproc.setupAnalysis()
     aproc.run(False, "Events")
 

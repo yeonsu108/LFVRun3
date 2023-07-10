@@ -212,7 +212,7 @@ for i in range(0, N_hist):
 
   printHistName = "ncleanbjetspass"
   if len(hnames) < 2: continue
-  if any(i in hnames for i in ['h_tau1_gen_pt_S1', 'h_tau1_pt_S1', printHistName, 'DNN']):
+  if any(i in hnames for i in ['h_tau1_gen_pt_S2', 'h_tau1_pt_S2', printHistName, 'DNN']):
     print(hnames)
     string_fname += "%s \n" %hnames
     string_nevt += "%s \n" %hnames
@@ -257,10 +257,10 @@ for i in range(0, N_hist):
       l.AddEntry(h_tmp, bkgsamples[fname]["name"]  ,"F")
 
     ## print out number of events
-    numevt = h_tmp.Integral()
+    numevt = h_tmp.Integral(1, h_tmp.GetNbinsX()+1)
     rawevt = h_tmp.GetEntries()
     ntotalbkg = ntotalbkg + numevt
-    if any(i in hnames for i in ['h_tau1_gen_pt_S1', 'h_tau1_pt_S1', printHistName, 'DNN']):
+    if any(i in hnames for i in ['h_tau1_gen_pt_S2', 'h_tau1_pt_S2', printHistName, 'DNN']):
       string_nevt += "%f \n"%(numevt)
       string_fname += "%s :  %s = %f \n"%(fname,bkgsamples[fname]["name"],numevt)
       print(fname, " : ", bkgsamples[fname]["name"], " = ", "{0:.10g}".format(numevt), " scale : " ,"{0:.3g}".format(scale))
@@ -298,9 +298,9 @@ for i in range(0, N_hist):
       l.AddEntry(h_sig, sigsamples[fname]["name"]  ,"F")
 
     ## print out number of events
-    numevt = h_sig.Integral()
+    numevt = h_sig.Integral(1, h_sig.GetNbinsX()+1)
     rawevt = h_sig.GetEntries()
-    if any(i in hnames for i in ['h_tau1_gen_pt_S1', 'h_tau1_pt_S1', printHistName, 'DNN']):
+    if any(i in hnames for i in ['h_tau1_gen_pt_S2', 'h_tau1_pt_S2', printHistName, 'DNN']):
       string_nevt += "%f \n"%(numevt)
       string_fname += "%s :  %s = %f \n"%(fname,sigsamples[fname]["name"],numevt)
       print(fname, " : ", sigsamples[fname]["name"], " = ", "{0:.10g}".format(numevt), " scale : " ,"{0:.3g}".format(scale))
@@ -313,9 +313,9 @@ for i in range(0, N_hist):
 
 
 
-  ndata= h_data.Integral()
+  ndata= h_data.Integral(1, h_data.GetNbinsX()+1)
   nsub = ndata-ntotalbkg
-  if any(i in hnames for i in ['h_tau1_gen_pt_S1', 'h_tau1_pt_S1', printHistName, 'DNN']):
+  if any(i in hnames for i in ['h_tau1_gen_pt_S2', 'h_tau1_pt_S2', printHistName, 'DNN']):
     string_nevt += "%f \n" % ntotalbkg
     string_nevt += "%d \n" % ndata
     string_nevt += "%f \n" % nsub
@@ -432,10 +432,14 @@ for i in range(0, N_hist):
     label.SetX2NDC(1.0-gStyle.GetPadRightMargin()+0.03)
     label.SetY2NDC(1.0)
     label.SetTextFont(62)
-    if era == '2017':
+    if era == '2016pre':
+      label.AddText("Work in Progress        CMS, 19.5 fb^{-1} at #sqrt{s} = 13 TeV")
+    elif era == '2016post':
+      label.AddText("Work in Progress        CMS, 16.8 fb^{-1} at #sqrt{s} = 13 TeV")
+    elif era == '2017':
       label.AddText("Work in Progress        CMS, 41.5 fb^{-1} at #sqrt{s} = 13 TeV")
     elif era == '2018':
-      label.AddText("Work in Progress        CMS, 59.7 fb^{-1} at #sqrt{s} = 13 TeV")
+      label.AddText("Work in Progress        CMS, 59.8 fb^{-1} at #sqrt{s} = 13 TeV")
     label.SetFillStyle(0)
     label.SetBorderSize(0)
     label.SetTextSize(0.05)
