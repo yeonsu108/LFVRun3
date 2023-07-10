@@ -1161,8 +1161,6 @@ void NanoAODAnalyzerrdframe::selectTaus() {
     };
 
     // Fake factor study - loose but not tight
-
-
     // Hadronic Tau Object Selections
     _rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
                .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64")
@@ -1444,9 +1442,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                 // TauSFTool will take care of pt > 140 SF by setting pT = 140
                 float nomsf = _tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]));
                 float nomsf_highpt = _tauidSFjetHighPt->getHighPTSFvsPT(pt[i], int(genid[i]));
-                uncSources.emplace_back(nomsf);
 
                 if (pt[i] <= 140) {
+                    uncSources.emplace_back(nomsf);
                     for (auto unc : uncerts) {
                         size_t pos = unc.find("dmX");
                         if (pos != std::string::npos) { //indices 9-16
@@ -1467,6 +1465,7 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                     }
                     uncSources.insert(uncSources.end(), 10, nomsf);
                 } else {
+                    uncSources.emplace_back(nomsf_highpt);
                     uncSources.insert(uncSources.end(), 16, nomsf_highpt);
                     for (auto unc : uncertsHighPt) {
                         uncSources.emplace_back(_tauidSFjetHighPt->getHighPTSFvsPT(pt[i], int(genid[i]), unc + "_up"));

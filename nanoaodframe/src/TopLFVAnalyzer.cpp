@@ -88,6 +88,10 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVar({"bJet1_eta", "bJet_eta[0]", ""});
     addVar({"bJet1_mass", "bJet_mass[0]", ""});
 
+    //if (_syst == "data") {
+    //    defineVar("tauWeightIdVsJetFIX", ::fixtausf, {"tauWeightIdVsJet", "Tau_pt"});
+    //}
+
     // Reconstruction
     defineVar("top_reco_whad", ::top_reconstruction_STLFV, {"cleanjet4vecs","cleanbjet4vecs","muon4vecs","cleantau4vecs"});
     addVar({"chi2", "top_reco_whad[0]",""});
@@ -303,10 +307,10 @@ void TopLFVAnalyzer::defineMoreVars() {
                     addVar({"eventWeight__pdf" + std::to_string(i), "eventWeight * LHEPdfWeight[" + std::to_string(i) + "]"});
                     addVar({"eventWeight_notau__pdf" + std::to_string(i), "eventWeight_notau * LHEPdfWeight[" + std::to_string(i) + "]"});
                 }
-                addVar({"eventWeight__pdfup", "eventWeight * LHEPdfWeight[102]"}); //approx.
-                addVar({"eventWeight__pdfdown", "eventWeight * LHEPdfWeight[101]"});
-                addVar({"eventWeight_notau__pdfup", "eventWeight_notau * LHEPdfWeight[102]"});
-                addVar({"eventWeight_notau__pdfdown", "eventWeight_notau * LHEPdfWeight[101]"});
+                addVar({"eventWeight__pdfalphasup", "eventWeight * LHEPdfWeight[102]"}); //approx.
+                addVar({"eventWeight__pdfalphasdown", "eventWeight * LHEPdfWeight[101]"});
+                addVar({"eventWeight_notau__pdfalphasup", "eventWeight_notau * LHEPdfWeight[102]"});
+                addVar({"eventWeight_notau__pdfalphasdown", "eventWeight_notau * LHEPdfWeight[101]"});
             }
         }
     }
@@ -397,6 +401,7 @@ void TopLFVAnalyzer::bookHists() {
             //We anyway need this for bSF rescaling
             add1DHist({"h_nevents", ";Number of events w/o b SF;Events", 2, -0.5, 1.5}, "one", "eventWeight", "_nobtag", "0", "");
             add1DHist({"h_nevents_notausf", ";Number of events w/o b and tau SF;Events", 2, -0.5, 1.5}, "one", "eventWeight_notau", "_nobtag", "0", "00");
+            add1DHist({"h_jet_ht", ";Jet HT w/o b SF (GeV);Events", 20, 0, 400}, "Jet_HT", "eventWeight", "_nobtag", "0", "");
         }
     }
     else {
@@ -486,6 +491,8 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_bjet1_pt", ";b-tagged jet p_{T} (GeV);Events", 20, 0, 400}, "bJet1_pt", "eventWeight", weightstr, "00000", maxstep);
         add1DHist({"h_bjet1_eta", ";b-tagged jet #eta;Events", 20, -2.4, 2.4}, "bJet1_eta", "eventWeight", weightstr, "00000", maxstep);
         add1DHist({"h_bjet1_mass", ";b-tagged jet mass (GeV);Events", 20, 0, 100}, "bJet1_mass", "eventWeight", weightstr, "00000", maxstep);
+
+        add1DHist({"h_jet_ht", ";Jet HT (GeV);Events", 20, 0, 400}, "Jet_HT", "eventWeight", weightstr, "0", maxstep);
 
         // Histogram of Top mass reconstruction
         add1DHist({"h_chi2", ";Minimum #chi^{2};Events", 20, 0, 1000}, "chi2", "eventWeight", weightstr, "00000", maxstep);
