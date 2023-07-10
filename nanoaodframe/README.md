@@ -134,6 +134,13 @@ find log/* | xargs grep runtime_error
 find log/* | xargs grep fault
 find log/* | xargs grep Traceback
 ```
+To apply Tau Fake Factor with ABCD, simple analyzer is introduced (TauFakeFactorAnalyzer). Output foulder MUST include 'fake'. The l stands for loose tau, t for tight.
+``` txt
+python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_lss -Y 2018 -S nosyst -M lss
+python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_los -Y 2018 -S nosyst -M los
+python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_tss -Y 2018 -S nosyst -M tss
+python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_tos -Y 2018 -S nosyst -M tos
+```
 Now, apply b SF rescaling, compute uncertainty envelope, etc. Let the `test\2018` is the folder containing histograms.
 ``` txt
 python postprocess.py test 2018
