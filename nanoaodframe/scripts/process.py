@@ -1,4 +1,4 @@
-import os, sys, argparse
+import os, sys, re, argparse
 from subprocess import call
 
 parser = argparse.ArgumentParser(usage="%prog [options]")
@@ -17,6 +17,7 @@ workdir = os.getcwd()
 indir = os.path.join('/data1/common/skimmed_NanoAOD/', options.version)
 tgdir = os.path.join(workdir, options.outdir, year)
 logdir = os.path.join(workdir, options.outdir, year, 'log')
+splitList = ["TTTo2L2Nu", "TTToSemiLeptonic"]
 
 os.makedirs(tgdir, exist_ok=True)
 os.makedirs(logdir, exist_ok=True)
@@ -45,8 +46,26 @@ syst_ext = ["__tuneup", "__tunedown", "__hdampup", "__hdampdown",]
 # Data should use systematic flag "data" not to construct event weights
 if options.syst == "nosyst": syst_list = [""]
 
+#For split processing
+
 parameters = [] #order: (tgdir, indir, year, syst)
 for ds in dataset_list:
+
+    #Split TT2L2Nu and TTToSemilep into files
+    toSplit = False
+    if any(name_ in ds for name_ in splitList): toSplit = True
+    rootfilestoprocess = []
+    fullnamelist =[]
+    if toSplit:
+        if '__' in ds: continue
+        print("collecting root files in "+ds)
+        flist = os.listdir(ds)
+        for fname in flist:
+            fullname = os.path.join(ds, fname)
+            fullnamelist.append(fullname)
+        for fname in fullnamelist:
+            if re.match('.*\.root', fname) and os.path.isfile(fname): # if it has .root file extension
+                rootfilestoprocess.append(fname)
 
     if len(options.dataset) > 0 and not any(i in ds for i in options.dataset): continue
 
@@ -72,10 +91,16 @@ for ds in dataset_list:
         else:
             if src == "" and not ext_syst:
                 if options.syst == "all":
-                    parameters.append((year, ds, outdir, outfname, "all", "", False))
+                    if toSplit:
+                        parameters.append((year, rootfilestoprocess, outdir, outfname, "all", "", False))
+                    else:
+                        parameters.append((year, ds, outdir, outfname, "all", "", False))
                 elif options.syst == "theory":
-                    if any(i in dataset_name for i in ["TTTo", "TT_LFV", "ST_LFV"]): #include TTW,TTZ for theory unc?
-                        parameters.append([year, ds, outdir, outfname, "theory"])
+                    if any(i in dataset_name for i in ["TTTo", "TT_LFV", "ST_LFV"]):
+                        if toSplit:
+                            parameters.append([year, rootfilestoprocess, outdir, outfname, "theory"])
+                        else:
+                            parameters.append([year, ds, outdir, outfname, "theory"])
                     else: parameters.append([year, ds, outdir, outfname, "all"])
                 elif options.syst == "nosyst":
                     parameters.append([year, ds, outdir, outfname, "nosyst"])
@@ -88,10 +113,24 @@ for ds in dataset_list:
                 parameters.append([year, ds, outdir, outfname, src[2:]])
 
 
+runString_list = []
 for item in parameters:
-    runString = "sbatch -J " + item[0] + '_' + item[3] + " scripts/job_slurm_process.sh " + item[0] + " " + item[1] + " " + item[2] + " " + item[3] + " " + workdir + " " +logdir + " " + item[4]
-    if len(options.mode) > 0: runString += " " + options.mode
+    if isinstance(item[1], str):
+        runString = "sbatch -J " + item[0] + "_" + item[3].replace("hist_", "").replace(".root", "") +\
+                    " scripts/job_slurm_process.sh " + item[0] + " " + item[1] + " " +\
+                    item[2] + " " + item[3] + " " +\
+                    workdir + " " +logdir + " " + item[4]
+        if len(options.mode) > 0: runString += " " + options.mode
+        runString_list.append(runString)
+    else:
+        for fidx in range(len(item[1])):
+            runString = "sbatch -J " + item[0] + "_" + item[3].replace("hist_", "").replace(".root", "_" + str(fidx)) +\
+                        " scripts/job_slurm_process.sh " + item[0] + " " + item[1][fidx] + " " +\
+                        item[2] + " " + item[3].replace(".root", "_" + str(fidx) + ".root")  + " " +\
+                        workdir + " " +logdir + " " + item[4]
+            runString_list.append(runString)
 
+for runString in runString_list:
     print(runString)
     if not options.dry:
         call([runString], shell=True)
