@@ -25,7 +25,7 @@ if os.path.exists(config_path + tmp_file_name):
 #shutil.copy2(config_path + 'config_' + year + '.yml', config_path + tmp_file_name)
 
 unc_cat = OrderedDict([
-('all', ['xsec', 'pu', 'muid', 'muiso', 'mutrg',
+('all', ['xsec', 'pu', 'muid', 'muiso', 'mutrg', 'muExtra'
          #'tauidjet', 'tauidel', 'tauidmu', 'tes',
          'tauidjetUncert0', 'tauidjetUncert1', 'tauidjetSystalleras',
          'tauidjetSyst'+tauYear, 'tauidjetSystdm0'+tauYear, 'tauidjetSystdm1'+tauYear,
@@ -37,12 +37,12 @@ unc_cat = OrderedDict([
          'btaghfstats2', 'btaglfstats2', 'btagcferr1', 'btagcferr2',
          'jesAbsolute', 'jesAbsolute_'+year[:4], 'jesBBEC1', 'jesBBEC1_'+year[:4],
          'jesFlavorQCD', 'jesRelativeBal', 'jesRelativeSample_'+year[:4], 'jer',
-         'scale', 'ps', 'pdf',
+         'scale', 'isr', 'fsr', 'pdf',
          'tune', 'hdamp',]),
 ('pu', ['pu']),
 ('prefire', ['prefire']),
 ('xsec', ['xsec']),
-('muon', ['muid', 'muiso', 'mutrg']),
+('muon', ['muid', 'muiso', 'mutrg', 'muExtra']),
 #('tauid', ['tauidjet', 'tauidel', 'tauidmu']),
 ('tauid', ['tauidjetUncert0', 'tauidjetUncert1', 'tauidjetSystalleras',
            'tauidjetSyst'+tauYear, 'tauidjetSystdm0'+tauYear, 'tauidjetSystdm1'+tauYear,
@@ -79,7 +79,8 @@ unc_cat = OrderedDict([
             'jesFlavorQCD', 'jesRelativeBal', 'jesRelativeSample_'+year[:4]]),
 ('jer', ['jer']),
 ('scale', ['scale']),
-('ps', ['ps']),
+('isr', ['isr']),
+('fsr', ['fsr']),
 ('hdamp', ['hdamp']),
 ('pdf', ['pdf']),
 ('tune', ['tune']),
@@ -152,7 +153,7 @@ for key, value in unc_cat.items():
     with open(os.path.join(dest_path, 'figure_' + year, 'systematics.tex'), 'r') as f:
         with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + syst_postfix + '.tex'), 'w+') as f1:
             isTTsyst = False
-            if key in ['scale', 'ps', 'hdamp', 'tune', 'pdf']: isTTsyst = True
+            if key in ['scale', 'isr', 'fsr', 'hdamp', 'tune', 'pdf']: isTTsyst = True
             for line in f:
                 isTT = False
                 if 'ttbar' in line or 'LFV' in line: isTT = True
@@ -166,7 +167,8 @@ unc_summary = OrderedDict([
 ('xsec', 'Cross section'), ('pu', 'Pileup'), ('prefire', 'Prefire Reweight'), ('muon', 'Muon SF'),
 ('tauid', 'Tau ID'), ('tes', 'TES'),
 ('jesAll', 'JES'), ('jer', 'JER'),
-('scale', 'ME scale'), ('ps', 'PS scale'), ('hdamp', 'ME-PS matching'), ('pdf', 'PDF'), ('tune', 'Underlying event'),
+('scale', 'ME scale'), ('isr', 'ISR'), ('fsr', 'FSR'),
+('hdamp', 'ME-PS matching'), ('pdf', 'PDF'), ('tune', 'Underlying event'),
 ('bAll', 'b-tagging shape'), ('all', 'Total sys. unc.'),
 ])
 

@@ -49,9 +49,10 @@ void TopLFVAnalyzer::defineMoreVars() {
     defineVar("mutau_dR",::calculate_deltaR,{"muonvec","tauvec"});
     defineVar("muMET_mt",::calculate_MT,{"muon4vecs","MET_pt","MET_phi"});
 
-    defineVar("muonWeightIdExt", ::addMuonUnc, {"muonWeightId"});
-    defineVar("muonWeightIsoExt", ::addMuonUnc, {"muonWeightIso"});
-    defineVar("muonWeightTrgExt", ::addMuonUnc, {"muonWeightTrg"});
+    //Adding unc for muon SF to top phase space: done in plotit and combine tool
+    //defineVar("muonWeightId", ::addMuonUnc, {"muonWeightId"});
+    //defineVar("muonWeightIso", ::addMuonUnc, {"muonWeightIso"});
+    //defineVar("muonWeightTrg", ::addMuonUnc, {"muonWeightTrg"});
 
     // Already object selection is done before this
     // There should be 'good' tau (or none) and exactly one muon
@@ -111,7 +112,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     // EventWeights
     // Calculate product of weights and store for systematic study
     // External systs: JES (+btag) (14), JER(2), TES(2), hdamp(2), TuneCP5(2)
-    // Weights systs: genWeight(1), PU(2), btag(16), muon Id(2)/Iso(2)/Trg(2), tauId(18+2*2), ME scale(6), PS scale(4), PDF(102, or 2)
+    // Weights systs: genWeight(1), PU(2), btag(16), muon Id(2)/Iso(2)/Trg(2), tauId(18+2*2), ME scale(6), PS scale(ISR 2, FSR 2), PDF(102, or 2)
     // Not implemented: EEprefire, top pt reweighting,
     // eventWeight_xx : xxweight
     // eventWeight__xx: xx unc.
@@ -121,7 +122,7 @@ void TopLFVAnalyzer::defineMoreVars() {
         addVar({"eventWeight_notau", "1.0"});
     } else {
         addVar({"eventWeight_genpu", "unitGenWeight * TopPtWeight * puWeight[0] * L1PreFiringWeight_Nom"});
-        addVar({"eventWeight_mu", "muonWeightIdExt[0] * muonWeightIsoExt[0] * muonWeightTrgExt[0]"});
+        addVar({"eventWeight_mu", "muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0]"});
         addVar({"eventWeight_tau", "tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
         addVar({"eventWeight_genpumu", "eventWeight_genpu * eventWeight_mu"});
         addVar({"eventWeight_notau_nobtag", "eventWeight_genpumu"}); //didn't want to duplicate entry...
@@ -191,12 +192,12 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"eventWeight__pudown", "eventWeight_nopu * puWeight[2]"});
             addVar({"eventWeight__prefireup", "eventWeight_noprefire * L1PreFiringWeight_Up"});
             addVar({"eventWeight__prefiredown", "eventWeight_noprefire * L1PreFiringWeight_Dn"});
-            addVar({"eventWeight__muidup", "eventWeight_genputau * muonWeightIdExt[1] * muonWeightIsoExt[0] * muonWeightTrgExt[0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__muiddown", "eventWeight_genputau * muonWeightIdExt[2] * muonWeightIsoExt[0] * muonWeightTrgExt[0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__muisoup", "eventWeight_genputau * muonWeightIdExt[0] * muonWeightIsoExt[1] * muonWeightTrgExt[0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__muisodown", "eventWeight_genputau * muonWeightIdExt[0] * muonWeightIsoExt[2] * muonWeightTrgExt[0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__mutrgup", "eventWeight_genputau * muonWeightIdExt[0] * muonWeightIsoExt[0] * muonWeightTrgExt[1] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight__mutrgdown", "eventWeight_genputau * muonWeightIdExt[0] * muonWeightIsoExt[0] * muonWeightTrgExt[2] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__muidup", "eventWeight_genputau * muonWeightId[1] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__muiddown", "eventWeight_genputau * muonWeightId[2] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__muisoup", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[1] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__muisodown", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[2] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__mutrgup", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[1] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__mutrgdown", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[2] * btagWeight_DeepFlavB[0]"});
             //addVar({"eventWeight__tauidjetup", "eventWeight_notau * tauWeightIdVsJet[0][1] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
             //addVar({"eventWeight__tauidjetdown", "eventWeight_notau * tauWeightIdVsJet[0][2] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
             addVar({"eventWeight__tauidjetUncert0up", "eventWeight_notau * tauWeightIdVsJet[0][1] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
@@ -252,12 +253,12 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"eventWeight_notau__pudown", "unitGenWeight * TopPtWeight * puWeight[2] * L1PreFiringWeight_Nom * eventWeight_mu * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__prefireup", "unitGenWeight * TopPtWeight * puWeight[0] * L1PreFiringWeight_Up * eventWeight_mu * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__prefiredown", "unitGenWeight * TopPtWeight * puWeight[0] * L1PreFiringWeight_Dn * eventWeight_mu * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight_notau__muidup", "eventWeight_genpu * muonWeightIdExt[1] * muonWeightIsoExt[0] * muonWeightTrgExt[0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight_notau__muiddown", "eventWeight_genpu * muonWeightIdExt[2] * muonWeightIsoExt[0] * muonWeightTrgExt[0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight_notau__muisoup", "eventWeight_genpu * muonWeightIdExt[0] * muonWeightIsoExt[1] * muonWeightTrgExt[0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight_notau__muisodown", "eventWeight_genpu * muonWeightIdExt[0] * muonWeightIsoExt[2] * muonWeightTrgExt[0] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight_notau__mutrgup", "eventWeight_genpu * muonWeightIdExt[0] * muonWeightIsoExt[0] * muonWeightTrgExt[1] * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight_notau__mutrgdown", "eventWeight_genpu * muonWeightIdExt[0] * muonWeightIsoExt[0] * muonWeightTrgExt[2] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__muidup", "eventWeight_genpu * muonWeightId[1] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__muiddown", "eventWeight_genpu * muonWeightId[2] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__muisoup", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[1] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__muisodown", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[2] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__mutrgup", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[1] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__mutrgdown", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[2] * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__btaghfup", "eventWeight_genpumu * btagWeight_DeepFlavB[1]"});
             addVar({"eventWeight_notau__btaghfdown", "eventWeight_genpumu * btagWeight_DeepFlavB[2]"});
             addVar({"eventWeight_notau__btaglfup", "eventWeight_genpumu * btagWeight_DeepFlavB[3]"});
@@ -292,15 +293,15 @@ void TopLFVAnalyzer::defineMoreVars() {
                 addVar({"eventWeight_notau__scale4", "eventWeight_notau * LHEScaleWeight[7]"});
                 addVar({"eventWeight_notau__scale5", "eventWeight_notau * LHEScaleWeight[8]"});
                 // PS: [0] is ISR=2 FSR=1; [1] is ISR=1 FSR=2[2] is ISR=0.5 FSR=1; [3] is ISR=1 FSR=0.5;
-                addVar({"eventWeight__ps0", "eventWeight * PSWeight[0]"});
-                addVar({"eventWeight__ps1", "eventWeight * PSWeight[1]"});
-                addVar({"eventWeight__ps2", "eventWeight * PSWeight[2]"});
-                addVar({"eventWeight__ps3", "eventWeight * PSWeight[3]"});
+                addVar({"eventWeight__isrup", "eventWeight * PSWeight[0]"});
+                addVar({"eventWeight__fsrup", "eventWeight * PSWeight[1]"});
+                addVar({"eventWeight__isrdown", "eventWeight * PSWeight[2]"});
+                addVar({"eventWeight__fsrdown", "eventWeight * PSWeight[3]"});
                 // notau
-                addVar({"eventWeight_notau__ps0", "eventWeight_notau * PSWeight[0]"});
-                addVar({"eventWeight_notau__ps1", "eventWeight_notau * PSWeight[1]"});
-                addVar({"eventWeight_notau__ps2", "eventWeight_notau * PSWeight[2]"});
-                addVar({"eventWeight_notau__ps3", "eventWeight_notau * PSWeight[3]"});
+                addVar({"eventWeight_notau__isrup", "eventWeight_notau * PSWeight[0]"});
+                addVar({"eventWeight_notau__fsrup", "eventWeight_notau * PSWeight[1]"});
+                addVar({"eventWeight_notau__isrdown", "eventWeight_notau * PSWeight[2]"});
+                addVar({"eventWeight_notau__fsrdown", "eventWeight_notau * PSWeight[3]"});
                 // PDF: LHA IDs 306000 - 306102. 306000 = nominal.
                 // TODO Check if always 103 entries are stored. unless code will crash.
                 for (int i=1; i<=102; i++) {
@@ -368,7 +369,7 @@ void TopLFVAnalyzer::bookHists() {
                                               "__tauidjetHighptextrapup", "__tauidjetHighptextrapdown",
                                               "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown"};
 
-    std::vector<std::string> theory_weight = {"__ps0", "__ps1", "__ps2", "__ps3",
+    std::vector<std::string> theory_weight = {"__isrup", "__fsrup", "__isrdown", "__fsrdown",
                    "__scale0", "__scale1", "__scale2", "__scale3", "__scale4", "__scale5",
                    "__pdfup", "__pdfdown"};//,
                    //"__pdf1", "__pdf2", "__pdf3", "__pdf4", "__pdf5",

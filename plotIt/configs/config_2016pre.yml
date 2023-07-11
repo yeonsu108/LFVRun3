@@ -37,6 +37,7 @@ systematics:
   - other_xsec10: {type: const, value: 1.1, on: 'WZ'}
   - other_xsec11: {type: const, value: 1.1, on: 'ZZ'}
   - qcd_xsec: {type: const, value: 1.5, on: 'QCD'}
+  - muExtra: {type: const, value: 1.005}
   - tes
   - jer
   - jesAbsolute

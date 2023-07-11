@@ -86,7 +86,7 @@ def write_envelope(inputh, inputf, syst, nhists, sumW, new_sumW):
         var_list = []
         for x in range(0,nhists):
             h = inputf.Get(inputh + "__" + syst + str(x))
-            if any(x in syst for x in ['scale', 'ps']):
+            if any(x in syst for x in ['scale']):
                 pass
             #elif 'pdf' in syst:
             #  if x == 0: continue
@@ -169,10 +169,10 @@ for fname in file_list:
 
     nominal_list = []
     isScale = False
-    isPS = False
+    #isPS = False
     isPDF = False
     if any('__scale' in i for i in hlists): isScale = True
-    if any('__ps' in i for i in hlists): isPS = True
+    #if any('__ps' in i for i in hlists): isPS = True
     #if any('__pdf' in i for i in hlists) and 'LFV' in fname: isPDF = True
 
     for hname in hlists:
@@ -187,7 +187,7 @@ for fname in file_list:
             if '201' not in fname or 'jes' in fname: h1.Scale(get_bSFratio(bSFfile, hname))
             h1.Write()
         if any(i in hname for i in ['event', 'counter', '_nobtag', 'LHEPdfWeightSum']): pass
-        elif any(i in hname for i in ['__scale', '__ps', '__pdf']): continue
+        elif any(i in hname for i in ['__scale', '__pdf']): continue
         elif '201' in fname and 'jes' not in fname: pass
         else:
             ratio = get_bSFratio(bSFfile, hname)
@@ -201,7 +201,7 @@ for fname in file_list:
     for hname2 in nominal_list:
 
       if isScale: write_envelope(hname2, bSFfile, "scale", 6, hcounter, hcounter)
-      if isPS: write_envelope(hname2, bSFfile, "ps", 4, hcounter, hcounter)
+      #if isPS: write_envelope(hname2, bSFfile, "ps", 4, hcounter, hcounter)
       #For PDF: we take 101-102 only for control plots from ttbar
       #if isPDF: write_envelope(hname2, bSFfile, "pdf", 101, hcounter, LHEPdfWeightSum) #sig: 101 / bkg: 103
       if run_on_syst: rescale(hname2, bSFfile, hcounter, hcounter_nom) #placeholder for hdamp and 8tune
