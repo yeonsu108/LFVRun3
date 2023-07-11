@@ -10,8 +10,8 @@ import sys, os, re, argparse
 import cppyy
 import ROOT
 
-#def Nanoaodprocessor_singledir(outputroot, indir, year, syst, json):
 if __name__=='__main__':
+
     parser = argparse.ArgumentParser(usage="%prog [options]")
     parser.add_argument("-I", "--indir",  dest="indir", type=str, default="", help="Input directory")
     parser.add_argument("-O", "--outputroot", dest="outputroot", type=str, default="", help="Output file in your working directory")
