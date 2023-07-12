@@ -48,7 +48,10 @@ for fn in os.listdir("data/dataset/v9UL_" + year):
             logdir = os.path.join(log, fname)
             os.makedirs(logdir, exist_ok=True)
 
-            runString = "sbatch -J " + fname + " scripts/job_slurm_skim.sh " + year + " " + infile + " " + os.path.join(outputdir, fname) + " " + dirNum + '_' + rootName + " " + workdir + " " + logdir
+            runString = "sbatch -J " + year + '_' + fname +\
+                        " scripts/job_slurm_skim.sh " + year + " " + infile + " " +\
+                        os.path.join(outputdir, fname) + " " + dirNum + '_' + rootName + " " +\
+                        workdir + " " + logdir
 
             print(runString)
             if not options.dry:
