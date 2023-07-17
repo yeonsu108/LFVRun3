@@ -29,16 +29,16 @@ if __name__=='__main__':
     syst = options.syst
 
     json = ""
-    if 'data' in indir[5:]:
+    if 'data' in infile[5:]:
         if syst == "data":
-            if "2016" in indir:
+            if "2016" in infile:
                 json = os.path.join(workdir, "data/GoldenJSON/Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt")
-            elif "2017" in indir:
+            elif "2017" in infile:
                 json = os.path.join(workdir, "data/GoldenJSON/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt")
-            elif "2018" in indir:
+            elif "2018" in infile:
                 json = os.path.join(workdir, "data/GoldenJSON/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt")
 
-    print("Input: " + indfile + ", " + "Output: " + outputroot + ", Syst: " + syst + ", Json: " + json + "\n")
+    print("Input: " + infile + ", " + "Output: " + outputroot + ", Syst: " + syst + ", Json: " + json + "\n")
 
     if not re.match('.*\.root', outputroot):
         print("Output file should be a root file! Quitting")

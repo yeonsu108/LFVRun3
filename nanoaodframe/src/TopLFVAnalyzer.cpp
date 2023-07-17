@@ -371,7 +371,7 @@ void TopLFVAnalyzer::bookHists() {
 
     std::vector<std::string> theory_weight = {"__isrup", "__fsrup", "__isrdown", "__fsrdown",
                    "__scale0", "__scale1", "__scale2", "__scale3", "__scale4", "__scale5",
-                   "__pdfup", "__pdfdown"};//,
+                   "__pdfalphasup", "__pdfalphasdown"};//,
                    //"__pdf1", "__pdf2", "__pdf3", "__pdf4", "__pdf5",
                    //"__pdf6", "__pdf7", "__pdf8", "__pdf9", "__pdf10",
                    //"__pdf11", "__pdf12", "__pdf13", "__pdf14", "__pdf15",
