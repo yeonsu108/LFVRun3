@@ -99,7 +99,7 @@ python scripts/skim.py -V skim_test -F mc -Y 2018
 # This script uses slurm on htop.
 # Please specify which node to EXCLUDE from the batch job, in scripts/job_slurm_skim.sh
 
-#To resubmit knowing that `folder_filename.log`
+#To find failed jobs knowing that `folder_filename.log`
 find log/201*/*/* | xargs grep runtime_error
 find log/201*/*/* | xargs grep fault
 find log/201*/*/* | xargs grep Traceback
@@ -108,6 +108,19 @@ find log/201*/*/* | xargs grep error
 
 #Do this ONLY for systematic root file, unless will submit all variations in addition to nominal one
 python scripts/skim.py -V skim_test -Y 2018 --dry | grep 270000_221AB515 | sh
+
+#Using commands above, write resubmit list. Create each list and run submit command. Unless, there may be duplicated list.
+find log/201*/*/* | xargs grep -l runtime_error | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+find log/201*/*/* | xargs grep -l fault | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+find log/201*/*/* | xargs grep -l Traceback | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+find log/201*/*/* | xargs grep -l error | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+find log/201*/*/* | xargs grep ERROR | grep -v "SimpleJetCorrectionUncertainty" | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+
+#Submit for each year...
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2016pre -N 
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2016post -N
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2017 -N 
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2018 -N 
 ```
 
 #### Processing
