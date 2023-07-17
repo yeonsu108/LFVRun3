@@ -1,4 +1,4 @@
-import os, sys, glob
+import os, sys, glob, re
 import ROOT
 from ROOT import *
 import numpy as np
@@ -34,6 +34,8 @@ if not os.path.exists(fig_path):
 file_list = [i.replace('.root', '') for i in os.listdir(nom_path) if '.root' in i]
 data_list = [i[:i.find('201')] for i in os.listdir(nom_path) if '.root' in i and '201' in i and 'jes' not in i]
 data_list = list(set(data_list))
+split_list = [re.sub(r'_[0-9].root', '', i) for i in os.listdir(os.path.join(nom_path, 'split')) if '.root' in i]
+splie_list = list(set(split_list))
 #print(data_list)
 #print(file_list)
 
@@ -135,6 +137,12 @@ def write_envelope(inputh, inputf, syst, nhists, sumW, new_sumW):
             up_yield.Write()
             dn_yield.Write()
 
+
+for splitname in split_list:
+    try: #Don't hadd if file already exist
+        subprocess.check_call( ["hadd", os.path.join(nom_path, splitname + '.root')] + glob.glob(os.path.join(nom_path, splitname) + '*.root') )
+    except: pass
+    #subprocess.check_call( ["hadd", "-f", os.path.join(nom_path, splitname + '.root')] + glob.glob(os.path.join(nom_path, splitname) + '*.root') )
 
 
 # Loop over all files.
