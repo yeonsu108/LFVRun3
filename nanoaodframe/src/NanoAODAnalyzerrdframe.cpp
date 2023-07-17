@@ -26,7 +26,7 @@
 using namespace std;
 
 NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
-:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), PDFWeights(103, 0.0) {
+:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), PDFWeights(103, 0.0), PSWeights(4, 0.0), ScaleWeights(9, 0.0) {
 
     // record time
     auto start = std::chrono::system_clock::now();
@@ -120,26 +120,55 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
 
     //_rlm = _rlm.Filter("event < 12534199");
 
-    _rlm = _rlm.Define("one", "1.0");
+    _rlm = _rlm.Define("one", "1.0")
+               .Define("zero", "0.0");
     // Event weight for data it's always one. For MC, it depends on the sign
     if(_isSkim){
         _rlm = _rlm.Define("unitGenWeight", "one");
 
         if(!_isData){
 
-            // Store PDF sum of weights
-            auto storeWeights = [this](floats weights)->floats {
+            // Store sum of weights
+            auto storePDFWeights = [this](floats weights, float gen)->floats {
 
                 for (unsigned int i=0; i<weights.size(); i++)
-                    PDFWeights[i] += weights[i];
+                    PDFWeights[i] += (gen / abs(gen)) * weights[i];
 
                 return PDFWeights;
             };
+            auto storePSWeights = [this](floats weights, float gen)->floats {
+
+                for (unsigned int i=0; i<weights.size(); i++) {
+                    if (i > 3) continue; //JME Nano stores all PS
+                    PSWeights[i] += (gen / abs(gen)) * weights[i];
+                }
+
+                return PSWeights;
+            };
+            auto storeScaleWeights = [this](floats weights, float gen)->floats {
+
+                for (unsigned int i=0; i<weights.size(); i++)
+                    ScaleWeights[i] += (gen / abs(gen)) * weights[i];
+
+                return ScaleWeights;
+            };
             try {
-                _rlm.Foreach(storeWeights, {"LHEPdfWeight"});
+                _rlm.Foreach(storePDFWeights, {"LHEPdfWeight", "genWeight"});
             } catch (exception& e) {
                 cout << e.what() << endl;
                 cout << "No PDF weight in this root file!" << endl;
+            }
+            try {
+                _rlm.Foreach(storePSWeights, {"PSWeight", "genWeight"});
+            } catch (exception& e) {
+                cout << e.what() << endl;
+                cout << "No PS weight in this root file!" << endl;
+            }
+            try {
+                _rlm.Foreach(storeScaleWeights, {"LHEScaleWeight", "genWeight"});
+            } catch (exception& e) {
+                cout << e.what() << endl;
+                cout << "No Scale weight in this root file!" << endl;
             }
 
             // pu weight setup
@@ -1730,6 +1759,14 @@ void NanoAODAnalyzerrdframe::run(bool saveAll, string outtreename) {
         TH1F* hPDFWeights = new TH1F("LHEPdfWeightSum", "LHEPdfWeightSum", 103, 0, 103);
         for (size_t i=0; i<PDFWeights.size(); i++)
             hPDFWeights->SetBinContent(i+1, PDFWeights[i]);
+
+        TH1F* hPSWeights = new TH1F("PSWeightSum", "PSWeightSum", 4, 0, 4);
+        for (size_t i=0; i<PSWeights.size(); i++)
+            hPSWeights->SetBinContent(i+1, PSWeights[i]);
+
+        TH1F* hScaleWeights = new TH1F("ScaleWeightSum", "ScaleWeightSum", 9, 0, 9);
+        for (size_t i=0; i<ScaleWeights.size(); i++)
+            hScaleWeights->SetBinContent(i+1, ScaleWeights[i]);
 
         _outrootfile->Write(0, TObject::kOverwrite);
         _outrootfile->Close();
