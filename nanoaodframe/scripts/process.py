@@ -17,7 +17,12 @@ workdir = os.getcwd()
 indir = os.path.join('/data1/common/skimmed_NanoAOD/', options.version)
 tgdir = os.path.join(workdir, options.outdir, year)
 logdir = os.path.join(workdir, options.outdir, year, 'log')
-splitList = ["TTTo2L2Nu", "TTToSemiLeptonic"]
+splitList = ["TTTo2L2Nu", "TTToSemiLeptonic",
+             "ST_LFV_TCMuTau_Scalar", "ST_LFV_TCMuTau_Vector", "ST_LFV_TCMuTau_Tensor",
+             "ST_LFV_TUMuTau_Scalar", "ST_LFV_TUMuTau_Vector", "ST_LFV_TUMuTau_Tensor",
+             "TT_LFV_TCMuTau_Scalar", "TT_LFV_TCMuTau_Vector", "TT_LFV_TCMuTau_Tensor",
+             "TT_LFV_TUMuTau_Scalar", "TT_LFV_TUMuTau_Vector", "TT_LFV_TUMuTau_Tensor",
+            ]
 
 os.makedirs(tgdir, exist_ok=True)
 os.makedirs(logdir, exist_ok=True)
@@ -53,11 +58,11 @@ for ds in dataset_list:
 
     #Split TT2L2Nu and TTToSemilep into files
     toSplit = False
-    if any(name_ in ds for name_ in splitList): toSplit = True
+    if any(name_ in ds for name_ in splitList) and '__' not in ds: toSplit = True
     rootfilestoprocess = []
     fullnamelist =[]
     if toSplit:
-        if '__' in ds: continue
+        #if '__' in ds: continue
         print("collecting root files in "+ds)
         flist = os.listdir(ds)
         for fname in flist:

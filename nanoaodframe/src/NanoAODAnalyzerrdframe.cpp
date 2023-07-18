@@ -1756,17 +1756,19 @@ void NanoAODAnalyzerrdframe::run(bool saveAll, string outtreename) {
             }
         }
 
-        TH1F* hPDFWeights = new TH1F("LHEPdfWeightSum", "LHEPdfWeightSum", 103, 0, 103);
-        for (size_t i=0; i<PDFWeights.size(); i++)
-            hPDFWeights->SetBinContent(i+1, PDFWeights[i]);
+        if (_isSkim == true) {
+            TH1F* hPDFWeights = new TH1F("LHEPdfWeightSum", "LHEPdfWeightSum", 103, 0, 103);
+            for (size_t i=0; i<PDFWeights.size(); i++)
+                hPDFWeights->SetBinContent(i+1, PDFWeights[i]);
 
-        TH1F* hPSWeights = new TH1F("PSWeightSum", "PSWeightSum", 4, 0, 4);
-        for (size_t i=0; i<PSWeights.size(); i++)
-            hPSWeights->SetBinContent(i+1, PSWeights[i]);
+            TH1F* hPSWeights = new TH1F("PSWeightSum", "PSWeightSum", 4, 0, 4);
+            for (size_t i=0; i<PSWeights.size(); i++)
+                hPSWeights->SetBinContent(i+1, PSWeights[i]);
 
-        TH1F* hScaleWeights = new TH1F("ScaleWeightSum", "ScaleWeightSum", 9, 0, 9);
-        for (size_t i=0; i<ScaleWeights.size(); i++)
-            hScaleWeights->SetBinContent(i+1, ScaleWeights[i]);
+            TH1F* hScaleWeights = new TH1F("ScaleWeightSum", "ScaleWeightSum", 9, 0, 9);
+            for (size_t i=0; i<ScaleWeights.size(); i++)
+                hScaleWeights->SetBinContent(i+1, ScaleWeights[i]);
+        }
 
         _outrootfile->Write(0, TObject::kOverwrite);
         _outrootfile->Close();

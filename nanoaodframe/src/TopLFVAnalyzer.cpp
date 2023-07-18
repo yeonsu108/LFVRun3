@@ -279,19 +279,19 @@ void TopLFVAnalyzer::defineMoreVars() {
             if (_syst == "theory") {
                 // ME: [0] is renscfact=0.5d0 facscfact=0.5d0 ; [1] is renscfact=0.5d0 facscfact=1d0 ; [3] is renscfact=1d0 facscfact=0.5d0 ;
                 //     [5] is renscfact=1d0 facscfact=2d0 ; [7] is renscfact=2d0 facscfact=1d0 ; [8] is renscfact=2d0 facscfact=2d0
-                addVar({"eventWeight__scale0", "eventWeight * LHEScaleWeight[0]"});
-                addVar({"eventWeight__scale1", "eventWeight * LHEScaleWeight[1]"});
-                addVar({"eventWeight__scale2", "eventWeight * LHEScaleWeight[3]"});
-                addVar({"eventWeight__scale3", "eventWeight * LHEScaleWeight[5]"});
-                addVar({"eventWeight__scale4", "eventWeight * LHEScaleWeight[7]"});
-                addVar({"eventWeight__scale5", "eventWeight * LHEScaleWeight[8]"});
+                addVar({"eventWeight__mescaledown", "eventWeight * LHEScaleWeight[0]"});
+                addVar({"eventWeight__renscaledown", "eventWeight * LHEScaleWeight[1]"});
+                addVar({"eventWeight__facscaledown", "eventWeight * LHEScaleWeight[3]"});
+                addVar({"eventWeight__facscaleup", "eventWeight * LHEScaleWeight[5]"});
+                addVar({"eventWeight__renscaleup", "eventWeight * LHEScaleWeight[7]"});
+                addVar({"eventWeight__mescaleup", "eventWeight * LHEScaleWeight[8]"});
                 // notau
-                addVar({"eventWeight_notau__scale0", "eventWeight_notau * LHEScaleWeight[0]"});
-                addVar({"eventWeight_notau__scale1", "eventWeight_notau * LHEScaleWeight[1]"});
-                addVar({"eventWeight_notau__scale2", "eventWeight_notau * LHEScaleWeight[3]"});
-                addVar({"eventWeight_notau__scale3", "eventWeight_notau * LHEScaleWeight[5]"});
-                addVar({"eventWeight_notau__scale4", "eventWeight_notau * LHEScaleWeight[7]"});
-                addVar({"eventWeight_notau__scale5", "eventWeight_notau * LHEScaleWeight[8]"});
+                addVar({"eventWeight_notau__mescaledown", "eventWeight_notau * LHEScaleWeight[0]"});
+                addVar({"eventWeight_notau__renscaledown", "eventWeight_notau * LHEScaleWeight[1]"});
+                addVar({"eventWeight_notau__facscaledown", "eventWeight_notau * LHEScaleWeight[3]"});
+                addVar({"eventWeight_notau__facscaleup", "eventWeight_notau * LHEScaleWeight[5]"});
+                addVar({"eventWeight_notau__renscaleup", "eventWeight_notau * LHEScaleWeight[7]"});
+                addVar({"eventWeight_notau__mescaleup", "eventWeight_notau * LHEScaleWeight[8]"});
                 // PS: [0] is ISR=2 FSR=1; [1] is ISR=1 FSR=2[2] is ISR=0.5 FSR=1; [3] is ISR=1 FSR=0.5;
                 addVar({"eventWeight__isrup", "eventWeight * PSWeight[0]"});
                 addVar({"eventWeight__fsrup", "eventWeight * PSWeight[1]"});
@@ -370,7 +370,8 @@ void TopLFVAnalyzer::bookHists() {
                                               "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown"};
 
     std::vector<std::string> theory_weight = {"__isrup", "__fsrup", "__isrdown", "__fsrdown",
-                   "__scale0", "__scale1", "__scale2", "__scale3", "__scale4", "__scale5",
+                   //"__scale0", "__scale1", "__scale2", "__scale3", "__scale4", "__scale5",
+                   "__mescaleup", "__mescaledown", "__renscaleup", "__renscaledown", "__facscaleup", "__facscaledown",
                    "__pdfalphasup", "__pdfalphasdown"};//,
                    //"__pdf1", "__pdf2", "__pdf3", "__pdf4", "__pdf5",
                    //"__pdf6", "__pdf7", "__pdf8", "__pdf9", "__pdf10",
@@ -410,10 +411,6 @@ void TopLFVAnalyzer::bookHists() {
         if (_syst == "theory") syst_weight.insert(syst_weight.end(), theory_weight.begin(), theory_weight.end());
     }
 
-    cout << "Variations to take care :";
-    for (auto i : syst_weight) cout << i << " ";
-    cout << endl;
-
     // S1 w/o tau SF
     maxstep = "00"; //Must be +1 step than its cut
     for (std::string weightstr : syst_weight) {
@@ -444,6 +441,10 @@ void TopLFVAnalyzer::bookHists() {
 
     //for all the other nominal histograms with tauSF
     if (_syst == "all" or _syst == "theory") syst_weight.insert(syst_weight.end(), sf_weight_tau.begin(), sf_weight_tau.end());
+
+    cout << "Variations to take care :";
+    for (auto i : syst_weight) cout << i << " ";
+    cout << endl;
 
     maxstep = "";
 

@@ -82,6 +82,10 @@ if __name__=='__main__':
 
     # process input rootfiles to sum up all the counterhistograms
     counterhistogramsum = None
+    LHEPdfWeightSumAll = None
+    PSWeightSumAll = None
+    ScaleWeightSumAll = None
+
     for arootfile in rootfilestoprocess:
         intf = ROOT.TFile(arootfile)
         counterhistogram = intf.Get("hcounter")
@@ -91,7 +95,26 @@ if __name__=='__main__':
                 counterhistogramsum.SetDirectory(0)
             else:
                 counterhistogramsum.Add(counterhistogram)
+
+        if syst == "theory":
+            LHEPdfWeightSum = intf.Get("LHEPdfWeightSum")
+            PSWeightSum = intf.Get("PSWeightSum")
+            ScaleWeightSum = intf.Get("ScaleWeightSum")
+
+            if LHEPdfWeightSum != None:
+                if LHEPdfWeightSumAll == None:
+                    LHEPdfWeightSumAll = LHEPdfWeightSum.Clone()
+                    LHEPdfWeightSumAll.SetDirectory(0)
+                    PSWeightSumAll = PSWeightSum.Clone()
+                    PSWeightSumAll.SetDirectory(0)
+                    ScaleWeightSumAll = ScaleWeightSum.Clone()
+                    ScaleWeightSumAll.SetDirectory(0)
+                else:
+                    LHEPdfWeightSumAll.Add(LHEPdfWeightSum)
+                    PSWeightSumAll.Add(PSWeightSum)
+                    ScaleWeightSumAll.Add(ScaleWeightSum)
         intf.Close()
+
     if counterhistogramsum != None:
         print("Updating with counter histogram")
         outf = ROOT.TFile(outputroot, "UPDATE")
@@ -100,5 +123,16 @@ if __name__=='__main__':
         outf.Close()
     else:
         print("counter histogram not found")
+
+    if LHEPdfWeightSumAll != None:
+        print("Updating with theory weight sum histograms")
+        outf = ROOT.TFile(outputroot, "UPDATE")
+        LHEPdfWeightSumAll.Write()
+        PSWeightSumAll.Write()
+        ScaleWeightSumAll.Write()
+        outf.Write("", ROOT.TObject.kOverwrite)
+        outf.Close()
+    else:
+        print("theory weight sum histograms not found")
 
     pass
