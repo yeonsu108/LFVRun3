@@ -57,10 +57,27 @@ if __name__=='__main__':
 
     # process input rootfiles to sum up all the counterhistograms
     counterhistogramsum = None
+    LHEPdfWeightSumAll = None
+    PSWeightSumAll = None
+    ScaleWeightSumAll = None
+
     intf = ROOT.TFile(infile)
     counterhistogram = intf.Get("hcounter")
     counterhistogramsum = counterhistogram.Clone()
     counterhistogramsum.SetDirectory(0)
+
+    if syst == "theory":
+        LHEPdfWeightSum = intf.Get("LHEPdfWeightSum")
+        PSWeightSum = intf.Get("PSWeightSum")
+        ScaleWeightSum = intf.Get("ScaleWeightSum")
+
+        LHEPdfWeightSumAll = LHEPdfWeightSum.Clone()
+        LHEPdfWeightSumAll.SetDirectory(0)
+        PSWeightSumAll = PSWeightSum.Clone()
+        PSWeightSumAll.SetDirectory(0)
+        ScaleWeightSumAll = ScaleWeightSum.Clone()
+        ScaleWeightSumAll.SetDirectory(0)
+
     intf.Close()
 
     if counterhistogramsum != None:
@@ -71,3 +88,14 @@ if __name__=='__main__':
         outf.Close()
     else:
         print("counter histogram not found")
+
+    if LHEPdfWeightSumAll != None:
+        print("Updating with theory weight sum histograms")
+        outf = ROOT.TFile(outputroot, "UPDATE")
+        LHEPdfWeightSumAll.Write()
+        PSWeightSumAll.Write()
+        ScaleWeightSumAll.Write()
+        outf.Write("", ROOT.TObject.kOverwrite)
+        outf.Close()
+    else:
+        print("theory weight sum histograms not found")
