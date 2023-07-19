@@ -34,8 +34,8 @@ if not os.path.exists(fig_path):
 file_list = [i.replace('.root', '') for i in os.listdir(nom_path) if '.root' in i]
 data_list = [i[:i.find('201')] for i in os.listdir(nom_path) if '.root' in i and '201' in i and 'jes' not in i]
 data_list = list(set(data_list))
-split_list = [re.sub(r'_[0-9].root', '', i) for i in os.listdir(os.path.join(nom_path, 'split')) if '.root' in i]
-splie_list = list(set(split_list))
+split_list = [re.sub(r'_[0-9]*.root', '', i) for i in os.listdir(os.path.join(nom_path, 'split')) if '.root' in i]
+split_list = list(set(split_list))
 #print(data_list)
 #print(file_list)
 
@@ -67,7 +67,7 @@ def rescale(inputh, inputf, sumW, nom_sumW): # rescale up/dn histos
 
     #Only for ext syst. such as tune and hdamp, not jes/jer/tes
     h = inputf.Get(inputh)
-    if not any(i in inputh for i in ['event', 'counter', '_nobtag', 'LHEPdfWeightSum']):
+    if not any(i in inputh for i in ['event', 'counter', '_nobtag', 'LHEPdfWeightSum', 'PSWeightSum', 'ScaleWeightSum']):
         h.Scale(get_bSFratio(inputf, inputh))
         h.Scale(nom_sumW.GetBinContent(2) / sumW.GetBinContent(2))
         #h.Rebin(nrebin)
@@ -82,9 +82,46 @@ def rescale(inputh, inputf, sumW, nom_sumW): # rescale up/dn histos
     h.Write()
 
 
-def write_envelope(inputh, inputf, syst, nhists, sumW, new_sumW):
+def write_envelope(inputh, inputf, syst, nhists, gen_sumW, wgt_sumW):
 
-    if (inputh + "__" + syst + "0")  in hlists:
+    #I didn't want this way...later, fill weight name in hist bins, and FindBin to get the bin
+    #bin num for up/dn sum weights, branch idx + 1
+    sum_weights_dict = {
+        "mescale": [9, 1],
+        "renscale": [8, 2],
+        "facscale": [6, 4],
+        "isr": [1, 3],
+        "fsr": [2, 4],
+        "pdfalphas": [103, 102],
+    }
+
+    if nhists == 2: #up/dn, only re-normalization
+        up = inputf.Get(inputh + "__" + syst + "up")
+        dn = inputf.Get(inputh + "__" + syst + "down")
+        if up == None: return 1
+        up.SetDirectory(ROOT.nullptr)
+        dn.SetDirectory(ROOT.nullptr)
+
+        up.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][0]))
+        dn.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][1]))
+        up.Scale(get_bSFratio(bSFfile, up.GetName()))
+        dn.Scale(get_bSFratio(bSFfile, dn.GetName()))
+        up.SetName(inputh + "__" + syst + "up")
+        dn.SetName(inputh + "__" + syst + "down")
+
+        up.Write()
+        dn.Write()
+
+        if yield_name in inputh:
+            up_yield = up.Clone('up_yield')
+            dn_yield = dn.Clone('dn_yield')
+            up_yield.SetName(inputh.replace(yield_name, yield_name + '_yield') + "__" + syst + "up")
+            dn_yield.SetName(inputh.replace(yield_name, yield_name + '_yield') + "__" + syst + "down")
+            up_yield.Write()
+            dn_yield.Write()
+
+
+    elif (inputh + "__" + syst + "0")  in hlists:
         var_list = []
         for x in range(0,nhists):
             h = inputf.Get(inputh + "__" + syst + str(x))
@@ -92,8 +129,8 @@ def write_envelope(inputh, inputf, syst, nhists, sumW, new_sumW):
                 pass
             #elif 'pdf' in syst:
             #  if x == 0: continue
-            #  h.Scale(sumW.GetBinContent(2) / new_sumW.GetBinContent(1))
-            else: h.Scale(sumW.GetBinContent(2) / new_sumW.GetBinContent(x+1))
+            #  h.Scale(gen_sumW.GetBinContent(2) / wgt_sumW.GetBinContent(1))
+            else: h.Scale(gen_sumW.GetBinContent(2) / wgt_sumW.GetBinContent(x+1))
             #h.Rebin(nrebin)
             var_list.append(h)
 
@@ -138,11 +175,9 @@ def write_envelope(inputh, inputf, syst, nhists, sumW, new_sumW):
             dn_yield.Write()
 
 
-for splitname in split_list:
-    try: #Don't hadd if file already exist
-        subprocess.check_call( ["hadd", os.path.join(nom_path, splitname + '.root')] + glob.glob(os.path.join(nom_path, splitname) + '*.root') )
-    except: pass
-    #subprocess.check_call( ["hadd", "-f", os.path.join(nom_path, splitname + '.root')] + glob.glob(os.path.join(nom_path, splitname) + '*.root') )
+#for splitname in split_list:
+#    subprocess.check_call( ["hadd", "-f", os.path.join(nom_path, splitname + '.root')] + glob.glob(os.path.join(nom_path, "split" , splitname) + '*.root') )
+#    file_list.append(splitname + '.root')
 
 
 # Loop over all files.
@@ -176,12 +211,23 @@ for fname in file_list:
     outfile = TFile.Open(os.path.join(out_path, fname+'.root'), 'RECREATE')
 
     nominal_list = []
-    isScale = False
-    #isPS = False
-    isPDF = False
-    if any('__scale' in i for i in hlists): isScale = True
-    #if any('__ps' in i for i in hlists): isPS = True
-    #if any('__pdf' in i for i in hlists) and 'LFV' in fname: isPDF = True
+
+    #Syst flag
+    isMEScale = False
+    isRenScale = False
+    isFacScale = False
+    isISR = False
+    isFSR = False
+    isPDFenv = False
+    isPDFas = False
+
+    if any('__mescale' in i for i in hlists): isMEScale = True
+    if any('__renscale' in i for i in hlists): isRenScale = True
+    if any('__facscale' in i for i in hlists): isFacScale = True
+    if any('__isr' in i for i in hlists): isISR = True
+    if any('__fsr' in i for i in hlists): isFSR = True
+    if any('__pdf' in i.replace("alphas", "") for i in hlists): isPDFenv = True
+    if any('__pdfalphas' in i for i in hlists) and 'LFV' not in fname: isPDFas = True
 
     for hname in hlists:
         if "__" not in hname: nominal_list.append(hname)
@@ -194,8 +240,8 @@ for fname in file_list:
                 nominal_list.append(h1.GetName())
             if '201' not in fname or 'jes' in fname: h1.Scale(get_bSFratio(bSFfile, hname))
             h1.Write()
-        if any(i in hname for i in ['event', 'counter', '_nobtag', 'LHEPdfWeightSum']): pass
-        elif any(i in hname for i in ['__scale', '__pdf']): continue
+        if any(i in hname for i in ['event', 'counter', '_nobtag', 'LHEPdfWeightSum', 'PSWeightSum', 'ScaleWeightSum']): pass
+        elif any(i in hname for i in ['__mescale', '__renscale', '__facscale', '__isr', '__fsr', '__pdf']): continue
         elif '201' in fname and 'jes' not in fname: pass
         else:
             ratio = get_bSFratio(bSFfile, hname)
@@ -203,16 +249,22 @@ for fname in file_list:
         h.Write()
 
     hcounter = infile.Get('hcounter')
-    #LHEPdfWeightSum = infile.Get('LHEPdfWeightSum')
+    ScaleWeightSum = infile.Get('ScaleWeightSum')
+    PSWeightSum = infile.Get('PSWeightSum')
+    LHEPdfWeightSum = infile.Get('LHEPdfWeightSum')
     nominal_list = list(set(nominal_list))
 
     for hname2 in nominal_list:
 
-      if isScale: write_envelope(hname2, bSFfile, "scale", 6, hcounter, hcounter)
-      #if isPS: write_envelope(hname2, bSFfile, "ps", 4, hcounter, hcounter)
+      if isMEScale: write_envelope(hname2, bSFfile, "mescale", 2, hcounter, ScaleWeightSum)
+      if isRenScale: write_envelope(hname2, bSFfile, "renscale", 2, hcounter, ScaleWeightSum)
+      if isFacScale: write_envelope(hname2, bSFfile, "facscale", 2, hcounter, ScaleWeightSum)
+      if isISR: write_envelope(hname2, bSFfile, "isr", 2, hcounter, PSWeightSum)
+      if isFSR: write_envelope(hname2, bSFfile, "fsr", 2, hcounter, PSWeightSum)
       #For PDF: we take 101-102 only for control plots from ttbar
-      #if isPDF: write_envelope(hname2, bSFfile, "pdf", 101, hcounter, LHEPdfWeightSum) #sig: 101 / bkg: 103
-      if run_on_syst: rescale(hname2, bSFfile, hcounter, hcounter_nom) #placeholder for hdamp and 8tune
+      #if isPDF: write_envelope(hname2, bSFfile, "pdf", 101, hcounter, LHEPdfWeightSum) #sig: 101 / bkg: 101 + 2 (as)
+      if isPDFas: write_envelope(hname2, bSFfile, "pdfalphas", 2, hcounter, LHEPdfWeightSum)
+      if run_on_syst: rescale(hname2, bSFfile, hcounter, hcounter_nom) #placeholder for hdamp and tune
 
 
     infile.Close()

@@ -75,12 +75,19 @@ systematics:
   - tauidjetHighptextrap
   - tauidmu
   - tauidel
-  - scale: {type: shape, on: 'TTTo'}
-  - scale: {type: shape, on: 'LFV'}
-  - ps: {type: shape, on: 'TTTo'}
-  - ps: {type: shape, on: 'LFV'}
-  - pdf: {type: shape, on: 'TTTo'}
-#  - pdf: {type: shape, on: 'LFV'}
+  - mescale: {type: shape, on: 'TTTo'}
+  - mescale: {type: shape, on: 'LFV'}
+  - renscale: {type: shape, on: 'TTTo'}
+  - renscale: {type: shape, on: 'LFV'}
+  - facscale: {type: shape, on: 'TTTo'}
+  - facscale: {type: shape, on: 'LFV'}
+  - isr: {type: shape, on: 'TTTo'}
+  - isr: {type: shape, on: 'LFV'}
+  - fsr: {type: shape, on: 'TTTo'}
+  - fsr: {type: shape, on: 'LFV'}
+  - pdfalphas: {type: shape, on: 'TTTo'}
+  #- pdfenv: {type: shape, on: 'TTTo'}
+  #- pdfenv: {type: shape, on: 'LFV'}
   - hdamp: {type: shape, on: 'TTTo'}
   - tune: {type: shape, on: 'TTTo'}
 

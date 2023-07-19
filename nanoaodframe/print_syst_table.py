@@ -37,7 +37,7 @@ unc_cat = OrderedDict([
          'btaghfstats2', 'btaglfstats2', 'btagcferr1', 'btagcferr2',
          'jesAbsolute', 'jesAbsolute_'+year[:4], 'jesBBEC1', 'jesBBEC1_'+year[:4],
          'jesFlavorQCD', 'jesRelativeBal', 'jesRelativeSample_'+year[:4], 'jer',
-         'scale', 'isr', 'fsr', 'pdf',
+         'mescale', 'renscale', 'faccale', 'isr', 'fsr', 'pdfalphas', 'pdfenv',
          'tune', 'hdamp',]),
 ('pu', ['pu']),
 ('prefire', ['prefire']),
@@ -78,11 +78,16 @@ unc_cat = OrderedDict([
 ('jesAll', ['jesAbsolute', 'jesAbsolute_'+year[:4], 'jesBBEC1', 'jesBBEC1_'+year[:4],
             'jesFlavorQCD', 'jesRelativeBal', 'jesRelativeSample_'+year[:4]]),
 ('jer', ['jer']),
-('scale', ['scale']),
+('scale', ['mescale', 'renscale', 'facscale']),
+('mescale', ['mescale']),
+('renscale', ['renscale']),
+('facscale', ['facscale']),
 ('isr', ['isr']),
 ('fsr', ['fsr']),
 ('hdamp', ['hdamp']),
-('pdf', ['pdf']),
+('pdfall', ['pdfenv', 'pdfalphas']),
+('pdfenv', ['pdfenv']),
+('pdfalphas', ['pdfalphas']),
 ('tune', ['tune']),
 ('btaghf', ['btaghf']),
 ('btaglf', ['btaglf']),
@@ -153,7 +158,8 @@ for key, value in unc_cat.items():
     with open(os.path.join(dest_path, 'figure_' + year, 'systematics.tex'), 'r') as f:
         with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + syst_postfix + '.tex'), 'w+') as f1:
             isTTsyst = False
-            if key in ['scale', 'isr', 'fsr', 'hdamp', 'tune', 'pdf']: isTTsyst = True
+            if key in ['scale', 'mescale', 'renscale', 'facscale', 'isr', 'fsr', 'hdamp', 'tune', 'pdfall', 'pdfenv', 'pdfalphas']:
+                isTTsyst = True
             for line in f:
                 isTT = False
                 if 'ttbar' in line or 'LFV' in line: isTT = True
@@ -167,8 +173,9 @@ unc_summary = OrderedDict([
 ('xsec', 'Cross section'), ('pu', 'Pileup'), ('prefire', 'Prefire Reweight'), ('muon', 'Muon SF'),
 ('tauid', 'Tau ID'), ('tes', 'TES'),
 ('jesAll', 'JES'), ('jer', 'JER'),
-('scale', 'ME scale'), ('isr', 'ISR'), ('fsr', 'FSR'),
-('hdamp', 'ME-PS matching'), ('pdf', 'PDF'), ('tune', 'Underlying event'),
+('mescale', 'Scale $\mu$F and $\mu$R'), ('renscale', 'Scale $\mu$R'), ('facscale', 'Scale $\mu$F'),
+('isr', 'ISR'), ('fsr', 'FSR'),
+('hdamp', 'ME-PS matching'), ('pdfall', 'PDF'), ('tune', 'Underlying event'),
 ('bAll', 'b-tagging shape'), ('all', 'Total sys. unc.'),
 ])
 
@@ -181,7 +188,7 @@ with open("total_syst_template.tex") as f:
             #if year != '2017' and 'Prefire' in line: continue
             #if 'Prefire' in line: continue
             for key, value in unc_summary.items():
-                if value in line:
+                if value == line.replace("&", "").rstrip().lstrip():
                     with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + key + '.tex'),'r') as f2:
                         lines = f2.read().splitlines()
                         last_line = lines[-1]
