@@ -292,7 +292,7 @@ void TopLFVAnalyzer::defineMoreVars() {
                 addVar({"eventWeight_notau__facscaleup", "eventWeight_notau * LHEScaleWeight[5]"});
                 addVar({"eventWeight_notau__renscaleup", "eventWeight_notau * LHEScaleWeight[7]"});
                 addVar({"eventWeight_notau__mescaleup", "eventWeight_notau * LHEScaleWeight[8]"});
-                // PS: [0] is ISR=2 FSR=1; [1] is ISR=1 FSR=2[2] is ISR=0.5 FSR=1; [3] is ISR=1 FSR=0.5;
+                // PS: [0] is ISR=2 FSR=1; [1] is ISR=1 FSR=2; [2] is ISR=0.5 FSR=1; [3] is ISR=1 FSR=0.5;
                 addVar({"eventWeight__isrup", "eventWeight * PSWeight[0]"});
                 addVar({"eventWeight__fsrup", "eventWeight * PSWeight[1]"});
                 addVar({"eventWeight__isrdown", "eventWeight * PSWeight[2]"});
