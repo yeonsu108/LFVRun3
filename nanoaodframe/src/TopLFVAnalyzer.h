@@ -13,7 +13,7 @@
 class TopLFVAnalyzer: public NanoAODAnalyzerrdframe {
 
 public:
-    TopLFVAnalyzer(TTree *t, std::string outfilename, std::string year="", std::string syst="", std::string jsonfname="", string globaltag="", int nthreads=1);
+    TopLFVAnalyzer(TTree *t, std::string outfilename, std::string year="", std::string syst="", std::string jsonfname="", bool applytauFF=false, string globaltag="", int nthreads=1);
     void defineCuts();
     void defineMoreVars(); // define higher-level variables from
     void bookHists();
@@ -24,6 +24,7 @@ private:
     std::string _syst;
     std::string maxstep;
     std::string tauYear = "";
+    bool _applytauFF;
 
 };
 
