@@ -114,6 +114,8 @@ private:
                 "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2018up", "jesRelativeSample_2018down",
                 "jesHEMup", "jesHEMdown"};
   floats PDFWeights;
+  floats PSWeights;
+  floats ScaleWeights;
   std::string _jsonfname;
   std::string _globaltag;
   TFile *_inrootfile;

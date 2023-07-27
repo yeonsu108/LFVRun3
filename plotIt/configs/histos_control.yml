@@ -225,6 +225,17 @@
   blinded-range: [400, 999]
 
 
+#jet ht for bSF check
+'h_jet_ht_S3':
+  save-extensions: ['pdf', 'png']
+
+'h_jet_ht_S4':
+  save-extensions: ['pdf', 'png']
+
+'h_jet_ht_S5':
+  save-extensions: ['pdf', 'png']
+
+
 #jet1 pt
 'h_jet1_pt_notausf_S1':
   save-extensions: ['pdf', 'png']

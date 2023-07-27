@@ -475,6 +475,11 @@ namespace plotIt {
       if (node["show-overflow"])
           m_config.show_overflow = node["show-overflow"].as<bool>();
 
+      if (node["show-onlyoverflow"]) {
+          m_config.show_onlyoverflow = node["show-onlyoverflow"].as<bool>();
+          m_config.show_overflow = False;
+      }
+
       if (node["errors-type"])
           m_config.errors_type = string_to_errors_type(node["errors-type"].as<std::string>());
 
@@ -765,7 +770,10 @@ namespace plotIt {
 
       if (node["show-overflow"])
         plot.show_overflow = node["show-overflow"].as<bool>();
-      else
+      else if (node["show-onlyoverflow"]) {
+        plot.show_onlyoverflow = node["show-onlyoverflow"].as<bool>();
+        plot.show_overflow = False;
+      } else
         plot.show_overflow = m_config.show_overflow;
 
       if (node["errors-type"])
