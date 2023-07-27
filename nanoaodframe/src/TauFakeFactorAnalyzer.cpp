@@ -18,17 +18,18 @@ TauFakeFactorAnalyzer::TauFakeFactorAnalyzer(TTree *t, std::string outfilename, 
 void TauFakeFactorAnalyzer::defineCuts() {
 
     if (_mode == "lss") { // loose tau vs jet && SS
-        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && nloosetaupass == 1 && ncleantaupass == 0 && mutau_charge_loose > 0 && ncleanjetspass >= 3","0");
+        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && nloosetaupass == 1 && ncleantaupass == 0 && mutau_charge_loose > 0","0");
     } else if (_mode == "los") { // loose tau vs jet && OS
-        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && nloosetaupass == 1 && ncleantaupass == 0 && mutau_charge_loose < 0 && ncleanjetspass >= 3","0");
+        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && nloosetaupass == 1 && ncleantaupass == 0 && mutau_charge_loose < 0","0");
     } else if (_mode == "tss") { // tight tau vs jet && SS
-        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && ncleantaupass == 1 && mutau_charge > 0 && ncleanjetspass >= 3","0");
+        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && ncleantaupass == 1 && mutau_charge > 0","0");
     } else if (_mode == "tos") { // tight tau vs jet && OS
-        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && ncleantaupass == 1 && mutau_charge < 0 && ncleanjetspass >= 3","0");
+        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && ncleantaupass == 1 && mutau_charge < 0","0");
     } else {
         std::cout << "WRONG MODE!!!!" << std::endl;
     }
-    addCuts("ncleanbjetspass == 1", "00");
+    addCuts("ncleanjetspass >= 3", "00");
+    addCuts("ncleanbjetspass == 1", "000");
 }
 
 void TauFakeFactorAnalyzer::defineMoreVars() {
