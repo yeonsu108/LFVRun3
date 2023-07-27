@@ -332,6 +332,7 @@ namespace plotIt {
 
     bool show_errors = true;
     bool show_overflow = true;
+    bool show_onlyoverflow = false;
 
     std::string inherits_from = "TH1";
 
@@ -460,6 +461,7 @@ namespace plotIt {
     std::string root = "./";
 
     bool show_overflow = true;
+    bool show_onlyoverflow = false;
     bool transparent_background = false;
 
     std::string mode = "hist"; // "tree" or "hist"
