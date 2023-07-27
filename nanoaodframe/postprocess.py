@@ -34,7 +34,10 @@ if not os.path.exists(fig_path):
 file_list = [i.replace('.root', '') for i in os.listdir(nom_path) if '.root' in i]
 data_list = [i[:i.find('201')] for i in os.listdir(nom_path) if '.root' in i and '201' in i and 'jes' not in i]
 data_list = list(set(data_list))
-split_list = [re.sub(r'_[0-9]*.root', '', i) for i in os.listdir(os.path.join(nom_path, 'split')) if '.root' in i]
+split_list = []
+try:
+    split_list = [re.sub(r'_[0-9]*.root', '', i) for i in os.listdir(os.path.join(nom_path, 'split')) if '.root' in i]
+except: pass
 split_list = list(set(split_list))
 #print(data_list)
 #print(file_list)
@@ -51,7 +54,7 @@ def get_bSFratio(inputf, inputh):
     if int(step[-1]) < 4: step = 'S' + step[-1]
     else                : step = 'S4'
 
-    if isFakeRate: step = 'S1'
+    if isFakeRate: step = 'S2'
 
     posthist = inputf.Get('h_nevents_' + step)
     prehist = inputf.Get('h_nevents_' + step + '_nobtag')

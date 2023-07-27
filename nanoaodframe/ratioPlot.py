@@ -105,7 +105,7 @@ AddBkg("hist_DYJetsToLL_M10to50.root", "ZJets", '#000099', 18610.0)
 AddBkg("hist_DYJetsToLL_M50_amc.root", "ZJets", '#000099', 6077.22)
 AddBkg("hist_WJetsToLNu_HT0To100.root", "WJets", '#ff9933', 65396.85)
 AddBkg("hist_WJetsToLNu_HT100To200.root", "WJets", '#ff9933', 1519.76)
-AddBkg("hist_WJetsToLNu_HT200To400.root", "WJets", '#ff9933', 406) 
+AddBkg("hist_WJetsToLNu_HT200To400.root", "WJets", '#ff9933', 406)
 AddBkg("hist_WJetsToLNu_HT400To600.root", "WJets", '#ff9933', 54.75)
 AddBkg("hist_WJetsToLNu_HT600To800.root", "WJets", '#ff9933', 14.58)
 AddBkg("hist_WJetsToLNu_HT800To1200.root", "WJets", '#ff9933', 6.656)
@@ -210,9 +210,11 @@ for i in range(0, N_hist):
   hnames = datasamples[list(datasamples.keys())[0]]["hname"][i]
   print(hnames)
 
-  printHistName = "ncleanbjetspass"
+  #printHistNames = ['h_tau1_gen_pt_S1', 'h_tau1_pt_S1', 'h_tau1_gen_pt_S2', 'h_tau1_pt_S2',
+  #                  'h_tau1_gen_pt_S3', 'h_tau1_pt_S3', "ncleanbjetspass" , 'DNN']
+  printHistNames = ['h_tau1_gen_pt_S3', 'h_tau1_pt_S3', "ncleanbjetspass" , 'DNN']
   if len(hnames) < 2: continue
-  if any(i in hnames for i in ['h_tau1_gen_pt_S2', 'h_tau1_pt_S2', printHistName, 'DNN']):
+  if any(i in hnames for i in printHistNames):
     print(hnames)
     string_fname += "%s \n" %hnames
     string_nevt += "%s \n" %hnames
@@ -260,7 +262,7 @@ for i in range(0, N_hist):
     numevt = h_tmp.Integral(1, h_tmp.GetNbinsX()+1)
     rawevt = h_tmp.GetEntries()
     ntotalbkg = ntotalbkg + numevt
-    if any(i in hnames for i in ['h_tau1_gen_pt_S2', 'h_tau1_pt_S2', printHistName, 'DNN']):
+    if any(i in hnames for i in printHistNames):
       string_nevt += "%f \n"%(numevt)
       string_fname += "%s :  %s = %f \n"%(fname,bkgsamples[fname]["name"],numevt)
       print(fname, " : ", bkgsamples[fname]["name"], " = ", "{0:.10g}".format(numevt), " scale : " ,"{0:.3g}".format(scale))
@@ -300,7 +302,7 @@ for i in range(0, N_hist):
     ## print out number of events
     numevt = h_sig.Integral(1, h_sig.GetNbinsX()+1)
     rawevt = h_sig.GetEntries()
-    if any(i in hnames for i in ['h_tau1_gen_pt_S2', 'h_tau1_pt_S2', printHistName, 'DNN']):
+    if any(i in hnames for i in printHistNames):
       string_nevt += "%f \n"%(numevt)
       string_fname += "%s :  %s = %f \n"%(fname,sigsamples[fname]["name"],numevt)
       print(fname, " : ", sigsamples[fname]["name"], " = ", "{0:.10g}".format(numevt), " scale : " ,"{0:.3g}".format(scale))
@@ -315,7 +317,7 @@ for i in range(0, N_hist):
 
   ndata= h_data.Integral(1, h_data.GetNbinsX()+1)
   nsub = ndata-ntotalbkg
-  if any(i in hnames for i in ['h_tau1_gen_pt_S2', 'h_tau1_pt_S2', printHistName, 'DNN']):
+  if any(i in hnames for i in printHistNames):
     string_nevt += "%f \n" % ntotalbkg
     string_nevt += "%d \n" % ndata
     string_nevt += "%f \n" % nsub
