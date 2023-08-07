@@ -62,6 +62,7 @@ systematics:
   - muiso
   - mutrg
   #- tauidjet
+  - tauFF
   - tauidjetUncert0
   - tauidjetUncert1
   - tauidjetSystalleras
@@ -94,7 +95,8 @@ systematics:
 
 plots:
   include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']
-  #include: ['histos_fakefactor.yml']
+  #include: ['histos_FFcalc.yml']
+  #include: ['histos_FFapply.yml', 'histos_yield_S5.yml']
 
 legend:
   #position: [0.18, 0.70, 0.96, 0.88]

@@ -57,10 +57,23 @@ void TopLFVAnalyzer::defineMoreVars() {
     // Already object selection is done before this
     if (!_applytauFF) addVar({"tauFF", "1.0", ""});
     else {
-        if      (_year == "2016pre")  addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.5588"});
-        else if (_year == "2016post") addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.6147"});
-        else if (_year == "2017")     addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7317"});
-        else if (_year == "2018")     addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7414"});
+        if      (_year == "2016pre") {
+            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.5588"});
+            addVar({"tauFFup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.13"});//ratio to nominal
+            addVar({"tauFFdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.87"});
+        } else if (_year == "2016post") {
+            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.6147"});
+            addVar({"tauFFup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.164"});
+            addVar({"tauFFdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.8357"});
+        } else if (_year == "2017") {
+            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7317"});
+            addVar({"tauFFup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.072"});
+            addVar({"tauFFdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.928"});
+        } else if (_year == "2018") {
+            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7414"});
+            addVar({"tauFFup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.0732"});
+            addVar({"tauFFdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9268"});
+        }
     }
     addVar({"unitGenWeightFF", "unitGenWeight * tauFF", ""});
 
@@ -256,6 +269,11 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"eventWeight__btagcferr2up", "eventWeight_nobtag * btagWeight_DeepFlavB[15]"});
             addVar({"eventWeight__btagcferr2down", "eventWeight_nobtag * btagWeight_DeepFlavB[16]"});
 
+            if (_applytauFF) {
+                addVar({"eventWeight__tauFFup", "eventWeight * tauFFup"});
+                addVar({"eventWeight__tauFFdown", "eventWeight * tauFFdown"});
+            }
+
             // no tau - nominal is eventWeight_notau
             addVar({"eventWeight_notau_nopu", "unitGenWeightFF * TopPtWeight * L1PreFiringWeight_Nom * eventWeight_mu * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__puup", "unitGenWeightFF * TopPtWeight * puWeight[1] * L1PreFiringWeight_Nom * eventWeight_mu * btagWeight_DeepFlavB[0]"});
@@ -378,6 +396,8 @@ void TopLFVAnalyzer::bookHists() {
                                               "__tauidjetHighptextrapup", "__tauidjetHighptextrapdown",
                                               "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown"};
 
+    std::vector<std::string> sf_weight_FF ={"__tauFFup", "__tauFFdown"};
+
     std::vector<std::string> theory_weight = {"__isrup", "__fsrup", "__isrdown", "__fsrdown",
                    //"__scale0", "__scale1", "__scale2", "__scale3", "__scale4", "__scale5",
                    "__mescaleup", "__mescaledown", "__renscaleup", "__renscaledown", "__facscaleup", "__facscaledown",
@@ -466,7 +486,10 @@ void TopLFVAnalyzer::bookHists() {
 
 
     //for all the other nominal histograms with tauSF
-    if (_syst == "all" or _syst == "theory") syst_weight.insert(syst_weight.end(), sf_weight_tau.begin(), sf_weight_tau.end());
+    if (_syst == "all" or _syst == "theory") {
+        syst_weight.insert(syst_weight.end(), sf_weight_tau.begin(), sf_weight_tau.end());
+        if (_applytauFF) syst_weight.insert(syst_weight.end(), sf_weight_FF.begin(), sf_weight_FF.end());
+    }
 
     cout << "Variations to take care :";
     for (auto i : syst_weight) cout << i << " ";

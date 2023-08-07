@@ -21,6 +21,7 @@ common_syst_list = ['pu', 'muid', 'muiso', 'mutrg', 'tauidjet', 'tauidmu', 'taui
 common_syst_list += ['jesAbsolute_2016', 'jesAbsolute_2017', 'jesAbsolute_2018',
                      'jesBBEC1_2016', 'jesBBEC1_2017', 'jesBBEC1_2018',
                      'jesRelativeSample_2016', 'jesRelativeSample_2017', 'jesRelativeSample_2018']
+common_syst_list += ['tauFF']
 
 years = {'2016pre': 19502, '2016post': 16812, '2017': 41480, '2018':59832}
 
@@ -122,6 +123,8 @@ with open(config_path + 'template_Run2.yml') as f:
     f1.write(common_syst)
     f1.write(file_syst)
     #f1.write("\nplots:\n  include: ['histos_dnn.yml']\n")
+    if 'FF' in dest_path:
+        f1.write("\nplots:\n  include: ['histos_FFapply.yml', 'histos_yield_S5.yml']\n")
     f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']\n")
 
 call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
