@@ -6,5 +6,5 @@
   save-extensions: ['pdf', 'png']
   for-yields: true
   yields-table-order: 4
-  yields-title: 'One b-tagged jet'
+  yields-title: 'Final selection'
   #post-fit: true

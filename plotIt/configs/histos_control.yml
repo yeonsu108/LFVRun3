@@ -73,6 +73,9 @@
 'h_met_pt_notausf_S1':
   save-extensions: ['pdf', 'png']
 
+'h_met_pt_S2':
+  save-extensions: ['pdf', 'png']
+
 'h_met_pt_S3':
   save-extensions: ['pdf', 'png']
 
