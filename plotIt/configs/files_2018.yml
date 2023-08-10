@@ -239,6 +239,14 @@
   yields-group: '4Z+Jets'
   order: 24
 
+#'hist_DYJetsToLL_M50_HT70to100.root':
+#  type: mc
+#  pretty-name: 'DYJets'
+#  cross-section: - # * 1.23
+#  group: GZJets
+#  yields-group: '4Z+Jets'
+#  order: 24
+
 'hist_DYJetsToLL_M50_HT100to200.root':
   type: mc
   pretty-name: 'DYJets'

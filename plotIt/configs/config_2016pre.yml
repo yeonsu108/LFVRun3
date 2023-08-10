@@ -20,6 +20,8 @@ configuration:
   yields-table-align: v
   book-keeping-file: 'plots.root'
   yields-table-numerical-precision-yields: 2
+  generated-events-histogram: 'hcounter'
+  generated-events-bin: 2
 
 files: 
   include: ['files_2016pre.yml']
