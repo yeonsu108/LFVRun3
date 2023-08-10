@@ -9,6 +9,9 @@ year = sys.argv[2]
 if year not in ['2016pre', '2016post', '2017', '2018']:
     print('Wrong year, check again')
     sys.exit()
+forceHadd = False
+if len(sys.argv) > 3: forceHadd = sys.argv[3] == "True"
+if forceHadd: print("Hadd all split MC!!")
 
 yield_name = 'h_ncleanjetspass'
 base_path = './'
@@ -180,8 +183,18 @@ def write_envelope(inputh, inputf, bsff, syst, nhists, gen_sumW, wgt_sumW):
             dn_yield.Write()
 
 
+#Check if hadd is already done for MC:
+exist_list = {}
 for splitname in split_list:
-    subprocess.check_call( ["hadd", "-f", os.path.join(nom_path, splitname + '.root')] + glob.glob(os.path.join(nom_path, "split" , splitname) + '*.root') )
+    isExist = os.path.exists(os.path.join(nom_path, splitname + '.root'))
+    exist_list[splitname] = isExist
+
+print(exist_list)
+
+for splitname, isExist in exist_list.items():
+    if isExist and not forceHadd: continue
+    else:
+        subprocess.check_call( ["hadd", "-f", os.path.join(nom_path, splitname + '.root')] + glob.glob(os.path.join(nom_path, "split" , splitname) + '*.root') )
     file_list.append(splitname)
 
 
@@ -190,6 +203,7 @@ for fname in file_list:
     #print(os.path.join(nom_path, fname))
     #if not any(i in fname for i in ['TTTo2L2Nu', 'TTToSemiLeptonic']): continue
     #if not any(i in fname for i in ['hdamp', 'tune']): continue
+    #if not any(i in fname for i in ['DYJetsToLL_M50_HT']): continue
 
     #flag for ext. syst with different normalization
     run_on_syst = False
