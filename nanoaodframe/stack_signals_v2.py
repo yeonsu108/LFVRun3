@@ -27,6 +27,8 @@ def store_file(it):
         print(os.path.join(path, f[:f.rfind('_')] + '.root'))
         ftmp = TFile.Open(os.path.join(path, f[:f.rfind('_')] + '.root'), 'READ')
 
+        hcounter = ftmp.Get("hcounter")
+
         hist_names = [x.GetName() for x in ftmp.GetListOfKeys()]
         hist_names = list(dict.fromkeys(hist_names)) #remove duplicates from more than one instances 
         hist_names[:] = [item for item in hist_names if item not in ['hcounter']]
@@ -36,6 +38,8 @@ def store_file(it):
 
         dest_name = path.split('/')[0] + '/Run2/' + f
         dest = TFile.Open(dest_name, 'RECREATE')
+        dest.cd()
+        hcounter.Write()
 
         print('Writing scaled histogram to ' + dest_name)
 

@@ -57,22 +57,30 @@ void TopLFVAnalyzer::defineMoreVars() {
     // Already object selection is done before this
     if (!_applytauFF) addVar({"tauFF", "1.0", ""});
     else {
-        if      (_year == "2016pre") {
-            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.5588"});
-            addVar({"tauFFup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.13"});//ratio to nominal
-            addVar({"tauFFdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.87"});
+        if (_year == "2016pre") {
+            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.5398"});
+            addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.06578"});//ratio to nominal
+            addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9342"});
+            addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.224"});
+            addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.776"});
         } else if (_year == "2016post") {
-            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.6147"});
-            addVar({"tauFFup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.164"});
-            addVar({"tauFFdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.8357"});
+            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.6094"});
+            addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.07113"});
+            addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9288"});
+            addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.0428"});
+            addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9572"});
         } else if (_year == "2017") {
-            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7317"});
-            addVar({"tauFFup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.072"});
-            addVar({"tauFFdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.928"});
+            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7233"});
+            addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.03817"});
+            addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9618"});
+            addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.1292"});
+            addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.8708"});
         } else if (_year == "2018") {
-            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7414"});
-            addVar({"tauFFup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.0732"});
-            addVar({"tauFFdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9268"});
+            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7393"});
+            addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.03238"});
+            addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9676"});
+            addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.0829"});
+            addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9171"});
         }
     }
     addVar({"unitGenWeightFF", "unitGenWeight * tauFF", ""});
@@ -270,8 +278,10 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"eventWeight__btagcferr2down", "eventWeight_nobtag * btagWeight_DeepFlavB[16]"});
 
             if (_applytauFF) {
-                addVar({"eventWeight__tauFFup", "eventWeight * tauFFup"});
-                addVar({"eventWeight__tauFFdown", "eventWeight * tauFFdown"});
+                addVar({"eventWeight__tauFFstatup", "eventWeight * tauFFstatup"});
+                addVar({"eventWeight__tauFFstatdown", "eventWeight * tauFFstatdown"});
+                addVar({"eventWeight__tauFFsystup", "eventWeight * tauFFsystup"});
+                addVar({"eventWeight__tauFFsystdown", "eventWeight * tauFFsystdown"});
             }
 
             // no tau - nominal is eventWeight_notau
@@ -396,7 +406,7 @@ void TopLFVAnalyzer::bookHists() {
                                               "__tauidjetHighptextrapup", "__tauidjetHighptextrapdown",
                                               "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown"};
 
-    std::vector<std::string> sf_weight_FF ={"__tauFFup", "__tauFFdown"};
+    std::vector<std::string> sf_weight_FF ={"__tauFFstatup", "__tauFFstatdown", "__tauFFsystup", "__tauFFsystdown"};
 
     std::vector<std::string> theory_weight = {"__isrup", "__fsrup", "__isrdown", "__fsrdown",
                    //"__scale0", "__scale1", "__scale2", "__scale3", "__scale4", "__scale5",
