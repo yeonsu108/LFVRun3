@@ -18,7 +18,7 @@
 #  cross-section: 0.177
 #  group: GLFVSTct
 #  order: 1
-#
+
 #'hist_ST_LFV_TUMuTau_Scalar.root':
 #  type: signal
 #  pretty-name: 'LFVSTus'
@@ -39,7 +39,7 @@
 #  cross-section: 1.781
 #  group: GLFVSTut
 #  order: 1
-#
+
 #'hist_TT_LFV_TCMuTau_Scalar.root':
 #  type: signal
 #  pretty-name: 'LFVTTcs'
@@ -60,7 +60,7 @@
 #  cross-section: 0.1290
 #  group: GLFVTTct
 #  order: 1
-#
+
 #'hist_TT_LFV_TUMuTau_Scalar.root':
 #  type: signal
 #  pretty-name: 'LFVTTus'
@@ -239,18 +239,18 @@
   yields-group: '4Z+Jets'
   order: 24
 
-#'hist_DYJetsToLL_M50_HT70to100.root':
-#  type: mc
-#  pretty-name: 'DYJets'
-#  cross-section: - # * 1.23
-#  group: GZJets
-#  yields-group: '4Z+Jets'
-#  order: 24
+'hist_DYJetsToLL_M50_HT70to100.root':
+  type: mc
+  pretty-name: 'DYJets'
+  cross-section: 158.2 #140.0 * 1.13
+  group: GZJets
+  yields-group: '4Z+Jets'
+  order: 24
 
 'hist_DYJetsToLL_M50_HT100to200.root':
   type: mc
   pretty-name: 'DYJets'
-  cross-section: 180.47 #160.7 * 1.23
+  cross-section: 157.296 #139.2 * 1.13
   group: GZJets
   yields-group: '4Z+Jets'
   order: 24
@@ -258,7 +258,7 @@
 'hist_DYJetsToLL_M50_HT200to400.root':
   type: mc
   pretty-name: 'DYJets'
-  cross-section: 59.81 #48.63 * 1.23
+  cross-section: 43.392 #38.4 * 1.13
   group: GZJets
   yields-group: '4Z+Jets'
   order: 24
@@ -266,7 +266,7 @@
 'hist_DYJetsToLL_M50_HT400to600.root':
   type: mc
   pretty-name: 'DYJets'
-  cross-section: 8.601 #6.993 * 1.23
+  cross-section: 5.847 #5.174 * 1.13
   group: GZJets
   yields-group: '4Z+Jets'
   order: 24
@@ -274,7 +274,7 @@
 'hist_DYJetsToLL_M50_HT600to800.root':
   type: mc
   pretty-name: 'DYJets'
-  cross-section: 2.166 #1.761 * 1.23
+  cross-section: 1.422 #1.258 * 1.13
   group: GZJets
   yields-group: '4Z+Jets'
   order: 24
@@ -282,7 +282,7 @@
 'hist_DYJetsToLL_M50_HT800to1200.root':
   type: mc
   pretty-name: 'DYJets'
-  cross-section: 0.9866 #0.8021 * 1.23
+  cross-section: 0.6326 #0.5598 * 1.13
   group: GZJets
   yields-group: '4Z+Jets'
   order: 24
@@ -290,7 +290,7 @@
 'hist_DYJetsToLL_M50_HT1200to2500.root':
   type: mc
   pretty-name: 'DYJets'
-  cross-section: 0.2427 #0.1973 * 1.23
+  cross-section: 0.1475 #0.1305 * 1.13
   group: GZJets
   yields-group: '4Z+Jets'
   order: 24
@@ -298,7 +298,7 @@
 'hist_DYJetsToLL_M50_HT2500toInf.root':
   type: mc
   pretty-name: 'DYJets'
-  cross-section: 0.004322 #0.003514 * 1.23
+  cross-section: 0.003387 #0.002997 * 1.13
   group: GZJets
   yields-group: '4Z+Jets'
   order: 24
@@ -323,7 +323,7 @@
 'hist_WJetsToLNu_HT100To200.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT100To200'
-  cross-section: 1519.76 # 1256.0 * 1.21
+  cross-section: 1568.7 # 1256.0 * 1.249
   group: GWJets
   yields-group: '6W+Jets'
   order: 26
@@ -331,7 +331,7 @@
 'hist_WJetsToLNu_HT200To400.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT200To400'
-  cross-section: 406 # 335.5 * 1.21
+  cross-section: 419 # 335.5 * 1.249
   group: GWJets
   yields-group: '6W+Jets'
   order: 27
@@ -339,7 +339,7 @@
 'hist_WJetsToLNu_HT400To600.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT400To600'
-  cross-section: 54.75 # 45.25 * 1.21
+  cross-section: 56.52 # 45.25 * 1.249
   group: GWJets
   yields-group: '6W+Jets'
   order: 28
@@ -347,7 +347,7 @@
 'hist_WJetsToLNu_HT600To800.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT600To800'
-  cross-section: 14.58 # 12.05 * 1.21
+  cross-section: 15.05 # 12.05 * 1.249
   group: GWJets
   yields-group: '6W+Jets'
   order: 29
@@ -355,7 +355,7 @@
 'hist_WJetsToLNu_HT800To1200.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT800To1200'
-  cross-section: 6.656 # 5.501 * 1.21
+  cross-section: 6.8707 # 5.501 * 1.249
   group: GWJets
   yields-group: '6W+Jets'
   order: 30
@@ -363,7 +363,7 @@
 'hist_WJetsToLNu_HT1200To2500.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT1200To2500'
-  cross-section: 1.404 # 1.16 * 1.21
+  cross-section: 1.4488 # 1.16 * 1.249
   group: GWJets
   yields-group: '6W+Jets'
   order: 31
@@ -371,7 +371,7 @@
 'hist_WJetsToLNu_HT2500ToInf.root':
   type: mc
   pretty-name: 'WJetsToLNu_HT2500ToInf'
-  cross-section: 0.03146 # 0.026 * 1.21
+  cross-section: 0.03247 # 0.026 * 1.249
   group: GWJets
   yields-group: '6W+Jets'
   order: 32
@@ -379,7 +379,7 @@
 #'hist_QCD_Pt15To20_MuEnriched.root':
 #  type: mc
 #  pretty-name: 'QCD'
-#  cross-section: -
+#  cross-section: 2797000.0
 #  group: GQCD
 #  yields-group: '9QCD'
 #  order: 33

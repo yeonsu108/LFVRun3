@@ -64,7 +64,8 @@ systematics:
   - muiso
   - mutrg
   #- tauidjet
-  - tauFF
+  - tauFFstat
+  - tauFFsyst
   - tauidjetUncert0
   - tauidjetUncert1
   - tauidjetSystalleras
@@ -90,8 +91,8 @@ systematics:
   - fsr: {type: shape, on: 'TTTo'}
   - fsr: {type: shape, on: 'LFV'}
   - pdfalphas: {type: shape, on: 'TTTo'}
-  #- pdf: {type: shape, on: 'TTTo'}
-  #- pdf: {type: shape, on: 'LFV'}
+  #- pdfenv: {type: shape, on: 'TTTo'}
+  #- pdfenv: {type: shape, on: 'LFV'}
   - hdamp: {type: shape, on: 'TTTo'}
   - tune: {type: shape, on: 'TTTo'}
 

@@ -63,7 +63,8 @@ systematics:
   - muiso
   - mutrg
   #- tauidjet
-  - tauFF
+  - tauFFstat
+  - tauFFsyst
   - tauidjetUncert0
   - tauidjetUncert1
   - tauidjetSystalleras
