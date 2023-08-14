@@ -34,7 +34,12 @@ if not os.path.exists(out_path):
     os.makedirs(out_path)
 if not os.path.exists(fig_path):
     os.makedirs(fig_path)
-
+if not os.path.exists(os.path.join(fig_path, 'qcd')):
+    os.makedirs(os.path.join(fig_path, 'qcd'))
+if not os.path.exists(os.path.join(fig_path, 'dyincl')):
+    os.makedirs(os.path.join(fig_path, 'dyincl'))
+if not os.path.exists(os.path.join(fig_path, 'dyincl', 'qcd')):
+    os.makedirs(os.path.join(fig_path, 'dyincl', 'qcd'))
 
 file_list = [i.replace('.root', '') for i in os.listdir(nom_path) if '.root' in i]
 data_list = [i[:i.find('201')] for i in os.listdir(nom_path) if '.root' in i and '201' in i and 'jes' not in i]
@@ -203,7 +208,6 @@ for fname in file_list:
     #print(os.path.join(nom_path, fname))
     #if not any(i in fname for i in ['TTTo2L2Nu', 'TTToSemiLeptonic']): continue
     #if not any(i in fname for i in ['hdamp', 'tune']): continue
-    #if not any(i in fname for i in ['DYJetsToLL_M50_HT']): continue
 
     #flag for ext. syst with different normalization
     run_on_syst = False
