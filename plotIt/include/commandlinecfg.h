@@ -14,8 +14,10 @@ class CommandLineCfg {
         bool do_plots = true;
         bool do_yields = false;
         bool do_systematics = false;
+        bool do_qcd = false;
         bool unblind = false;
         bool systematicsBreakdown = false;
+        bool dyincl = false;
         std::string era = "";
 
     private:

@@ -15,6 +15,8 @@ dest_path = os.path.join('./', options.input)
 tmp_file_name = 'temp_' + year + '_forSyst.yml'
 string_to_add = 'systematics:\n'
 plot_to_add = "plots:\n  include: ['histos_yield.yml']\n\n"
+if 'FF' in options.input:
+    plot_to_add = "plots:\n  include: ['histos_yield_S5.yml']\n\n"
 
 if   year == "2016pre" : tauYear = "UL2016_preVFP"
 elif year == "2016post": tauYear = "UL2016_postVFP"
@@ -32,7 +34,7 @@ unc_cat = OrderedDict([
          'tauidjetSystdm10'+tauYear, 'tauidjetSystdm11'+tauYear,
          'tauidjetHighptstat_bin1', 'tauidjetHighptstat_bin2',
          'tauidjetHighptsyst', 'tauidjetHighptextrap',
-         'tauidel', 'tauidmu', 'tes',
+         'tauidel', 'tauidmu', 'tes', 'tauFFstat', 'tauFFsyst',
          'btaghf', 'btaglf', 'btaghfstats1', 'btaglfstats1',
          'btaghfstats2', 'btaglfstats2', 'btagcferr1', 'btagcferr2',
          'jesAbsolute', 'jesAbsolute_'+year[:4], 'jesBBEC1', 'jesBBEC1_'+year[:4],
@@ -68,6 +70,9 @@ unc_cat = OrderedDict([
 ('tauidel', ['tauidel']),
 ('tauidmu', ['tauidmu']),
 ('tes', ['tes']),
+('tauFFstat', ['tauFFstat']),
+('tauFFsyst', ['tauFFsyst']),
+('tauFF', ['tauFFstat', 'tauFFsyst']),
 ('jesAbsolute', ['jesAbsolute']),
 ('jesAbsolute_'+year[:4], ['jesAbsolute_'+year[:4]]),
 ('jesBBEC1', ['jesBBEC1']),
@@ -171,7 +176,7 @@ for key, value in unc_cat.items():
 
 unc_summary = OrderedDict([
 ('xsec', 'Cross section'), ('pu', 'Pileup'), ('prefire', 'Prefire Reweight'), ('muon', 'Muon SF'),
-('tauid', 'Tau ID'), ('tes', 'TES'),
+('tauid', 'Tau ID'), ('tes', 'TES'), ('tauFF', 'Tau Fake Factor'),
 ('jesAll', 'JES'), ('jer', 'JER'),
 ('mescale', 'Scale $\mu$F and $\mu$R'), ('renscale', 'Scale $\mu$R'), ('facscale', 'Scale $\mu$F'),
 ('isr', 'ISR'), ('fsr', 'FSR'),

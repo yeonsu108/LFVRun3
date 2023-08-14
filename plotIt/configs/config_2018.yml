@@ -20,6 +20,8 @@ configuration:
   yields-table-align: v
   book-keeping-file: 'plots.root'
   yields-table-numerical-precision-yields: 2
+  generated-events-histogram: 'hcounter'
+  generated-events-bin: 2
 
 files: 
   include: ['files_2018.yml']
@@ -62,6 +64,8 @@ systematics:
   - muiso
   - mutrg
   #- tauidjet
+  - tauFFstat
+  - tauFFsyst
   - tauidjetUncert0
   - tauidjetUncert1
   - tauidjetSystalleras
@@ -87,14 +91,15 @@ systematics:
   - fsr: {type: shape, on: 'TTTo'}
   - fsr: {type: shape, on: 'LFV'}
   - pdfalphas: {type: shape, on: 'TTTo'}
-  #- pdf: {type: shape, on: 'TTTo'}
-  #- pdf: {type: shape, on: 'LFV'}
+  #- pdfenv: {type: shape, on: 'TTTo'}
+  #- pdfenv: {type: shape, on: 'LFV'}
   - hdamp: {type: shape, on: 'TTTo'}
   - tune: {type: shape, on: 'TTTo'}
 
 plots:
   include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']
-  #include: ['histos_fakefactor.yml']
+  #include: ['histos_FFcalc.yml']
+  #include: ['histos_FFapply.yml', 'histos_yield_S5.yml']
 
 legend:
   #position: [0.18, 0.70, 0.96, 0.88]

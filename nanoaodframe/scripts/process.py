@@ -10,6 +10,7 @@ parser.add_argument("-D", "--dataset", dest="dataset", action="store", nargs="+"
 parser.add_argument("-F", "--dataOrMC", dest="dataOrMC", type=str, default="", help="data or mc flag, if you want to process data-only or mc-only")
 parser.add_argument("--dry", dest="dry", action="store_true", default=False, help="dryrun: not submitting jobs to slurm")
 parser.add_argument("-M", "--mode", dest="mode", type=str, default="", help="Only for fake rate: lss, los, tss, tos")
+parser.add_argument("--ff", dest="ff", action="store_true", default=False, help="Apply tau fake factor for final selection")
 options = parser.parse_args()
 
 year = options.year
@@ -128,6 +129,7 @@ for item in parameters:
                     item[2] + " " + item[3] + " " +\
                     workdir + " " +logdir + " " + item[4]
         if len(options.mode) > 0: runString += " " + options.mode
+        elif options.ff:          runString += " --ff"
         runString_list.append(runString)
     else:
         for fidx in range(len(item[1])):
@@ -135,6 +137,7 @@ for item in parameters:
                         " scripts/job_slurm_process.sh " + item[0] + " " + item[1][fidx] + " " +\
                         item[2] + " " + item[3].replace(".root", "_" + str(fidx) + ".root")  + " " +\
                         workdir + " " +logdir + " " + item[4]
+            if options.ff: runString += " --ff"
             runString_list.append(runString)
 
 for runString in runString_list:

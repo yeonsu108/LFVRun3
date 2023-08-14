@@ -20,7 +20,7 @@ int main(void) {
   TChain c1("outputTree");
   c1.Add("processed/2016data/2016b/00/nanoAOD_3_analyzed.root");
 
-  TopLFVAnalyzer nanoaodrdf(&c1, "testout.root", "2016pre", "", "data/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt", "", 1);
+  TopLFVAnalyzer nanoaodrdf(&c1, "testout.root", "2016pre", "", "data/Cert_271036-284044_13TeV_23Sep2016ReReco_Collisions16_JSON.txt", false, "", 1);
   nanoaodrdf.setupAnalysis();
   nanoaodrdf.run(false, "Events");
 

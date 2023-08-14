@@ -491,6 +491,10 @@ namespace plotIt {
     // Show or not opposite axis ticks
     bool x_axis_top_ticks = true;
     bool y_axis_right_ticks = true;
+
+    // Generated event
+    std::string generated_events_histogram = "";
+    int generated_events_bin = -1;
   };
 }
 
