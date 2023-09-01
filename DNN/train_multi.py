@@ -19,9 +19,12 @@ from sklearn.model_selection import KFold
 from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.model_selection import cross_val_score, GridSearchCV
 
+def min_max_scaling(series):
+    return (series - series.min()) / (series.max() - series.min())
+
+
 root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
-processed = "June2023_GoingtoPrep_2"
 syst = "nom"
 label = "top_lfv_multiClass"
 class_names = ["bkg","sigTT", "sigST"]
@@ -38,10 +41,11 @@ inputvars_st = [ "Muon1_pt","Muon1_eta",
         "mutau_mass","mutau_dEta","mutau_dPhi","mutau_dR",
 	"MET_pt"
         ]
+
+processed = "Aug2023_AfterPreAppTalk"
+
 #"MET_pt" : helps to the expected limits, do not remove from the input vars.
 sbratio = 1 # sig:bkg = 1:1
-
-kfold = KFold(n_splits=10, shuffle=True)
 
 train_outdir = label+"_"+processed+"/"+syst
 os.makedirs(train_outdir, exist_ok=True)
@@ -50,7 +54,8 @@ siglist_st = ["ST_LFV_TCMuTau_Scalar","ST_LFV_TCMuTau_Vector","ST_LFV_TCMuTau_Te
 siglist_tt = ['TT_LFV_TCMuTau_Scalar', 'TT_LFV_TCMuTau_Tensor', 'TT_LFV_TCMuTau_Vector', 'TT_LFV_TUMuTau_Scalar', 'TT_LFV_TUMuTau_Tensor', 'TT_LFV_TUMuTau_Vector']
 years = ["2017","2018","2016pre","2016post"]
 #project_dir = "/data1/users/itseyes/LFV/processed_LFV/v9test2_theory/"
-project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0608/"
+#project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/old/v9_06xx/v9_0608_fixtau/"
+project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_FF/"
 
 df_sig_st_list = []
 df_sig_tt_list = []
@@ -100,19 +105,15 @@ nsig = min(nsig_st,nsig_tt)
 print(nsig)
 
 if nsig >= nbkg:
-    if sbratio == 1:
-        nsig = nbkg
-    elif sbratio == 2:
-        nsig = int(nbkg/2)
+    if sbratio == 1: nsig = nbkg
+    elif sbratio == 2: nsig = int(nbkg/2)
 else:
-    if sbratio == 1:
-        nbkg = nsig
+    if sbratio == 1: nbkg = nsig
     elif nsig>=int(nbkg/2):
-        if sbratio == 2:
-            nsig = int(nbkg/2)
+       if sbratio == 2: nsig = int(nbkg/2)
     else:
-        "Error::Check the number of events!"
-        sys.exit()
+       "Error::Check the number of events!"
+       sys.exit()
 
 print("Take LFV : "+str(nsig)+" events")
 print("Take TT  : "+str(nbkg)+" events")
@@ -124,29 +125,34 @@ df_sig_tt["category"] = 1
 df_bkg["category"] = 0
 
 pd_data = pd.concat([df_sig_tt,df_sig_st,df_bkg])
+pd_data = abs(pd_data)
 colnames = pd_data.columns
 print(pd_data.head())
 print("Col names:",colnames)
+
+#for col in colnames:
+#    if col == "category": continue
+#    pd_data[col] = min_max_scaling(pd_data[col])
+
+#print(pd_data.head())
+
+
 pd_sig_st = pd_data[pd_data['category'] == 2]
 pd_sig_tt = pd_data[pd_data['category'] == 1]
 pd_bkg = pd_data[pd_data['category'] == 0]
 
-print("Plotting corr_matrix total")
-plot_corrMatrix(pd_data,train_outdir,"total")
-print("Plotting corr_matrix ST")
-plot_corrMatrix(pd_sig_st,train_outdir,"sig_st")
-print("Plotting corr_matrix TT")
-plot_corrMatrix(pd_sig_tt,train_outdir,"sig_tt")
-print("Plotting corr_matrix bkg")
-plot_corrMatrix(pd_bkg,train_outdir,"bkg")
-
-pd_data = pd_data.sample(frac=1).reset_index(drop=True)
+#print("Plotting corr_matrix total")
+#plot_corrMatrix(pd_data,train_outdir,"total")
+#print("Plotting corr_matrix ST")
+#plot_corrMatrix(pd_sig_st,train_outdir,"sig_st")
+#print("Plotting corr_matrix TT")
+#plot_corrMatrix(pd_sig_tt,train_outdir,"sig_tt")
+#print("Plotting corr_matrix bkg")
+#plot_corrMatrix(pd_bkg,train_outdir,"bkg")
+#plot_corrMatrix(abs(pd_sig_st.subtract(pd_bkg)),train_outdir,"st-bkg")
+#pd_data = pd_data.sample(frac=1).reset_index(drop=True)
 
 print(pd_data.head())
-
-#    # Min-Max Scale
-#    scaler = MinMaxScaler()
-#    pd_data = pd.DataFrame(scaler.fit_transform(pd_data), columns=pd_data.columns)
 
 x_total = np.array(pd_data.filter(items = inputvars_st))
 y_total = np.array(pd_data.filter(items = ['category']))
@@ -160,13 +166,6 @@ trainlen = int(0.7*numbertr) # Fraction used for training
 from sklearn.model_selection import train_test_split
 x_train, x_val, y_train, y_val = train_test_split(x_total, y_cat, test_size=0.3)
 print(len(x_train),len(x_val),len(y_train),len(y_val))
-'''
-x_train = x_total[:trainlen,0::]
-y_train = y_total[:trainlen]
-print("y_train:" , y_train)
-x_val = x_total[trainlen:,0::]
-y_val = y_total[trainlen:]
-'''
 
 patience_epoch = 30
 # Early Stopping with Validation Loss for Best Model
@@ -205,11 +204,25 @@ model.compile(optimizer=tf.keras.optimizers.Adam(clipvalue=0.5), loss="categoric
 
 model.summary()
 hist = model.fit(x_train, y_train, batch_size=batch_size, epochs=epochs, 
-                                validation_data=(x_val,y_val), callbacks=[es, mc])
+				validation_data=(x_val,y_val), callbacks=[es, mc])
 
 #tf.keras.models.save_model(model,'model_{epoch:%d}.h5', overwrite=True, include_optimizer=True)
-#print(hist.history.keys())
+print(hist.history.keys())
 
+loss_train = hist.history['loss']
+loss_val = hist.history['val_loss']
+plt.plot(loss_train, 'g', label='Training loss')
+plt.plot(loss_val, 'b', label='Validation loss')
+plt.savefig(train_outdir+"/train_val_loss.png")
+plt.close()
+
+accuracy_training = hist.history['acc']
+accuracy_validation = hist.history['val_acc']
+
+plt.plot(accuracy_training, 'g', label='Training loss')
+plt.plot(accuracy_validation, 'b', label='Validation loss')
+plt.savefig(train_outdir+'acc_vs_epochs.png')   
+plt.close()
 
 pred_train = model.predict_classes(x_train)
 print("pred_train", pred_train)
@@ -227,13 +240,13 @@ print("conf matrix on val set ")
 print(confusion_matrix(y_val, pred_val))
 #val_result = pd.DataFrame(np.array([y_val.T[0], pred_val.T[1]]).T, columns=["True", "Pred"])
 plot_confusion_matrix(y_val, pred_val, classes=class_names,
-                    title='Confusion matrix, without normalization', savename=train_outdir+"/confusion_matrix_val.pdf")
+		    title='Confusion matrix, without normalization', savename=train_outdir+"/confusion_matrix_val.pdf")
 plot_confusion_matrix(y_val, pred_val, classes=class_names, normalize=True,
-                    title='Normalized confusion matrix', savename=train_outdir+"/norm_confusion_matrix_val.pdf")
+		    title='Normalized confusion matrix', savename=train_outdir+"/norm_confusion_matrix_val.pdf")
 plot_confusion_matrix(y_train, pred_train, classes=class_names,
-                    title='Confusion matrix, without normalization', savename=train_outdir+"/confusion_matrix_train.pdf")
+		    title='Confusion matrix, without normalization', savename=train_outdir+"/confusion_matrix_train.pdf")
 plot_confusion_matrix(y_train, pred_train, classes=class_names, normalize=True,
-                    title='Normalized confusion matrix', savename=train_outdir+"/norm_confusion_matrix_train.pdf")
+		    title='Normalized confusion matrix', savename=train_outdir+"/norm_confusion_matrix_train.pdf")
 pred_val = model.predict(x_val)
 pred_train = model.predict(x_train)
 print(pred_val)

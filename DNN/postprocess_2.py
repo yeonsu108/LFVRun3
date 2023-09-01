@@ -29,13 +29,13 @@ systs_toTTTfile = ['tunedown','tuneup','hdampdown','hdampup']
 systs_tofile = ['jerdown', 'jerup', 'jesAbsolute_yeardown', 'jesAbsolute_yearup', 'jesAbsolutedown', 'jesAbsoluteup', 'jesBBEC1_yeardown', 'jesBBEC1_yearup', 'jesBBEC1down', 'jesBBEC1up', 'jesFlavorQCDdown', 'jesFlavorQCDup', 'jesRelativeBaldown', 'jesRelativeBalup', 'jesRelativeSample_yeardown', 'jesRelativeSample_yearup', 'jesHEMdown','jesHEMup' , 'tesdown', 'tesup']+systs_toTTTfile
 
 systs_pdf = ['pdfEnvup','pdfEnvdown','pdfup','pdfdown']
-syst_otherTheory = ['psup','psdown','scaleup','scaledown']
+syst_otherTheory = ['isrup','isrdown','fsrup','fsrdown','scaleup','scaledown']
 syst_tauidjets = ['tauidjetHighptextrapdown', 'tauidjetHighptextrapup', 'tauidjetHighptstat_bin1down', 'tauidjetHighptstat_bin1up', 'tauidjetHighptstat_bin2down', 'tauidjetHighptstat_bin2up', 'tauidjetHighptstatdown', 'tauidjetHighptstatup', 'tauidjetHighptsystdown', 'tauidjetHighptsystup', 'tauidjetSystULyeardown', 'tauidjetSystULyearup', 'tauidjetSystallerasdown', 'tauidjetSystallerasup', 'tauidjetSystdm0ULyeardown', 'tauidjetSystdm0ULyearup', 'tauidjetSystdm10ULyeardown', 'tauidjetSystdm10ULyearup', 'tauidjetSystdm11ULyeardown', 'tauidjetSystdm11ULyearup', 'tauidjetSystdm1ULyeardown', 'tauidjetSystdm1ULyearup', 'tauidjetUncert0down', 'tauidjetUncert0up', 'tauidjetUncert1down', 'tauidjetUncert1up']
 systs_toweight = ['btagcferr1down', 'btagcferr1up', 'btagcferr2down', 'btagcferr2up', 'btaghfdown', 'btaghfstats1down', 'btaghfstats1up', 'btaghfstats2down', 'btaghfstats2up', 'btaghfup', 'btaglfdown', 'btaglfstats1down', 'btaglfstats1up', 'btaglfstats2down', 'btaglfstats2up', 'btaglfup', 'muiddown', 'muidup', 'muisodown', 'muisoup', 'mutrgdown', 'mutrgup', 'prefiredown','prefireup', 'pudown', 'puup', 'tauideldown', 'tauidelup', 'tauidmudown', 'tauidmuup']+systs_pdf+syst_otherTheory
 
 
-
 systs = systs_tofile+systs_toweight+syst_tauidjets+['']
+#systs = systs_tofile+['']
 
 # Produce dictionary for file lists.
 

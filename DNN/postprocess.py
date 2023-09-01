@@ -54,6 +54,7 @@ def get_bSFratio(inputf, inputh):
     # This should be done per jet bin - nojet / 3jet
 
     step = 'S4'
+    if isFFcalc: step = 'S2'
 
     posthist = inputf.Get('h_nevents_' + step)
     prehist = inputf.Get('h_nevents_' + step + '_nobtag')
@@ -65,67 +66,17 @@ def get_bSFratio(inputf, inputh):
     return prehist.Integral(0, prehist.GetNbinsX()+1) / posthist.Integral(0, prehist.GetNbinsX()+1)
 
 
-def write_envelope(inputh, inputf, syst, nhists, sumW, new_sumW):
-  print("inside Envelope")
-  if (inputh + "__" + syst + "0")  in hlists:
-    var_list = []
-    for x in range(0,nhists):
-      h = inputf.Get(inputh + "__" + syst + str(x))
-      if any(x in syst for x in ['scale', 'ps']):
-        pass
-      elif 'pdf' in syst:
-        if x == 0: continue
-        h.Scale(sumW.GetBinContent(2) / new_sumW.GetBinContent(1))
-      else: h.Scale(sumW.GetBinContent(2) / new_sumW.GetBinContent(x+1))
-      #h.Rebin(nrebin)
-      var_list.append(h)
+def get_Scale(inputf):
 
-    nominal = inputf.Get(inputh)
-    nominal.SetDirectory(ROOT.nullptr)
-    #nominal.Rebin(nrebin)
-    n_bins = nominal.GetNcells()
-    up = nominal.Clone()
-    up.SetDirectory(ROOT.nullptr)
-    up.Reset()
-    dn = nominal.Clone()
-    dn.SetDirectory(ROOT.nullptr)
-    dn.Reset()
-
-    for i in range(0, n_bins+2):
-      minimum = float("inf")
-      maximum = float("-inf")
-
-      for v in var_list:
-        c = v.GetBinContent(i)
-        minimum = min(minimum, c)
-        maximum = max(maximum, c)
-
-      up.SetBinContent(i, maximum)
-      dn.SetBinContent(i, minimum)
-
-    up.Scale(get_bSFratio(bSFfile, up.GetName()))
-    dn.Scale(get_bSFratio(bSFfile, dn.GetName()))
-    up.SetName(inputh + "__" + syst + "up")
-    dn.SetName(inputh + "__" + syst + "down")
-    #We don't draw pdf in full ana due to computing resources
-
-    up.Write()
-    dn.Write()
-
-    if yield_name in inputh:
-      up_yield = up.Clone('up_yield')
-      dn_yield = dn.Clone('dn_yield')
-      up_yield.SetName(inputh.replace(yield_name, yield_name + '_yield') + "__" + syst + "up")
-      dn_yield.SetName(inputh.replace(yield_name, yield_name + '_yield') + "__" + syst + "down")
-      up_yield.Write()
-      dn_yield.Write()
-
-
+    nom_sumW=inputf.Get('hcounter_nom')
+    sumW=inputf.Get('hcounter')
+    return float(nom_sumW.Integral(0, nom_sumW.GetNbinsX()+1) / sumW.Integral(0,sumW.GetNbinsX()+1))
 
 # Loop over all files.
 for fname in file_list:
     #print(os.path.join(nom_path, fname))
-    #if not any(i in fname for i in ['TTTo2L2Nu', 'TTToSemiLeptonic']): continue
+    #if not any(i in fname for i in ['TTToSemiLeptonic']): continue
+    #if not 'tuneup' in fname: continue
     infile = TFile.Open(os.path.join(nom_path+'/'+year+'/preds/'+discriminator+'/'+alpha +'/', fname + '.root'), 'READ')
     hlists = [ h.GetName() for h in infile.GetListOfKeys() if '_S' in h.GetName() or 'dnn' in h.GetName()]
     hlists.append("hcounter")
@@ -133,57 +84,45 @@ for fname in file_list:
 
     # Get ratio for rescaling with b-tagSF.
     if not '__' in fname: bSFfile = infile
-    elif '__' in fname and any(i in fname for i in ['hdamp', 'tune', 'jes']):
+    elif '__' in fname and any(i in fname for i in [ 'jes']):
         bSFfile = infile
     else:
         bSFfname = fname.replace('__' + fname.split('__')[1], '')
         bSFfile = TFile.Open(os.path.join(nom_path+'/'+year+'/preds/'+discriminator+'/'+alpha +'/', bSFfname + '.root'), 'READ')
 
+    if 'TTT' in fname:
+       if any(i in fname for i in ['hdamp', 'tune']):
+          print("Trying to read file :", bSFfile)
+          nom_sumW=infile.Get('hcounter_nom')
+          sumW=infile.Get('hcounter')
+          scale_for_norm = float(nom_sumW.Integral(0, nom_sumW.GetNbinsX()+1) / sumW.Integral(0,sumW.GetNbinsX()+1))
+          print("SCALE : ", scale_for_norm)
+
     # Collecting Histograms in outfile.
     print("Saving histograms at {}/{}.root".format(out_path, fname))
     outfile = TFile.Open(os.path.join(out_path, fname+'.root'), 'RECREATE')
 
-    nominal_list = []
-    isScale = False
-    isPS = False
-    isPDF = False
-    #if ('__scale' in fname): isScale = True
-    #if ('__ps' in fname): isPS = True
-    #if ('__pdf' in fname): isPDF = True
 
-    #print(isScale, isPS)
+    nominal_list = []
 
     for hname in hlists:
         print("HISTO : ", hname)
         if "__" not in hname: nominal_list.append(hname)
         h = infile.Get(hname)
-        if yield_name in hname:
-            h1 = h.Clone('h1')
-            h1.SetName(hname.replace(yield_name, yield_name + '_yield'))
-            if "__" not in h1.GetName():
-                nominal_list.append(h1.GetName())
-            if '201' not in fname or 'jes' in fname: h1.Scale(get_bSFratio(bSFfile, hname))
-            h1.Write()
         if any(i in hname for i in ['event', 'counter', '_nobtag', 'LHEPdfWeightSum']): pass
         elif any(i in hname for i in ['__scale', '__ps', '__pdf']): continue
-        elif '201' in fname and 'jes' not in fname: pass
+        elif 'SingleMuon' in fname and 'jes' not in fname: pass
         else:
+            print("FNAME to be scaled :" , fname)
             ratio = get_bSFratio(bSFfile, hname)
             h.Scale(ratio)
+        if 'TTT' in fname:
+           if any(i in fname for i in ['hdamp', 'tune']):
+              h.Scale(scale_for_norm)
         h.Write()
 
     hcounter = infile.Get('hcounter')
     nominal_list = list(set(nominal_list))
-
-    for hname2 in nominal_list:
-      print("HNAME2:" , hname2, isScale, isPS,isPDF)
-      if isScale: write_envelope(hname2, bSFfile, "scale", 6, hcounter, hcounter)
-      if isPS: write_envelope(hname2, bSFfile, "ps", 4, hcounter, hcounter)
-      if isPDF: write_envelope(hname2, bSFfile, "pdf", 103, hcounter, hcounter)
-      #  if 'STTH' in files: write_envelope(hname2, hcounter, "pdf", 30, LHEPdfWeightSum)
-      #  else:               write_envelope(hname2, hcounter, "pdf", 103, LHEPdfWeightSum)
-      #if run_on_syst: rescale([], nom_EventInfo) #placeholder for hdamp and py8tune
-
 
     infile.Close()
     outfile.Close()

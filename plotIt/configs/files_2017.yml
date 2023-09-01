@@ -9,7 +9,7 @@
 'hist_ST_LFV_TCMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVSTcv'
-  cross-section: 0.0368
+  cross-section: 0.03673
   generated-events: 3500000
   group: GLFVSTcv
   order: 1
@@ -33,7 +33,7 @@
 'hist_ST_LFV_TUMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVSTuv'
-  cross-section: 0.393
+  cross-section: 0.3924
   generated-events: 3407000
   group: GLFVSTuv
   order: 2
