@@ -15,6 +15,8 @@ dest_path = os.path.join('./', options.input)
 tmp_file_name = 'temp_' + year + '_forSyst.yml'
 string_to_add = 'systematics:\n'
 plot_to_add = "plots:\n  include: ['histos_yield.yml']\n\n"
+if 'FF' in options.input:
+    plot_to_add = "plots:\n  include: ['histos_yield_S5.yml']\n\n"
 
 if   year == "2016pre" : tauYear = "UL2016_preVFP"
 elif year == "2016post": tauYear = "UL2016_postVFP"
@@ -25,24 +27,24 @@ if os.path.exists(config_path + tmp_file_name):
 #shutil.copy2(config_path + 'config_' + year + '.yml', config_path + tmp_file_name)
 
 unc_cat = OrderedDict([
-('all', ['xsec', 'pu', 'muid', 'muiso', 'mutrg',
+('all', ['xsec', 'pu', 'muid', 'muiso', 'mutrg', 'muExtra'
          #'tauidjet', 'tauidel', 'tauidmu', 'tes',
          'tauidjetUncert0', 'tauidjetUncert1', 'tauidjetSystalleras',
          'tauidjetSyst'+tauYear, 'tauidjetSystdm0'+tauYear, 'tauidjetSystdm1'+tauYear,
          'tauidjetSystdm10'+tauYear, 'tauidjetSystdm11'+tauYear,
          'tauidjetHighptstat_bin1', 'tauidjetHighptstat_bin2',
          'tauidjetHighptsyst', 'tauidjetHighptextrap',
-         'tauidel', 'tauidmu', 'tes',
+         'tauidel', 'tauidmu', 'tes', 'tauFFstat', 'tauFFsyst',
          'btaghf', 'btaglf', 'btaghfstats1', 'btaglfstats1',
          'btaghfstats2', 'btaglfstats2', 'btagcferr1', 'btagcferr2',
          'jesAbsolute', 'jesAbsolute_'+year[:4], 'jesBBEC1', 'jesBBEC1_'+year[:4],
          'jesFlavorQCD', 'jesRelativeBal', 'jesRelativeSample_'+year[:4], 'jer',
-         'scale', 'ps', 'pdf',
+         'mescale', 'renscale', 'faccale', 'isr', 'fsr', 'pdfalphas', 'pdfenv',
          'tune', 'hdamp',]),
 ('pu', ['pu']),
 ('prefire', ['prefire']),
 ('xsec', ['xsec']),
-('muon', ['muid', 'muiso', 'mutrg']),
+('muon', ['muid', 'muiso', 'mutrg', 'muExtra']),
 #('tauid', ['tauidjet', 'tauidel', 'tauidmu']),
 ('tauid', ['tauidjetUncert0', 'tauidjetUncert1', 'tauidjetSystalleras',
            'tauidjetSyst'+tauYear, 'tauidjetSystdm0'+tauYear, 'tauidjetSystdm1'+tauYear,
@@ -68,6 +70,9 @@ unc_cat = OrderedDict([
 ('tauidel', ['tauidel']),
 ('tauidmu', ['tauidmu']),
 ('tes', ['tes']),
+('tauFFstat', ['tauFFstat']),
+('tauFFsyst', ['tauFFsyst']),
+('tauFF', ['tauFFstat', 'tauFFsyst']),
 ('jesAbsolute', ['jesAbsolute']),
 ('jesAbsolute_'+year[:4], ['jesAbsolute_'+year[:4]]),
 ('jesBBEC1', ['jesBBEC1']),
@@ -78,10 +83,16 @@ unc_cat = OrderedDict([
 ('jesAll', ['jesAbsolute', 'jesAbsolute_'+year[:4], 'jesBBEC1', 'jesBBEC1_'+year[:4],
             'jesFlavorQCD', 'jesRelativeBal', 'jesRelativeSample_'+year[:4]]),
 ('jer', ['jer']),
-('scale', ['scale']),
-('ps', ['ps']),
+('scale', ['mescale', 'renscale', 'facscale']),
+('mescale', ['mescale']),
+('renscale', ['renscale']),
+('facscale', ['facscale']),
+('isr', ['isr']),
+('fsr', ['fsr']),
 ('hdamp', ['hdamp']),
-('pdf', ['pdf']),
+('pdfall', ['pdfenv', 'pdfalphas']),
+('pdfenv', ['pdfenv']),
+('pdfalphas', ['pdfalphas']),
 ('tune', ['tune']),
 ('btaghf', ['btaghf']),
 ('btaglf', ['btaglf']),
@@ -152,7 +163,8 @@ for key, value in unc_cat.items():
     with open(os.path.join(dest_path, 'figure_' + year, 'systematics.tex'), 'r') as f:
         with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + syst_postfix + '.tex'), 'w+') as f1:
             isTTsyst = False
-            if key in ['scale', 'ps', 'hdamp', 'tune', 'pdf']: isTTsyst = True
+            if key in ['scale', 'mescale', 'renscale', 'facscale', 'isr', 'fsr', 'hdamp', 'tune', 'pdfall', 'pdfenv', 'pdfalphas']:
+                isTTsyst = True
             for line in f:
                 isTT = False
                 if 'ttbar' in line or 'LFV' in line: isTT = True
@@ -164,9 +176,11 @@ for key, value in unc_cat.items():
 
 unc_summary = OrderedDict([
 ('xsec', 'Cross section'), ('pu', 'Pileup'), ('prefire', 'Prefire Reweight'), ('muon', 'Muon SF'),
-('tauid', 'Tau ID'), ('tes', 'TES'),
+('tauid', 'Tau ID'), ('tes', 'TES'), ('tauFF', 'Tau Fake Factor'),
 ('jesAll', 'JES'), ('jer', 'JER'),
-('scale', 'ME scale'), ('ps', 'PS scale'), ('hdamp', 'ME-PS matching'), ('pdf', 'PDF'), ('tune', 'Underlying event'),
+('mescale', 'Scale $\mu$F and $\mu$R'), ('renscale', 'Scale $\mu$R'), ('facscale', 'Scale $\mu$F'),
+('isr', 'ISR'), ('fsr', 'FSR'),
+('hdamp', 'ME-PS matching'), ('pdfall', 'PDF'), ('tune', 'Underlying event'),
 ('bAll', 'b-tagging shape'), ('all', 'Total sys. unc.'),
 ])
 
@@ -179,7 +193,7 @@ with open("total_syst_template.tex") as f:
             #if year != '2017' and 'Prefire' in line: continue
             #if 'Prefire' in line: continue
             for key, value in unc_summary.items():
-                if value in line:
+                if value == line.replace("&", "").rstrip().lstrip():
                     with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + key + '.tex'),'r') as f2:
                         lines = f2.read().splitlines()
                         last_line = lines[-1]

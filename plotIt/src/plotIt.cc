@@ -475,6 +475,11 @@ namespace plotIt {
       if (node["show-overflow"])
           m_config.show_overflow = node["show-overflow"].as<bool>();
 
+      if (node["show-onlyoverflow"]) {
+          m_config.show_onlyoverflow = node["show-onlyoverflow"].as<bool>();
+          m_config.show_overflow = False;
+      }
+
       if (node["errors-type"])
           m_config.errors_type = string_to_errors_type(node["errors-type"].as<std::string>());
 
@@ -508,6 +513,12 @@ namespace plotIt {
 
       if (node["y-axis-right-ticks"])
         m_config.y_axis_right_ticks = node["y-axis-right-ticks"].as<bool>();
+
+      if (node["generated-events-histogram"])
+        m_config.generated_events_histogram = node["generated-events-histogram"].as<std::string>();
+
+      if (node["generated-events-bin"])
+        m_config.generated_events_bin = node["generated-events-bin"].as<int>();
     }
 
     // Retrieve files/processes configuration
@@ -516,6 +527,11 @@ namespace plotIt {
     size_t process_id = 0;
     for (YAML::const_iterator it = files.begin(); it != files.end(); ++it) {
         File file;
+        if (!CommandLineCfg::get().do_qcd and (it->first.as<std::string>()).find("QCD") != std::string::npos) continue;
+        //Custom switches
+        if (!CommandLineCfg::get().dyincl and (it->first.as<std::string>()).find("DYJetsToLL_M50_amc") != std::string::npos) continue;
+        else if (CommandLineCfg::get().dyincl and (it->first.as<std::string>()).find("DYJetsToLL_M50_HT") != std::string::npos) continue;
+
         if (files.Type() == YAML::NodeType::Map)
             parseFileNode(file, it->first, it->second);
         else
@@ -765,7 +781,10 @@ namespace plotIt {
 
       if (node["show-overflow"])
         plot.show_overflow = node["show-overflow"].as<bool>();
-      else
+      else if (node["show-onlyoverflow"]) {
+        plot.show_onlyoverflow = node["show-onlyoverflow"].as<bool>();
+        plot.show_overflow = False;
+      } else
         plot.show_overflow = m_config.show_overflow;
 
       if (node["errors-type"])
@@ -1303,6 +1322,12 @@ namespace plotIt {
         std::pair<double, double> yield_sqerror;
         TH1* hist( dynamic_cast<TH1*>(file.object) );
 
+        if (m_config.generated_events_histogram.length() > 0 and file.generated_events < 2 and file.type != DATA ) {
+            //generated_events = 1.0 if not declared in file yaml
+            std::shared_ptr<TFile> input(TFile::Open(file.path.c_str()));
+            TH1* hevt = dynamic_cast<TH1*>(input->Get(m_config.generated_events_histogram.c_str()));
+            file.generated_events = hevt->GetBinContent(m_config.generated_events_bin);
+        }
         double factor = file.cross_section * file.branching_ratio / file.generated_events;
 
         if (! m_config.no_lumi_rescaling) {
@@ -1708,6 +1733,12 @@ namespace plotIt {
         std::pair<double, double> yield_sqerror;
         TH1* hist( dynamic_cast<TH1*>(file.object) );
 
+        if (m_config.generated_events_histogram.length() > 0 and file.generated_events < 2 and file.type != DATA ) {
+            //generated_events = 1.0 if not declared in file yaml
+            std::shared_ptr<TFile> input(TFile::Open(file.path.c_str()));
+            TH1* hevt = dynamic_cast<TH1*>(input->Get(m_config.generated_events_histogram.c_str()));
+            file.generated_events = hevt->GetBinContent(m_config.generated_events_bin);
+        }
         double factor = file.cross_section * file.branching_ratio / file.generated_events;
 
         if (! m_config.no_lumi_rescaling) {
@@ -2198,6 +2229,11 @@ int main(int argc, char** argv) {
 
     TCLAP::UnlabeledValueArg<std::string> configFileArg("configFile", "configuration file", true, "", "string", cmd);
 
+    TCLAP::SwitchArg qcdArg("q", "qcd", "Process with QCD samples (histo name with QCD)", cmd, false);
+
+    //Custom switch
+    TCLAP::SwitchArg dyArg("d", "dyincl", "Process with DY inclusive sample (DYJetsToLL_M50_amc)", cmd, false);
+
     cmd.parse(argc, argv);
 
     //bool isData = dataArg.isSet();
@@ -2228,6 +2264,8 @@ int main(int argc, char** argv) {
     CommandLineCfg::get().do_systematics = systematicsArg.getValue();
     CommandLineCfg::get().unblind = unblindArg.getValue();
     CommandLineCfg::get().systematicsBreakdown = systematicsBreakdownArg.getValue();
+    CommandLineCfg::get().do_qcd = qcdArg.getValue();
+    CommandLineCfg::get().dyincl = dyArg.getValue();
 
     plotIt::plotIt p(outputPath);
     if (!p.parseConfigurationFile(configFileArg.getValue(), histogramsPath))

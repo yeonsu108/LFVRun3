@@ -332,6 +332,7 @@ namespace plotIt {
 
     bool show_errors = true;
     bool show_overflow = true;
+    bool show_onlyoverflow = false;
 
     std::string inherits_from = "TH1";
 
@@ -460,6 +461,7 @@ namespace plotIt {
     std::string root = "./";
 
     bool show_overflow = true;
+    bool show_onlyoverflow = false;
     bool transparent_background = false;
 
     std::string mode = "hist"; // "tree" or "hist"
@@ -489,6 +491,10 @@ namespace plotIt {
     // Show or not opposite axis ticks
     bool x_axis_top_ticks = true;
     bool y_axis_right_ticks = true;
+
+    // Generated event
+    std::string generated_events_histogram = "";
+    int generated_events_bin = -1;
   };
 }
 

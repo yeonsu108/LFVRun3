@@ -107,4 +107,6 @@ float SumMass( FourVectorVec object1, FourVectorVec object2, FourVectorVec objec
 FourVector select_leadingvec( FourVectorVec &v );
 
 floats addMuonUnc( floats &input );
+
+floatsVec fixtausf ( floatsVec &input, floats &pts);
 #endif /* UTILITY_H_ */

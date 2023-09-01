@@ -99,7 +99,7 @@ python scripts/skim.py -V skim_test -F mc -Y 2018
 # This script uses slurm on htop.
 # Please specify which node to EXCLUDE from the batch job, in scripts/job_slurm_skim.sh
 
-#To resubmit knowing that `folder_filename.log`
+#To find failed jobs knowing that `folder_filename.log`
 find log/201*/*/* | xargs grep runtime_error
 find log/201*/*/* | xargs grep fault
 find log/201*/*/* | xargs grep Traceback
@@ -108,6 +108,19 @@ find log/201*/*/* | xargs grep error
 
 #Do this ONLY for systematic root file, unless will submit all variations in addition to nominal one
 python scripts/skim.py -V skim_test -Y 2018 --dry | grep 270000_221AB515 | sh
+
+#Using commands above, write resubmit list. Create each list and run submit command. Unless, there may be duplicated list.
+find log/201*/*/* | xargs grep -l runtime_error | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+find log/201*/*/* | xargs grep -l fault | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+find log/201*/*/* | xargs grep -l Traceback | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+find log/201*/*/* | xargs grep -l error | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+find log/201*/*/* | xargs grep ERROR | grep -v "SimpleJetCorrectionUncertainty" | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+
+#Submit for each year...
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2016pre -N 
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2016post -N
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2017 -N 
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2018 -N 
 ```
 
 #### Processing
@@ -133,6 +146,13 @@ For failing job detection:
 find log/* | xargs grep runtime_error
 find log/* | xargs grep fault
 find log/* | xargs grep Traceback
+```
+To apply Tau Fake Factor with ABCD, simple analyzer is introduced (TauFakeFactorAnalyzer). Output foulder MUST include 'fake'. The l stands for loose tau, t for tight.
+``` txt
+python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_lss -Y 2018 -S nosyst -M lss
+python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_los -Y 2018 -S nosyst -M los
+python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_tss -Y 2018 -S nosyst -M tss
+python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_tos -Y 2018 -S nosyst -M tos
 ```
 Now, apply b SF rescaling, compute uncertainty envelope, etc. Let the `test\2018` is the folder containing histograms.
 ``` txt

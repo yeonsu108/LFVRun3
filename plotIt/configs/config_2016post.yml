@@ -20,6 +20,8 @@ configuration:
   yields-table-align: v
   book-keeping-file: 'plots.root'
   yields-table-numerical-precision-yields: 2
+  generated-events-histogram: 'hcounter'
+  generated-events-bin: 2
 
 files: 
   include: ['files_2016post.yml']
@@ -37,6 +39,7 @@ systematics:
   - other_xsec10: {type: const, value: 1.1, on: 'WZ'}
   - other_xsec11: {type: const, value: 1.1, on: 'ZZ'}
   - qcd_xsec: {type: const, value: 1.5, on: 'QCD'}
+  - muExtra: {type: const, value: 1.005}
   - tes
   - jer
   - jesAbsolute
@@ -60,6 +63,8 @@ systematics:
   - muiso
   - mutrg
   #- tauidjet
+  - tauFFstat
+  - tauFFsyst
   - tauidjetUncert0
   - tauidjetUncert1
   - tauidjetSystalleras
@@ -74,17 +79,26 @@ systematics:
   - tauidjetHighptextrap
   - tauidmu
   - tauidel
-  - scale: {type: shape, on: 'TTTo'}
-  - scale: {type: shape, on: 'LFV'}
-  - ps: {type: shape, on: 'TTTo'}
-  - ps: {type: shape, on: 'LFV'}
-  - pdf: {type: shape, on: 'TTTo'}
-#  - pdf: {type: shape, on: 'LFV'}
+  - mescale: {type: shape, on: 'TTTo'}
+  - mescale: {type: shape, on: 'LFV'}
+  - renscale: {type: shape, on: 'TTTo'}
+  - renscale: {type: shape, on: 'LFV'}
+  - facscale: {type: shape, on: 'TTTo'}
+  - facscale: {type: shape, on: 'LFV'}
+  - isr: {type: shape, on: 'TTTo'}
+  - isr: {type: shape, on: 'LFV'}
+  - fsr: {type: shape, on: 'TTTo'}
+  - fsr: {type: shape, on: 'LFV'}
+  - pdfalphas: {type: shape, on: 'TTTo'}
+  #- pdfenv: {type: shape, on: 'TTTo'}
+  #- pdfenv: {type: shape, on: 'LFV'}
   - hdamp: {type: shape, on: 'TTTo'}
   - tune: {type: shape, on: 'TTTo'}
 
 plots:
   include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']
+  #include: ['histos_FFcalc.yml']
+  #include: ['histos_FFapply.yml', 'histos_yield_S5.yml']
 
 legend:
   #position: [0.18, 0.70, 0.96, 0.88]

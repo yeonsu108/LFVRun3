@@ -307,7 +307,15 @@ namespace plotIt {
       if (file.type != DATA) {
         plot.is_rescaled = true;
 
-        float factor = file.cross_section * file.branching_ratio / file.generated_events;
+        auto generated_events = file.generated_events;
+
+        if (m_plotIt.getConfiguration().generated_events_histogram.length() > 0 and file.generated_events < 2) {
+            //generated_events = 1.0 if not declared in file yaml
+            std::shared_ptr<TFile> input(TFile::Open(file.path.c_str()));
+            TH1* hevt = dynamic_cast<TH1*>(input->Get(m_plotIt.getConfiguration().generated_events_histogram.c_str()));
+            generated_events = hevt->GetBinContent(m_plotIt.getConfiguration().generated_events_bin);
+        }
+        float factor = file.cross_section * file.branching_ratio / generated_events;
 
         if (! m_plotIt.getConfiguration().no_lumi_rescaling) {
           factor *= m_plotIt.getConfiguration().luminosity.at(file.era);
@@ -372,6 +380,16 @@ namespace plotIt {
                 addOverflow(static_cast<TH1*>(syst.nominal_shape.get()), file.type, plot);
                 addOverflow(static_cast<TH1*>(syst.up_shape.get()), file.type, plot);
                 addOverflow(static_cast<TH1*>(syst.down_shape.get()), file.type, plot);
+            }
+        }
+      } else if (plot.show_onlyoverflow) {
+        addOnlyOverflow(h, file.type, plot);
+
+        if (file.type != DATA) {
+            for (auto& syst: *file.systematics) {
+                addOnlyOverflow(static_cast<TH1*>(syst.nominal_shape.get()), file.type, plot);
+                addOnlyOverflow(static_cast<TH1*>(syst.up_shape.get()), file.type, plot);
+                addOnlyOverflow(static_cast<TH1*>(syst.down_shape.get()), file.type, plot);
             }
         }
       }
@@ -1164,6 +1182,48 @@ namespace plotIt {
     h->SetBinContent(first_bin, first_bin_content + underflow);
     if (type != DATA)
         h->SetBinError(first_bin, sqrt(underflow_sumw2 + first_bin_sumw2));
+
+    h->SetBinContent(last_bin, last_bin_content + overflow);
+    if (type != DATA)
+        h->SetBinError(last_bin, sqrt(overflow_sumw2 + last_bin_sumw2));
+  }
+
+  void TH1Plotter::addOnlyOverflow(TH1* h, Type type, const Plot& plot) {
+
+    if (!h || !h->GetEntries())
+        return;
+
+    size_t last_bin = h->GetNbinsX();
+
+    auto x_axis_range = plot.log_x ? plot.log_x_axis_range : plot.x_axis_range;
+
+    if (x_axis_range.valid()) {
+      std::shared_ptr<TH1> copy(dynamic_cast<TH1*>(h->Clone()));
+      copy->SetDirectory(nullptr);
+      copy->GetXaxis()->SetRangeUser(x_axis_range.start, x_axis_range.end);
+
+      // Find first and last bin corresponding to the given range
+      last_bin = copy->GetXaxis()->GetLast();
+    }
+
+    // GetBinError returns sqrt(SumW2) for a given bin
+    // SetBinError updates SumW2 for a given bin with error*error
+
+    float overflow = 0;
+    float overflow_sumw2 = 0;
+    for (size_t i = last_bin + 1; i <= (size_t) h->GetNbinsX() + 1; i++) {
+      overflow += h->GetBinContent(i);
+      overflow_sumw2 += (h->GetBinError(i) * h->GetBinError(i));
+    }
+    // Clear out-of-range bin content so that Integral() still returns the right value
+    for (size_t i = last_bin + 1; i < (size_t) h->GetNbinsX() + 1; i++) {
+      h->SetBinContent(i, 0);
+    }
+    // Clear also underflow and overflow bins (SetBinContent on these may try to extend the axes)
+    h->ClearUnderflowAndOverflow();
+
+    float last_bin_content = h->GetBinContent(last_bin);
+    float last_bin_sumw2 = h->GetBinError(last_bin) * h->GetBinError(last_bin);
 
     h->SetBinContent(last_bin, last_bin_content + overflow);
     if (type != DATA)

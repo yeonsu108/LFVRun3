@@ -10,8 +10,8 @@ import sys, os, re, argparse
 import cppyy
 import ROOT
 
-#def Nanoaodprocessor_singledir(outputroot, indir, year, syst, json):
 if __name__=='__main__':
+
     parser = argparse.ArgumentParser(usage="%prog [options]")
     parser.add_argument("-I", "--indir",  dest="indir", type=str, default="", help="Input directory")
     parser.add_argument("-O", "--outputroot", dest="outputroot", type=str, default="", help="Output file in your working directory")
@@ -19,12 +19,16 @@ if __name__=='__main__':
     parser.add_argument("-S", "--syst", dest="syst", type=str, default="theory", help="Systematic: 'data' for Data, 'nosyst' for mc without uncertainties. Default is 'theory'. To run without theory unc for TT samples, put 'all'.")
     parser.add_argument("-D", "--dataset", dest="dataset", action="store", nargs="+", default=[], help="Put dataset folder name (eg. TTTo2L2Nu) to process specific one.")
     parser.add_argument("-F", "--dataOrMC", dest="dataOrMC", type=str, default="", help="data or mc flag, if you want to process data-only or mc-only")
+    parser.add_argument("-M", "--mode", dest="mode", type=str, default="", help="Only for fake rate: lss, los, tss, tos")
+    parser.add_argument("--ff", dest="ff", action="store_true", default=False, help="Apply tau fake factor for final selection")
     options = parser.parse_args()
 
     outputroot = options.outputroot
     indir = options.indir
     year = options.year
     syst = options.syst
+    mode = options.mode
+    applytauFF = options.ff
 
     workdir = os.getcwd()
 
@@ -71,12 +75,19 @@ if __name__=='__main__':
         print("There is NO EVENT to process, ending the processing!!")
         sys.exit()
     aproc = None
-    aproc = ROOT.TopLFVAnalyzer(t, outputroot, year, syst, json, "", 1)
+    if len(mode) > 1:
+        aproc = ROOT.TauFakeFactorAnalyzer(t, outputroot, year, syst, json, "", 1, mode)
+    else:
+        aproc = ROOT.TopLFVAnalyzer(t, outputroot, year, syst, json, applytauFF, "", 1)
     aproc.setupAnalysis()
     aproc.run(False, "Events")
 
     # process input rootfiles to sum up all the counterhistograms
     counterhistogramsum = None
+    LHEPdfWeightSumAll = None
+    PSWeightSumAll = None
+    ScaleWeightSumAll = None
+
     for arootfile in rootfilestoprocess:
         intf = ROOT.TFile(arootfile)
         counterhistogram = intf.Get("hcounter")
@@ -86,7 +97,26 @@ if __name__=='__main__':
                 counterhistogramsum.SetDirectory(0)
             else:
                 counterhistogramsum.Add(counterhistogram)
+
+        if syst == "theory":
+            LHEPdfWeightSum = intf.Get("LHEPdfWeightSum")
+            PSWeightSum = intf.Get("PSWeightSum")
+            ScaleWeightSum = intf.Get("ScaleWeightSum")
+
+            if LHEPdfWeightSum != None:
+                if LHEPdfWeightSumAll == None:
+                    LHEPdfWeightSumAll = LHEPdfWeightSum.Clone()
+                    LHEPdfWeightSumAll.SetDirectory(0)
+                    PSWeightSumAll = PSWeightSum.Clone()
+                    PSWeightSumAll.SetDirectory(0)
+                    ScaleWeightSumAll = ScaleWeightSum.Clone()
+                    ScaleWeightSumAll.SetDirectory(0)
+                else:
+                    LHEPdfWeightSumAll.Add(LHEPdfWeightSum)
+                    PSWeightSumAll.Add(PSWeightSum)
+                    ScaleWeightSumAll.Add(ScaleWeightSum)
         intf.Close()
+
     if counterhistogramsum != None:
         print("Updating with counter histogram")
         outf = ROOT.TFile(outputroot, "UPDATE")
@@ -95,5 +125,16 @@ if __name__=='__main__':
         outf.Close()
     else:
         print("counter histogram not found")
+
+    if LHEPdfWeightSumAll != None:
+        print("Updating with theory weight sum histograms")
+        outf = ROOT.TFile(outputroot, "UPDATE")
+        LHEPdfWeightSumAll.Write()
+        PSWeightSumAll.Write()
+        ScaleWeightSumAll.Write()
+        outf.Write("", ROOT.TObject.kOverwrite)
+        outf.Close()
+    else:
+        print("theory weight sum histograms not found")
 
     pass

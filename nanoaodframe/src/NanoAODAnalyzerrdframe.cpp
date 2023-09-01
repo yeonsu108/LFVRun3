@@ -26,7 +26,7 @@
 using namespace std;
 
 NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
-:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), PDFWeights(103, 0.0) {
+:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), PDFWeights(103, 0.0), PSWeights(4, 0.0), ScaleWeights(9, 0.0) {
 
     // record time
     auto start = std::chrono::system_clock::now();
@@ -120,26 +120,55 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
 
     //_rlm = _rlm.Filter("event < 12534199");
 
-    _rlm = _rlm.Define("one", "1.0");
+    _rlm = _rlm.Define("one", "1.0")
+               .Define("zero", "0.0");
     // Event weight for data it's always one. For MC, it depends on the sign
     if(_isSkim){
         _rlm = _rlm.Define("unitGenWeight", "one");
 
         if(!_isData){
 
-            // Store PDF sum of weights
-            auto storeWeights = [this](floats weights)->floats {
+            // Store sum of weights
+            auto storePDFWeights = [this](floats weights, float gen)->floats {
 
                 for (unsigned int i=0; i<weights.size(); i++)
-                    PDFWeights[i] += weights[i];
+                    PDFWeights[i] += (gen / abs(gen)) * weights[i];
 
                 return PDFWeights;
             };
+            auto storePSWeights = [this](floats weights, float gen)->floats {
+
+                for (unsigned int i=0; i<weights.size(); i++) {
+                    if (i > 3) continue; //JME Nano stores all PS
+                    PSWeights[i] += (gen / abs(gen)) * weights[i];
+                }
+
+                return PSWeights;
+            };
+            auto storeScaleWeights = [this](floats weights, float gen)->floats {
+
+                for (unsigned int i=0; i<weights.size(); i++)
+                    ScaleWeights[i] += (gen / abs(gen)) * weights[i];
+
+                return ScaleWeights;
+            };
             try {
-                _rlm.Foreach(storeWeights, {"LHEPdfWeight"});
+                _rlm.Foreach(storePDFWeights, {"LHEPdfWeight", "genWeight"});
             } catch (exception& e) {
                 cout << e.what() << endl;
                 cout << "No PDF weight in this root file!" << endl;
+            }
+            try {
+                _rlm.Foreach(storePSWeights, {"PSWeight", "genWeight"});
+            } catch (exception& e) {
+                cout << e.what() << endl;
+                cout << "No PS weight in this root file!" << endl;
+            }
+            try {
+                _rlm.Foreach(storeScaleWeights, {"LHEScaleWeight", "genWeight"});
+            } catch (exception& e) {
+                cout << e.what() << endl;
+                cout << "No Scale weight in this root file!" << endl;
             }
 
             // pu weight setup
@@ -1160,13 +1189,31 @@ void NanoAODAnalyzerrdframe::selectTaus() {
         else return {{1.0f, 1.0f, 1.0f}};
     };
 
+    // Fake factor study - loose but not tight
     // Hadronic Tau Object Selections
-    //_rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3 && Tau_idDecayModeNewDMs  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
     _rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
-               .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64");
+               .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64")
+               .Define("deeptauidcuts_loose","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 8");
 
     // Hadronic Tau Selection
+    _rlm = _rlm.Define("seltaucuts_loose","taucuts && deeptauidcuts_loose && mutauoverlap")
+               .Define("Tau_pt_loose", "Tau_pt[seltaucuts_loose]")
+               .Define("Tau_pt_loose_gen", "Tau_pt[seltaucuts_loose]")
+               .Define("Tau_charge_loose", "Tau_charge[seltaucuts_loose]")
+               .Define("Tau_decayMode_loose", "Tau_decayMode[seltaucuts_loose]")
+               .Define("nloosetaupass", "int(Tau_pt_loose.size())");
+
+    if (!_isData) {
+        _rlm = _rlm.Define("Tau_genPartFlav_loose","Tau_genPartFlav[seltaucuts_loose]")
+                   .Define("taugencut_loose","Tau_genPartFlav_loose == 5")
+                   .Redefine("Tau_pt_loose_gen", "Tau_pt_loose_gen[taugencut_loose]")
+                   .Redefine("tauWeightIdVsJet_loose", skimCol, {"tauWeightIdVsJet_loose", "seltaucuts_loose"})
+                   .Define("tauWeightIdVsEl_loose", skimCol, {"tauWeightIdVsEl", "seltaucuts_loose"})
+                   .Define("tauWeightIdVsMu_loose", skimCol, {"tauWeightIdVsMu", "seltaucuts_loose"});
+    }
+
     _rlm = _rlm.Define("seltaucuts","taucuts && deeptauidcuts && mutauoverlap")
+               .Define("Tau_pt_gen", "Tau_pt[seltaucuts]")
                .Redefine("Tau_pt", "Tau_pt[seltaucuts]")
                .Redefine("Tau_eta", "Tau_eta[seltaucuts]")
                .Redefine("Tau_phi", "Tau_phi[seltaucuts]")
@@ -1179,6 +1226,8 @@ void NanoAODAnalyzerrdframe::selectTaus() {
 
     if (!_isData) {
         _rlm = _rlm.Redefine("Tau_genPartFlav","Tau_genPartFlav[seltaucuts]")
+                   .Define("taugencut","Tau_genPartFlav == 5")
+                   .Redefine("Tau_pt_gen", "Tau_pt[taugencut]")
                    .Redefine("tauWeightIdVsJet", skimCol, {"tauWeightIdVsJet", "seltaucuts"})
                    .Redefine("tauWeightIdVsEl", skimCol, {"tauWeightIdVsEl", "seltaucuts"})
                    .Redefine("tauWeightIdVsMu", skimCol, {"tauWeightIdVsMu", "seltaucuts"});
@@ -1422,9 +1471,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                 // TauSFTool will take care of pt > 140 SF by setting pT = 140
                 float nomsf = _tauidSFjet->getSFvsDMandPT(pt[i], dm[i], int(genid[i]));
                 float nomsf_highpt = _tauidSFjetHighPt->getHighPTSFvsPT(pt[i], int(genid[i]));
-                uncSources.emplace_back(nomsf);
 
                 if (pt[i] <= 140) {
+                    uncSources.emplace_back(nomsf);
                     for (auto unc : uncerts) {
                         size_t pos = unc.find("dmX");
                         if (pos != std::string::npos) { //indices 9-16
@@ -1445,6 +1494,7 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
                     }
                     uncSources.insert(uncSources.end(), 10, nomsf);
                 } else {
+                    uncSources.emplace_back(nomsf_highpt);
                     uncSources.insert(uncSources.end(), 16, nomsf_highpt);
                     for (auto unc : uncertsHighPt) {
                         uncSources.emplace_back(_tauidSFjetHighPt->getHighPTSFvsPT(pt[i], int(genid[i]), unc + "_up"));
@@ -1499,6 +1549,12 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     _rlm = _rlm.Define("tauWeightIdVsJet", tauSFIdVsJet, {"Tau_pt","Tau_eta","Tau_genPartFlav", "Tau_decayMode"})
                .Define("tauWeightIdVsEl", tauSFIdVsEl, {"Tau_pt","Tau_eta","Tau_genPartFlav"})
                .Define("tauWeightIdVsMu", tauSFIdVsMu, {"Tau_pt","Tau_eta","Tau_genPartFlav"});
+
+    tauid_vsjet = "Loose";
+    _tauidSFjet = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet, tauid_vse, false, true, false, false);
+    _tauidSFjetHighPt = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet, tauid_vse, false, false, false, true);
+
+    _rlm = _rlm.Define("tauWeightIdVsJet_loose", tauSFIdVsJet, {"Tau_pt","Tau_eta","Tau_genPartFlav", "Tau_decayMode"});
 
 }
 
@@ -1700,9 +1756,19 @@ void NanoAODAnalyzerrdframe::run(bool saveAll, string outtreename) {
             }
         }
 
-        TH1F* hPDFWeights = new TH1F("LHEPdfWeightSum", "LHEPdfWeightSum", 103, 0, 103);
-        for (size_t i=0; i<PDFWeights.size(); i++)
-            hPDFWeights->SetBinContent(i+1, PDFWeights[i]);
+        if (_isSkim == true) {
+            TH1F* hPDFWeights = new TH1F("LHEPdfWeightSum", "LHEPdfWeightSum", 103, 0, 103);
+            for (size_t i=0; i<PDFWeights.size(); i++)
+                hPDFWeights->SetBinContent(i+1, PDFWeights[i]);
+
+            TH1F* hPSWeights = new TH1F("PSWeightSum", "PSWeightSum", 4, 0, 4);
+            for (size_t i=0; i<PSWeights.size(); i++)
+                hPSWeights->SetBinContent(i+1, PSWeights[i]);
+
+            TH1F* hScaleWeights = new TH1F("ScaleWeightSum", "ScaleWeightSum", 9, 0, 9);
+            for (size_t i=0; i<ScaleWeights.size(); i++)
+                hScaleWeights->SetBinContent(i+1, ScaleWeights[i]);
+        }
 
         _outrootfile->Write(0, TObject::kOverwrite);
         _outrootfile->Close();

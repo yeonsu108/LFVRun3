@@ -24,6 +24,7 @@ namespace plotIt {
         private:
             void setHistogramStyle(const File& file);
             void addOverflow(TH1* h, Type type, const Plot& plot);
+            void addOnlyOverflow(TH1* h, Type type, const Plot& plot);
 
             Stack buildStack(int64_t index, bool sortByYields);
             Stacks buildStacks(bool sortByYields);
