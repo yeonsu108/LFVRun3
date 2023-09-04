@@ -47,7 +47,8 @@ def run(inputs):
     
     eval_dir = label+"_"+processed+"/"
     
-    hists_path = eval_dir+"/"+year+"/preds/"+discriminator_key+"/"+str(alpha).replace(".","p")+"/"
+    #hists_path = eval_dir+"/"+year+"/preds/"+discriminator_key+"/"+str(alpha).replace(".","p")+"/"
+    hists_path = "/data1/users/ecasilar/Sep1/"+year+"/"
     if not os.path.isdir(hists_path):
         os.makedirs(hists_path)
     
@@ -64,12 +65,36 @@ def run(inputs):
     branch_names = tree.keys()
     syst_list = [syst.split("__")[1] for syst in branch_names if "eventWeight__" in syst]
     hcounter = infile["hcounter"]
-    if len(tree) == 0:
+    nEvents = len(tree)
+    syst_hist_dnn_dict = {}
+    syst_hist_dnn_entries_dict = {}
+    hist_nevents_S4_dict = {}
+    hist_nevents_S5_dict = {}
+        
+    if not "SingleMuon" in input_file :
+        infile_forS = uproot.open(input_file.replace("_FF",""))
+        h_nevents_S4_nobtag = infile_forS["h_nevents_S4_nobtag"]  ### get it from removed FF 
+        h_nevents_S4 = infile_forS["h_nevents_S4"]	
+        h_nevents_S2_nobtag = infile_forS["h_nevents_S2_nobtag"]
+        h_nevents_S2 = infile_forS["h_nevents_S2"]	
+        if any(string in input_file for string in ["_LFV","TTT"]) and "__" not in input_file:
+           ScaleWeightSum = infile['ScaleWeightSum']
+           PSWeightSum = infile['PSWeightSum']
+           LHEPdfWeightSum = infile['LHEPdfWeightSum']
+
+    if nEvents == 0:
         print("No events : "+input_file)
+        #Need to add empth histograms for technical reasons ....
         pred = []
         pd_weight = []
-        dnnhist = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
-        dnnhist_entries = np.histogram(pred,bins=binedges,density=False)
+        dnnhist_nom = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
+        dnnhist_entries_nom = np.histogram(pred,bins=binedges,density=False)
+        for syst in syst_list:
+            syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] = dnnhist_nom
+            syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst] = dnnhist_entries_nom
+            if 'btag' in syst:
+              hist_nevents_S4_dict["h_nevents_S4__"+syst] = infile_forS["h_nevents_S4__"+syst]  
+              hist_nevents_S5_dict["h_nevents_S5__"+syst] = infile["h_nevents_S5__"+syst]
     else:
         print("Good file :",input_file)
         pd_data = tree.arrays(inputvars,library="pd")
@@ -90,37 +115,40 @@ def run(inputs):
         dnnhist_nom = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
         dnnhist_entries_nom = np.histogram(pred,bins=binedges,density=False)
         
-        if not "SingleMuon" in input_file :
-            infile_forS = uproot.open(input_file.replace("_FF",""))
-            h_nevents_S4_nobtag = infile_forS["h_nevents_S4_nobtag"]  ### get it from removed FF 
-            h_nevents_S4 = infile_forS["h_nevents_S4"]	
-            h_nevents_S2_nobtag = infile_forS["h_nevents_S2_nobtag"]
-            h_nevents_S2 = infile_forS["h_nevents_S2"]	
 
         print("starting syst weighted hists ")
 
-        syst_hist_dnn_dict = {}
-        syst_hist_dnn_entries_dict = {}
         for syst in syst_list:
             pd_weight = tree.arrays(["eventWeight__"+syst],library="np")
             pd_weight = pd_weight["eventWeight__"+syst].tolist()
             dnnhist_Wsyst = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
             dnnhist_entries_Wsyst = np.histogram(pred,bins=binedges,density=False)
-            syst_hist_dnn_dict["h_dnn_pred__"+syst] = dnnhist_Wsyst
-            syst_hist_dnn_entries_dict["h_dnn_entries__"+syst] = dnnhist_entries_Wsyst
+            syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] = dnnhist_Wsyst
+            syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst] = dnnhist_entries_Wsyst
+            if 'btag' in syst:
+               hist_nevents_S4_dict["h_nevents_S4__"+syst] = infile_forS["h_nevents_S4__"+syst]  
+               hist_nevents_S5_dict["h_nevents_S5__"+syst] = infile["h_nevents_S5__"+syst]
 
-        with uproot.recreate(outf_dir) as outf:
-           outf["h_dnn_pred"] = dnnhist_nom
-           outf["h_dnn_entries"] = dnnhist_entries_nom
-           outf["hcounter"] = hcounter
-           if not "SingleMuon" in input_file : 
-               outf["h_nevents_S4_nobtag"] = h_nevents_S4_nobtag
-               outf["h_nevents_S4"] = h_nevents_S4
-               outf["h_nevents_S2_nobtag"] = h_nevents_S2_nobtag
-               outf["h_nevents_S2"] = h_nevents_S2
-           for syst in syst_list:
-               outf["h_dnn_pred__"+syst] = syst_hist_dnn_dict["h_dnn_pred__"+syst] 
-               outf["h_dnn_entries__"+syst] = syst_hist_dnn_entries_dict["h_dnn_entries__"+syst]
+    with uproot.recreate(outf_dir) as outf:
+       outf["h_dnn_pred_S5"] = dnnhist_nom
+       outf["h_dnn_entries_S5"] = dnnhist_entries_nom
+       outf["hcounter"] = hcounter
+       if not "SingleMuon" in input_file : 
+           outf["h_nevents_S4_nobtag"] = h_nevents_S4_nobtag
+           outf["h_nevents_S4"] = h_nevents_S4
+           outf["h_nevents_S2_nobtag"] = h_nevents_S2_nobtag
+           outf["h_nevents_S2"] = h_nevents_S2
+           if any(string in input_file for string in ["_LFV","TTT"]) and "__" not in input_file:
+              outf["ScaleWeightSum"] = ScaleWeightSum
+              outf["PSWeightSum"] = PSWeightSum
+              outf["LHEPdfWeightSum"] = LHEPdfWeightSum
+
+       for syst in syst_list:
+           outf["h_dnn_pred_S5__"+syst] = syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] 
+           outf["h_dnn_entries_S5__"+syst] = syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst]
+           if 'btag' in syst:
+              outf["h_nevents_S4__"+syst] = hist_nevents_S4_dict["h_nevents_S4__"+syst]
+              outf["h_nevents_S5__"+syst] = hist_nevents_S5_dict["h_nevents_S5__"+syst]
 
     K.clear_session()
 
@@ -136,6 +164,7 @@ if __name__ == '__main__':
        flist = [i for i in flist if (".root" in i)]
        print(len(flist))
        for curfile in flist:
+          if "ST_LFV" not in curfile: continue
           parameters.append((year, project_dir+curfile ,discriminator,alpha))
 
     pool = multiprocessing.get_context("spawn").Pool(12)

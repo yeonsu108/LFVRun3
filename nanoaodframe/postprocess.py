@@ -114,7 +114,7 @@ def write_envelope(inputh, inputf, bsff, syst, nhists, gen_sumW, wgt_sumW):
         if up == None: return 1
         up.SetDirectory(ROOT.nullptr)
         dn.SetDirectory(ROOT.nullptr)
-
+        print("gen_sumW.GetBinContent(2)", gen_sumW.GetBinContent(2))
         up.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][0]))
         dn.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][1]))
         up.Scale(get_bSFratio(bsff, up.GetName()))

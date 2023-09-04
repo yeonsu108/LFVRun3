@@ -1,4 +1,4 @@
-'h_dnn_pred':
+'h_dnn_pred_S5':
   x-axis: "DNN Score"
   y-axis: "Entries"
   y-axis-format: "%1% / %2$.2f"
