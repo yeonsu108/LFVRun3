@@ -164,10 +164,9 @@ if __name__ == '__main__':
        flist = [i for i in flist if (".root" in i)]
        print(len(flist))
        for curfile in flist:
-          if "ST_LFV" not in curfile: continue
           parameters.append((year, project_dir+curfile ,discriminator,alpha))
 
-    pool = multiprocessing.get_context("spawn").Pool(12)
+    pool = multiprocessing.get_context("spawn").Pool(1)
     pool.map(run, parameters)
     pool.close()
     pool.join()

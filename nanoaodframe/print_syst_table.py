@@ -16,7 +16,8 @@ tmp_file_name = 'temp_' + year + '_forSyst.yml'
 string_to_add = 'systematics:\n'
 plot_to_add = "plots:\n  include: ['histos_dnn.yml']\n\n"
 if 'FF' in options.input:
-    plot_to_add = "plots:\n  include: ['histos_yield_S5.yml']\n\n"
+    #plot_to_add = "plots:\n  include: ['histos_yield_S5.yml']\n\n"
+    plot_to_add = "plots:\n  include: ['histos_dnn.yml']\n\n"
 
 if   year == "2016pre" : tauYear = "UL2016_preVFP"
 elif year == "2016post": tauYear = "UL2016_postVFP"
