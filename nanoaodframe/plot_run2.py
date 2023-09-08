@@ -5,6 +5,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-I', '--input', dest='input', type=str, default="test")
+parser.add_argument("-D", dest="DNN", action="store_true", default=False, help="Run for DNN histograms")
 args = parser.parse_args()
 input = args.input
 
@@ -13,17 +14,16 @@ config_path = '../plotIt/configs/'
 common_syst = 'systematics:\n'
 groups = ['GData', 'Gttll', 'Gttlj', 'Gttjj', 'GttV', 'GZJets', 'GWJets', 'GSingleT', 'GVV', 'GQCD',
           'GLFVSTcv', 'GLFVSTuv', 'GLFVTTcv', 'GLFVTTuv',]
-#not include prefire and elzvtx which exist only in 2016-7?
-common_syst_list = ['pu', 'muid', 'muiso', 'mutrg', 'tauidjet', 'tauidmu', 'tauidel',
-                    'btaglf', 'btaghf', 'btaglfstat1', 'btaglfstat2', 
-                    'btaghfstat1', 'btaghfstat2', 'btagcferr1', 'btagcferr2',
-                    'jesAbsolute', 'jesBBEC1','jesFlavorQCD', 'jesRelativeBal']
-common_syst_list += ['jesAbsolute_2016', 'jesAbsolute_2017', 'jesAbsolute_2018',
-                     'jesBBEC1_2016', 'jesBBEC1_2017', 'jesBBEC1_2018',
-                     'jesRelativeSample_2016', 'jesRelativeSample_2017', 'jesRelativeSample_2018']
-common_syst_list += ['tauFFstat', 'tauFFsyst']
-
 years = {'2016pre': 19502, '2016post': 16812, '2017': 41480, '2018':59832}
+
+common_syst_list = []
+for year, lumi in years.items():
+  with open(config_path + 'config_' + year + '.yml') as f:
+    lines = f.readlines()
+    for line in lines:
+      if "  - " in line: common_syst_list.append(line)
+
+common_syst_list = sorted(set(common_syst_list), key=common_syst_list.index)
 
 dest_path = input
 if not os.path.exists(os.path.join(dest_path, 'figure_run2')):
@@ -40,11 +40,9 @@ if not os.path.exists(os.path.join(dest_path, 'figure_run2/dyincl/qcd')):
   except: pass
 
 for item in common_syst_list:
-  common_syst += '  - ' + item + '\n'
+  common_syst += item
 
 string_for_files = ''
-file_syst = ''
-
 for year, lumi in years.items():
   #Firstly, merge file list + scale
   with open(config_path + 'files_' + year + '.yml') as f:
@@ -65,21 +63,6 @@ for year, lumi in years.items():
         #if 'group' in line and not any(i in line for i in groups): string_for_files += '  group: Gother \n'
         #else: string_for_files += line
         string_for_files += line
-
-  with open(config_path + 'config_' + year + '.yml') as f:
-    lines = f.readlines()
-    for line in lines:
-      if 'type' in line:
-        if 'const' in line:
-          #file_syst += line[:line.find(':')] + '_' + year + line[line.find(':'):line.find('hist')] + dest_path + '/' + year + '_postprocess/' + line[line.find('hist'):]
-          #file_syst += line[:line.find(':')] + '_' + year + line[line.find(':'):line.find('hist')] + line[line.find('hist'):]
-          if year == '2016pre':
-            file_syst += line
-        elif 'shape' in line:
-          #file_syst += line[:line.find('hist')] + dest_path + '/' + year + '_postprocess/' + line[line.find('hist'):]
-          #file_syst += line[:line.find('hist')] + line[line.find('hist'):]
-          if year == '2016pre':
-            file_syst += line
 
 
 with open(config_path + 'files_Run2.yml', 'w+') as fnew:
@@ -123,11 +106,12 @@ with open(config_path + 'template_Run2.yml') as f:
   with open(config_path + 'config_Run2.yml', 'w+') as f1:
     for line in lines: f1.write(line)
     f1.write(common_syst)
-    f1.write(file_syst)
-    #f1.write("\nplots:\n  include: ['histos_dnn.yml']\n")
     if 'FF' in dest_path:
         f1.write("\nplots:\n  include: ['histos_FFapply.yml', 'histos_yield_S5.yml']\n")
-    f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml','histos_dnn.yml']\n")
+    elif options.DNN:
+        f1.write("\nplots:\n  include: ['histos_dnn.yml']\n")
+    else:
+        f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']\n")
 
 call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
 call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
