@@ -6,6 +6,7 @@ from optparse import OptionParser
 parser = OptionParser(usage="%prog [options]")
 parser.add_option("-I", "--input",  dest="input", type="string", default="", help="Input folder name")
 parser.add_option("-Y", "--year",  dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")
+parser.add_argument("-D", dest="DNN", action="store_true", default=False, help="Run for DNN histograms")
 (options, args) = parser.parse_args()
 
 year = options.year
@@ -17,6 +18,7 @@ string_to_add = 'systematics:\n'
 plot_to_add = "plots:\n  include: ['histos_yield.yml']\n\n"
 if 'FF' in options.input:
     plot_to_add = "plots:\n  include: ['histos_yield_S5.yml']\n\n"
+if options.DNN: plot_to_add = "plots:\n  include: ['histos_dnn.yml']\n\n"
 
 if   year == "2016pre" : tauYear = "UL2016_preVFP"
 elif year == "2016post": tauYear = "UL2016_postVFP"
