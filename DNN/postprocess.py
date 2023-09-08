@@ -8,114 +8,128 @@ import argparse
 
 base_path = './'
 parser = argparse.ArgumentParser()
-parser.add_argument('-L', '--label', dest='label', type=str, default="rerun_staug22")
+parser.add_argument('-L', '--label', dest='label', type=str, default="top_lfv_multiClass_jan03")
 parser.add_argument('-D', '--discriminator', dest='discriminator', type=str, default="p_st_tt_ob")
-parser.add_argument('-A', '--alpha', dest='alpha', type=str, default="1p0")
-
+parser.add_argument('-A', '--alpha', dest='alpha', type=str, default="0p1")
+parser.add_argument('-Y', '--year', dest='year', type=str, default="2017")
 args = parser.parse_args()
 label = args.label
 discriminator = args.discriminator
 alpha = args.alpha
-#labels = ['rerun_multi_Multiaug22','rerun_staug22', 'rerun_ttaug22']
-# Set Runs
-years = ['2016pre', '2016post', '2017','2018']
-#years = [ '2018']
+year = args.year
 
-# Set output folders
-for year in years:
-	if not os.path.exists(base_path + label + '/' + year + '_postprocess/' + discriminator + '/' + alpha + '/'):
-	    os.makedirs(base_path + label + '/' + year + '_postprocess/' + discriminator + '/' + alpha + '/')
 
-# Systematic Sources => All systematics in one file.
+if year not in ['2016pre', '2016post', '2017', '2018']:
+    print('Wrong year, check again')
+    sys.exit()
 
-systs_tofile = ['jerdown', 'jerup', 'jesAbsolute_yeardown', 'jesAbsolute_yearup', 'jesAbsolutedown', 'jesAbsoluteup', 'jesBBEC1_yeardown', 'jesBBEC1_yearup', 'jesBBEC1down', 'jesBBEC1up', 'jesFlavorQCDdown', 'jesFlavorQCDup', 'jesRelativeBaldown', 'jesRelativeBalup', 'jesRelativeSample_yeardown', 'jesRelativeSample_yearup', 'tesdown', 'tesup']
-systs_toweight = ['btagcferr1down', 'btagcferr1up', 'btagcferr2down', 'btagcferr2up', 'btaghfdown', 'btaghfstats1down', 'btaghfstats1up', 'btaghfstats2down', 'btaghfstats2up', 'btaghfup', 'btaglfdown', 'btaglfstats1down', 'btaglfstats1up', 'btaglfstats2down', 'btaglfstats2up', 'btaglfup', 'muiddown', 'muidup', 'muisodown', 'muisoup', 'mutrgdown', 'mutrgup', 'pudown', 'puup', 'tauideldown', 'tauidelup', 'tauidjetdown', 'tauidjetup', 'tauidmudown', 'tauidmuup']
-systs = systs_tofile+systs_toweight+['']
+yield_name = 'h_ncleanjetspass'
+base_path = './'
+nom_path = base_path+label
 
-# Produce dictionary for file lists.
-
-nom_path = base_path + label
 if not os.path.exists(nom_path):
     print("Folder '{}' does not exists.".format(nom_path))
     sys.exit()
 else:
-    print("Start postprocessing for '{}'.".format(nom_path))
+    print("Start postprocessing at '{}'.".format(nom_path))
 
-file_list = {}
-print(os.listdir(nom_path+'/'+year+'/preds/'+discriminator+'/'+alpha +'/'))
-for year in years:
-    if "multi" in label.lower(): file_list[year] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+year+'/preds/'+discriminator+'/'+alpha +'/') if '.root' in i and '__' not in i]
-    else: file_list[year] = [i.replace('.root','') for i in os.listdir(nom_path+'/'+year) if '.root' in i and '__' not in i]
-print(file_list)
 
-def collect_systhists(outfile, fname, hlists, syst, syst_, year):
-    if 'SingleMuon' not in fname and syst != '':
-        try:
-          tmpf = TFile.Open(os.path.join(nom_path, year, fname + '__' + syst.replace("year",year[:4]) + '.root'), 'READ')
-        except:
-          print("No file: " + os.path.join(nom_path, year, fname + '__' + syst.replace("year",year[:4]) + '.root'))
-          return
-    else: tmpf = TFile.Open(os.path.join(nom_path, year, fname + '.root'), 'READ')
-    for histname in hlists:
-        if syst != '' and 'counter' in histname: continue
-        tmpf.cd()
-        tmphist = tmpf.Get(histname)
-        if syst == '': newtmphist = tmphist.Clone(histname)
-        else: newtmphist = tmphist.Clone(histname + '__' + syst_)
-        if 'SingleMuon' not in fname: newtmphist.Scale(1./get_bSFratio(tmpf))
-        else: newtmphist.Scale(1.)
-        outfile.cd()
-        newtmphist.Write()
-    tmpf.Close()
-    return
+out_path = nom_path + '/' + year + '_postprocess/' + discriminator + '/' + alpha + '/'
+if not os.path.exists(base_path + label + '/' + year + '_postprocess/' + discriminator + '/' + alpha + '/'):
+    os.makedirs(base_path + label + '/' + year + '_postprocess/' + discriminator + '/' + alpha + '/')
 
-def get_bSFratio(infile):
-    prehist = infile.Get('h_nevents_S5_nobtag')
-    posthist = infile.Get('h_nevents_S5')
+
+# Set output folders
+
+file_list = [i.replace('.root', '') for i in os.listdir(nom_path+'/'+year+'/preds/'+discriminator+'/'+alpha +'/') if '.root' in i]
+data_list = [i[:i.find('201')] for i in os.listdir(nom_path+'/'+year+'/preds/'+discriminator+'/'+alpha +'/') if '.root' in i and '201' in i and 'jes' not in i]
+data_list = list(set(data_list))
+#print(data_list)
+#print(file_list)
+
+
+def get_bSFratio(inputf, inputh):
+    # ref: https://twiki.cern.ch/twiki/bin/viewauth/CMS/BTagShapeCalibration
+    # rescale histogram by Sum(event weights before applying b weight)/Sum(weights with b weight)
+    # This should be done per jet bin - nojet / 3jet
+
+    step = 'S4'
+    if isFFcalc: step = 'S2'
+
+    posthist = inputf.Get('h_nevents_' + step)
+    prehist = inputf.Get('h_nevents_' + step + '_nobtag')
+    if '__btag' in inputh:
+        posthist = inputf.Get('h_nevents_' + step + '__' + str(inputh.split('__')[-1]))
     if prehist.Integral() * posthist.Integral() == 0:
-        return 1
-    else :
-        return posthist.Integral() / prehist.Integral()
+        return 1.0
+    #print(prehist.Integral() / posthist.Integral())
+    return prehist.Integral(0, prehist.GetNbinsX()+1) / posthist.Integral(0, prehist.GetNbinsX()+1)
+
+
+def get_Scale(inputf):
+
+    nom_sumW=inputf.Get('hcounter_nom')
+    sumW=inputf.Get('hcounter')
+    return float(nom_sumW.Integral(0, nom_sumW.GetNbinsX()+1) / sumW.Integral(0,sumW.GetNbinsX()+1))
 
 # Loop over all files.
-for year in years:
-    out_path = nom_path + '/' + year + '_postprocess/' + discriminator + '/' + alpha + '/'
-    for fname in file_list[year]:
-        if "multi" in label.lower() : infile = TFile.Open(os.path.join(nom_path, year, "preds",discriminator , alpha , fname+'.root'), 'READ')
-        else : infile = TFile.Open(os.path.join(nom_path, year, fname+'.root'), 'READ')
-        hlists = [ h.GetName() for h in infile.GetListOfKeys() if any(i in h.GetName() for i in ['dnn_pred', 'counter']) ]
-        # Get ratio for rescaling with b-tagSF.
-        if 'SingleMuon' not in fname: ratio = get_bSFratio(infile)
-        else : ratio = 1
-        outfname = fname.replace("_" + year + "_" + fname.split("_")[-1], "")
-        if "SingleMuon" in fname:
-            outfname = fname.replace("_" + fname.split("_")[-1], "")
-        print("Saving histograms at {}/{}.root".format(out_path, outfname))
-        # Collecting Histograms in outfile.
-        outfile = TFile.Open(os.path.join(out_path, outfname + '.root'), 'RECREATE')
-        # Looping over all systematics.
-        #for syst, syst_ in systs.items():
-        for syst in systs:
-            if "year" in syst:
-              syst = syst.replace('year', year[:4])
-            syst_ = syst
-            if "multi" in label.lower(): collect_systhists(outfile, fname, hlists, syst, syst_, year+"/preds/"+discriminator+"/"+alpha+"/")
-            else: collect_systhists(outfile, fname, hlists, syst, syst_, year)
-        outhlists = [ h.GetName() for h in outfile.GetListOfKeys() if 'cut' in h.GetName() ]
-        for h in outhlists:
-            print(h)
-            if "SingleMuon" in fname:
-                continue
-            if h == "hcounter":
-                newhist = outfile.Get(h)
-                newhist.Write()
-            if ('_nobtag' in h):
-                continue
-            if ('pred' in h):
-                outfile.cd()
-                newhist = outfile.Get(h)
-                ratio = 1
-                newhist.Scale(1/ratio)
-                newhist.Write()
-        infile.Close()
-        outfile.Close()
+for fname in file_list:
+    #print(os.path.join(nom_path, fname))
+    #if not any(i in fname for i in ['TTToSemiLeptonic']): continue
+    #if not 'tuneup' in fname: continue
+    infile = TFile.Open(os.path.join(nom_path+'/'+year+'/preds/'+discriminator+'/'+alpha +'/', fname + '.root'), 'READ')
+    hlists = [ h.GetName() for h in infile.GetListOfKeys() if '_S' in h.GetName() or 'dnn' in h.GetName()]
+    hlists.append("hcounter")
+    print("HLIST", hlists)
+
+    # Get ratio for rescaling with b-tagSF.
+    if not '__' in fname: bSFfile = infile
+    elif '__' in fname and any(i in fname for i in [ 'jes']):
+        bSFfile = infile
+    else:
+        bSFfname = fname.replace('__' + fname.split('__')[1], '')
+        bSFfile = TFile.Open(os.path.join(nom_path+'/'+year+'/preds/'+discriminator+'/'+alpha +'/', bSFfname + '.root'), 'READ')
+
+    if 'TTT' in fname:
+       if any(i in fname for i in ['hdamp', 'tune']):
+          print("Trying to read file :", bSFfile)
+          nom_sumW=infile.Get('hcounter_nom')
+          sumW=infile.Get('hcounter')
+          scale_for_norm = float(nom_sumW.Integral(0, nom_sumW.GetNbinsX()+1) / sumW.Integral(0,sumW.GetNbinsX()+1))
+          print("SCALE : ", scale_for_norm)
+
+    # Collecting Histograms in outfile.
+    print("Saving histograms at {}/{}.root".format(out_path, fname))
+    outfile = TFile.Open(os.path.join(out_path, fname+'.root'), 'RECREATE')
+
+
+    nominal_list = []
+
+    for hname in hlists:
+        print("HISTO : ", hname)
+        if "__" not in hname: nominal_list.append(hname)
+        h = infile.Get(hname)
+        if any(i in hname for i in ['event', 'counter', '_nobtag', 'LHEPdfWeightSum']): pass
+        elif any(i in hname for i in ['__scale', '__ps', '__pdf']): continue
+        elif 'SingleMuon' in fname and 'jes' not in fname: pass
+        else:
+            print("FNAME to be scaled :" , fname)
+            ratio = get_bSFratio(bSFfile, hname)
+            h.Scale(ratio)
+        if 'TTT' in fname:
+           if any(i in fname for i in ['hdamp', 'tune']):
+              h.Scale(scale_for_norm)
+        h.Write()
+
+    hcounter = infile.Get('hcounter')
+    nominal_list = list(set(nominal_list))
+
+    infile.Close()
+    outfile.Close()
+
+
+for dataname in data_list:
+    try:
+        subprocess.call(['rm', os.path.join(out_path, dataname + year + '.root')])
+    except: pass
+    subprocess.check_call( ["hadd", "-f", os.path.join(out_path, dataname + year + '.root')] + glob.glob(os.path.join(out_path, dataname) + '201*') )

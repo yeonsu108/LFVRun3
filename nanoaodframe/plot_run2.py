@@ -127,7 +127,7 @@ with open(config_path + 'template_Run2.yml') as f:
     #f1.write("\nplots:\n  include: ['histos_dnn.yml']\n")
     if 'FF' in dest_path:
         f1.write("\nplots:\n  include: ['histos_FFapply.yml', 'histos_yield_S5.yml']\n")
-    f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']\n")
+    f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml','histos_dnn.yml']\n")
 
 call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
 call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
