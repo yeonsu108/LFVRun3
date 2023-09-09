@@ -2,12 +2,12 @@ import os, shutil, re, sys
 from subprocess import call
 from collections import OrderedDict
 
-from optparse import OptionParser
-parser = OptionParser(usage="%prog [options]")
-parser.add_option("-I", "--input",  dest="input", type="string", default="", help="Input folder name")
-parser.add_option("-Y", "--year",  dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")
+import argparse
+parser = argparse.ArgumentParser(usage="%prog [options]")
+parser.add_argument("-I", "--input",  dest="input", type=str, default="", help="Input folder name")
+parser.add_argument("-Y", "--year",  dest="year", type=str, default="", help="Select 2016pre/post, 2017, or 2018 for years")
 parser.add_argument("-D", dest="DNN", action="store_true", default=False, help="Run for DNN histograms")
-(options, args) = parser.parse_args()
+options = parser.parse_args()
 
 year = options.year
 

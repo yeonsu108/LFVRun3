@@ -81,18 +81,18 @@ systematics:
   - tauidmu
   - tauidel
   - mescale: {type: shape, on: 'TTTo'}
-  - mescale: {type: shape, on: 'LFV'}
+  - mescale: {type: shape, on: '_LFV'}
   - renscale: {type: shape, on: 'TTTo'}
-  - renscale: {type: shape, on: 'LFV'}
+  - renscale: {type: shape, on: '_LFV'}
   - facscale: {type: shape, on: 'TTTo'}
-  - facscale: {type: shape, on: 'LFV'}
+  - facscale: {type: shape, on: '_LFV'}
   - isr: {type: shape, on: 'TTTo'}
-  - isr: {type: shape, on: 'LFV'}
+  - isr: {type: shape, on: '_LFV'}
   - fsr: {type: shape, on: 'TTTo'}
-  - fsr: {type: shape, on: 'LFV'}
+  - fsr: {type: shape, on: '_LFV'}
   - pdfalphas: {type: shape, on: 'TTTo'}
   #- pdfenv: {type: shape, on: 'TTTo'}
-  #- pdfenv: {type: shape, on: 'LFV'}
+  #- pdfenv: {type: shape, on: '_LFV'}
   - hdamp: {type: shape, on: 'TTTo'}
   - tune: {type: shape, on: 'TTTo'}
 
