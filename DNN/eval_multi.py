@@ -171,14 +171,12 @@ if __name__ == '__main__':
     discriminator = "p_st_tt_ob"
     alpha=0.1
     parameters = []
-    #for year in ["2016pre","2016post","2017","2018"]:
-    for year in ["2018"]:
+    for year in ["2016pre","2016post","2017","2018"]:
        project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_FF/"+year+"/"
        flist = os.listdir(project_dir)
        flist = [i for i in flist if (".root" in i)]
        print(len(flist))
        for curfile in flist:
-          if not "hist_TT_LFV_TUMuTau_Vector.root" in curfile: continue
           parameters.append((year, project_dir+curfile ,discriminator,alpha))
 
     pool = multiprocessing.get_context("spawn").Pool(1)
