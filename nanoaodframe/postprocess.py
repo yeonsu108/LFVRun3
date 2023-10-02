@@ -115,10 +115,12 @@ def write_envelope(inputh, inputf, bsff, syst, nhists, gen_sumW, wgt_sumW):
         up.SetDirectory(ROOT.nullptr)
         dn.SetDirectory(ROOT.nullptr)
         #print("gen_sumW.GetBinContent(2)", gen_sumW.GetBinContent(2))
-        up.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][0]))
-        dn.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][1]))
-        up.Scale(get_bSFratio(bsff, up.GetName()))
-        dn.Scale(get_bSFratio(bsff, dn.GetName()))
+        #Zero sum weight means no variation, especially for alphas
+        if wgt_sumW.GetBinContent(sum_weights_dict[syst][0]) * wgt_sumW.GetBinContent(sum_weights_dict[syst][1]) > 0:
+            up.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][0]))
+            dn.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][1]))
+            up.Scale(get_bSFratio(bsff, up.GetName()))
+            dn.Scale(get_bSFratio(bsff, dn.GetName()))
         up.SetName(inputh + "__" + syst + "up")
         dn.SetName(inputh + "__" + syst + "down")
 
@@ -226,7 +228,7 @@ for fname in file_list:
         bSFfile = infile
         if isFFapply:
             bSFfile = TFile.Open(os.path.join(nom_path.replace("_FF",""), fname + '.root'), 'READ')
-    elif '__' in fname and any(i in fname for i in ['hdamp', 'tune', 'jes']):
+    elif '__' in fname and any(i in fname for i in ['hdamp', 'tune', 'jes']):#JES uses different bSF per source!
         bSFfile = infile
         if isFFapply:
             bSFfile = TFile.Open(os.path.join(nom_path.replace("_FF",""), fname + '.root'), 'READ')
