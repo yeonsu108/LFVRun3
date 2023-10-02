@@ -210,7 +210,6 @@ for fname in file_list:
     #print(os.path.join(nom_path, fname))
     #if not any(i in fname for i in ['TTTo2L2Nu', 'TTToSemiLeptonic']): continue
     #if not any(i in fname for i in ['hdamp', 'tune']): continue
-    if not any(i in fname for i in ['TTToSemiLeptonic__tune']): continue
 
     #flag for ext. syst with different normalization
     run_on_syst = False
