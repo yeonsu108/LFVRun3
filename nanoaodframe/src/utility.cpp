@@ -127,16 +127,16 @@ floats top_reconstruction_STLFV(FourVectorVec &jets, FourVectorVec &bjets, FourV
         float X_min=9999999999, X_min_SMW_mass=-1, X_min_SMtop_mass=-1;
         float X_min_SMW=999999999, X_min_SMtop=999999999;
         float wj1_idx=-1, wj2_idx=-1;
-        const float MT = 165.2;
-        const float MW = 80.8;
-        const float WT = 21.3;
-        const float WW = 11.71;	
+        const float MT = 173.95;
+        const float MW = 84.19;
+        const float WT = 17.07;
+        const float WW = 9.91;	
         
         // Jets from W-1
-        for(int j1 = 0; j1<int(jets.size()); j1++){
+        for(int j1 = 0; j1<int(jets.size()-1); j1++){
             if(jets[j1].Pt() == bjets[0].Pt()) continue;
             // Jets from W-2
-            for(int j2 = 0; j2<int(jets.size()); j2++){
+            for(int j2 = j1+1; j2<int(jets.size()); j2++){
                 if(jets[j2].Pt() == jets[j1].Pt() || jets[j2].Pt() == bjets[0].Pt()) continue;
                 SMW_mass = (jets[j1]+jets[j2]).M();
                 X_SMW = std::pow((MW-SMW_mass)/WW,2);
