@@ -162,6 +162,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     if (_syst == "data") {
         addVar({"eventWeight", "1.0"});
         addVar({"eventWeight_notau", "1.0"});
+        addVar({"eventWeight_notoppt", "1.0"});
     } else {
         addVar({"eventWeight_genpu", "unitGenWeightFF * TopPtWeight[0] * puWeight[0] * L1PreFiringWeight_Nom"});
         addVar({"eventWeight_mu", "muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0]"});
