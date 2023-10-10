@@ -49,6 +49,13 @@ void TopLFVAnalyzer::defineMoreVars() {
     defineVar("mutau_dR",::calculate_deltaR,{"muonvec","tauvec"});
     defineVar("muMET_mt",::calculate_MT,{"muon4vecs","MET_pt","MET_phi"});
 
+    // Temporary solution to blind low mutau mass
+    if (_syst == "data") {
+        addVar({"mutau_mass_blind", "(mutau_mass > 100) ? -1.0 : mutau_mass"});
+    } else {
+        addVar({"mutau_mass_blind", "mutau_mass"});
+    }
+
     //Adding unc for muon SF to top phase space: done in plotit and combine tool
     //defineVar("muonWeightId", ::addMuonUnc, {"muonWeightId"});
     //defineVar("muonWeightIso", ::addMuonUnc, {"muonWeightIso"});
@@ -136,6 +143,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVar({"chi2_wjet2_idx", "top_reco_whad[4]",""});
     addVar({"chi2_SMW", "top_reco_whad[5]",""});
     addVar({"chi2_SMTop", "top_reco_whad[6]",""});
+    addVar({"chi2_SMTop_pt", "top_reco_whad[7]",""});
 
     defineVar("top_reco_prod", ::top_reco_products_STLFV, {"cleanjet4vecs","muon4vecs","cleantau4vecs","top_reco_whad"});
     addVar({"chi2_wqq_dEta","top_reco_prod[0]",""});
@@ -164,6 +172,7 @@ void TopLFVAnalyzer::defineMoreVars() {
         addVar({"eventWeight_nobtag", "eventWeight_genpu * eventWeight_mu * eventWeight_tau"});
         addVar({"eventWeight_nopu", "unitGenWeightFF * TopPtWeight[0] * L1PreFiringWeight_Nom * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
         addVar({"eventWeight_noprefire", "unitGenWeightFF * TopPtWeight[0] * puWeight[0] * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
+        addVar({"eventWeight_notoppt", "unitGenWeightFF * puWeight[0] * L1PreFiringWeight_Nom * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB_jes[0]"});
 
         if (_syst == "" or _syst == "nosyst" or ext_syst) {
             // for external syst, we only need nominal weight
@@ -390,8 +399,8 @@ void TopLFVAnalyzer::defineMoreVars() {
 void TopLFVAnalyzer::bookHists() {
 
     std::vector<std::string> init_weight = {""};
-    std::vector<std::string> sf_weight = {"", "_nobtag", "_nopu", "_notau", "__puup", "__pudown",
-                   "__topptup", "__topptdown", "__prefireup", "__prefiredown",
+    std::vector<std::string> sf_weight = {"", "_nobtag", "_nopu", "_notau", "_notoppt",
+                   "__puup", "__pudown", "__topptup", "__topptdown", "__prefireup", "__prefiredown",
                    "__muidup", "__muiddown", "__muisoup", "__muisodown", "__mutrgup", "__mutrgdown",
                    "__btaghfup", "__btaghfdown", "__btaglfup", "__btaglfdown",
                    "__btaghfstats1up", "__btaghfstats1down", "__btaghfstats2up", "__btaghfstats2down",
@@ -458,6 +467,7 @@ void TopLFVAnalyzer::bookHists() {
     maxstep = "00"; //Must be +1 step than its cut
     for (std::string weightstr : syst_weight) {
         if (weightstr.find("notau") != std::string::npos) continue;
+        if (weightstr.find("notoppt") != std::string::npos) continue;
 
         add1DHist({"h_nevents_notausf", ";Number of events;Events", 2, -0.5, 1.5}, "one", "eventWeight_notau", weightstr, minstep_S1, maxstep);
         add1DHist({"h_nvtx_notausf", ";Number of primary vertex;Events", 70, 0.0, 70.0}, "PV_npvsGood", "eventWeight_notau", weightstr, minstep_S1, maxstep);
@@ -481,7 +491,6 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_jet1_btag_notausf",";DeepFlavour score of leading jet;Events", 20, 0, 1.0}, "Jet1_btagDeepFlavB", "eventWeight_notau", weightstr, minstep_S1, maxstep);
     }
 
-
     //for all the other nominal histograms with tauSF
     if (_syst == "all" or _syst == "theory") {
         syst_weight.insert(syst_weight.end(), sf_weight_tau.begin(), sf_weight_tau.end());
@@ -495,6 +504,8 @@ void TopLFVAnalyzer::bookHists() {
     maxstep = "";
 
     for (std::string weightstr : syst_weight) {
+        if (weightstr.find("notoppt") != std::string::npos) continue;
+
         add1DHist({"h_nevents", ";Number of events;Events", 2, -0.5, 1.5}, "one", "eventWeight", weightstr, minstep_S1, maxstep);
         add1DHist({"h_nvtx", ";Number of primary vertex;Events", 70, 0.0, 70.0}, "PV_npvsGood", "eventWeight", weightstr, minstep_S1, maxstep);
 
@@ -520,6 +531,7 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_mutau_dPhi", ";#Delta#phi(#mu, #tau_{h});Events", 20, -3.2, 3.2}, "mutau_dPhi", "eventWeight", weightstr, minstep_S2, maxstep);
         add1DHist({"h_mutau_dR", ";#Delta R(#mu, #tau_{h});Events", 20, 0, 4.0}, "mutau_dR", "eventWeight", weightstr, minstep_S2, maxstep);
         add1DHist({"h_mutau_mass", ";Mass of #mu + #tau_{h} (GeV);Events", 40, 0, 1000}, "mutau_mass", "eventWeight", weightstr, minstep_S2, maxstep);
+        add1DHist({"h_mutau_mass_blind", ";Mass of #mu + #tau_{h} (GeV);Events", 40, 0, 1000}, "mutau_mass_blind", "eventWeight", weightstr, minstep_S2, maxstep);
 
         add1DHist({"h_jet1_pt", ";Leading jet p_{T} (GeV);Events", 20, 0, 400}, "Jet1_pt", "eventWeight", weightstr, minstep_S1, maxstep);
         add1DHist({"h_jet1_eta", ";Leading jet #eta;Events", 20, -2.4, 2.4}, "Jet1_eta", "eventWeight", weightstr, minstep_S1, maxstep);
@@ -545,6 +557,8 @@ void TopLFVAnalyzer::bookHists() {
         // Histogram of Top mass reconstruction
         add1DHist({"h_chi2", ";Minimum #chi^{2};Events", 20, 0, 1000}, "chi2", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_chi2_SMTop_mass", ";SM top quark mass (GeV);Events", 20, 0, 400}, "chi2_SMTop_mass", "eventWeight", weightstr, minstep_S5, maxstep);
+        add1DHist({"h_chi2_SMTop_pt", ";SM top quark pt (GeV);Events", 20, 0, 400}, "chi2_SMTop_pt", "eventWeight", weightstr, minstep_S5, maxstep);
+        add1DHist({"h_chi2_SMTop_pt_notoppt", ";SM top quark pt (GeV);Events", 20, 0, 400}, "chi2_SMTop_pt", "eventWeight_notoppt", "", minstep_S5, maxstep);
         add1DHist({"h_chi2_SMW_mass", ";SM W_{had} mass (GeV);Events", 20, 0, 400}, "chi2_SMW_mass", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_chi2_wqq_dEta", ";#Delta#eta of jets from W;Events", 25, -5, 5}, "chi2_wqq_dEta", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_chi2_wqq_dPhi", ";#Delta#phi of jets from W;Events;", 20, -4, 4}, "chi2_wqq_dPhi", "eventWeight", weightstr, minstep_S5, maxstep);
