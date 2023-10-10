@@ -125,8 +125,11 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
     // Event weight for data it's always one. For MC, it depends on the sign
     if(_isSkim){
         _rlm = _rlm.Define("unitGenWeight", "one");
+        _rlm = _rlm.Define("isData", "true");
 
         if(!_isData){
+
+            _rlm = _rlm.Redefine("isData", "false");
 
             // Store sum of weights
             auto storePDFWeights = [this](floats weights, float gen)->floats {
@@ -1303,8 +1306,8 @@ void NanoAODAnalyzerrdframe::topPtReweight() {
         else {
             float pt1 = toppt[0];
             float pt2 = toppt[1];
-            if (pt1 > 2000) pt1 = 1999;
-            if (pt2 > 2000) pt2 = 1999;
+            if (pt1 >= 2000) pt1 = 1999;
+            if (pt2 >= 2000) pt2 = 1999;
             int xbin1 = (std::upper_bound(xbins.begin(), xbins.end(), pt1)-1) - xbins.begin();
             int xbin2 = (std::upper_bound(xbins.begin(), xbins.end(), pt2)-1) - xbins.begin();
             out = std::sqrt(sfs.at(xbin1) * sfs.at(xbin2));
@@ -1316,8 +1319,9 @@ void NanoAODAnalyzerrdframe::topPtReweight() {
 
         floats out;
         out.reserve(3);
-        if (toppt.size() != 2) out = {1.0, 1.0, 1.0};
-        else {
+        if (toppt.size() != 2) {
+            out.emplace_back(1.0); out.emplace_back(1.0); out.emplace_back(1.0);
+        } else {
             float pt1 = toppt[0];
             float pt2 = toppt[1];
             float nom_w1 = (0.103 * std::exp(-0.0118 * pt1) - 0.000134 * pt1 + 0.973);
@@ -1326,8 +1330,8 @@ void NanoAODAnalyzerrdframe::topPtReweight() {
             out.emplace_back(nom_weight);
 
             // blessed by TOP-22-003 team (ANv16) this goes to nom weight fct
-            std::vector<float> xbins = {0,50,150,250,350,450,550,650,750,850,950,1050,1150,1250,1350,
-                                        1450,1550,1650,1750,1850,1950,2050,2150,2250,2350,2450};
+            std::vector<float> xbins = {0,100,200,300,400,500,600,700,800,900,1000,1100,1200,1300,1400,
+                                        1500,1600,1700,1800,1900,2000,2100,2200,2300,2400,2500};
             std::vector<float> unc_up = {0, 0.2634291, 0.125821, 0.1204998, 0.1185625, 0.1225926, 0.1286782,
                                          0.1353967, 0.1415252, 0.1471104, 0.1555594, 0.1580664, 0.1604668,
                                          0.163553, 0.1690409, 0.1725839, 0.1755679, 0.1779287, 0.1808263,
@@ -1337,8 +1341,8 @@ void NanoAODAnalyzerrdframe::topPtReweight() {
                                          0.1903936, 0.1969376, 0.2013376, 0.2056985, 0.2082445, 0.214616,
                                          0.2186682, 0.2240442, 0.2240283, 0.2287682, 0.2321543, 0.249874 };
 
-            if (pt1 > 2450) pt1 = 2450;
-            if (pt2 > 2450) pt2 = 2450;
+            if (pt1 >= 2500) pt1 = 2499;
+            if (pt2 >= 2500) pt2 = 2499;
             int xbin1 = (std::upper_bound(xbins.begin(), xbins.end(), pt1)-1) - xbins.begin();
             int xbin2 = (std::upper_bound(xbins.begin(), xbins.end(), pt2)-1) - xbins.begin();
 
@@ -1363,7 +1367,7 @@ void NanoAODAnalyzerrdframe::topPtReweight() {
                                                     TopPtWeight_NLO[2] + (TopPtWeight_LO - 1) * TopPtWeight_NLO[0]};\
                                                     return v;"); //keep magnitude of error but change nominal value
     } else {
-        _rlm = _rlm.Define("TopPtWeight", "one");
+        _rlm = _rlm.Define("TopPtWeight", "floats v{1.0, 1.0, 1.0}; return v;");
     }
 
 }

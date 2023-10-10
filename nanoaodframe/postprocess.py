@@ -9,7 +9,7 @@ year = sys.argv[2]
 if year not in ['2016pre', '2016post', '2017', '2018']:
     print('Wrong year, check again')
     sys.exit()
-forceHadd = False
+forceHadd = True
 if len(sys.argv) > 3: forceHadd = sys.argv[3] == "True"
 if forceHadd: print("Hadd all split MC!!")
 

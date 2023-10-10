@@ -227,6 +227,11 @@
   save-extensions: ['pdf', 'png']
   blinded-range: [400, 999]
 
+'h_mutau_mass_blind_S5':
+  save-extensions: ['pdf', 'png']
+  blinded-range: [400, 999]
+  show-onlyoverflow: true
+
 
 #jet ht for bSF check
 'h_jet_ht_S3':
