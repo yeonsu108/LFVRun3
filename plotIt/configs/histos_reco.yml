@@ -8,7 +8,7 @@
 
 'h_chi2_SMTop_pt_S5':
   save-extensions: ['pdf', 'png']
-  biinded-range: [250, 400]
+  blinded-range: [250, 400]
 
 'h_chi2_SMTop_pt_notoppt_S5':
   save-extensions: ['pdf', 'png']

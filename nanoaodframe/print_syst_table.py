@@ -29,7 +29,7 @@ if os.path.exists(config_path + tmp_file_name):
 #shutil.copy2(config_path + 'config_' + year + '.yml', config_path + tmp_file_name)
 
 unc_cat = OrderedDict([
-('all', ['xsec', 'pu', 'muid', 'muiso', 'mutrg', 'muExtra'
+('all', ['xsec', 'pu', 'muid', 'muiso', 'mutrg', 'muExtra', 'toppt',
          #'tauidjet', 'tauidel', 'tauidmu', 'tes',
          'tauidjetUncert0', 'tauidjetUncert1', 'tauidjetSystalleras',
          'tauidjetSyst'+tauYear, 'tauidjetSystdm0'+tauYear, 'tauidjetSystdm1'+tauYear,
@@ -44,6 +44,7 @@ unc_cat = OrderedDict([
          'mescale', 'renscale', 'faccale', 'isr', 'fsr', 'pdfalphas', 'pdfenv',
          'tune', 'hdamp',]),
 ('pu', ['pu']),
+('toppt', ['toppt']),
 ('prefire', ['prefire']),
 ('xsec', ['xsec']),
 ('muon', ['muid', 'muiso', 'mutrg', 'muExtra']),
@@ -165,7 +166,7 @@ for key, value in unc_cat.items():
     with open(os.path.join(dest_path, 'figure_' + year, 'systematics.tex'), 'r') as f:
         with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + syst_postfix + '.tex'), 'w+') as f1:
             isTheorySyst = False
-            if key in ['scale', 'mescale', 'renscale', 'facscale', 'isr', 'fsr', 'hdamp', 'tune', 'pdfall', 'pdfenv', 'pdfalphas']:
+            if key in ['scale', 'mescale', 'renscale', 'facscale', 'isr', 'fsr', 'hdamp', 'tune', 'pdfall', 'pdfenv', 'pdfalphas', 'toppt']:
               isTheorySyst = True
             for line in f:
                 isTheory = False
@@ -178,7 +179,8 @@ for key, value in unc_cat.items():
     string_to_add = 'systematics:\n'
 
 unc_summary = OrderedDict([
-('xsec', 'Cross section'), ('pu', 'Pileup'), ('prefire', 'Prefire Reweight'), ('muon', 'Muon SF'),
+('xsec', 'Cross section'), ('pu', 'Pileup'), ('prefire', 'Prefire Reweight'),
+('toppt', 'Top pT reweighting'), ('muon', 'Muon SF'),
 ('tauid', 'Tau ID'), ('tes', 'TES'), ('tauFF', 'Tau Fake Factor'),
 ('jesAll', 'JES'), ('jer', 'JER'),
 ('mescale', 'Scale $\mu$F and $\mu$R'), ('renscale', 'Scale $\mu$R'), ('facscale', 'Scale $\mu$F'),
