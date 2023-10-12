@@ -51,7 +51,7 @@ void TopLFVAnalyzer::defineMoreVars() {
 
     // Temporary solution to blind low mutau mass
     if (_syst == "data") {
-        addVar({"mutau_mass_blind", "(mutau_mass > 100) ? -1.0 : mutau_mass"});
+        addVar({"mutau_mass_blind", "(mutau_mass < 100) ? -1.0 : mutau_mass"});
     } else {
         addVar({"mutau_mass_blind", "mutau_mass"});
     }
