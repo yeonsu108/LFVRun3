@@ -122,25 +122,26 @@ ints good_idx(ints good)
 floats top_reconstruction_STLFV(FourVectorVec &jets, FourVectorVec &bjets, FourVectorVec &muons, FourVectorVec &taus){
         
         floats out;
-        float SMW_mass, SMtop_mass;
+        float SMW_mass, SMtop_mass, SMtop_pt;
         float X_SMW, X_SMtop;
-        float X_min=9999999999, X_min_SMW_mass=-1, X_min_SMtop_mass=-1;
+        float X_min=9999999999, X_min_SMW_mass=-1, X_min_SMtop_mass=-1, X_min_SMtop_pt = -1;;
         float X_min_SMW=999999999, X_min_SMtop=999999999;
         float wj1_idx=-1, wj2_idx=-1;
-        const float MT = 165.2;
-        const float MW = 80.8;
-        const float WT = 21.3;
-        const float WW = 11.71;	
+        const float MT = 173.95;
+        const float MW = 84.19;
+        const float WT = 17.07;
+        const float WW = 9.91;	
         
         // Jets from W-1
-        for(int j1 = 0; j1<int(jets.size()); j1++){
+        for(int j1 = 0; j1<int(jets.size()-1); j1++){
             if(jets[j1].Pt() == bjets[0].Pt()) continue;
             // Jets from W-2
-            for(int j2 = 0; j2<int(jets.size()); j2++){
+            for(int j2 = j1+1; j2<int(jets.size()); j2++){
                 if(jets[j2].Pt() == jets[j1].Pt() || jets[j2].Pt() == bjets[0].Pt()) continue;
                 SMW_mass = (jets[j1]+jets[j2]).M();
                 X_SMW = std::pow((MW-SMW_mass)/WW,2);
                 SMtop_mass = (bjets[0]+jets[j1]+jets[j2]).M();
+                SMtop_pt = (bjets[0]+jets[j1]+jets[j2]).Pt();
                 X_SMtop = std::pow((MT-SMtop_mass)/WT,2);
                 if (X_SMW + X_SMtop < X_min){
                     X_min = X_SMW + X_SMtop;
@@ -148,6 +149,7 @@ floats top_reconstruction_STLFV(FourVectorVec &jets, FourVectorVec &bjets, FourV
                     X_min_SMtop = X_SMtop;
                     X_min_SMW_mass = SMW_mass;
                     X_min_SMtop_mass = SMtop_mass;
+                    X_min_SMtop_pt = SMtop_pt;
                     wj1_idx = float(j1);
                     wj2_idx = float(j2);
                 }
@@ -160,6 +162,7 @@ floats top_reconstruction_STLFV(FourVectorVec &jets, FourVectorVec &bjets, FourV
         out.push_back(wj2_idx);             // 4
         out.push_back(X_min_SMW);           // 5
         out.push_back(X_min_SMtop);         // 6
+        out.push_back(X_min_SMtop_pt);      // 7
 
         return out;
 }

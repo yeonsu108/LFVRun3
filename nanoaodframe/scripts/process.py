@@ -103,7 +103,7 @@ for ds in dataset_list:
                     else:
                         parameters.append((year, ds, outdir, outfname, "all"))
                 elif options.syst == "theory":
-                    if any(i in dataset_name for i in ["TTTo", "TT_LFV", "ST_LFV"]):
+                    if any(i in dataset_name for i in ["TTTo", "ST_t", "TT_LFV", "ST_LFV"]):
                         if toSplit:
                             os.makedirs(tgdir.replace(year, year + '/' + "split"), exist_ok=True)
                             parameters.append([year, rootfilestoprocess, outdir.replace(year, year + '/' + "split"), outfname, "theory"])

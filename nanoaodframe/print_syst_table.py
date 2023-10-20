@@ -29,21 +29,22 @@ if os.path.exists(config_path + tmp_file_name):
 #shutil.copy2(config_path + 'config_' + year + '.yml', config_path + tmp_file_name)
 
 unc_cat = OrderedDict([
-('all', ['xsec', 'pu', 'muid', 'muiso', 'mutrg', 'muExtra'
-	 #'tauidjet', 'tauidel', 'tauidmu', 'tes',
-	 'tauidjetUncert0', 'tauidjetUncert1', 'tauidjetSystalleras',
-	 'tauidjetSyst'+tauYear, 'tauidjetSystdm0'+tauYear, 'tauidjetSystdm1'+tauYear,
-	 'tauidjetSystdm10'+tauYear, 'tauidjetSystdm11'+tauYear,
-	 'tauidjetHighptstat_bin1', 'tauidjetHighptstat_bin2',
-	 'tauidjetHighptsyst', 'tauidjetHighptextrap',
-	 'tauidel', 'tauidmu', 'tes', 'tauFFstat', 'tauFFsyst',
-	 'btaghf', 'btaglf', 'btaghfstats1', 'btaglfstats1',
-	 'btaghfstats2', 'btaglfstats2', 'btagcferr1', 'btagcferr2',
-	 'jesAbsolute', 'jesAbsolute_'+year[:4], 'jesBBEC1', 'jesBBEC1_'+year[:4],
-	 'jesFlavorQCD', 'jesRelativeBal', 'jesRelativeSample_'+year[:4], 'jer',
-	 'mescale', 'renscale', 'faccale', 'isr', 'fsr', 'pdfalphas', 'pdfenv',
-	 'tune', 'hdamp',]),
+('all', ['xsec', 'pu', 'muid', 'muiso', 'mutrg', 'muExtra', 'toppt',
+         #'tauidjet', 'tauidel', 'tauidmu', 'tes',
+         'tauidjetUncert0', 'tauidjetUncert1', 'tauidjetSystalleras',
+         'tauidjetSyst'+tauYear, 'tauidjetSystdm0'+tauYear, 'tauidjetSystdm1'+tauYear,
+         'tauidjetSystdm10'+tauYear, 'tauidjetSystdm11'+tauYear,
+         'tauidjetHighptstat_bin1', 'tauidjetHighptstat_bin2',
+         'tauidjetHighptsyst', 'tauidjetHighptextrap',
+         'tauidel', 'tauidmu', 'tes', 'tauFFstat', 'tauFFsyst',
+         'btaghf', 'btaglf', 'btaghfstats1', 'btaglfstats1',
+         'btaghfstats2', 'btaglfstats2', 'btagcferr1', 'btagcferr2',
+         'jesAbsolute', 'jesAbsolute_'+year[:4], 'jesBBEC1', 'jesBBEC1_'+year[:4],
+         'jesFlavorQCD', 'jesRelativeBal', 'jesRelativeSample_'+year[:4], 'jer',
+         'mescale', 'renscale', 'faccale', 'isr', 'fsr', 'pdfalphas', 'pdfenv',
+         'tune', 'hdamp',]),
 ('pu', ['pu']),
+('toppt', ['toppt']),
 ('prefire', ['prefire']),
 ('xsec', ['xsec']),
 ('muon', ['muid', 'muiso', 'mutrg', 'muExtra']),
@@ -164,20 +165,22 @@ for key, value in unc_cat.items():
     #Remove signals in TT specific sources
     with open(os.path.join(dest_path, 'figure_' + year, 'systematics.tex'), 'r') as f:
         with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + syst_postfix + '.tex'), 'w+') as f1:
-            isTTsyst = False
-            if key in ['scale', 'mescale', 'renscale', 'facscale', 'isr', 'fsr', 'hdamp', 'tune', 'pdfall', 'pdfenv', 'pdfalphas']:
-                isTTsyst = True
+            isTheorySyst = False
+            if key in ['scale', 'mescale', 'renscale', 'facscale', 'isr', 'fsr', 'hdamp', 'tune', 'pdfall', 'pdfenv', 'pdfalphas', 'toppt']:
+              isTheorySyst = True
             for line in f:
-                isTT = False
-                if 'ttbar' in line or 'LFV' in line: isTT = True
-                if not isTT and isTTsyst and 'hline' not in line and 'Total' not in line: continue
+                isTheory = False
+                if 'ttbar' in line or 'LFV' in line: isTheory = True
+                #if 'ttbar' in line or 'LFV' in line or 'Single' in line: isTheory = True #To print ST theory unc
+                if not isTheory and isTheorySyst and 'hline' not in line and 'Total' not in line: continue
                 if any(str(x) in line[0] for x in list(range(1,10))): line = line[1:]
                 f1.write(line)
 
     string_to_add = 'systematics:\n'
 
 unc_summary = OrderedDict([
-('xsec', 'Cross section'), ('pu', 'Pileup'), ('prefire', 'Prefire Reweight'), ('muon', 'Muon SF'),
+('xsec', 'Cross section'), ('pu', 'Pileup'), ('prefire', 'Prefire Reweight'),
+('toppt', 'Top pT reweighting'), ('muon', 'Muon SF'),
 ('tauid', 'Tau ID'), ('tes', 'TES'), ('tauFF', 'Tau Fake Factor'),
 ('jesAll', 'JES'), ('jer', 'JER'),
 ('mescale', 'Scale $\mu$F and $\mu$R'), ('renscale', 'Scale $\mu$R'), ('facscale', 'Scale $\mu$F'),
