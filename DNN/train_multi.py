@@ -42,7 +42,7 @@ inputvars_st = [ "Muon1_pt","Muon1_eta",
 	"MET_pt"
         ]
 
-processed = "Aug2023_AfterPreAppTalk"
+processed = "October2023_AfterPreAppTalk_v1"
 
 #"MET_pt" : helps to the expected limits, do not remove from the input vars.
 sbratio = 1 # sig:bkg = 1:1
@@ -55,7 +55,8 @@ siglist_tt = ['TT_LFV_TCMuTau_Scalar', 'TT_LFV_TCMuTau_Tensor', 'TT_LFV_TCMuTau_
 years = ["2017","2018","2016pre","2016post"]
 #project_dir = "/data1/users/itseyes/LFV/processed_LFV/v9test2_theory/"
 #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/old/v9_06xx/v9_0608_fixtau/"
-project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_FF/"
+#project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_FF/"
+project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_FF/"
 
 df_sig_st_list = []
 df_sig_tt_list = []

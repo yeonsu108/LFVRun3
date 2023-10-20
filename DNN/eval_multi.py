@@ -17,7 +17,7 @@ def min_max_scaling(series):
 
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
-processed = "Aug2023_AfterPreAppTalk"
+processed = "October2023_AfterPreAppTalk_v1"
 label = "top_lfv_multiClass"
 
 inputvars = [ "Muon1_pt","Muon1_eta",
@@ -48,7 +48,7 @@ def run(inputs):
     eval_dir = label+"_"+processed+"/"
     
     #hists_path = eval_dir+"/"+year+"/preds/"+discriminator_key+"/"+str(alpha).replace(".","p")+"/"
-    hists_path = "/data1/users/ecasilar/Sep19/"+year+"/"
+    hists_path = "/data1/users/ecasilar/Oct19/"+year+"/"
     if not os.path.isdir(hists_path):
         os.makedirs(hists_path)
     
@@ -77,13 +77,13 @@ def run(inputs):
         h_nevents_S4 = infile_forS["h_nevents_S4"]	
         h_nevents_S2_nobtag = infile_forS["h_nevents_S2_nobtag"]
         h_nevents_S2 = infile_forS["h_nevents_S2"]	
-        if any(string in input_file for string in ["_LFV","TTT"]) and "__" not in input_file:
+        if any(string in input_file for string in ["_LFV","TTT","_ST_t"]) and "__" not in input_file:
            ScaleWeightSum = infile['ScaleWeightSum']
            PSWeightSum = infile['PSWeightSum']
            LHEPdfWeightSum = infile['LHEPdfWeightSum']
 
     if nEvents == 0:
-        #print("No events : "+input_file)
+        print("No events : "+input_file)
         #Need to add empth histograms for technical reasons ....
         pred = []
         pd_weight = []
@@ -96,12 +96,12 @@ def run(inputs):
               hist_nevents_S4_dict["h_nevents_S4__"+syst] = infile_forS["h_nevents_S4__"+syst]  
               hist_nevents_S5_dict["h_nevents_S5__"+syst] = infile["h_nevents_S5__"+syst]
     else:
-        #print("Good file :",input_file)
+        print("Good file :",input_file)
         pd_data = tree.arrays(inputvars,library="pd")
         pd_weight = tree.arrays(weights,library="np")
         pred_data = np.array(pd_data.filter(items = inputvars))
 
-        #print("prediction peformed only once per file")
+        print("prediction peformed only once per file")
         pred = model.predict(pred_data,batch_size=128, workers=1, use_multiprocessing=False)
 
         rmzeros = pred[:,0] 
@@ -116,7 +116,7 @@ def run(inputs):
         dnnhist_entries_nom = np.histogram(pred,bins=binedges,density=False)
         
 
-        #print("starting syst weighted hists ")
+        print("starting syst weighted hists ")
 
         for syst in syst_list:
             pd_weight = tree.arrays(["eventWeight__"+syst],library="np")
@@ -138,15 +138,17 @@ def run(inputs):
            outf["h_nevents_S4"] = h_nevents_S4
            outf["h_nevents_S2_nobtag"] = h_nevents_S2_nobtag
            outf["h_nevents_S2"] = h_nevents_S2
-           if any(string in input_file for string in ["_LFV","TTT"]) and "__" not in input_file:
+           if any(string in input_file for string in ["_LFV","TTT","_ST_t"]) and "__" not in input_file:
+              #print("YEAYAYYY  SCALESUM ZIMBIRTISI")
               outf["ScaleWeightSum"] = ScaleWeightSum
               outf["PSWeightSum"] = PSWeightSum
               outf["LHEPdfWeightSum"] = LHEPdfWeightSum
 
        for syst in syst_list:
            if 'pdf' in syst and not 'alphas' in syst:
-              print("YES syst PDF")
+              #print("YES syst PDF")
               systnum = int(syst.split("pdf")[1])
+              if systnum > 100: continue
               if systnum%2 !=0 : 
                  systupdated="pdf"+str(int((systnum/2.)+0.5))+"up"
                  outf["h_dnn_pred_S5__"+systupdated] = syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] 
@@ -155,7 +157,7 @@ def run(inputs):
                  systupdated="pdf"+str(int((systnum/2.)+0.5))+"down"
                  outf["h_dnn_pred_S5__"+systupdated] = syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] 
                  outf["h_dnn_entries_S5__"+systupdated] = syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst]
-              print("YES syst NEW PDF" , syst)
+              #print("YES syst NEW PDF" , syst)
            else:
               outf["h_dnn_pred_S5__"+syst] = syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] 
               outf["h_dnn_entries_S5__"+syst] = syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst]
@@ -172,14 +174,14 @@ if __name__ == '__main__':
     alpha=0.1
     parameters = []
     for year in ["2016pre","2016post","2017","2018"]:
-       project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_FF/"+year+"/"
+       project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_FF/"+year+"/"
        flist = os.listdir(project_dir)
        flist = [i for i in flist if (".root" in i)]
-       print(len(flist))
+       #print(len(flist))
        for curfile in flist:
           parameters.append((year, project_dir+curfile ,discriminator,alpha))
 
-    pool = multiprocessing.get_context("spawn").Pool(1)
+    pool = multiprocessing.get_context("spawn").Pool(12)
     pool.map(run, parameters)
     pool.close()
     pool.join()
