@@ -59,10 +59,10 @@ systematics:
   - btagcferr2
   - pu
   - prefire
+  - toppt
   - muid
   - muiso
   - mutrg
-  #- tauidjet
   - tauFFstat
   - tauFFsyst
   - tauidjetUncert0

@@ -49,6 +49,13 @@ void TopLFVAnalyzer::defineMoreVars() {
     defineVar("mutau_dR",::calculate_deltaR,{"muonvec","tauvec"});
     defineVar("muMET_mt",::calculate_MT,{"muon4vecs","MET_pt","MET_phi"});
 
+    // Temporary solution to blind low mutau mass
+    if (_syst == "data") {
+        addVar({"mutau_mass_blind", "(mutau_mass < 100) ? -1.0 : mutau_mass"});
+    } else {
+        addVar({"mutau_mass_blind", "mutau_mass"});
+    }
+
     //Adding unc for muon SF to top phase space: done in plotit and combine tool
     //defineVar("muonWeightId", ::addMuonUnc, {"muonWeightId"});
     //defineVar("muonWeightIso", ::addMuonUnc, {"muonWeightIso"});
@@ -136,6 +143,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVar({"chi2_wjet2_idx", "top_reco_whad[4]",""});
     addVar({"chi2_SMW", "top_reco_whad[5]",""});
     addVar({"chi2_SMTop", "top_reco_whad[6]",""});
+    addVar({"chi2_SMTop_pt", "top_reco_whad[7]",""});
 
     defineVar("top_reco_prod", ::top_reco_products_STLFV, {"cleanjet4vecs","muon4vecs","cleantau4vecs","top_reco_whad"});
     addVar({"chi2_wqq_dEta","top_reco_prod[0]",""});
@@ -154,16 +162,18 @@ void TopLFVAnalyzer::defineMoreVars() {
     if (_syst == "data") {
         addVar({"eventWeight", "1.0"});
         addVar({"eventWeight_notau", "1.0"});
+        addVar({"eventWeight_notoppt", "1.0"});
     } else {
-        addVar({"eventWeight_genpu", "unitGenWeightFF * TopPtWeight * puWeight[0] * L1PreFiringWeight_Nom"});
+        addVar({"eventWeight_genpu", "unitGenWeightFF * TopPtWeight[0] * puWeight[0] * L1PreFiringWeight_Nom"});
         addVar({"eventWeight_mu", "muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0]"});
         addVar({"eventWeight_tau", "tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
         addVar({"eventWeight_genpumu", "eventWeight_genpu * eventWeight_mu"});
         addVar({"eventWeight_notau_nobtag", "eventWeight_genpumu"}); //didn't want to duplicate entry...
         addVar({"eventWeight_genputau", "eventWeight_genpu * eventWeight_tau"});
         addVar({"eventWeight_nobtag", "eventWeight_genpu * eventWeight_mu * eventWeight_tau"});
-        addVar({"eventWeight_nopu", "unitGenWeightFF * TopPtWeight * L1PreFiringWeight_Nom * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
-        addVar({"eventWeight_noprefire", "unitGenWeightFF * TopPtWeight * puWeight[0] * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
+        addVar({"eventWeight_nopu", "unitGenWeightFF * TopPtWeight[0] * L1PreFiringWeight_Nom * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
+        addVar({"eventWeight_noprefire", "unitGenWeightFF * TopPtWeight[0] * puWeight[0] * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB[0]"});
+        addVar({"eventWeight_notoppt", "unitGenWeightFF * puWeight[0] * L1PreFiringWeight_Nom * eventWeight_mu * eventWeight_tau * btagWeight_DeepFlavB_jes[0]"});
 
         if (_syst == "" or _syst == "nosyst" or ext_syst) {
             // for external syst, we only need nominal weight
@@ -224,6 +234,8 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"eventWeight_notau", "eventWeight_genpu * eventWeight_mu * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight__puup", "eventWeight_nopu * puWeight[1]"});
             addVar({"eventWeight__pudown", "eventWeight_nopu * puWeight[2]"});
+            addVar({"eventWeight__topptup", "eventWeight_nobtag * btagWeight_DeepFlavB[0] * TopPtWeight[1] / TopPtWeight[0]"});
+            addVar({"eventWeight__topptdown", "eventWeight_nobtag * btagWeight_DeepFlavB[0] * TopPtWeight[2] / TopPtWeight[0]"});
             addVar({"eventWeight__prefireup", "eventWeight_noprefire * L1PreFiringWeight_Up"});
             addVar({"eventWeight__prefiredown", "eventWeight_noprefire * L1PreFiringWeight_Dn"});
             addVar({"eventWeight__muidup", "eventWeight_genputau * muonWeightId[1] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
@@ -289,11 +301,13 @@ void TopLFVAnalyzer::defineMoreVars() {
             }
 
             // no tau - nominal is eventWeight_notau
-            addVar({"eventWeight_notau_nopu", "unitGenWeightFF * TopPtWeight * L1PreFiringWeight_Nom * eventWeight_mu * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight_notau__puup", "unitGenWeightFF * TopPtWeight * puWeight[1] * L1PreFiringWeight_Nom * eventWeight_mu * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight_notau__pudown", "unitGenWeightFF * TopPtWeight * puWeight[2] * L1PreFiringWeight_Nom * eventWeight_mu * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight_notau__prefireup", "unitGenWeightFF * TopPtWeight * puWeight[0] * L1PreFiringWeight_Up * eventWeight_mu * btagWeight_DeepFlavB[0]"});
-            addVar({"eventWeight_notau__prefiredown", "unitGenWeightFF * TopPtWeight * puWeight[0] * L1PreFiringWeight_Dn * eventWeight_mu * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau_nopu", "unitGenWeightFF * TopPtWeight[0] * L1PreFiringWeight_Nom * eventWeight_mu * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__puup", "unitGenWeightFF * TopPtWeight[0] * puWeight[1] * L1PreFiringWeight_Nom * eventWeight_mu * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__pudown", "unitGenWeightFF * TopPtWeight[0] * puWeight[2] * L1PreFiringWeight_Nom * eventWeight_mu * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__topptup", "unitGenWeightFF * TopPtWeight[1] * puWeight[0] * L1PreFiringWeight_Nom * eventWeight_mu * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__topptdown", "unitGenWeightFF * TopPtWeight[2] * puWeight[0] * L1PreFiringWeight_Nom * eventWeight_mu * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__prefireup", "unitGenWeightFF * TopPtWeight[0] * puWeight[0] * L1PreFiringWeight_Up * eventWeight_mu * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__prefiredown", "unitGenWeightFF * TopPtWeight[0] * puWeight[0] * L1PreFiringWeight_Dn * eventWeight_mu * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__muidup", "eventWeight_genpu * muonWeightId[1] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__muiddown", "eventWeight_genpu * muonWeightId[2] * muonWeightIso[0] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__muisoup", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[1] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
@@ -379,22 +393,22 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("btagWeight_DeepFlavB");
     addVartoStore("btagWeight_DeepFlavB_jes");
     addVartoStore("eventWeight.*");
+    addVartoStore("GenPart_top_pt");
     addVartoStore("TopPtWeight");
 }
 
 void TopLFVAnalyzer::bookHists() {
 
     std::vector<std::string> init_weight = {""};
-    std::vector<std::string> sf_weight = {"", "_nobtag", "_nopu", "_notau", "__puup", "__pudown",
+    std::vector<std::string> sf_weight = {"", "_nobtag", "_nopu", "_notau", "_notoppt",
+                   "__puup", "__pudown", "__topptup", "__topptdown", "__prefireup", "__prefiredown",
                    "__muidup", "__muiddown", "__muisoup", "__muisodown", "__mutrgup", "__mutrgdown",
-                   //"__tauidjetup", "__tauidjetdown", "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown", 
                    "__btaghfup", "__btaghfdown", "__btaglfup", "__btaglfdown",
                    "__btaghfstats1up", "__btaghfstats1down", "__btaghfstats2up", "__btaghfstats2down",
                    "__btaglfstats1up", "__btaglfstats1down", "__btaglfstats2up", "__btaglfstats2down",
                    "__btagcferr1up", "__btagcferr1down", "__btagcferr2up", "__btagcferr2down",
-                   "__prefireup", "__prefiredown"};
+                   };
 
-    //std::vector<std::string> sf_weight_tau = {"__tauidjetup", "__tauidjetdown", "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown"};
     std::vector<std::string> sf_weight_tau = {"__tauidjetUncert0up", "__tauidjetUncert0down",
                                               "__tauidjetUncert1up", "__tauidjetUncert1down",
                                               "__tauidjetSystallerasup", "__tauidjetSystallerasdown",
@@ -413,30 +427,9 @@ void TopLFVAnalyzer::bookHists() {
     std::vector<std::string> sf_weight_FF ={"__tauFFstatup", "__tauFFstatdown", "__tauFFsystup", "__tauFFsystdown"};
 
     std::vector<std::string> theory_weight = {"__isrup", "__fsrup", "__isrdown", "__fsrdown",
-                   //"__scale0", "__scale1", "__scale2", "__scale3", "__scale4", "__scale5",
                    "__mescaleup", "__mescaledown", "__renscaleup", "__renscaledown", "__facscaleup", "__facscaledown",
-                   "__pdfalphasup", "__pdfalphasdown"};//,
-                   //"__pdf1", "__pdf2", "__pdf3", "__pdf4", "__pdf5",
-                   //"__pdf6", "__pdf7", "__pdf8", "__pdf9", "__pdf10",
-                   //"__pdf11", "__pdf12", "__pdf13", "__pdf14", "__pdf15",
-                   //"__pdf16", "__pdf17", "__pdf18", "__pdf19", "__pdf20",
-                   //"__pdf21", "__pdf22", "__pdf23", "__pdf24", "__pdf25",
-                   //"__pdf26", "__pdf27", "__pdf28", "__pdf29", "__pdf30",
-                   //"__pdf31", "__pdf32", "__pdf33", "__pdf34", "__pdf35",
-                   //"__pdf36", "__pdf37", "__pdf38", "__pdf39", "__pdf40",
-                   //"__pdf41", "__pdf42", "__pdf43", "__pdf44", "__pdf45",
-                   //"__pdf46", "__pdf47", "__pdf48", "__pdf49", "__pdf50",
-                   //"__pdf51", "__pdf52", "__pdf53", "__pdf54", "__pdf55",
-                   //"__pdf56", "__pdf57", "__pdf58", "__pdf59", "__pdf60",
-                   //"__pdf61", "__pdf62", "__pdf63", "__pdf64", "__pdf65",
-                   //"__pdf66", "__pdf67", "__pdf68", "__pdf69", "__pdf70",
-                   //"__pdf71", "__pdf72", "__pdf73", "__pdf74", "__pdf75",
-                   //"__pdf76", "__pdf77", "__pdf78", "__pdf79", "__pdf80",
-                   //"__pdf81", "__pdf82", "__pdf83", "__pdf84", "__pdf85",
-                   //"__pdf86", "__pdf87", "__pdf88", "__pdf89", "__pdf90",
-                   //"__pdf91", "__pdf92", "__pdf93", "__pdf94", "__pdf95",
-                   //"__pdf96", "__pdf97", "__pdf98", "__pdf99", "__pdf100",
-                   //"__pdf101", "__pdf102"};
+                   "__pdfalphasup", "__pdfalphasdown"};
+                   //Not including pdf eigenvectors for plots
 
 
     //Step definition. To replace for tauFF
@@ -475,6 +468,7 @@ void TopLFVAnalyzer::bookHists() {
     maxstep = "00"; //Must be +1 step than its cut
     for (std::string weightstr : syst_weight) {
         if (weightstr.find("notau") != std::string::npos) continue;
+        if (weightstr.find("notoppt") != std::string::npos) continue;
 
         add1DHist({"h_nevents_notausf", ";Number of events;Events", 2, -0.5, 1.5}, "one", "eventWeight_notau", weightstr, minstep_S1, maxstep);
         add1DHist({"h_nvtx_notausf", ";Number of primary vertex;Events", 70, 0.0, 70.0}, "PV_npvsGood", "eventWeight_notau", weightstr, minstep_S1, maxstep);
@@ -498,7 +492,6 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_jet1_btag_notausf",";DeepFlavour score of leading jet;Events", 20, 0, 1.0}, "Jet1_btagDeepFlavB", "eventWeight_notau", weightstr, minstep_S1, maxstep);
     }
 
-
     //for all the other nominal histograms with tauSF
     if (_syst == "all" or _syst == "theory") {
         syst_weight.insert(syst_weight.end(), sf_weight_tau.begin(), sf_weight_tau.end());
@@ -512,6 +505,8 @@ void TopLFVAnalyzer::bookHists() {
     maxstep = "";
 
     for (std::string weightstr : syst_weight) {
+        if (weightstr.find("notoppt") != std::string::npos) continue;
+
         add1DHist({"h_nevents", ";Number of events;Events", 2, -0.5, 1.5}, "one", "eventWeight", weightstr, minstep_S1, maxstep);
         add1DHist({"h_nvtx", ";Number of primary vertex;Events", 70, 0.0, 70.0}, "PV_npvsGood", "eventWeight", weightstr, minstep_S1, maxstep);
 
@@ -537,6 +532,7 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_mutau_dPhi", ";#Delta#phi(#mu, #tau_{h});Events", 20, -3.2, 3.2}, "mutau_dPhi", "eventWeight", weightstr, minstep_S2, maxstep);
         add1DHist({"h_mutau_dR", ";#Delta R(#mu, #tau_{h});Events", 20, 0, 4.0}, "mutau_dR", "eventWeight", weightstr, minstep_S2, maxstep);
         add1DHist({"h_mutau_mass", ";Mass of #mu + #tau_{h} (GeV);Events", 40, 0, 1000}, "mutau_mass", "eventWeight", weightstr, minstep_S2, maxstep);
+        add1DHist({"h_mutau_mass_blind", ";Mass of #mu + #tau_{h} (GeV);Events", 40, 0, 1000}, "mutau_mass_blind", "eventWeight", weightstr, minstep_S2, maxstep);
 
         add1DHist({"h_jet1_pt", ";Leading jet p_{T} (GeV);Events", 20, 0, 400}, "Jet1_pt", "eventWeight", weightstr, minstep_S1, maxstep);
         add1DHist({"h_jet1_eta", ";Leading jet #eta;Events", 20, -2.4, 2.4}, "Jet1_eta", "eventWeight", weightstr, minstep_S1, maxstep);
@@ -562,6 +558,8 @@ void TopLFVAnalyzer::bookHists() {
         // Histogram of Top mass reconstruction
         add1DHist({"h_chi2", ";Minimum #chi^{2};Events", 20, 0, 1000}, "chi2", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_chi2_SMTop_mass", ";SM top quark mass (GeV);Events", 20, 0, 400}, "chi2_SMTop_mass", "eventWeight", weightstr, minstep_S5, maxstep);
+        add1DHist({"h_chi2_SMTop_pt", ";SM top quark pt (GeV);Events", 20, 0, 400}, "chi2_SMTop_pt", "eventWeight", weightstr, minstep_S5, maxstep);
+        add1DHist({"h_chi2_SMTop_pt_notoppt", ";SM top quark pt (GeV);Events", 20, 0, 400}, "chi2_SMTop_pt", "eventWeight_notoppt", "", minstep_S5, maxstep);
         add1DHist({"h_chi2_SMW_mass", ";SM W_{had} mass (GeV);Events", 20, 0, 400}, "chi2_SMW_mass", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_chi2_wqq_dEta", ";#Delta#eta of jets from W;Events", 25, -5, 5}, "chi2_wqq_dEta", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_chi2_wqq_dPhi", ";#Delta#phi of jets from W;Events;", 20, -4, 4}, "chi2_wqq_dPhi", "eventWeight", weightstr, minstep_S5, maxstep);
