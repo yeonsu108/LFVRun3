@@ -1903,7 +1903,7 @@ namespace plotIt {
       m_config.book_keeping_file.reset(TFile::Open(outputName.native().c_str(), "recreate"));
     }
 
-    constexpr std::size_t plots_per_chunk = 100;
+    constexpr std::size_t plots_per_chunk = 150;
 
     auto plots_begin = plots.begin();
     auto plots_end = plots.begin();
