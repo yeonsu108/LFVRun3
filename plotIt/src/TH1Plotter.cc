@@ -350,19 +350,15 @@ namespace plotIt {
       }
 
       for (auto& combined_systematics_up: combined_systematics_map_up) {
-          //for (size_t i = 1; i <= (size_t) stack.syst_only->GetNbinsX(); i++) {
           for (size_t i = 0; i < (size_t) stack.syst_only->GetNbinsX(); i++) {
               float total_error_up = stack.syst_only_asym->GetErrorYhigh(i);
-              //stack.syst_only_asym->SetPointEYhigh(i, std::sqrt(total_error_up * total_error_up + combined_systematics_up.second[i - 1] * combined_systematics_up.second[i - 1]));
               stack.syst_only_asym->SetPointEYhigh(i, std::sqrt(total_error_up * total_error_up + combined_systematics_up.second[i] * combined_systematics_up.second[i]));
           }
       }
 
       for (auto& combined_systematics_dn: combined_systematics_map_dn) {
-          //for (size_t i = 1; i <= (size_t) stack.syst_only->GetNbinsX(); i++) {
           for (size_t i = 0; i < (size_t) stack.syst_only->GetNbinsX(); i++) {
               float total_error_down = stack.syst_only_asym->GetErrorYlow(i);
-              //stack.syst_only_asym->SetPointEYlow(i, std::sqrt(total_error_down * total_error_down + combined_systematics_dn.second[i - 1] * combined_systematics_dn.second[i - 1]));
               stack.syst_only_asym->SetPointEYlow(i, std::sqrt(total_error_down * total_error_down + combined_systematics_dn.second[i] * combined_systematics_dn.second[i]));
           }
       }
