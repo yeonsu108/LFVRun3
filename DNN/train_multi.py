@@ -42,7 +42,7 @@ inputvars_st = [ "Muon1_pt","Muon1_eta",
 	"MET_pt"
         ]
 
-processed = "October2023_AfterPreAppTalk_v1"
+processed = "October2023_AfterPreAppTalk_v4"
 
 #"MET_pt" : helps to the expected limits, do not remove from the input vars.
 sbratio = 1 # sig:bkg = 1:1
@@ -185,8 +185,8 @@ model.add(tf.keras.layers.Flatten(input_shape = (x_train.shape[1],)))
 #drop = 0.2
 activation_function='relu'
 #activation_function='elu'
-weight_initializer = 'random_normal'
-#weight_initializer = 'he_uniform'
+#weight_initializer = 'random_normal'
+weight_initializer = 'he_uniform'
 ###############   Hidden Layer 1    ###############
 model.add(tf.keras.layers.BatchNormalization())
 model.add(tf.keras.layers.Dense(50, activation=activation_function))
@@ -195,6 +195,7 @@ model.add(tf.keras.layers.Dense(50, activation=activation_function))
 ###############   Hidden Layer 2    ###############
 model.add(tf.keras.layers.BatchNormalization())
 model.add(tf.keras.layers.Dense(50, activation=activation_function, kernel_regularizer='l2', kernel_initializer=weight_initializer))
+model.add(tf.keras.layers.Dense(50, activation=activation_function, kernel_initializer=weight_initializer))
 #model.add(tf.keras.layers.Dropout(drop))
 
     

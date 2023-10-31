@@ -17,7 +17,7 @@ def min_max_scaling(series):
 
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
-processed = "October2023_AfterPreAppTalk_v1"
+processed = "October2023_AfterPreAppTalk_v4"
 label = "top_lfv_multiClass"
 
 inputvars = [ "Muon1_pt","Muon1_eta",
@@ -48,7 +48,7 @@ def run(inputs):
     eval_dir = label+"_"+processed+"/"
     
     #hists_path = eval_dir+"/"+year+"/preds/"+discriminator_key+"/"+str(alpha).replace(".","p")+"/"
-    hists_path = "/data1/users/ecasilar/Oct19/"+year+"/"
+    hists_path = "/data1/users/ecasilar/Oct31/"+year+"/"
     if not os.path.isdir(hists_path):
         os.makedirs(hists_path)
     
@@ -83,7 +83,7 @@ def run(inputs):
            LHEPdfWeightSum = infile['LHEPdfWeightSum']
 
     if nEvents == 0:
-        print("No events : "+input_file)
+        #print("No events : "+input_file)
         #Need to add empth histograms for technical reasons ....
         pred = []
         pd_weight = []
@@ -96,12 +96,12 @@ def run(inputs):
               hist_nevents_S4_dict["h_nevents_S4__"+syst] = infile_forS["h_nevents_S4__"+syst]  
               hist_nevents_S5_dict["h_nevents_S5__"+syst] = infile["h_nevents_S5__"+syst]
     else:
-        print("Good file :",input_file)
+        #print("Good file :",input_file)
         pd_data = tree.arrays(inputvars,library="pd")
         pd_weight = tree.arrays(weights,library="np")
         pred_data = np.array(pd_data.filter(items = inputvars))
 
-        print("prediction peformed only once per file")
+        #print("prediction peformed only once per file")
         pred = model.predict(pred_data,batch_size=128, workers=1, use_multiprocessing=False)
 
         rmzeros = pred[:,0] 
@@ -116,7 +116,7 @@ def run(inputs):
         dnnhist_entries_nom = np.histogram(pred,bins=binedges,density=False)
         
 
-        print("starting syst weighted hists ")
+        #print("starting syst weighted hists ")
 
         for syst in syst_list:
             pd_weight = tree.arrays(["eventWeight__"+syst],library="np")
@@ -173,7 +173,8 @@ if __name__ == '__main__':
     discriminator = "p_st_tt_ob"
     alpha=0.1
     parameters = []
-    for year in ["2016pre","2016post","2017","2018"]:
+    #for year in ["2016pre","2016post","2017","2018"]:
+    for year in ["2016pre"]: #,"2016post","2017","2018"]:
        project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_FF/"+year+"/"
        flist = os.listdir(project_dir)
        flist = [i for i in flist if (".root" in i)]

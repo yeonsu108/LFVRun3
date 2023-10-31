@@ -111,7 +111,6 @@ def write_envelope(inputh, inputf, bsff, syst, nhists, gen_sumW, wgt_sumW):
     if nhists == 2: #up/dn, only re-normalization
         up = inputf.Get(inputh + "__" + syst + "up")
         dn = inputf.Get(inputh + "__" + syst + "down")
-        print(inputh + "__" + syst + "up")
         if up == None: return 1
         up.SetDirectory(ROOT.nullptr)
         dn.SetDirectory(ROOT.nullptr)
@@ -260,7 +259,7 @@ for fname in file_list:
     if any('__facscale' in i for i in hlists): isFacScale = True
     if any('__isr' in i for i in hlists): isISR = True
     if any('__fsr' in i for i in hlists): isFSR = True
-    #if any('__pdf' in i.replace("alphas", "") for i in hlists): isPDFenv = True
+    if any('__pdf' in i.replace("alphas", "") for i in hlists): isPDFenv = True
     if any('__pdfalphas' in i for i in hlists) and 'LFV' not in fname: isPDFas = True
 
     for hname in hlists:
@@ -275,7 +274,7 @@ for fname in file_list:
             if '201' not in fname or 'jes' in fname: h1.Scale(get_bSFratio(bSFfile, hname))
             h1.Write()
         if any(i in hname for i in ['event', 'counter', '_nobtag', 'LHEPdfWeightSum', 'PSWeightSum', 'ScaleWeightSum']): pass
-        elif any(i in hname for i in ['__mescale', '__renscale', '__facscale', '__isr', '__fsr']): continue
+        elif any(i in hname for i in ['__mescale', '__renscale', '__facscale', '__isr', '__fsr', '__pdfalphas']): continue
         elif '201' in fname and 'jes' not in fname: pass
         else:
             ratio = get_bSFratio(bSFfile, hname)
