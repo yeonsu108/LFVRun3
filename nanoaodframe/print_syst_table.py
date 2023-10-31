@@ -41,7 +41,7 @@ unc_cat = OrderedDict([
          'btaghfstats2', 'btaglfstats2', 'btagcferr1', 'btagcferr2',
          'jesAbsolute', 'jesAbsolute_'+year[:4], 'jesBBEC1', 'jesBBEC1_'+year[:4],
          'jesFlavorQCD', 'jesRelativeBal', 'jesRelativeSample_'+year[:4], 'jer',
-         'mescale', 'renscale', 'faccale', 'isr', 'fsr', 'pdfalphas', 'pdfenv',
+         'mescale', 'renscale', 'faccale', 'isr', 'fsr', 'pdfalphas',
          'tune', 'hdamp',]),
 ('pu', ['pu']),
 ('toppt', ['toppt']),
@@ -93,8 +93,6 @@ unc_cat = OrderedDict([
 ('isr', ['isr']),
 ('fsr', ['fsr']),
 ('hdamp', ['hdamp']),
-('pdfall', ['pdfenv', 'pdfalphas']),
-('pdfenv', ['pdfenv']),
 ('pdfalphas', ['pdfalphas']),
 ('tune', ['tune']),
 ('btaghf', ['btaghf']),
@@ -166,7 +164,7 @@ for key, value in unc_cat.items():
     with open(os.path.join(dest_path, 'figure_' + year, 'systematics.tex'), 'r') as f:
         with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + syst_postfix + '.tex'), 'w+') as f1:
             isTheorySyst = False
-            if key in ['scale', 'mescale', 'renscale', 'facscale', 'isr', 'fsr', 'hdamp', 'tune', 'pdfall', 'pdfenv', 'pdfalphas', 'toppt']:
+            if key in ['scale', 'mescale', 'renscale', 'facscale', 'isr', 'fsr', 'hdamp', 'tune', 'pdfalphas', 'toppt']:
               isTheorySyst = True
             for line in f:
                 isTheory = False
@@ -185,7 +183,7 @@ unc_summary = OrderedDict([
 ('jesAll', 'JES'), ('jer', 'JER'),
 ('mescale', 'Scale $\mu$F and $\mu$R'), ('renscale', 'Scale $\mu$R'), ('facscale', 'Scale $\mu$F'),
 ('isr', 'ISR'), ('fsr', 'FSR'),
-('hdamp', 'ME-PS matching'), ('pdfall', 'PDF'), ('tune', 'Underlying event'),
+('hdamp', 'ME-PS matching'), ('pdfalphas', 'PDF alphaS'), ('tune', 'Underlying event'),
 ('bAll', 'b-tagging shape'), ('all', 'Total sys. unc.'),
 ])
 
