@@ -56,7 +56,6 @@ for year, lumi in years.items():
       if '#' in line[0]: skip_signal = True
       if 'hist' in line:
         line = line[0] + dest_path + '/' + year + '_postprocess/' + line[1:]
-        print("Galiba burda : ", line)
         if not any(i in line for i in ['LFV', 'SingleMuon']):
           line += '  scale: ' + str(int(lumi)/137570.0) + '\n'
       #if not skip_signal and not any(i in line for i in ['yields-group']):

@@ -3,7 +3,6 @@
   y-axis: "Entries"
   y-axis-format: "%1% / %2$.2f"
   log-y: true
-  log-x: true
   sort-by-yields: true
   save-extensions: ['pdf']
   for-yields: true
@@ -16,5 +15,6 @@
   #blinded-range: [0.,0.09]
 #  rebin: 4
 #  labels:
+#  log-x: true
 #    - {text: 'b2j3', position: [0.781, 0.806], size: 18}
 
