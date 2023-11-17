@@ -52,21 +52,33 @@ The class has several methods:
   Look at `nanoaoddataframe.cpp` to find how to use within C++.
 
 - Compile
-  Make sure to source proper evnv (new!)
-  ``` bash
-    source /cvmfs/sft.cern.ch/lcg/views/LCG_103/x86_64-centos7-gcc12-opt/setup.sh
-  ```
-  Then compile
-  ``` bash
-    make clean && make -j 4   # max 6 effective.
-    ```
-    Need ROOT 6.26.06 or later then for correctionlib,
-    this will compile and create a `libnanoaodrdframe.so` shared library that can be loaded in a ROOT session or macro:
-    ```c++
-    gSystem->Load("libnanoadrdframe.so");
-    ```
-    or within pyROOT (look in `processnanoaod.py`).
+Make sure to source proper evnv (new!)
+``` bash
+  source /cvmfs/sft.cern.ch/lcg/views/LCG_103/x86_64-centos7-gcc12-opt/setup.sh
+```
+Then compile
+``` bash
+  make clean && make -j 4   # max 6 effective.
+```
+Need ROOT 6.26.06 or later then for correctionlib,
+this will compile and create a `libnanoaodrdframe.so` shared library that can be loaded in a ROOT session or macro:
+```c++
+  gSystem->Load("libnanoadrdframe.so");
+```
+or within pyROOT (look in `processnanoaod.py`).
 
+Now you install plotIt for plotting histograms. Tha package is maintained from the other repo, to be used in the various analyses.
+``` bash
+# Start from the base directory
+cd LFVRun2
+git clone git@github.com:minerva1993/plotIt.git
+cd plotIt
+source setup_sl7_env.sh #OR, source setup_for_cms_env.sh
+cd external
+./build-external.sh
+cd ..
+make -j4
+```
 
 ## III. Running over large dataset
 
@@ -162,7 +174,7 @@ Drawing histogram by plotIt
 ``` txt
 cd 2018_postprocess
 mkdir ../figure_2018
-../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/config_18.yml -y -s
+../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/TOP-22-011/config_18.yml -y -s
 
 #For Run2,
 python stack_signals_v2.py -I test #use v2 for now, v1 cannot deal with year based uncertainties
