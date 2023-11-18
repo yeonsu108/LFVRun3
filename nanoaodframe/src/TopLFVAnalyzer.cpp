@@ -572,9 +572,9 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_bjet1_mass", ";b-tagged jet mass (GeV);Events", 20, 0, 100}, "bJet1_mass", "eventWeight", weightstr, minstep_S5, maxstep);
 
         add1DHist({"h_jet_ht", ";Jet HT (GeV);Events", 48, 40, 1000}, "Jet_HT", "eventWeight", weightstr, minstep_S1, maxstep);
-        add1DHist({"h_st_met", ";S_{T}^{MET} (GeV);Events", 48, 40, 1000}, "st_met", "eventWeight", weightstr, minstep_S4, maxstep);
+        add1DHist({"h_st_met", ";S_{T}^{MET} (GeV);Events", 28, 100, 1500}, "st_met", "eventWeight", weightstr, minstep_S4, maxstep);
         // Fiilld with the same st_met, to be drawn with "WIDTH" option.
-        add1DHist({"h_st_met_binwidth", ";S_{T}^{MET};Events / GeV", 48, 40, 1000}, "st_met", "eventWeight", weightstr, minstep_S4, maxstep);
+        add1DHist({"h_st_met_binwidth", ";S_{T}^{MET};Events / GeV", 28, 100, 1500}, "st_met", "eventWeight", weightstr, minstep_S4, maxstep);
 
         // Histogram of Top mass reconstruction
         add1DHist({"h_chi2", ";Minimum #chi^{2};Events", 20, 0, 1000}, "chi2", "eventWeight", weightstr, minstep_S5, maxstep);

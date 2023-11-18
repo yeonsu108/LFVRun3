@@ -10,7 +10,7 @@ args = parser.parse_args()
 input = args.input
 
 
-config_path = '../plotIt/configs/'
+config_path = '../plotIt/configs/TOP-22-011/'
 common_syst = 'systematics:\n'
 groups = ['GData', 'Gttll', 'Gttlj', 'Gttjj', 'GttV', 'GZJets', 'GWJets', 'GSingleT', 'GVV', 'GQCD',
           'GLFVSTcv', 'GLFVSTuv', 'GLFVTTcv', 'GLFVTTuv',]
