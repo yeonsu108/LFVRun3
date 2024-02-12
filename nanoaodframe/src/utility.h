@@ -76,6 +76,8 @@ floats top_reco_products_STLFV(FourVectorVec &jets, FourVectorVec &muons, FourVe
 
 floats top_reco_products_TTLFV(FourVectorVec &jets, FourVectorVec &muons, FourVectorVec &taus, floats topreco);
 
+float st_met(floats &pt1, floats &pt2, floats &pt3, float pt4);
+
 float calculate_deltaEta( FourVector &p1, FourVector &p2);
 
 float calculate_deltaPhi( FourVector &p1, FourVector &p2);
