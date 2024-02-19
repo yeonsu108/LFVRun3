@@ -109,7 +109,7 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
         }
     }
-    addVar({"unitGenWeightFF", "unitGenWeight * tauFF", ""});
+    addVar({"unitGenWeightFF", "unitGenWeight * tauFF * UFO_reweight", ""});
 
     // There should be 'good' tau (or none) and exactly one muon
     addVar({"Muon1_pt", "Muon_pt[0]", ""});
