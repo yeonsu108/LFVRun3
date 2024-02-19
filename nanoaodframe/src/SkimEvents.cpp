@@ -124,6 +124,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("L1PreFiringWeight_.*");
         addVartoStore("UFO_reweight");
         addVartoStore("LHEPart_pt");
+        addVartoStore("LHEPart_pdgId");
 }
 
 void SkimEvents::bookHists()
