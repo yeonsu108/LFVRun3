@@ -124,11 +124,16 @@ def write_envelope(inputh, inputf, bsff, syst, nhists, gen_sumW, wgt_sumW, do_re
         dn.SetDirectory(ROOT.nullptr)
         #print("gen_sumW.GetBinContent(2)", gen_sumW.GetBinContent(2))
         #Zero sum weight means no variation, especially for alphas
-        if wgt_sumW.GetBinContent(sum_weights_dict[syst][0]) * wgt_sumW.GetBinContent(sum_weights_dict[syst][1]) > 0:
+        if wgt_sumW.GetBinContent(sum_weights_dict[syst][0]) * wgt_sumW.GetBinContent(sum_weights_dict[syst][1]) > 0 and do_renorm:
             up.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][0]))
             dn.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][1]))
             up.Scale(get_bSFratio(bsff, up.GetName()))
             dn.Scale(get_bSFratio(bsff, dn.GetName()))
+        elif not do_renorm:
+            up.Scale(get_bSFratio(bsff, up.GetName()))
+            dn.Scale(get_bSFratio(bsff, dn.GetName()))
+        else:
+            print("!!!! Zero sum of weight detected: ", syst)
         up.SetName(inputh + "__" + syst + "up")
         dn.SetName(inputh + "__" + syst + "down")
 

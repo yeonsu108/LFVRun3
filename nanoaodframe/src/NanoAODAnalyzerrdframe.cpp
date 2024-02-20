@@ -99,7 +99,7 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
     if (outfilename.find("_LFV_") != std::string::npos) {
         std::string friend_file = "/data1/common/skimmed_NanoAOD/UFO_reweight/" + _year + "/" + seglist.end()[-2] + "/" + org_name;
         if(gSystem->AccessPathName(friend_file.c_str())){
-            std::cout << "ERROR: It is a signal, but reweighting file doesn't exist" << std::endl;
+            std::cout << "\n ERROR: It is a signal, but reweighting file doesn't exist" << std::endl;
         } else {
             TFile* wgtf = TFile::Open(friend_file.c_str(), "READ");
             TTree* wgtt = (TTree*) wgtf->Get("weights");
