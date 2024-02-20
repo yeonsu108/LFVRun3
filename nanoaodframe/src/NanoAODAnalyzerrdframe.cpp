@@ -13,6 +13,7 @@
 #include <random>
 #include <chrono>
 #include <ctime>
+#include <sstream>
 
 #include "TCanvas.h"
 #include "Math/GenVector/VectorUtil.h"
@@ -84,6 +85,42 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
             _originalvars.push_back(abranch->GetName());
         }
     }
+
+    // Concat weight tree for signal ufo
+    stringstream outname_split(outfilename);
+    std::string segment;
+    std::vector<std::string> seglist;
+
+    while (std::getline(outname_split, segment, '/')) {
+       seglist.push_back(segment);
+    }
+    std::string org_name = seglist.end()[-1].substr(seglist.end()[-1].find('_')+1);
+
+    if (outfilename.find("_LFV_") != std::string::npos) {
+        std::string friend_file = "/data1/common/skimmed_NanoAOD/UFO_reweight/" + _year + "/" + seglist.end()[-2] + "/" + org_name;
+        if(gSystem->AccessPathName(friend_file.c_str())){
+            std::cout << "\n ERROR: It is a signal, but reweighting file doesn't exist" << std::endl;
+        } else {
+            TFile* wgtf = TFile::Open(friend_file.c_str(), "READ");
+            TTree* wgtt = (TTree*) wgtf->Get("weights");
+            *atree->AddFriend("weights", friend_file.c_str());
+
+            //_rd = ROOT::RDataFrame(*atree);
+            //_rlm = RNode(_rd);
+            //_rnt = RNodeTree(&_rlm);
+
+            TObjArray *allbranchesFriend = wgtt->GetListOfBranches();
+            for (int i =0; i<allbranchesFriend->GetSize(); i++) {
+                TBranch *abranch = dynamic_cast<TBranch *>(allbranchesFriend->At(i));
+                if (abranch!= nullptr) {
+                    std::string brname = abranch->GetName();
+                    if (brname.find("HLT_") == std::string::npos and brname.find("L1_") == std::string::npos)
+                        cout << brname << ", ";
+                    _originalvars.push_back(abranch->GetName());
+                }
+            }
+        }
+    }
     cout << endl;
 }
 
@@ -126,6 +163,12 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
     if(_isSkim){
         _rlm = _rlm.Define("unitGenWeight", "one");
         _rlm = _rlm.Define("isData", "true");
+
+        if (_outfilename.find("_LFV_") == std::string::npos) {
+            _rlm = _rlm.Define("UFO_reweight", "one");
+        } else {
+            _rlm = _rlm.Redefine("UFO_reweight", "weights.UFO_reweight");
+        }
 
         if(!_isData){
 

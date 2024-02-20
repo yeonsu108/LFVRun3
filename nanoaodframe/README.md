@@ -165,16 +165,18 @@ python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_lss -Y 2018 -S nosys
 python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_los -Y 2018 -S nosyst -M los
 python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_tss -Y 2018 -S nosyst -M tss
 python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_tos -Y 2018 -S nosyst -M tos
+
+python scripts/process.py -V reweight_test -O skim_v9_230626_FF -Y 2018 -S theory --ff
 ```
-Now, apply b SF rescaling, compute uncertainty envelope, etc. Let the `test\2018` is the folder containing histograms.
+Now, apply b SF rescaling, compute uncertainty envelope, etc. Let the `test/2018` is the folder containing histograms.
 ``` txt
-python postprocess.py test 2018
+python postprocess.py -I test -Y 2018
 ```
 Drawing histogram by plotIt
 ``` txt
 cd 2018_postprocess
 mkdir ../figure_2018
-../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/TOP-22-011/config_18.yml -y -s
+../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/TOP-22-011/config_2018.yml -y -s
 
 #For Run2,
 python stack_signals_v2.py -I test #use v2 for now, v1 cannot deal with year based uncertainties

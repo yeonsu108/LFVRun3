@@ -3,9 +3,17 @@ import ROOT
 from ROOT import *
 import numpy as np
 import subprocess
+import optparse
 
-input = sys.argv[1]
-year = sys.argv[2]
+from optparse import OptionParser
+parser = OptionParser(usage="%prog [options]")
+parser.add_option("-I", "--infile",  dest="infile", type="string", default="", help="Input file name")
+parser.add_option("-Y", "--year",  dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")
+(options, args) = parser.parse_args()
+
+year = options.year
+input = options.infile
+
 if year not in ['2016pre', '2016post', '2017', '2018']:
     print('Wrong year, check again')
     sys.exit()
@@ -95,7 +103,7 @@ def rescale(inputh, inputf, bsff, sumW, nom_sumW): # rescale up/dn histos
     h.Write()
 
 
-def write_envelope(inputh, inputf, bsff, syst, nhists, gen_sumW, wgt_sumW):
+def write_envelope(inputh, inputf, bsff, syst, nhists, gen_sumW, wgt_sumW, do_renorm=True):
 
     #I didn't want this way...later, fill weight name in hist bins, and FindBin to get the bin
     #bin num for up/dn sum weights, branch idx + 1
@@ -116,11 +124,16 @@ def write_envelope(inputh, inputf, bsff, syst, nhists, gen_sumW, wgt_sumW):
         dn.SetDirectory(ROOT.nullptr)
         #print("gen_sumW.GetBinContent(2)", gen_sumW.GetBinContent(2))
         #Zero sum weight means no variation, especially for alphas
-        if wgt_sumW.GetBinContent(sum_weights_dict[syst][0]) * wgt_sumW.GetBinContent(sum_weights_dict[syst][1]) > 0:
+        if wgt_sumW.GetBinContent(sum_weights_dict[syst][0]) * wgt_sumW.GetBinContent(sum_weights_dict[syst][1]) > 0 and do_renorm:
             up.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][0]))
             dn.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][1]))
             up.Scale(get_bSFratio(bsff, up.GetName()))
             dn.Scale(get_bSFratio(bsff, dn.GetName()))
+        elif not do_renorm:
+            up.Scale(get_bSFratio(bsff, up.GetName()))
+            dn.Scale(get_bSFratio(bsff, dn.GetName()))
+        else:
+            print("!!!! Zero sum of weight detected: ", syst)
         up.SetName(inputh + "__" + syst + "up")
         dn.SetName(inputh + "__" + syst + "down")
 
@@ -228,15 +241,18 @@ for fname in file_list:
         bSFfile = infile
         if isFFapply:
             bSFfile = TFile.Open(os.path.join(nom_path.replace("_FF",""), fname + '.root'), 'READ')
+            #bSFfile = TFile.Open(os.path.join(nom_path.replace("v2_FF",""), fname + '.root'), 'READ')
     elif '__' in fname and any(i in fname for i in ['hdamp', 'tune', 'jes']):#JES uses different bSF per source!
         bSFfile = infile
         if isFFapply:
             bSFfile = TFile.Open(os.path.join(nom_path.replace("_FF",""), fname + '.root'), 'READ')
+            #bSFfile = TFile.Open(os.path.join(nom_path.replace("v2_FF",""), fname + '.root'), 'READ')
     else:
         bSFfname = fname.replace('__' + fname.split('__')[1], '')
         bSFfile = TFile.Open(os.path.join(nom_path, bSFfname + '.root'), 'READ')
         if isFFapply:
             bSFfile = TFile.Open(os.path.join(nom_path.replace("_FF",""), bSFfname + '.root'), 'READ')
+            #bSFfile = TFile.Open(os.path.join(nom_path.replace("v2_FF",""), bSFfname + '.root'), 'READ')
     #FIXME - ugly...
 
     # Collecting Histograms in outfile.
@@ -261,6 +277,8 @@ for fname in file_list:
     if any('__fsr' in i for i in hlists): isFSR = True
     #if any('__pdf' in i.replace("alphas", "") for i in hlists): isPDFenv = True
     if any('__pdfalphas' in i for i in hlists) and 'LFV' not in fname: isPDFas = True
+    do_renorm = True
+    if 'LFV' in fname: do_renorm = False
 
     for hname in hlists:
         if "__" not in hname: nominal_list.append(hname)
@@ -289,14 +307,14 @@ for fname in file_list:
 
     for hname2 in nominal_list:
 
-      if isMEScale: write_envelope(hname2, infile, bSFfile, "mescale", 2, hcounter, ScaleWeightSum)
-      if isRenScale: write_envelope(hname2, infile, bSFfile, "renscale", 2, hcounter, ScaleWeightSum)
-      if isFacScale: write_envelope(hname2, infile, bSFfile, "facscale", 2, hcounter, ScaleWeightSum)
-      if isISR: write_envelope(hname2, infile, bSFfile, "isr", 2, hcounter, PSWeightSum)
-      if isFSR: write_envelope(hname2, infile, bSFfile, "fsr", 2, hcounter, PSWeightSum)
+      if isMEScale: write_envelope(hname2, infile, bSFfile, "mescale", 2, hcounter, ScaleWeightSum, do_renorm)
+      if isRenScale: write_envelope(hname2, infile, bSFfile, "renscale", 2, hcounter, ScaleWeightSum, do_renorm)
+      if isFacScale: write_envelope(hname2, infile, bSFfile, "facscale", 2, hcounter, ScaleWeightSum, do_renorm)
+      if isISR: write_envelope(hname2, infile, bSFfile, "isr", 2, hcounter, PSWeightSum, do_renorm)
+      if isFSR: write_envelope(hname2, infile, bSFfile, "fsr", 2, hcounter, PSWeightSum, do_renorm)
       #For PDF: we take 101-102 only for control plots from ttbar
-      #if isPDF: write_envelope(hname2, infile, bSFfile, "pdf", 101, hcounter, LHEPdfWeightSum) #sig: 101 / bkg: 101 + 2 (as)
-      if isPDFas: write_envelope(hname2, infile, bSFfile, "pdfalphas", 2, hcounter, LHEPdfWeightSum)
+      #if isPDF: write_envelope(hname2, infile, bSFfile, "pdf", 101, hcounter, LHEPdfWeightSum, do_renorm) #sig: 101 / bkg: 101 + 2 (as)
+      if isPDFas: write_envelope(hname2, infile, bSFfile, "pdfalphas", 2, hcounter, LHEPdfWeightSum, do_renorm)
       if run_on_syst: rescale(hname2, infile, bSFfile, hcounter, hcounter_nom) #placeholder for hdamp and tune
 
 

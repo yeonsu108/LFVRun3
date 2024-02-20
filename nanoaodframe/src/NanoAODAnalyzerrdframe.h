@@ -10,6 +10,7 @@
 
 #include "TTree.h"
 #include "TFile.h"
+#include "TSystem.h"
 
 #include "ROOT/RDataFrame.hxx"
 #include "ROOT/RVec.hxx"
