@@ -10,7 +10,7 @@
 #include "utility.h"
 
 TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string year, std::string syst, std::string jsonfname, bool applytauFF, string globaltag, int nthreads)
-:NanoAODAnalyzerrdframe(t, outfilename, year, syst, jsonfname, globaltag, nthreads), _syst(syst), _year(year), _applytauFF(applytauFF)
+:NanoAODAnalyzerrdframe(t, outfilename, year, syst, jsonfname, globaltag, nthreads), _outfilename(outfilename), _syst(syst), _year(year), _applytauFF(applytauFF)
 {
     if(syst.find("jes") != std::string::npos or syst.find("jer") != std::string::npos or
             syst.find("tes") != std::string::npos or syst.find("hdamp") != std::string::npos or syst.find("tune") != std::string::npos) {
@@ -25,6 +25,14 @@ TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string ye
     } else {
         tauYear = "UL" + _year;
     }
+
+    if (_outfilename.find("_LFV_TUMuTau_") != std::string::npos or _outfilename.find("_LFV_TCMuTau_") != std::string::npos) {
+        _isSignal = true;
+        cout << "Input file is LFV signal" <<endl;
+    } else {
+        _isSignal = false;
+    }
+
 }
 
 // Define your cuts here
@@ -63,7 +71,14 @@ void TopLFVAnalyzer::defineMoreVars() {
 
     // Already object selection is done before this
     if (!_applytauFF) addVar({"tauFF", "1.0", ""});
-    else {
+    else if (_isSignal) {
+        addVar({"tauFF", "1.0", ""});
+        addVar({"tauFFstatup", "1.0", ""});
+        addVar({"tauFFstatdown", "1.0", ""});
+        addVar({"tauFFsystup", "1.0", ""});
+        addVar({"tauFFsystdown", "1.0", ""});
+        addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
+    } else {
         if (_year == "2016pre") {
             addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.5398"});
             addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.06578"});//ratio to nominal
@@ -94,7 +109,7 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
         }
     }
-    addVar({"unitGenWeightFF", "unitGenWeight * tauFF", ""});
+    addVar({"unitGenWeightFF", "unitGenWeight * tauFF * UFO_reweight", ""});
 
     // There should be 'good' tau (or none) and exactly one muon
     addVar({"Muon1_pt", "Muon_pt[0]", ""});
@@ -149,6 +164,9 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVar({"chi2_wqq_dEta","top_reco_prod[0]",""});
     addVar({"chi2_wqq_dPhi","top_reco_prod[1]",""});
     addVar({"chi2_wqq_dR","top_reco_prod[2]",""});
+
+    // S_T^MET: in EXO-19-016, defined by pt1+pt2+ptj1+met where pt1,2 come from taus
+    defineVar("st_met", ::st_met, {"Muon_pt", "Tau_pt", "Jet_pt", "MET_pt"});
 
 
     // EventWeights
@@ -456,7 +474,7 @@ void TopLFVAnalyzer::bookHists() {
             //We anyway need this for bSF rescaling
             add1DHist({"h_nevents", ";Number of events w/o b SF;Events", 2, -0.5, 1.5}, "one", "eventWeight", "_nobtag", minstep_S1, "");
             add1DHist({"h_nevents_notausf", ";Number of events w/o b and tau SF;Events", 2, -0.5, 1.5}, "one", "eventWeight_notau", "_nobtag", minstep_S1, "00");
-            add1DHist({"h_jet_ht", ";Jet HT w/o b SF (GeV);Events", 20, 0, 400}, "Jet_HT", "eventWeight", "_nobtag", minstep_S1, "");
+            add1DHist({"h_jet_ht", ";Jet HT w/o b SF (GeV);Events", 48, 40, 1000}, "Jet_HT", "eventWeight", "_nobtag", minstep_S1, "");
         }
     }
     else {
@@ -553,7 +571,10 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_bjet1_eta", ";b-tagged jet #eta;Events", 20, -2.4, 2.4}, "bJet1_eta", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_bjet1_mass", ";b-tagged jet mass (GeV);Events", 20, 0, 100}, "bJet1_mass", "eventWeight", weightstr, minstep_S5, maxstep);
 
-        add1DHist({"h_jet_ht", ";Jet HT (GeV);Events", 20, 0, 400}, "Jet_HT", "eventWeight", weightstr, minstep_S1, maxstep);
+        add1DHist({"h_jet_ht", ";Jet HT (GeV);Events", 48, 40, 1000}, "Jet_HT", "eventWeight", weightstr, minstep_S1, maxstep);
+        add1DHist({"h_st_met", ";S_{T}^{MET} (GeV);Events", 28, 100, 1500}, "st_met", "eventWeight", weightstr, minstep_S4, maxstep);
+        // Fiilld with the same st_met, to be drawn with "WIDTH" option.
+        add1DHist({"h_st_met_binwidth", ";S_{T}^{MET};Events / GeV", 28, 100, 1500}, "st_met", "eventWeight", weightstr, minstep_S4, maxstep);
 
         // Histogram of Top mass reconstruction
         add1DHist({"h_chi2", ";Minimum #chi^{2};Events", 20, 0, 1000}, "chi2", "eventWeight", weightstr, minstep_S5, maxstep);

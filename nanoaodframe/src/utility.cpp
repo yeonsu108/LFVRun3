@@ -494,6 +494,16 @@ floats addMuonUnc( floats &input ) {
     return out;
 }
 
+//Inspired by EXO-19-016
+float st_met(floats &pt1, floats &pt2, floats &pt3, float pt4) {
+    float out;
+    if (pt1.size() * pt2.size() * pt3.size() != 0)
+        out = pt1[0] + pt2[0] + pt3[0] + pt4;
+    else out = -1;
+
+    return out;
+}
+
 //Temporary Fix for ANv11. Only one tau
 floatsVec fixtausf( floatsVec &input, floats &pts) {
     floatsVec out;

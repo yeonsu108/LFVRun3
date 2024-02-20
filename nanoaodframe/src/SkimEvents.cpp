@@ -122,6 +122,9 @@ void SkimEvents::defineMoreVars()
         addVartoStore("muon4vecs");
         addVartoStore("fixedGridRhoFastjetAll");
         addVartoStore("L1PreFiringWeight_.*");
+        addVartoStore("UFO_reweight");
+        addVartoStore("LHEPart_pt");
+        addVartoStore("LHEPart_pdgId");
 }
 
 void SkimEvents::bookHists()

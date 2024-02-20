@@ -22,10 +22,11 @@ public:
 private:
     std::string _year;
     std::string _syst;
+    std::string _outfilename;
     std::string maxstep;
     std::string tauYear = "";
     bool _applytauFF;
-
+    bool _isSignal;
 };
 
 #endif /* TopLFVAnalyzer_H_ */

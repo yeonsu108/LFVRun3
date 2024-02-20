@@ -11,7 +11,7 @@ options = parser.parse_args()
 
 year = options.year
 
-config_path = '../plotIt/configs/'
+config_path = '../plotIt/configs/TOP-22-011/'
 dest_path = os.path.join('./', options.input)
 tmp_file_name = 'temp_' + year + '_forSyst.yml'
 string_to_add = 'systematics:\n'
