@@ -73,7 +73,6 @@ Now you install plotIt for plotting histograms. Tha package is maintained from t
 cd LFVRun2
 git clone git@github.com:minerva1993/plotIt.git
 cd plotIt
-source setup_sl7_env.sh #OR, source setup_for_cms_env.sh
 cd external
 ./build-external.sh
 cd ..
