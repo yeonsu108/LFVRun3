@@ -59,7 +59,7 @@ for year, lumi in years.items():
       if 'hist' in line:
         line = line[0] + dest_path + '/' + year + '_postprocess/' + line[1:]
         if not any(i in line for i in ['LFV', 'SingleMuon']):
-          line += '  scale: ' + str(int(lumi)/137570.0) + '\n'
+          line += '  scale: ' + str(int(lumi)/137625.0) + '\n'
       #if not skip_signal and not any(i in line for i in ['yields-group']):
       if not skip_signal:
         #if 'group' in line and not any(i in line for i in groups): string_for_files += '  group: Gother \n'
@@ -73,6 +73,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVSTcs'
   cross-section: 0.007375
+  generated-events: 1
   group: GLFVSTcs
   order: 1
 
@@ -80,6 +81,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVSTcv'
   cross-section: 0.03673
+  generated-events: 1
   group: GLFVSTcv
   order: 1
 
@@ -87,6 +89,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVSTct'
   cross-section: 0.177
+  generated-events: 1
   group: GLFVSTct
   order: 1
 
@@ -94,6 +97,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVSTus'
   cross-section: 0.08494
+  generated-events: 1
   group: GLFVSTus
   order: 1
 
@@ -101,6 +105,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVSTuv'
   cross-section: 0.3924
+  generated-events: 1
   group: GLFVSTuv
   order: 2
 
@@ -108,6 +113,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVSTut'
   cross-section: 1.781
+  generated-events: 1
   group: GLFVSTut
   order: 1
 
@@ -115,6 +121,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVTTcs'
   cross-section: 0.00269
+  generated-events: 1
   group: GLFVTTcs
   order: 1
 
@@ -122,6 +129,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVTTcv'
   cross-section: 0.0215
+  generated-events: 1
   group: GLFVTTcv
   order: 3
 
@@ -129,6 +137,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVTTct'
   cross-section: 0.1290
+  generated-events: 1
   group: GLFVTTct
   order: 1
 
@@ -136,6 +145,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVTTus'
   cross-section: 0.00269
+  generated-events: 1
   group: GLFVTTus
   order: 1
 
@@ -143,6 +153,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVTTuv'
   cross-section: 0.0215
+  generated-events: 1
   group: GLFVTTuv
   order: 4
 
@@ -150,6 +161,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   type: signal
   pretty-name: 'LFVTTut'
   cross-section: 0.1290
+  generated-events: 1
   group: GLFVTTut
   order: 1
   """.format(dest_path), file=fnew)
