@@ -6,8 +6,10 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument('-I', '--input', dest='input', type=str, default="test")
 parser.add_argument("-D", dest="DNN", action="store_true", default=False, help="Run for DNN histograms")
+parser.add_argument("-y", dest="yield_only", action="store_true", default=False, help="Run for DNN histograms")
 args = parser.parse_args()
 input = args.input
+yield_only = args.yield_only
 
 
 config_path = '../plotIt/configs/TOP-22-011/'
@@ -57,7 +59,7 @@ for year, lumi in years.items():
       if 'hist' in line:
         line = line[0] + dest_path + '/' + year + '_postprocess/' + line[1:]
         if not any(i in line for i in ['LFV', 'SingleMuon']):
-          line += '  scale: ' + str(int(lumi)/137570.0) + '\n'
+          line += '  scale: ' + str(int(lumi)/137625.0) + '\n'
       #if not skip_signal and not any(i in line for i in ['yields-group']):
       if not skip_signal:
         #if 'group' in line and not any(i in line for i in groups): string_for_files += '  group: Gother \n'
@@ -67,37 +69,101 @@ for year, lumi in years.items():
 
 with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   print("""
+'{0}/Run2/hist_ST_LFV_TCMuTau_Scalar.root':
+  type: signal
+  pretty-name: 'LFVSTcs'
+  cross-section: 0.007375
+  generated-events: 1
+  group: GLFVSTcs
+  order: 1
+
 '{0}/Run2/hist_ST_LFV_TCMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVSTcv'
-  cross-section: 0.0368
-  #generated-events: 7789000.0
+  cross-section: 0.03673
+  generated-events: 1
   group: GLFVSTcv
+  order: 1
+
+'{0}/Run2/hist_ST_LFV_TCMuTau_Tensor.root':
+  type: signal
+  pretty-name: 'LFVSTct'
+  cross-section: 0.177
+  generated-events: 1
+  group: GLFVSTct
+  order: 1
+
+'{0}/Run2/hist_ST_LFV_TUMuTau_Scalar.root':
+  type: signal
+  pretty-name: 'LFVSTus'
+  cross-section: 0.08494
+  generated-events: 1
+  group: GLFVSTus
   order: 1
 
 '{0}/Run2/hist_ST_LFV_TUMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVSTuv'
-  cross-section: 0.393
-  #generated-events: 7887981.0
+  cross-section: 0.3924
+  generated-events: 1
   group: GLFVSTuv
   order: 2
+
+'{0}/Run2/hist_ST_LFV_TUMuTau_Tensor.root':
+  type: signal
+  pretty-name: 'LFVSTut'
+  cross-section: 1.781
+  generated-events: 1
+  group: GLFVSTut
+  order: 1
+
+'{0}/Run2/hist_TT_LFV_TCMuTau_Scalar.root':
+  type: signal
+  pretty-name: 'LFVTTcs'
+  cross-section: 0.00269
+  generated-events: 1
+  group: GLFVTTcs
+  order: 1
 
 '{0}/Run2/hist_TT_LFV_TCMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVTTcv'
   cross-section: 0.0215
-  #generated-events: 6355000.0
+  generated-events: 1
   group: GLFVTTcv
   order: 3
+
+'{0}/Run2/hist_TT_LFV_TCMuTau_Tensor.root':
+  type: signal
+  pretty-name: 'LFVTTct'
+  cross-section: 0.1290
+  generated-events: 1
+  group: GLFVTTct
+  order: 1
+
+'{0}/Run2/hist_TT_LFV_TUMuTau_Scalar.root':
+  type: signal
+  pretty-name: 'LFVTTus'
+  cross-section: 0.00269
+  generated-events: 1
+  group: GLFVTTus
+  order: 1
 
 '{0}/Run2/hist_TT_LFV_TUMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVTTuv'
   cross-section: 0.0215
-  #generated-events: 11286000.0
+  generated-events: 1
   group: GLFVTTuv
   order: 4
+
+'{0}/Run2/hist_TT_LFV_TUMuTau_Tensor.root':
+  type: signal
+  pretty-name: 'LFVTTut'
+  cross-section: 0.1290
+  generated-events: 1
+  group: GLFVTTut
+  order: 1
   """.format(dest_path), file=fnew)
   fnew.write(string_for_files)
 
@@ -107,13 +173,25 @@ with open(config_path + 'template_Run2.yml') as f:
     for line in lines: f1.write(line)
     f1.write(common_syst)
     if 'FF' in dest_path:
-        f1.write("\nplots:\n  include: ['histos_FFapply.yml', 'histos_yield_S5.yml']\n")
+        if yield_only:
+            f1.write("\nplots:\n  include: ['histos_yield_S5.yml']\n")
+        else:
+            f1.write("\nplots:\n  include: ['histos_FFapply.yml', 'histos_yield_S5.yml']\n")
     elif args.DNN:
         f1.write("\nplots:\n  include: ['histos_dnn.yml']\n")
     else:
-        f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']\n")
+        if yield_only:
+            f1.write("\nplots:\n  include: ['histos_yield.yml']\n")
+        else:
+            f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']\n")
 
-call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
-call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-q'], shell=False)
-call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-s', '-d'], shell=False)
-call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-q'], shell=False)
+if yield_only:
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s', '-a'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-q', '-a'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-a'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-q', '-a'], shell=False)
+else:
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-q'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-s', '-d'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-q'], shell=False)

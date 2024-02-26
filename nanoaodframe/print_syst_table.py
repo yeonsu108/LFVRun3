@@ -158,7 +158,7 @@ for key, value in unc_cat.items():
                 if any(x in line for x in value): string_to_add += str(line)
             f1.writelines(string_to_add)
     syst_postfix = key
-    call(['../plotIt/plotIt', '-o ' + os.path.join(dest_path, 'figure_' + year), config_path + tmp_file_name, '-s'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + os.path.join(dest_path, 'figure_' + year), config_path + tmp_file_name, '-s', '-a'], shell=False)
 
     #Remove signals in TT specific sources
     with open(os.path.join(dest_path, 'figure_' + year, 'systematics.tex'), 'r') as f:
