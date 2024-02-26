@@ -49,7 +49,7 @@ def store_file(it):
             if "hcounter" in hist:
                 htmp.Write()
             else:
-                htmp.Scale(lumi_dict[path.split('/')[1].split('_')[0]]/ntmp)
+                htmp.Scale((lumi_dict[path.split('/')[1].split('_')[0]]/137625.)/ntmp)
                 dest.cd()
                 htmp.Write()
         dest.Write()
