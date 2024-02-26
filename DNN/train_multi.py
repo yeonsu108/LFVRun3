@@ -2,7 +2,7 @@ import os
 import sys
 
 #os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "3"
 
 import uproot
 import pandas as pd
@@ -42,7 +42,7 @@ inputvars_st = [ "Muon1_pt","Muon1_eta",
 	"MET_pt"
         ]
 
-processed = "October2023_AfterPreAppTalk_v4"
+processed = "Feb2024_AfterPreAppTalk_v2"
 
 #"MET_pt" : helps to the expected limits, do not remove from the input vars.
 sbratio = 1 # sig:bkg = 1:1
@@ -56,7 +56,8 @@ years = ["2017","2018","2016pre","2016post"]
 #project_dir = "/data1/users/itseyes/LFV/processed_LFV/v9test2_theory/"
 #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/old/v9_06xx/v9_0608_fixtau/"
 #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_FF/"
-project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_FF/"
+#project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_FF/"
+project_dir = "/data1/users/ecasilar/v9_0714_1010/"
 
 df_sig_st_list = []
 df_sig_tt_list = []
@@ -227,6 +228,7 @@ plt.savefig(train_outdir+'acc_vs_epochs.png')
 plt.close()
 
 pred_train = model.predict_classes(x_train)
+#pred_train = model.predict(x_train)
 print("pred_train", pred_train)
 print("orig train", y_train)
 y_train = np.argmax(y_train, axis=1)

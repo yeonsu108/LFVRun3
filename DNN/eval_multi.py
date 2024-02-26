@@ -1,6 +1,6 @@
 import os
 import sys
-os.environ["CUDA_VISIBLE_DEVICES"] = "3"
+os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 import uproot
 import pandas as pd
 import awkward as ak
@@ -17,7 +17,7 @@ def min_max_scaling(series):
 
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
-processed = "October2023_AfterPreAppTalk_v4"
+processed = "Feb2024_AfterPreAppTalk_v2"
 label = "top_lfv_multiClass"
 
 inputvars = [ "Muon1_pt","Muon1_eta",
@@ -48,7 +48,7 @@ def run(inputs):
     eval_dir = label+"_"+processed+"/"
     
     #hists_path = eval_dir+"/"+year+"/preds/"+discriminator_key+"/"+str(alpha).replace(".","p")+"/"
-    hists_path = "/data1/users/ecasilar/Oct31/"+year+"/"
+    hists_path = "/data1/users/ecasilar/Feb22_2023/"+year+"/"
     if not os.path.isdir(hists_path):
         os.makedirs(hists_path)
     
@@ -173,16 +173,15 @@ if __name__ == '__main__':
     discriminator = "p_st_tt_ob"
     alpha=0.1
     parameters = []
-    #for year in ["2016pre","2016post","2017","2018"]:
-    for year in ["2016pre"]: #,"2016post","2017","2018"]:
-       project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_FF/"+year+"/"
+    for year in ["2016pre","2016post","2017","2018"]:
+       project_dir = "/data1/users/ecasilar/v9_0714_1010/"+year+"/"
        flist = os.listdir(project_dir)
        flist = [i for i in flist if (".root" in i)]
        #print(len(flist))
        for curfile in flist:
           parameters.append((year, project_dir+curfile ,discriminator,alpha))
 
-    pool = multiprocessing.get_context("spawn").Pool(12)
+    pool = multiprocessing.get_context("spawn").Pool(8)
     pool.map(run, parameters)
     pool.close()
     pool.join()
