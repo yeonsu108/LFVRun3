@@ -540,7 +540,6 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
             cout << "Treating breakdown of FlavorPure*" << endl;
             for (std::string src : jes_var_flav) {
                 if (src.find("up") != std::string::npos) {
-                    if (src.find("HEM") != std::string::npos) continue;
                     auto uncsource = src.substr(3, src.size()-2-3);
                     cout << "JEC Uncertainty Source : " + uncsource << endl;
                     string dbfilenameunc = basedirectory + _globaltag + "_MC_UncertaintySources_AK4PFchs.txt";
