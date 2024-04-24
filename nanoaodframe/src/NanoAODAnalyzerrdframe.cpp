@@ -259,7 +259,7 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
     // Selected objects will be stored in new vectors.
     if (_isSkim) {
         selectMuons();
-        setupJetMETCorrection(_globaltag, jes_var, "AK4PFchs", _isData);
+        setupJetMETCorrection(_globaltag, jes_var, jes_var_flav, "AK4PFchs", _isData);
         skimJets();
         if (!_isData){
             calculateEvWeight();
@@ -467,9 +467,10 @@ void NanoAODAnalyzerrdframe::selectMET()
     _rlm = _rlm.Define("met4vec", ::genmet4vec, {"MET_pt","MET_phi"});
 }*/
 
-void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector<std::string> jes_var, std::string jetalgo, bool dataMc) {
+void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector<std::string> jes_var, std::vector<std::string> jes_var_flav, std::string jetalgo, bool dataMc) {
 
     std::vector<JetCorrectionUncertainty*> regroupedUnc;
+    std::vector<JetCorrectionUncertainty*> flavPureUnc;
     FactorizedJetCorrector* _jetCorrector;
 
     if (_globaltag != "") {
@@ -536,6 +537,19 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                     continue; //We only need var name, no up/down
                 }
             }
+            cout << "Treating breakdown of FlavorPure*" << endl;
+            for (std::string src : jes_var_flav) {
+                if (src.find("up") != std::string::npos) {
+                    auto uncsource = src.substr(3, src.size()-2-3);
+                    cout << "JEC Uncertainty Source : " + uncsource << endl;
+                    string dbfilenameunc = basedirectory + _globaltag + "_MC_UncertaintySources_AK4PFchs.txt";
+                    JetCorrectorParameters* uncCorrPar = new JetCorrectorParameters(dbfilenameunc, uncsource);
+                    JetCorrectionUncertainty* _jetCorrectionUncertainty = new JetCorrectionUncertainty(*uncCorrPar);
+                    flavPureUnc.emplace_back(_jetCorrectionUncertainty);
+                } else {
+                    continue; //We only need var name, no up/down
+                }
+            }
         }
     }
 
@@ -559,10 +573,10 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     };
 
     // structure: jes[jetIdx][varIdx]
-    auto jesUnc = [this, regroupedUnc](floats jetpts, floats jetetas, floats jetphis, floats jetAreas, floats jetrawf, float rho)->floatsVec {
+    auto jesUnc = [this, jes_var, jes_var_flav, regroupedUnc, flavPureUnc](floats jetpts, floats jetetas, floats jetphis, floats jetAreas, floats jetrawf, float rho, ints &partflav)->floatsVec {
 
         floats uncSources;
-        uncSources.reserve(2 * regroupedUnc.size());
+        uncSources.reserve(2 * regroupedUnc.size() + flavPureUnc.size());
         floatsVec uncertainties;
         uncertainties.reserve(jetpts.size());
 
@@ -584,6 +598,29 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                     uncSources.emplace_back(1.0);
                 } else {
                     uncSources.insert(uncSources.end(), 2, 1.0);
+                }
+            }
+            // FlavorPure *
+            for (size_t j=0; j<flavPureUnc.size(); j++) {
+                auto corrector = flavPureUnc[j];
+
+                bool isCorrectFlav = false;
+                // The order of jes_var_flav is important: Gluon / Quark / Charm / Bottom
+                if      (j == 0 and (abs(partflav[i]) == 21 or abs(partflav[i]) == 0)) isCorrectFlav = true;
+                else if (j == 1 and (abs(partflav[i]) == 1 or abs(partflav[i]) == 2 or abs(partflav[i]) == 3)) isCorrectFlav = true;
+                else if (j == 2 and abs(partflav[i]) == 4) isCorrectFlav = true;
+                else if (j == 3 and abs(partflav[i]) == 5) isCorrectFlav = true;
+
+                if (isCorrectFlav) {
+                    corrector->setJetPt(jetpts[i]);
+                    corrector->setJetEta(jetetas[i]);
+                    float unc = corrector->getUncertainty(true);
+                    if (abs(unc) > 100.) unc = 0.;
+                    uncSources.emplace_back(1.0f + unc);
+                    uncSources.emplace_back(1.0f - unc);
+                } else {
+                    uncSources.emplace_back(1.0f);
+                    uncSources.emplace_back(1.0f);
                 }
             }
             uncertainties.emplace_back(uncSources);
@@ -779,7 +816,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                    .Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi","PV_npvsGood", "run"})
                    .Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi", "PV_npvsGood", "run"});
         if (!dataMc) {
-            _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll"})
+            _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_partonFlavour"})
                        .Define("MET_pt_unc", metUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"})
                        .Define("MET_phi_unc", metPhiUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"});
         }

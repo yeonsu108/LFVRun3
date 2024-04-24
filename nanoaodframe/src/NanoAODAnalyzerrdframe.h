@@ -101,6 +101,7 @@ private:
                 "hfup", "hfdown", "lfup", "lfdown", "hfstats1up", "hfstats1down",
                 "hfstats2up", "hfstats2down", "lfstats1up", "lfstats1down",
                 "lfstats2up", "lfstats2down", "cferr1up", "cferr1down", "cferr2up", "cferr2down"};
+
   inline static std::vector<std::string> jes_var_2016 = {"jesAbsoluteup", "jesAbsolutedown",
                 "jesAbsolute_2016up", "jesAbsolute_2016down", "jesBBEC1up", "jesBBEC1down",
                 "jesBBEC1_2016up", "jesBBEC1_2016down", "jesFlavorQCDup", "jesFlavorQCDdown",
@@ -114,6 +115,11 @@ private:
                 "jesBBEC1_2018up", "jesBBEC1_2018down", "jesFlavorQCDup", "jesFlavorQCDdown",
                 "jesRelativeBalup", "jesRelativeBaldown", "jesRelativeSample_2018up", "jesRelativeSample_2018down",
                 "jesHEMup", "jesHEMdown"};
+  // The order of jes_var_flav is important: Gluon / Quark / Charm / Bottom
+  inline static std::vector<std::string> jes_var_flav = {
+                "jesFlavorPureGluonup", "jesFlavorPureGluondown", "jesFlavorPureQuarkup", "jesFlavorPureQuarkdown",
+                "jesFlavorPureCharmup", "jesFlavorPureCharmdown", "jesFlavorPureBottomup", "jesFlavorPureBottomdown",
+                };
   floats PDFWeights;
   floats PSWeights;
   floats ScaleWeights;
@@ -142,7 +148,7 @@ private:
   RNodeTree *currentnode;
   bool isDefined(string v);
 
-  void setupJetMETCorrection(std::string globaltag, const std::vector<std::string> var = std::vector<std::string>(), std::string jetalgo="AK4PFchs", bool dataMc=false);
+  void setupJetMETCorrection(std::string globaltag, const std::vector<std::string> var = std::vector<std::string>(), const std::vector<std::string> var2 = std::vector<std::string>(), std::string jetalgo="AK4PFchs", bool dataMc=false);
 
 };
 

@@ -219,10 +219,20 @@ void TopLFVAnalyzer::defineMoreVars() {
             } else if (_syst.find("jesBBEC1_" + _year.substr(0,4) + "down") != std::string::npos) {
                 addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[7]"});
                 addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[7]"});
-            } else if (_syst.find("jesFlavorQCDup") != std::string::npos) {
+            } else if (_syst.find("jesFlavorQCDup") != std::string::npos or
+                       _syst.find("jesFlavorPureGluonup") != std::string::npos or
+                       _syst.find("jesFlavorPureQuarkup") != std::string::npos or
+                       _syst.find("jesFlavorPureCharmup") != std::string::npos or
+                       _syst.find("jesFlavorPureBottomup") != std::string::npos
+                      ) {
                 addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[8]"});
                 addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[8]"});
-            } else if (_syst.find("jesFlavorQCDdown") != std::string::npos) {
+            } else if (_syst.find("jesFlavorQCDdown") != std::string::npos or
+                       _syst.find("jesFlavorPureGluondown") != std::string::npos or
+                       _syst.find("jesFlavorPureQuarkdown") != std::string::npos or
+                       _syst.find("jesFlavorPureCharmdown") != std::string::npos or
+                       _syst.find("jesFlavorPureBottomdown") != std::string::npos
+                      ) {
                 addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[9]"});
                 addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[9]"});
             } else if (_syst.find("jesRelativeBalup") != std::string::npos) {

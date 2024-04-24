@@ -41,6 +41,8 @@ syst_list = ["", "__tesup", "__tesdown", "__jerup","__jerdown", "__jesAbsoluteup
              "__jesFlavorQCDup", "__jesFlavorQCDdown", "__jesRelativeBalup", "__jesRelativeBaldown",
              "__jesRelativeSample_"+year[:4]+"up", "__jesRelativeSample_"+year[:4]+"down"]
 if year == "2018": syst_list.extend(["__jesHEMup", "__jesHEMdown"])
+syst_list.extend(["__jesFlavorPureGluonup", "__jesFlavorPureGluondown", "__jesFlavorPureQuarkup", "__jesFlavorPureQuarkdown",
+                  "__jesFlavorPureCharmup", "__jesFlavorPureCharmdown", "__jesFlavorPureBottomup", "__jesFlavorPureBottomdown"])
 
 # tune and hdamp will appear as an individual dataset.
 # thus no need to run in loop, but left here for double check
