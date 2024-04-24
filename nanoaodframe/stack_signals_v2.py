@@ -51,7 +51,7 @@ def store_file(it):
             if "hcounter" in hist:
                 htmp.Write()
             else:
-                htmp.Scale((lumi_dict[path.split('/')[1].split('_')[0]]/137625.)/ntmp)
+                htmp.Scale((lumi_dict[path.split('/')[-1].split('_')[0]]/137625.)/ntmp)
                 dest.cd()
                 htmp.Write()
         dest.Write()
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         print("EDITED DIRS: " , dirs)
         file_names[dir_path] = dirs
 
-    pool = multiprocessing.Pool(20)
+    pool = multiprocessing.Pool(12)
     pool.map(store_file, file_names.items())
     pool.close()
     pool.join()

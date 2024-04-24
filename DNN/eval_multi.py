@@ -17,12 +17,12 @@ def min_max_scaling(series):
 
 
 base_dir = os.getcwd().replace("DNN","") # Upper directory
-processed = "Feb2024_AfterPreAppTalk_v2"
+processed = "April2024_AfterPreAppTalk_noJet1pt"
 label = "top_lfv_multiClass"
 
 inputvars = [ "Muon1_pt","Muon1_eta",
         "Tau1_pt","Tau1_mass","Tau1_eta",
-        "Jet1_pt","Jet1_mass","Jet1_eta","Jet1_btagDeepFlavB",
+        "Jet1_mass","Jet1_eta","Jet1_btagDeepFlavB",
         "Jet2_pt","Jet2_mass","Jet2_eta","Jet2_btagDeepFlavB",
         "Jet3_pt","Jet3_mass","Jet3_eta","Jet3_btagDeepFlavB",
         "chi2","chi2_SMW_mass","chi2_SMTop_mass",
@@ -30,6 +30,9 @@ inputvars = [ "Muon1_pt","Muon1_eta",
         "mutau_mass","mutau_dEta","mutau_dPhi","mutau_dR",
 	"MET_pt"
         ]
+
+#"Jet1_pt"
+
 
 discriminators = {"p_st" : 2, "p_tt" : 1 , "p_bkg" : 0 , "p_st_tt" : 999, "p_st_tt_ob" : 999 }
 
@@ -40,7 +43,8 @@ def run(inputs):
     alpha = inputs[3]
     #print(year, discriminator_key , alpha)
 
-    binedges = [0,1,2,5,10,30,60] 
+    binedges = [0,1,2,3,5,10,30,60] 
+    #binedges = [i for i in range(60) ] 
     
     model_dir = label+"_"+processed+"/nom/best_model.h5"
     model = tf.keras.models.load_model(model_dir)
@@ -48,7 +52,7 @@ def run(inputs):
     eval_dir = label+"_"+processed+"/"
     
     #hists_path = eval_dir+"/"+year+"/preds/"+discriminator_key+"/"+str(alpha).replace(".","p")+"/"
-    hists_path = "/data1/users/ecasilar/Feb22_2023/"+year+"/"
+    hists_path = "/data1/users/ecasilar/March_2024_v6/"+year+"/"
     if not os.path.isdir(hists_path):
         os.makedirs(hists_path)
     
@@ -58,7 +62,7 @@ def run(inputs):
     outf_dir = hists_path+input_file.split("/")[-1:][0]
 
     #print("IN PATH : ", input_file) 
-    #print("OUT PATH : ", outf_dir) 
+    print("OUT PATH : ", outf_dir) 
 
     infile = uproot.open(input_file)
     tree = infile["Events"]
@@ -103,13 +107,20 @@ def run(inputs):
 
         #print("prediction peformed only once per file")
         pred = model.predict(pred_data,batch_size=128, workers=1, use_multiprocessing=False)
+        #pred_df = pd.DataFrame(pred, columns=['Prediction1', 'Prediction2', 'Prediction3'])
+        #print("PRED SHAPE : ", pred.shape)
+        #result_df = pd.concat([pd_data, pred_df], axis=1)
+        #result_df.to_csv(outf_dir.split(".root")[0]+'combined_data.csv', index=False)
+        #print("PRED COMB SHAPE : ", result_df.shape)
+        #print("DF saved here: ", outf_dir.split(".root")[0]+'combined_data.csv')
 
         rmzeros = pred[:,0] 
-        rmzeros[rmzeros<=0.00] = 0.001
+        rmzeros[rmzeros<=0.0000] = 0.0001
         pred[:,0] = rmzeros
         pred = (((1-alpha)*pred[:,2]+alpha*pred[:,1])/pred[:,0]).tolist()
         pred = np.array(pred)
-        pred[pred>=50] = 50
+        #pred[pred>=50] = 50
+        pred[pred>=59] = 59
         pred = pred.tolist()
         pd_weight = pd_weight[eventWeight].tolist()
         dnnhist_nom = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
@@ -139,14 +150,12 @@ def run(inputs):
            outf["h_nevents_S2_nobtag"] = h_nevents_S2_nobtag
            outf["h_nevents_S2"] = h_nevents_S2
            if any(string in input_file for string in ["_LFV","TTT","_ST_t"]) and "__" not in input_file:
-              #print("YEAYAYYY  SCALESUM ZIMBIRTISI")
               outf["ScaleWeightSum"] = ScaleWeightSum
               outf["PSWeightSum"] = PSWeightSum
               outf["LHEPdfWeightSum"] = LHEPdfWeightSum
 
        for syst in syst_list:
            if 'pdf' in syst and not 'alphas' in syst:
-              #print("YES syst PDF")
               systnum = int(syst.split("pdf")[1])
               if systnum > 100: continue
               if systnum%2 !=0 : 
@@ -174,14 +183,14 @@ if __name__ == '__main__':
     alpha=0.1
     parameters = []
     for year in ["2016pre","2016post","2017","2018"]:
-       project_dir = "/data1/users/ecasilar/v9_0714_1010/"+year+"/"
+       print(year)
+       project_dir = "/data1/users/ecasilar/v9_0714_1010_FF/"+year+"/"
        flist = os.listdir(project_dir)
        flist = [i for i in flist if (".root" in i)]
-       #print(len(flist))
        for curfile in flist:
           parameters.append((year, project_dir+curfile ,discriminator,alpha))
 
-    pool = multiprocessing.get_context("spawn").Pool(8)
+    pool = multiprocessing.get_context("spawn").Pool(12)
     pool.map(run, parameters)
     pool.close()
     pool.join()

@@ -33,7 +33,7 @@ print("Start multi LFV Training")
 epochs = 1000
 inputvars_st = [ "Muon1_pt","Muon1_eta",
         "Tau1_pt","Tau1_mass","Tau1_eta", 
-        "Jet1_pt","Jet1_mass","Jet1_eta","Jet1_btagDeepFlavB",
+        "Jet1_mass","Jet1_eta","Jet1_btagDeepFlavB",
         "Jet2_pt","Jet2_mass","Jet2_eta","Jet2_btagDeepFlavB",
         "Jet3_pt","Jet3_mass","Jet3_eta","Jet3_btagDeepFlavB",
         "chi2","chi2_SMW_mass","chi2_SMTop_mass",
@@ -42,7 +42,8 @@ inputvars_st = [ "Muon1_pt","Muon1_eta",
 	"MET_pt"
         ]
 
-processed = "Feb2024_AfterPreAppTalk_v2"
+#"Jet1_pt"
+processed = "April2024_AfterPreAppTalk_noJet1pt"
 
 #"MET_pt" : helps to the expected limits, do not remove from the input vars.
 sbratio = 1 # sig:bkg = 1:1
