@@ -24,7 +24,6 @@ def store_file(it):
     path = it[0]
     file_name = it[1]
     for f in file_name:
-        print("THE PATH: " , path)
         print(os.path.join(path, f[:f.rfind('_')] + '.root'))
         ftmp = TFile.Open(os.path.join(path, f[:f.rfind('_')] + '.root'), 'READ')
 
