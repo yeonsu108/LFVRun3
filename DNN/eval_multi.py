@@ -11,27 +11,32 @@ import tensorflow.keras.backend as K
 from keras.callbacks import EarlyStopping, ModelCheckpoint
 import multiprocessing
 
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    try:
+        tf.config.set_logical_device_configuration(gpus[0], [tf.config.LogicalDeviceConfiguration(memory_limit=1024)])
+    except RuntimeError as e:
+        print(e)
+
 
 def min_max_scaling(series):
     return (series - series.min()) / (series.max() - series.min())
 
 
-base_dir = os.getcwd().replace("DNN","") # Upper directory
-processed = "April2024_AfterPreAppTalk_noJet1pt"
+base_dir = os.getcwd().replace("DNN", "") # Upper directory
+processed = "March2024_AfterPreAppTalk"
 label = "top_lfv_multiClass"
 
-inputvars = [ "Muon1_pt","Muon1_eta",
-        "Tau1_pt","Tau1_mass","Tau1_eta",
-        "Jet1_mass","Jet1_eta","Jet1_btagDeepFlavB",
-        "Jet2_pt","Jet2_mass","Jet2_eta","Jet2_btagDeepFlavB",
-        "Jet3_pt","Jet3_mass","Jet3_eta","Jet3_btagDeepFlavB",
-        "chi2","chi2_SMW_mass","chi2_SMTop_mass",
-        "chi2_wqq_dEta","chi2_wqq_dPhi","chi2_wqq_dR",
-        "mutau_mass","mutau_dEta","mutau_dPhi","mutau_dR",
-	"MET_pt"
+inputvars = ["Muon1_pt", "Muon1_eta",
+             "Tau1_pt", "Tau1_mass", "Tau1_eta",
+             "Jet1_pt", "Jet1_mass", "Jet1_eta", "Jet1_btagDeepFlavB",
+             "Jet2_pt", "Jet2_mass", "Jet2_eta", "Jet2_btagDeepFlavB",
+             "Jet3_pt", "Jet3_mass", "Jet3_eta", "Jet3_btagDeepFlavB",
+             "chi2", "chi2_SMW_mass", "chi2_SMTop_mass",
+             "chi2_wqq_dEta", "chi2_wqq_dPhi", "chi2_wqq_dR",
+             "mutau_mass", "mutau_dEta", "mutau_dPhi", "mutau_dR",
+             "MET_pt"
         ]
-
-#"Jet1_pt"
 
 
 discriminators = {"p_st" : 2, "p_tt" : 1 , "p_bkg" : 0 , "p_st_tt" : 999, "p_st_tt_ob" : 999 }
@@ -43,23 +48,22 @@ def run(inputs):
     alpha = inputs[3]
     #print(year, discriminator_key , alpha)
 
-    binedges = [0,1,2,3,5,10,30,60] 
-    #binedges = [i for i in range(60) ] 
-    
-    model_dir = label+"_"+processed+"/nom/best_model.h5"
+    #binedges = [0,1,2,3,5,10,30,60]
+    binedges = [i for i in frange(0.0, 100.0, 0.01)]
+
+    model_dir = label + "_" + processed + "/nom/best_model.h5"
     model = tf.keras.models.load_model(model_dir)
-    
-    eval_dir = label+"_"+processed+"/"
-    
-    #hists_path = eval_dir+"/"+year+"/preds/"+discriminator_key+"/"+str(alpha).replace(".","p")+"/"
-    hists_path = "/data1/users/ecasilar/March_2024_v6/"+year+"/"
+
+    eval_dir = label + "_" + processed + "/"
+
+    hists_path = os.path.join("/data1/users/minerva1993/work/lfv_production/LFVRun2/DNN", "DNN_out_0424", year)
     if not os.path.isdir(hists_path):
-        os.makedirs(hists_path)
-    
+        os.makedirs(hists_path, exist_ok=True)
+
     eventWeight = "eventWeight"
     weights = [eventWeight] 
-    
-    outf_dir = hists_path+input_file.split("/")[-1:][0]
+
+    outf_dir = os.path.join(hists_path, input_file.split("/")[-1:][0])
 
     #print("IN PATH : ", input_file) 
     print("OUT PATH : ", outf_dir) 
@@ -74,39 +78,42 @@ def run(inputs):
     syst_hist_dnn_entries_dict = {}
     hist_nevents_S4_dict = {}
     hist_nevents_S5_dict = {}
+    syst_extend = []
         
     if not "SingleMuon" in input_file :
-        infile_forS = uproot.open(input_file.replace("_FF",""))
+        infile_forS = uproot.open(input_file.replace("_FF", ""))
         h_nevents_S4_nobtag = infile_forS["h_nevents_S4_nobtag"]  ### get it from removed FF 
         h_nevents_S4 = infile_forS["h_nevents_S4"]	
         h_nevents_S2_nobtag = infile_forS["h_nevents_S2_nobtag"]
         h_nevents_S2 = infile_forS["h_nevents_S2"]	
-        if any(string in input_file for string in ["_LFV","TTT","_ST_t"]) and "__" not in input_file:
-           ScaleWeightSum = infile['ScaleWeightSum']
-           PSWeightSum = infile['PSWeightSum']
-           LHEPdfWeightSum = infile['LHEPdfWeightSum']
+        if any(string in input_file for string in ["_LFV", "TTT", "_ST_t"]) and "__" not in input_file:
+            ScaleWeightSum = infile['ScaleWeightSum']
+            PSWeightSum = infile['PSWeightSum']
+            LHEPdfWeightSum = infile['LHEPdfWeightSum']
 
     if nEvents == 0:
         #print("No events : "+input_file)
         #Need to add empth histograms for technical reasons ....
+        muon_pt = []
+        tau_pt = []
         pred = []
         pd_weight = []
-        dnnhist_nom = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
-        dnnhist_entries_nom = np.histogram(pred,bins=binedges,density=False)
+        dnnhist_nom = np.histogram(pred, bins=binedges, weights=pd_weight, density=False)
+        dnnhist_entries_nom = np.histogram(pred, bins=binedges, density=False)
         for syst in syst_list:
             syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] = dnnhist_nom
             syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst] = dnnhist_entries_nom
             if 'btag' in syst:
-              hist_nevents_S4_dict["h_nevents_S4__"+syst] = infile_forS["h_nevents_S4__"+syst]  
-              hist_nevents_S5_dict["h_nevents_S5__"+syst] = infile["h_nevents_S5__"+syst]
+                hist_nevents_S4_dict["h_nevents_S4__"+syst] = infile_forS["h_nevents_S4__"+syst]
+                hist_nevents_S5_dict["h_nevents_S5__"+syst] = infile["h_nevents_S5__"+syst]
     else:
-        #print("Good file :",input_file)
-        pd_data = tree.arrays(inputvars,library="pd")
-        pd_weight = tree.arrays(weights,library="np")
+        muon_pt = tree["Muon1_pt"].array()
+        tau_pt = tree["Tau1_pt"].array()
+        pd_data = tree.arrays(inputvars, library="pd")
+        pd_weight = tree.arrays(weights, library="np")
         pred_data = np.array(pd_data.filter(items = inputvars))
 
-        #print("prediction peformed only once per file")
-        pred = model.predict(pred_data,batch_size=128, workers=1, use_multiprocessing=False)
+        pred = model.predict(pred_data, batch_size=128, workers=1, use_multiprocessing=False)
         #pred_df = pd.DataFrame(pred, columns=['Prediction1', 'Prediction2', 'Prediction3'])
         #print("PRED SHAPE : ", pred.shape)
         #result_df = pd.concat([pd_data, pred_df], axis=1)
@@ -115,64 +122,132 @@ def run(inputs):
         #print("DF saved here: ", outf_dir.split(".root")[0]+'combined_data.csv')
 
         rmzeros = pred[:,0] 
-        rmzeros[rmzeros<=0.0000] = 0.0001
+        rmzeros[rmzeros <= 0.0000] = 0.0001
         pred[:,0] = rmzeros
-        pred = (((1-alpha)*pred[:,2]+alpha*pred[:,1])/pred[:,0]).tolist()
+        pred = ( ((1 - alpha) * pred[:,2] + alpha * pred[:,1]) / pred[:,0]).tolist()
         pred = np.array(pred)
-        #pred[pred>=50] = 50
-        pred[pred>=59] = 59
+        pred[pred >= 100.0] = 99.9999
         pred = pred.tolist()
         pd_weight = pd_weight[eventWeight].tolist()
-        dnnhist_nom = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
-        dnnhist_entries_nom = np.histogram(pred,bins=binedges,density=False)
+        nom_weight = pd_weight.copy()
+        dnnhist_nom = np.histogram(pred, bins=binedges, weights=pd_weight, density=False)
+        dnnhist_entries_nom = np.histogram(pred, bins=binedges, density=False)
         
-
-        #print("starting syst weighted hists ")
-
         for syst in syst_list:
-            pd_weight = tree.arrays(["eventWeight__"+syst],library="np")
+            pd_weight = tree.arrays(["eventWeight__"+syst], library="np")
             pd_weight = pd_weight["eventWeight__"+syst].tolist()
-            dnnhist_Wsyst = np.histogram(pred,bins=binedges,weights=pd_weight,density=False)
-            dnnhist_entries_Wsyst = np.histogram(pred,bins=binedges,density=False)
-            syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] = dnnhist_Wsyst
-            syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst] = dnnhist_entries_Wsyst
+
+            # set SF for mu / tau 100 GeV above ro below
+            if any(s_ in syst for s_ in ["mescale", "renscale", "facscale"]):
+                tmp_weight_mu1ta1 = []
+                tmp_weight_mu1ta2 = []
+                tmp_weight_mu2ta1 = []
+                tmp_weight_mu2ta2 = []
+                for ei in range(len(pd_weight)):
+                    if muon_pt[ei] < 100 and tau_pt[ei] < 100:
+                        tmp_weight_mu1ta1.append(pd_weight[ei])
+                        tmp_weight_mu1ta2.append(nom_weight[ei])
+                        tmp_weight_mu2ta1.append(nom_weight[ei])
+                        tmp_weight_mu2ta2.append(nom_weight[ei])
+                    elif muon_pt[ei] < 100 and tau_pt[ei] >= 100:
+                        tmp_weight_mu1ta1.append(nom_weight[ei])
+                        tmp_weight_mu1ta2.append(pd_weight[ei])
+                        tmp_weight_mu2ta1.append(nom_weight[ei])
+                        tmp_weight_mu2ta2.append(nom_weight[ei])
+                    elif muon_pt[ei] >= 100 and tau_pt[ei] < 100:
+                        tmp_weight_mu1ta1.append(nom_weight[ei])
+                        tmp_weight_mu1ta2.append(nom_weight[ei])
+                        tmp_weight_mu2ta1.append(pd_weight[ei])
+                        tmp_weight_mu2ta2.append(nom_weight[ei])
+                    elif muon_pt[ei] >= 100 and tau_pt[ei] >= 100:
+                        tmp_weight_mu1ta1.append(nom_weight[ei])
+                        tmp_weight_mu1ta2.append(nom_weight[ei])
+                        tmp_weight_mu2ta1.append(nom_weight[ei])
+                        tmp_weight_mu2ta2.append(pd_weight[ei])
+                    else: print("Wrong event categorization for scale UNC!!")
+
+                if "up" in syst: typeS = "up"
+                else:            typeS = "down"
+
+                #do normal histo first
+                dnnhist_Wsyst = np.histogram(pred, bins=binedges, weights=pd_weight, density=False)
+                dnnhist_entries_Wsyst = np.histogram(pred, bins=binedges, density=False)
+                syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] = dnnhist_Wsyst
+                syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst] = dnnhist_entries_Wsyst
+
+                #pt binned unc
+                dnnhist_Wsyst11 = np.histogram(pred, bins=binedges, weights=tmp_weight_mu1ta1, density=False)
+                dnnhist_entries_Wsyst11 = np.histogram(pred, bins=binedges, density=False)
+                syst_hist_dnn_dict["h_dnn_pred_S5__"+syst.replace(typeS, "")+"mu1ta1"+typeS] = dnnhist_Wsyst11
+                syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst.replace(typeS, "")+"mu1ta1"+typeS] = dnnhist_entries_Wsyst11
+                syst_extend.append(syst.replace(typeS, "")+"mu1ta1"+typeS)
+
+                dnnhist_Wsyst12 = np.histogram(pred, bins=binedges, weights=tmp_weight_mu1ta2, density=False)
+                dnnhist_entries_Wsyst12 = np.histogram(pred, bins=binedges, density=False)
+                syst_hist_dnn_dict["h_dnn_pred_S5__"+syst.replace(typeS, "")+"mu1ta2"+typeS] = dnnhist_Wsyst12
+                syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst.replace(typeS, "")+"mu1ta2"+typeS] = dnnhist_entries_Wsyst12
+                syst_extend.append(syst.replace(typeS, "")+"mu1ta2"+typeS)
+
+                dnnhist_Wsyst21 = np.histogram(pred, bins=binedges, weights=tmp_weight_mu2ta1, density=False)
+                dnnhist_entries_Wsyst21 = np.histogram(pred, bins=binedges, density=False)
+                syst_hist_dnn_dict["h_dnn_pred_S5__"+syst.replace(typeS, "")+"mu2ta1"+typeS] = dnnhist_Wsyst21
+                syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst.replace(typeS, "")+"mu2ta1"+typeS] = dnnhist_entries_Wsyst21
+                syst_extend.append(syst.replace(typeS, "")+"mu2ta1"+typeS)
+
+                dnnhist_Wsyst22 = np.histogram(pred, bins=binedges, weights=tmp_weight_mu2ta2, density=False)
+                dnnhist_entries_Wsyst22 = np.histogram(pred, bins=binedges, density=False)
+                syst_hist_dnn_dict["h_dnn_pred_S5__"+syst.replace(typeS, "")+"mu2ta2"+typeS] = dnnhist_Wsyst22
+                syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst.replace(typeS, "")+"mu2ta2"+typeS] = dnnhist_entries_Wsyst22
+                syst_extend.append(syst.replace(typeS, "")+"mu2ta2"+typeS)
+
+            else:
+                dnnhist_Wsyst = np.histogram(pred, bins=binedges, weights=pd_weight, density=False)
+                dnnhist_entries_Wsyst = np.histogram(pred, bins=binedges, density=False)
+                syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] = dnnhist_Wsyst
+                syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst] = dnnhist_entries_Wsyst
             if 'btag' in syst:
-               hist_nevents_S4_dict["h_nevents_S4__"+syst] = infile_forS["h_nevents_S4__"+syst]  
-               hist_nevents_S5_dict["h_nevents_S5__"+syst] = infile["h_nevents_S5__"+syst]
+                hist_nevents_S4_dict["h_nevents_S4__"+syst] = infile_forS["h_nevents_S4__"+syst]
+                hist_nevents_S5_dict["h_nevents_S5__"+syst] = infile["h_nevents_S5__"+syst]
 
     with uproot.recreate(outf_dir) as outf:
-       outf["h_dnn_pred_S5"] = dnnhist_nom
-       outf["h_dnn_entries_S5"] = dnnhist_entries_nom
-       outf["hcounter"] = hcounter
-       if not "SingleMuon" in input_file : 
-           outf["h_nevents_S4_nobtag"] = h_nevents_S4_nobtag
-           outf["h_nevents_S4"] = h_nevents_S4
-           outf["h_nevents_S2_nobtag"] = h_nevents_S2_nobtag
-           outf["h_nevents_S2"] = h_nevents_S2
-           if any(string in input_file for string in ["_LFV","TTT","_ST_t"]) and "__" not in input_file:
-              outf["ScaleWeightSum"] = ScaleWeightSum
-              outf["PSWeightSum"] = PSWeightSum
-              outf["LHEPdfWeightSum"] = LHEPdfWeightSum
+        if '__' not in outf_dir.split('/')[-1]:
+            outt= outf.mktree("Events", {"Muon1_pt": np.float64, "Tau1_pt": np.float64, "dnn_pred": np.float64})
+            outt.extend({"Muon1_pt": muon_pt, "Tau1_pt": tau_pt, "dnn_pred": pred})
+        outf["h_dnn_pred_S5"] = dnnhist_nom
+        outf["h_dnn_entries_S5"] = dnnhist_entries_nom
+        outf["hcounter"] = hcounter
 
-       for syst in syst_list:
-           if 'pdf' in syst and not 'alphas' in syst:
-              systnum = int(syst.split("pdf")[1])
-              if systnum > 100: continue
-              if systnum%2 !=0 : 
-                 systupdated="pdf"+str(int((systnum/2.)+0.5))+"up"
-                 outf["h_dnn_pred_S5__"+systupdated] = syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] 
-                 outf["h_dnn_entries_S5__"+systupdated] = syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst]
-              if systnum%2 ==0 :
-                 systupdated="pdf"+str(int((systnum/2.)+0.5))+"down"
-                 outf["h_dnn_pred_S5__"+systupdated] = syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] 
-                 outf["h_dnn_entries_S5__"+systupdated] = syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst]
-              #print("YES syst NEW PDF" , syst)
-           else:
-              outf["h_dnn_pred_S5__"+syst] = syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] 
-              outf["h_dnn_entries_S5__"+syst] = syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst]
-           if 'btag' in syst:
-              outf["h_nevents_S4__"+syst] = hist_nevents_S4_dict["h_nevents_S4__"+syst]
-              outf["h_nevents_S5__"+syst] = hist_nevents_S5_dict["h_nevents_S5__"+syst]
+        if not "SingleMuon" in input_file:
+            outf["h_nevents_S4_nobtag"] = h_nevents_S4_nobtag
+            outf["h_nevents_S4"] = h_nevents_S4
+            outf["h_nevents_S2_nobtag"] = h_nevents_S2_nobtag
+            outf["h_nevents_S2"] = h_nevents_S2
+
+            if any(string in input_file for string in ["_LFV","TTT","_ST_t"]) and "__" not in input_file:
+                outf["ScaleWeightSum"] = ScaleWeightSum
+                outf["PSWeightSum"] = PSWeightSum
+                outf["LHEPdfWeightSum"] = LHEPdfWeightSum
+
+        if len(syst_extend) > 1:
+            syst_list.extend(syst_extend)
+
+        for syst in syst_list:
+            if 'pdf' in syst and not 'alphas' in syst:
+                systnum = int(syst.split("pdf")[1])
+                if systnum > 100: continue
+                systupdated="pdf"+str(systnum)+"up"
+                outf["h_dnn_pred_S5__"+systupdated] = syst_hist_dnn_dict["h_dnn_pred_S5__"+syst]
+                outf["h_dnn_entries_S5__"+systupdated] = syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst]
+                systupdated="pdf"+str(systnum)+"down"
+                outf["h_dnn_pred_S5__"+systupdated] = dnnhist_nom
+                outf["h_dnn_entries_S5__"+systupdated] = dnnhist_entries_nom
+            else:
+                outf["h_dnn_pred_S5__"+syst] = syst_hist_dnn_dict["h_dnn_pred_S5__"+syst]
+                outf["h_dnn_entries_S5__"+syst] = syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst]
+
+            if 'btag' in syst:
+                outf["h_nevents_S4__"+syst] = hist_nevents_S4_dict["h_nevents_S4__"+syst]
+                outf["h_nevents_S5__"+syst] = hist_nevents_S5_dict["h_nevents_S5__"+syst]
 
     K.clear_session()
 
@@ -182,15 +257,34 @@ if __name__ == '__main__':
     discriminator = "p_st_tt_ob"
     alpha=0.1
     parameters = []
-    for year in ["2016pre","2016post","2017","2018"]:
-       print(year)
-       project_dir = "/data1/users/ecasilar/v9_0714_1010_FF/"+year+"/"
-       flist = os.listdir(project_dir)
-       flist = [i for i in flist if (".root" in i)]
-       for curfile in flist:
-          parameters.append((year, project_dir+curfile ,discriminator,alpha))
+    for year in ["2016pre", "2016post", "2017", "2018"]:
+        print(year)
+        project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_uforeweight_jesflav_FF/" + year + "/"
+        flist = os.listdir(project_dir)
+        flist = [i for i in flist if (".root" in i)]
+        for curfile in flist:
+            parameters.append((year, project_dir + curfile, discriminator, alpha))
 
-    pool = multiprocessing.get_context("spawn").Pool(12)
+    pool = multiprocessing.get_context("spawn").Pool(10)
     pool.map(run, parameters)
     pool.close()
     pool.join()
+
+
+def frange(start, stop, step, n=None):
+    if step == 0:
+        raise ValueError('step must not be 0')
+    # how many decimal places are showing?
+    if n is None:
+        n = max([0 if '.' not in str(i) else len(str(i).split('.')[1])
+                for i in (start, stop, step)])
+    if step*(stop - start) > 0:  # a non-null incr/decr range
+        if step < 0:
+            for i in frange(-start, -stop, -step, n):
+                yield -i
+        else:
+            steps = round((stop - start)/step)
+            while round(step*steps + start, n) < stop:
+                steps += 1
+            for i in range(steps):
+                yield round(start + i*step, n)
