@@ -30,6 +30,10 @@ python eval_multi.pya -I top_lfv_multiClass_March2024_AfterPreAppTalk -O DNN_out
 On top of evaluated folder, we run usual post processing scripts and them collect all histograms for combine tool
 ```{.Bash}
 python ../postprocess.py -I DNN_out_0424 -Y 2018
+cd DNN_out_0424/2018_postprocess
+../../../plotIt/plotIt -o ../figure_2018 ../../../plotIt/configs/TOP-22-011/config_2018.yml -y
+
+cd ../..
 python stack_signals_v2.py -I DNN_out_0424
 python plot_run2.py -I DNN_out_0424
 ```
