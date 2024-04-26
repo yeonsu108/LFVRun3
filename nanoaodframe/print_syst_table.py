@@ -198,7 +198,9 @@ unc_summary = OrderedDict([
 
 print("Generating summary table...")
 #Gather all results into one summary table
-with open("total_syst_template.tex") as f:
+template_path = "total_syst_template.tex"
+if options.DNN: template_path = os.path.join("../nanoaodframe", template_path)
+with open(template_path) as f:
     lines = f.readlines()
     with open(os.path.join(dest_path, 'figure_' + year, 'total_syst.tex'), "w") as f1:
         for line in lines:

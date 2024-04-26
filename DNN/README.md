@@ -25,7 +25,7 @@ python train_multi.py
 ### 2. Evaluation, post processing, drawing
 #### 2.1. Multi class
 ```{.Bash}
-python eval_multi.pya -I top_lfv_multiClass_March2024_AfterPreAppTalk -O DNN_out_0424
+python eval_multi.py -I top_lfv_multiClass_March2024_AfterPreAppTalk -O DNN_out_0424
 ```
 On top of evaluated folder, we run usual post processing scripts and them collect all histograms for combine tool
 ```{.Bash}
@@ -36,6 +36,7 @@ cd DNN_out_0424/2018_postprocess
 cd ../..
 python ../nanoaodframe/print_syst_table.py -I DNN_out_0424 -D -Y 2018
 
+python ../nanoaodframe/postprocess_2.py -I DNN_out_0424
 python ../nanoaodframe/stack_signals_v2.py -I DNN_out_0424
 python ../nanoaodframe/plot_run2.py -I DNN_out_0424
 ```

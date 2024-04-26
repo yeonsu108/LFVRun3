@@ -40,7 +40,7 @@ inputvars = ["Muon1_pt", "Muon1_eta",
              "chi2_wqq_dEta", "chi2_wqq_dPhi", "chi2_wqq_dR",
              "mutau_mass", "mutau_dEta", "mutau_dPhi", "mutau_dR",
              "MET_pt"
-        ]
+            ]
 
 
 discriminators = {"p_st" : 2, "p_tt" : 1 , "p_bkg" : 0 , "p_st_tt" : 999, "p_st_tt_ob" : 999 }
@@ -58,7 +58,7 @@ def run(inputs):
     model_dir = op.path.join(training_path, "nom/best_model.h5")
     model = tf.keras.models.load_model(model_dir)
 
-    hists_path = os.path.join("/data1/users/minerva1993/work/lfv_production/LFVRun2/DNN", options.outdir, year)
+    hists_path = os.path.join(options.outdir, year)
     if not os.path.isdir(hists_path):
         os.makedirs(hists_path, exist_ok=True)
 
