@@ -52,7 +52,7 @@ The class has several methods:
   Look at `nanoaoddataframe.cpp` to find how to use within C++.
 
 - Compile
-Make sure to source proper evnv (new!)
+Make sure to source proper evnv
 ``` bash
   source /cvmfs/sft.cern.ch/lcg/views/LCG_103/x86_64-centos7-gcc12-opt/setup.sh
 ```
@@ -94,7 +94,7 @@ All of the options are set in the script files `scripts/*.sh`.
 # The argument will be the name of campaign in 'Campaign Summary' tab
 # This will create file lists in data/dataset
 
-python getDatasetInfo.py v8UL_2016pre
+python getDatasetInfo.py v9UL_2018
 
 # Now, run script submitting slurm job
 # arguments: folder, year (2016pre, 2016post, 2017, and 2018)
@@ -128,10 +128,10 @@ find log/201*/*/* | xargs grep -l error | sed 's/.log//' | sed 's/log\/201[6-8a-
 find log/201*/*/* | xargs grep ERROR | grep -v "SimpleJetCorrectionUncertainty" | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
 
 #Submit for each year...
-cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2016pre -N 
-cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2016post -N
-cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2017 -N 
-cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_v9_230714 -Y 2018 -N 
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_test -Y 2016pre -N 
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_test -Y 2016post -N
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_test -Y 2017 -N 
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_test -Y 2018 -N 
 ```
 
 #### Processing
@@ -160,12 +160,17 @@ find log/* | xargs grep Traceback
 ```
 To apply Tau Fake Factor with ABCD, simple analyzer is introduced (TauFakeFactorAnalyzer). Output foulder MUST include 'fake'. The l stands for loose tau, t for tight.
 ``` txt
-python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_lss -Y 2018 -S nosyst -M lss
-python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_los -Y 2018 -S nosyst -M los
-python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_tss -Y 2018 -S nosyst -M tss
-python scripts/process.py -V skim_v9_230626 -O v9_0626_fake_tos -Y 2018 -S nosyst -M tos
+python scripts/process.py -V skim_v9_230714_jes -O v9_0714_fake_lss -Y 2018 -S nosyst -M lss
+python scripts/process.py -V skim_v9_230714_jes -O v9_0714_fake_los -Y 2018 -S nosyst -M los
+python scripts/process.py -V skim_v9_230714_jes -O v9_0714_fake_tss -Y 2018 -S nosyst -M tss
+python scripts/process.py -V skim_v9_230714_jes -O v9_0714_fake_tos -Y 2018 -S nosyst -M tos
 
-python scripts/process.py -V reweight_test -O skim_v9_230626_FF -Y 2018 -S theory --ff
+# Run simple script for FF calculation. In the 'fromROOTFile', one can calculate per tau_pt bin
+python fake_factor_calculator.py
+# or
+python fake_factor_calculator_fromROOTFile.py
+
+python scripts/process.py -V reweight_test -O v9_0714_1010_FF -Y 2018 -S theory --ff
 ```
 Now, apply b SF rescaling, compute uncertainty envelope, etc. Let the `test/2018` is the folder containing histograms.
 ``` txt
@@ -176,11 +181,12 @@ Drawing histogram by plotIt
 cd 2018_postprocess
 mkdir ../figure_2018
 ../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/TOP-22-011/config_2018.yml -y -s
+cd ../../
+python print_syst_table.py -I test -Y 2018
 
 #For Run2,
 python stack_signals_v2.py -I test #use v2 for now, v1 cannot deal with year based uncertainties
 python plot_run2.py -I test
-python print_syst_table.py -I test4 -Y 2018
 ```
 
 ### Usage of scripts

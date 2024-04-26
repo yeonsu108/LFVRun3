@@ -50,7 +50,7 @@ for year in year_list:
     FF = nevents_region['tss']['nsub_data'] / nevents_region['lss']['nsub_data']
     print('FF: {:.5f}'.format(FF.n), 'pm {:.6f}'.format(FF.std_dev), '-> ' + str(round(100*FF.std_dev/FF.n, 3)) + '%')
 
-    fake_nevent = nevents_region['los']['gentau_total'] * FF
+    fake_nevent = nevents_region['los']['nsub_data'] * FF
     print('Fake event in tos (SR) = los * (tss / lss) = {:.2f}'.format(fake_nevent))
 
     SF = fake_nevent/nevents_region['tos']['nsub_mc']

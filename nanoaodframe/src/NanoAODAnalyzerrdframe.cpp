@@ -268,7 +268,7 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
     } else {
         selectElectrons();
         selectTaus();
-        selectJets(jes_var);
+        selectJets(jes_var, jes_var_flav);
         if (!_isData){
             topPtReweight();
         }
@@ -1057,7 +1057,7 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
                .Define("btagWeight_DeepFlavB_jes_perJet", btagweightgeneratorJes, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "Jet_pt_unc", "btag_jes_var", "Jet_jer"});
 }
 
-void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
+void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::vector<std::string> jes_var_flav) {
 
 
     // input vector: vec[pt][vars], for bSF
@@ -1106,13 +1106,16 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var) {
 
         if (_syst.find("jes") != std::string::npos) {
 
-            auto selectJes = [syst_unc, jes_var](floatsVec unc)->floats {
+            auto selectJes = [syst_unc, jes_var, jes_var_flav](floatsVec unc)->floats {
 
                 floats selected;
                 selected.reserve(unc.size());
+
+                std::vector<std::string> jes_var_all = jes_var;
+                jes_var_all.insert(jes_var_all.end(), jes_var_flav.begin(), jes_var_flav.end());
                 unsigned int jesidx = -1;
-                for (size_t i=0; i<jes_var.size(); i++) {
-                    if (jes_var[i] == syst_unc) jesidx = i;
+                for (size_t i=0; i<jes_var_all.size(); i++) {
+                    if (jes_var_all[i] == syst_unc) jesidx = i;
                 }
                 if (int(jesidx) == -1) cerr << "Found No JES Unc Name!!" << endl;
 
