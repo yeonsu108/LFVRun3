@@ -49,7 +49,7 @@ public:
   bool readjson();
   void selectElectrons();
   void selectMuons();
-  void selectJets(std::vector<std::string> jes_var);
+  void selectJets(std::vector<std::string> jes_var, std::vector<std::string> jes_var_flav);
   void skimJets();
   void applyBSFs(std::vector<string> jes_var);
   void selectTaus();
