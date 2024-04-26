@@ -1,15 +1,8 @@
 ## DNN with 3 features - Train, Evaluation, Draw Histograms
 ### 0. Presets
 ```{.Bash}
-#check if modules are properly loaded
-ml list
-> Currently Loaded Modules:
->   1) ohpc   2) gnu8/8.3.0   3) boost/1.63.0_gcc830   4) cuda/11.8
-
-conda activate py36
-source /opt/ohpc/pub/root/root_v6.26.06_gcc830/bin/thisroot.sh
+  source /cvmfs/sft.cern.ch/lcg/views/LCG_103/x86_64-centos7-gcc12-opt/setup.sh
 ```
-ROOT_6.26.06 with python 3.6 is installed in htop.
  
 ### 1. Train
 #### 1.1. Train 2 separate binary class classification 
@@ -30,19 +23,15 @@ python train_multi.py
 
 
 ### 2. Evaluation, post processing, drawing
-#### 2.1. Binary class
+#### 2.1. Multi class
 ```{.Bash}
-python eval.py
+python eval_multi.pya -I top_lfv_multiClass_March2024_AfterPreAppTalk -O DNN_out_0424
 ```
-In order to run the following scripts you need provide an option.
-For now allowed options are:
-'rerun_multi_Multiaug22','rerun_staug22', 'rerun_ttaug22'
-If you run with out changing the label it will run the st channel.
-If you have not compile the plotlt yet please follow the read me in the plotlt.
+On top of evaluated folder, we run usual post processing scripts and them collect all histograms for combine tool
 ```{.Bash}
-python postprocess.py -L rerun_staug22
-python stack_signals.py -L rerun_staug22
-python plot_run2.py -L rerun_staug22
+python ../postprocess.py -I DNN_out_0424 -Y 2018
+python stack_signals_v2.py -I DNN_out_0424
+python plot_run2.py -I DNN_out_0424
 ```
 **Evaluation** is performed with the best model from training and produce dnn output score histograms with data and MC samples.
 
@@ -55,16 +44,6 @@ The post processing is to gather all uncertainty histograms into a single, nomin
 The plotIt does not support stack for signals, thus it is done by dedicated code.
 
 The `plot_run2.py` will read information from existing configs for each year, then combine into one, usint templates.
-#### 2.2. multi class
-
-```{.Bash}
-python haddToMergeBkg.py
-python eval_multi.py
-python postprocess.py -L rerun_multi_Multiaug22
-python haddToMergeSig.py
-python stack_signals.py -L rerun_multi_Multiaug22
-python plot_run2.py -L rerun_multi_Multiaug22
-```
 
 ### Advanced
 > To modify some details of the plots from training, cross section for normalization, histogram styles, modules in `utils/` folder will be helpful.
