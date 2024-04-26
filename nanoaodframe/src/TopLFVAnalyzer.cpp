@@ -80,7 +80,7 @@ void TopLFVAnalyzer::defineMoreVars() {
         addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
     } else {
         if (_year == "2016pre") {
-            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.5398"});
+            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.5555"});
             addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.06578"});//ratio to nominal
             addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9342"});
             addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.224"});
@@ -423,6 +423,8 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("eventWeight.*");
     addVartoStore("GenPart_top_pt");
     addVartoStore("TopPtWeight");
+    addVartoStore("LHEPart_pt");
+    addVartoStore("LHEPart_pdgId");
 }
 
 void TopLFVAnalyzer::bookHists() {
