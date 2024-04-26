@@ -31,15 +31,15 @@ dest_path = input
 if not os.path.exists(os.path.join(dest_path, 'figure_run2')):
   try: os.makedirs(os.path.join(dest_path, 'figure_run2'))
   except: pass
-if not os.path.exists(os.path.join(dest_path, 'figure_run2/qcd')):
-  try: os.makedirs(os.path.join(dest_path, 'figure_run2/qcd'))
-  except: pass
-if not os.path.exists(os.path.join(dest_path, 'figure_run2/dyincl')):
-  try: os.makedirs(os.path.join(dest_path, 'figure_run2/dyincl'))
-  except: pass
-if not os.path.exists(os.path.join(dest_path, 'figure_run2/dyincl/qcd')):
-  try: os.makedirs(os.path.join(dest_path, 'figure_run2/dyincl/qcd'))
-  except: pass
+#if not os.path.exists(os.path.join(dest_path, 'figure_run2/qcd')):
+#  try: os.makedirs(os.path.join(dest_path, 'figure_run2/qcd'))
+#  except: pass
+#if not os.path.exists(os.path.join(dest_path, 'figure_run2/dyincl')):
+#  try: os.makedirs(os.path.join(dest_path, 'figure_run2/dyincl'))
+#  except: pass
+#if not os.path.exists(os.path.join(dest_path, 'figure_run2/dyincl/qcd')):
+#  try: os.makedirs(os.path.join(dest_path, 'figure_run2/dyincl/qcd'))
+#  except: pass
 
 for item in common_syst_list:
   common_syst += item
@@ -187,11 +187,11 @@ with open(config_path + 'template_Run2.yml') as f:
 
 if yield_only:
     call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s', '-a'], shell=False)
-    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-q', '-a'], shell=False)
-    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-a'], shell=False)
-    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-q', '-a'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-q', '-a'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-a'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-q', '-a'], shell=False)
 else:
     call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
-    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-q'], shell=False)
-    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-s', '-d'], shell=False)
-    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-q'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-q'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-s', '-d'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-q'], shell=False)
