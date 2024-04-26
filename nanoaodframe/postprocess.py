@@ -4,6 +4,8 @@ from ROOT import *
 import numpy as np
 import subprocess
 import optparse
+import array
+import re
 
 from optparse import OptionParser
 parser = OptionParser(usage="%prog [options]")
@@ -13,6 +15,9 @@ parser.add_option("-Y", "--year",  dest="year", type="string", default="", help=
 
 year = options.year
 input = options.infile
+
+# starting bin -> 0.01, trick for logX
+rebin_arr = array.array('d',[0.0, 0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
 
 if year not in ['2016pre', '2016post', '2017', '2018']:
     print('Wrong year, check again')
@@ -88,6 +93,15 @@ def rescale(inputh, inputf, bsff, sumW, nom_sumW): # rescale up/dn histos
 
     #Only for ext syst. such as tune and hdamp, not jes/jer/tes
     h = inputf.Get(inputh)
+
+    if "dnn_pred" in inputh:
+        # No negative bin (underflow) by definition
+        h.SetBinContent(2, h.GetBinContent(1) + h.GetBinContent(2))
+        h.SetBinError(2, sqrt(pow(h.GetBinError(1), 2) + pow(h.GetBinError(2), 2)))
+        h.SetBinContent(1, 0.)
+        h.SetBinError(1, 0.)
+        h = h.Rebin(len(rebin_arr)-1, h.GetName(), rebin_arr)
+
     if not any(i in inputh for i in ['event', 'counter', '_nobtag', 'LHEPdfWeightSum', 'PSWeightSum', 'ScaleWeightSum']):
         h.Scale(get_bSFratio(bsff, inputh))
         h.Scale(nom_sumW.GetBinContent(2) / sumW.GetBinContent(2))
@@ -105,6 +119,10 @@ def rescale(inputh, inputf, bsff, sumW, nom_sumW): # rescale up/dn histos
 
 def write_envelope(inputh, inputf, bsff, syst, nhists, gen_sumW, wgt_sumW, do_renorm=True):
 
+    syst_type = syst
+    if re.search(r"mu\d+ta\d+", syst):
+        syst_type = re.sub(r"mu\d+ta\d+", "", syst)
+
     #I didn't want this way...later, fill weight name in hist bins, and FindBin to get the bin
     #bin num for up/dn sum weights, branch idx + 1
     sum_weights_dict = {
@@ -119,14 +137,25 @@ def write_envelope(inputh, inputf, bsff, syst, nhists, gen_sumW, wgt_sumW, do_re
     if nhists == 2: #up/dn, only re-normalization
         up = inputf.Get(inputh + "__" + syst + "up")
         dn = inputf.Get(inputh + "__" + syst + "down")
+        if "dnn_pred" in inputh:
+            up.SetBinContent(2, up.GetBinContent(1) + up.GetBinContent(2))
+            up.SetBinError(2, sqrt(pow(up.GetBinError(1), 2) + pow(up.GetBinError(2), 2)))
+            up.SetBinContent(1, 0.)
+            up.SetBinError(1, 0.)
+            dn.SetBinContent(2, dn.GetBinContent(1) + dn.GetBinContent(2))
+            dn.SetBinError(2, sqrt(pow(dn.GetBinError(1), 2) + pow(dn.GetBinError(2), 2)))
+            dn.SetBinContent(1, 0.)
+            dn.SetBinError(1, 0.)
+            up = up.Rebin(len(rebin_arr)-1, up.GetName(), rebin_arr)
+            dn = dn.Rebin(len(rebin_arr)-1, dn.GetName(), rebin_arr)
         if up == None: return 1
         up.SetDirectory(ROOT.nullptr)
         dn.SetDirectory(ROOT.nullptr)
         #print("gen_sumW.GetBinContent(2)", gen_sumW.GetBinContent(2))
         #Zero sum weight means no variation, especially for alphas
-        if wgt_sumW.GetBinContent(sum_weights_dict[syst][0]) * wgt_sumW.GetBinContent(sum_weights_dict[syst][1]) > 0 and do_renorm:
-            up.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][0]))
-            dn.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst][1]))
+        if wgt_sumW.GetBinContent(sum_weights_dict[syst_type][0]) * wgt_sumW.GetBinContent(sum_weights_dict[syst_type][1]) > 0 and do_renorm:
+            up.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst_type][0]))
+            dn.Scale(gen_sumW.GetBinContent(2)/wgt_sumW.GetBinContent(sum_weights_dict[syst_type][1]))
             up.Scale(get_bSFratio(bsff, up.GetName()))
             dn.Scale(get_bSFratio(bsff, dn.GetName()))
         elif not do_renorm:
@@ -284,6 +313,12 @@ for fname in file_list:
         if "__" not in hname: nominal_list.append(hname)
         if run_on_syst: continue
         h = infile.Get(hname)
+        if 'dnn_pred' in hname:
+            h.SetBinContent(2, h.GetBinContent(1) + h.GetBinContent(2))
+            h.SetBinError(2, sqrt(pow(h.GetBinError(1), 2) + pow(h.GetBinError(2), 2)))
+            h.SetBinContent(1, 0.)
+            h.SetBinError(1, 0.)
+            h = h.Rebin(len(rebin_arr)-1, h.GetName(), rebin_arr)
         if yield_name in hname:
             h1 = h.Clone('h1')
             h1.SetName(hname.replace(yield_name, yield_name + '_yield'))
@@ -307,9 +342,27 @@ for fname in file_list:
 
     for hname2 in nominal_list:
 
-      if isMEScale: write_envelope(hname2, infile, bSFfile, "mescale", 2, hcounter, ScaleWeightSum, do_renorm)
-      if isRenScale: write_envelope(hname2, infile, bSFfile, "renscale", 2, hcounter, ScaleWeightSum, do_renorm)
-      if isFacScale: write_envelope(hname2, infile, bSFfile, "facscale", 2, hcounter, ScaleWeightSum, do_renorm)
+      if isMEScale:
+          write_envelope(hname2, infile, bSFfile, "mescale", 2, hcounter, ScaleWeightSum, do_renorm)
+          if "dnn_pred" in hname2:
+              write_envelope(hname2, infile, bSFfile, "mescalemu1ta1", 2, hcounter, ScaleWeightSum, do_renorm)
+              write_envelope(hname2, infile, bSFfile, "mescalemu1ta2", 2, hcounter, ScaleWeightSum, do_renorm)
+              write_envelope(hname2, infile, bSFfile, "mescalemu2ta1", 2, hcounter, ScaleWeightSum, do_renorm)
+              write_envelope(hname2, infile, bSFfile, "mescalemu2ta2", 2, hcounter, ScaleWeightSum, do_renorm)
+      if isRenScale:
+          write_envelope(hname2, infile, bSFfile, "renscale", 2, hcounter, ScaleWeightSum, do_renorm)
+          if "dnn_pred" in hname2:
+              write_envelope(hname2, infile, bSFfile, "renscalemu1ta1", 2, hcounter, ScaleWeightSum, do_renorm)
+              write_envelope(hname2, infile, bSFfile, "renscalemu1ta2", 2, hcounter, ScaleWeightSum, do_renorm)
+              write_envelope(hname2, infile, bSFfile, "renscalemu2ta1", 2, hcounter, ScaleWeightSum, do_renorm)
+              write_envelope(hname2, infile, bSFfile, "renscalemu2ta2", 2, hcounter, ScaleWeightSum, do_renorm)
+      if isFacScale:
+          write_envelope(hname2, infile, bSFfile, "facscale", 2, hcounter, ScaleWeightSum, do_renorm)
+          if "dnn_pred" in hname2:
+              write_envelope(hname2, infile, bSFfile, "facscalemu1ta1", 2, hcounter, ScaleWeightSum, do_renorm)
+              write_envelope(hname2, infile, bSFfile, "facscalemu1ta2", 2, hcounter, ScaleWeightSum, do_renorm)
+              write_envelope(hname2, infile, bSFfile, "facscalemu2ta1", 2, hcounter, ScaleWeightSum, do_renorm)
+              write_envelope(hname2, infile, bSFfile, "facscalemu2ta2", 2, hcounter, ScaleWeightSum, do_renorm)
       if isISR: write_envelope(hname2, infile, bSFfile, "isr", 2, hcounter, PSWeightSum, do_renorm)
       if isFSR: write_envelope(hname2, infile, bSFfile, "fsr", 2, hcounter, PSWeightSum, do_renorm)
       #For PDF: we take 101-102 only for control plots from ttbar
