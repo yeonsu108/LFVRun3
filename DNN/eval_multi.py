@@ -5,6 +5,7 @@ import uproot
 import pandas as pd
 import awkward as ak
 import numpy as np
+import argparse
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import tensorflow.keras.backend as K
@@ -18,14 +19,17 @@ if gpus:
     except RuntimeError as e:
         print(e)
 
+parser = argparse.ArgumentParser(usage="%prog [options]")
+parser.add_argument("-O", "--outdir", dest="outdir", type=str, default="test", help="Output folder in your working directory")
+parser.add_argument("-I", "--indir", dest="indir", type=str, default="test", help="Iput folder in your working directory")
+options = parser.parse_args()
 
 def min_max_scaling(series):
     return (series - series.min()) / (series.max() - series.min())
 
 
-base_dir = os.getcwd().replace("DNN", "") # Upper directory
-processed = "March2024_AfterPreAppTalk"
-label = "top_lfv_multiClass"
+training_path = options.indir
+#"top_lfv_multiClass_March2024_AfterPreAppTalk"
 
 inputvars = ["Muon1_pt", "Muon1_eta",
              "Tau1_pt", "Tau1_mass", "Tau1_eta",
@@ -51,12 +55,10 @@ def run(inputs):
     #binedges = [0,1,2,3,5,10,30,60]
     binedges = [i for i in frange(0.0, 100.0, 0.01)]
 
-    model_dir = label + "_" + processed + "/nom/best_model.h5"
+    model_dir = op.path.join(training_path, "nom/best_model.h5")
     model = tf.keras.models.load_model(model_dir)
 
-    eval_dir = label + "_" + processed + "/"
-
-    hists_path = os.path.join("/data1/users/minerva1993/work/lfv_production/LFVRun2/DNN", "DNN_out_0424", year)
+    hists_path = os.path.join("/data1/users/minerva1993/work/lfv_production/LFVRun2/DNN", options.outdir, year)
     if not os.path.isdir(hists_path):
         os.makedirs(hists_path, exist_ok=True)
 
