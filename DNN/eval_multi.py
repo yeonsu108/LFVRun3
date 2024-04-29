@@ -54,7 +54,7 @@ def run(inputs):
     #print(year, discriminator_key , alpha)
 
     #binedges = [0,1,2,3,5,10,30,60]
-    binedges = [i for i in frange(0.0, 100.1, 0.01)]
+    binedges = [i for i in frange(0.0, 100.01, 0.01)]
 
     model_dir = os.path.join(training_path, "nom/best_model.h5")
     model = tf.keras.models.load_model(model_dir)
