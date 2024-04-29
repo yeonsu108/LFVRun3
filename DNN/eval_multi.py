@@ -43,19 +43,20 @@ inputvars = ["Muon1_pt", "Muon1_eta",
             ]
 
 
-discriminators = {"p_st" : 2, "p_tt" : 1 , "p_bkg" : 0 , "p_st_tt" : 999, "p_st_tt_ob" : 999 }
+#discriminators = {"p_st" : 2, "p_tt" : 1 , "p_bkg" : 0 , "p_st_tt" : 999, "p_st_tt_ob" : 999 }
 
 def run(inputs):
     year = inputs[0]
     input_file = inputs[1]
-    discriminator_key = inputs[2]
-    alpha = inputs[3]
+    #discriminator_key = inputs[2]
+    #alpha = inputs[3]
+    alpha = inputs[2]
     #print(year, discriminator_key , alpha)
 
     #binedges = [0,1,2,3,5,10,30,60]
-    binedges = [i for i in frange(0.0, 100.0, 0.01)]
+    binedges = [i for i in frange(0.0, 100.1, 0.01)]
 
-    model_dir = op.path.join(training_path, "nom/best_model.h5")
+    model_dir = os.path.join(training_path, "nom/best_model.h5")
     model = tf.keras.models.load_model(model_dir)
 
     hists_path = os.path.join(options.outdir, year)
@@ -124,17 +125,16 @@ def run(inputs):
         #print("DF saved here: ", outf_dir.split(".root")[0]+'combined_data.csv')
 
         rmzeros = pred[:,0] 
-        rmzeros[rmzeros <= 0.0000] = 0.0001
+        rmzeros[rmzeros <= 0.001] = 0.001
         pred[:,0] = rmzeros
-        pred = ( ((1 - alpha) * pred[:,2] + alpha * pred[:,1]) / pred[:,0]).tolist()
-        pred = np.array(pred)
-        pred[pred >= 100.0] = 99.9999
+        pred = ( ((1 - alpha) * pred[:,2] + alpha * pred[:,1]) / pred[:,0])
+        pred[pred >= 100.0] = 99.999
         pred = pred.tolist()
         pd_weight = pd_weight[eventWeight].tolist()
         nom_weight = pd_weight.copy()
         dnnhist_nom = np.histogram(pred, bins=binedges, weights=pd_weight, density=False)
         dnnhist_entries_nom = np.histogram(pred, bins=binedges, density=False)
-        
+
         for syst in syst_list:
             pd_weight = tree.arrays(["eventWeight__"+syst], library="np")
             pd_weight = pd_weight["eventWeight__"+syst].tolist()
@@ -256,7 +256,7 @@ def run(inputs):
 if __name__ == '__main__':
 
     print("Start Multi LFV Evaluation")
-    discriminator = "p_st_tt_ob"
+    #discriminator = "p_st_tt_ob"
     alpha=0.1
     parameters = []
     for year in ["2016pre", "2016post", "2017", "2018"]:
@@ -265,10 +265,13 @@ if __name__ == '__main__':
         flist = os.listdir(project_dir)
         flist = [i for i in flist if (".root" in i)]
         for curfile in flist:
-            parameters.append((year, project_dir + curfile, discriminator, alpha))
+            #parameters.append((year, project_dir + curfile, discriminator, alpha))
+            parameters.append((year, project_dir + curfile, alpha))
 
-    pool = multiprocessing.get_context("spawn").Pool(10)
-    pool.map(run, parameters)
+    parameters_sorted = [tup for tup in parameters if '__' not in tup[1]]
+    parameters_sorted.extend([tup for tup in parameters if '__' in tup[1]])
+    pool = multiprocessing.get_context("spawn").Pool(12)
+    pool.map(run, parameters_sorted)
     pool.close()
     pool.join()
 
