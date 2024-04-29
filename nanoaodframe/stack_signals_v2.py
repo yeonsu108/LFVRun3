@@ -10,6 +10,7 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-I', '--input', dest='input', type=str, default="test")
+parser.add_argument("--postfix", dest="postfix", type=str, default="", help="Add postfix to output here, to have rebinning for histograms")
 args = parser.parse_args()
 input = args.input
 
@@ -60,7 +61,7 @@ def store_file(it):
 if __name__ == '__main__':
 
     for era in ['2016pre', '2016post', '2017', '2018']:
-        dir_path = os.path.join(input, era+'_postprocess')
+        dir_path = os.path.join(input, era+'_postprocess' + args.postfix)
         dirs = os.listdir(dir_path)
         print("POST process path: " , dir_path)
         dirs[:] = [item.replace('.root', '_' + era + '.root') for item in dirs if any(i in item for i in ['LFV']) if '__' not in item]

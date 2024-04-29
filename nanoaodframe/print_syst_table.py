@@ -4,9 +4,10 @@ from collections import OrderedDict
 
 import argparse
 parser = argparse.ArgumentParser(usage="%prog [options]")
-parser.add_argument("-I", "--input",  dest="input", type=str, default="", help="Input folder name")
-parser.add_argument("-Y", "--year",  dest="year", type=str, default="", help="Select 2016pre/post, 2017, or 2018 for years")
+parser.add_argument("-I", "--input", dest="input", type=str, default="", help="Input folder name")
+parser.add_argument("-Y", "--year", dest="year", type=str, default="", help="Select 2016pre/post, 2017, or 2018 for years")
 parser.add_argument("-D", dest="DNN", action="store_true", default=False, help="Run for DNN histograms")
+parser.add_argument("--postfix", dest="postfix", type=str, default="", help="Add postfix to output here, to have rebinning for histograms")
 options = parser.parse_args()
 
 year = options.year
@@ -149,7 +150,7 @@ for key, value in unc_cat.items():
                     line += "  syst-only: true\n"
                 if 'root:' in line:
                     line = line[:line.find(':')+2]
-                    line += "'" + os.path.join(dest_path, year + "_postprocess") + "'\n"
+                    line += "'" + os.path.join(dest_path, year + "_postprocess" + options.postfix) + "'\n"
                 if 'systematics' in line: syst_delete = True
                 if 'plots:' in line:
                     syst_delete = False

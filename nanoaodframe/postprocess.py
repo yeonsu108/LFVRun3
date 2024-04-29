@@ -9,8 +9,9 @@ import re
 
 from optparse import OptionParser
 parser = OptionParser(usage="%prog [options]")
-parser.add_option("-I", "--infile",  dest="infile", type="string", default="", help="Input file name")
-parser.add_option("-Y", "--year",  dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")
+parser.add_option("-I", "--infile", dest="infile", type="string", default="", help="Input file name")
+parser.add_option("-Y", "--year", dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")
+parser.add_option("--postfix", dest="postfix", type="string", default="", help="Add postfix to output here, to have rebinning for histograms")
 (options, args) = parser.parse_args()
 
 year = options.year
@@ -18,6 +19,10 @@ input = options.infile
 
 # starting bin -> 0.01, trick for logX
 rebin_arr = array.array('d',[0.0, 0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
+
+# Set to pre-approval binning if postfix is set, for histogramming
+if len(options.postfix) > 0:
+    rebin_arr = array.array('d',[0.0, 0.01, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
 
 if year not in ['2016pre', '2016post', '2017', '2018']:
     print('Wrong year, check again')
@@ -41,7 +46,7 @@ if 'fake' in input: isFFcalc = True
 elif 'FF' in input: isFFapply = True
 
 # Set output folders
-out_path = os.path.join(base_path, input, year + '_postprocess')
+out_path = os.path.join(base_path, input, year + '_postprocess' + options.postfix)
 fig_path = os.path.join(base_path, input, 'figure_' + year)
 if not os.path.exists(out_path):
     os.makedirs(out_path)

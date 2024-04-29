@@ -7,6 +7,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-I', '--input', dest='input', type=str, default="test")
 parser.add_argument("-D", dest="DNN", action="store_true", default=False, help="Run for DNN histograms")
 parser.add_argument("-y", dest="yield_only", action="store_true", default=False, help="Run for DNN histograms")
+parser.add_argument("--postfix", dest="postfix", type=str, default="", help="Add postfix to output here, to have rebinning for histograms")
 args = parser.parse_args()
 input = args.input
 yield_only = args.yield_only
@@ -57,7 +58,7 @@ for year, lumi in years.items():
       #if 'hist_QCD' in line: skip_signal = True
       if '#' in line[0]: skip_signal = True
       if 'hist' in line:
-        line = line[0] + dest_path + '/' + year + '_postprocess/' + line[1:]
+        line = line[0] + dest_path + '/' + year + '_postprocess' + args.postfix + '/' + line[1:]
         if not any(i in line for i in ['LFV', 'SingleMuon']):
           line += '  scale: ' + str(int(lumi)/137625.0) + '\n'
       #if not skip_signal and not any(i in line for i in ['yields-group']):
