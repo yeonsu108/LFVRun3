@@ -18,11 +18,12 @@ year = options.year
 input = options.infile
 
 # starting bin -> 0.01, trick for logX
-rebin_arr = array.array('d',[0.0, 0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
+#rebin_arr = array.array('d', [0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
+rebin_arr = array.array('d', [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.12, 0.16, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 5.0, 10.0, 30, 100.0])
 
 # Set to pre-approval binning if postfix is set, for histogramming
 if len(options.postfix) > 0:
-    rebin_arr = array.array('d',[0.0, 0.01, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
+    rebin_arr = array.array('d', [0.01, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
 
 if year not in ['2016pre', '2016post', '2017', '2018']:
     print('Wrong year, check again')
@@ -47,7 +48,7 @@ elif 'FF' in input: isFFapply = True
 
 # Set output folders
 out_path = os.path.join(base_path, input, year + '_postprocess' + options.postfix)
-fig_path = os.path.join(base_path, input, 'figure_' + year)
+fig_path = os.path.join(base_path, input, 'figure_' + year + options.postfix)
 if not os.path.exists(out_path):
     os.makedirs(out_path)
 if not os.path.exists(fig_path):

@@ -168,11 +168,11 @@ for key, value in unc_cat.items():
                 if any(x in line for x in value): string_to_add += str(line)
             f1.writelines(string_to_add)
     syst_postfix = key
-    call(['../plotIt/plotIt', '-o ' + os.path.join(dest_path, 'figure_' + year), config_path + tmp_file_name, '-s', '-a'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + os.path.join(dest_path, 'figure_' + year + options.postfix), config_path + tmp_file_name, '-s', '-a'], shell=False)
 
     #Remove signals in TT specific sources
-    with open(os.path.join(dest_path, 'figure_' + year, 'systematics.tex'), 'r') as f:
-        with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + syst_postfix + '.tex'), 'w+') as f1:
+    with open(os.path.join(dest_path, 'figure_' + year + options.postfix, 'systematics.tex'), 'r') as f:
+        with open(os.path.join(dest_path, 'figure_' + year + options.postfix, 'systematics_' + syst_postfix + '.tex'), 'w+') as f1:
             isTheorySyst = False
             if key in ['scale', 'mescale', 'renscale', 'facscale', 'isr', 'fsr', 'hdamp', 'tune', 'pdfalphas', 'toppt']:
               isTheorySyst = True
@@ -203,13 +203,13 @@ template_path = "total_syst_template.tex"
 if options.DNN: template_path = os.path.join("../nanoaodframe", template_path)
 with open(template_path) as f:
     lines = f.readlines()
-    with open(os.path.join(dest_path, 'figure_' + year, 'total_syst.tex'), "w") as f1:
+    with open(os.path.join(dest_path, 'figure_' + year + options.postfix, 'total_syst.tex'), "w") as f1:
         for line in lines:
             #if year != '2017' and 'Prefire' in line: continue
             #if 'Prefire' in line: continue
             for key, value in unc_summary.items():
                 if value == line.replace("&", "").rstrip().lstrip():
-                    with open(os.path.join(dest_path, 'figure_' + year, 'systematics_' + key + '.tex'),'r') as f2:
+                    with open(os.path.join(dest_path, 'figure_' + year + options.postfix, 'systematics_' + key + '.tex'),'r') as f2:
                         lines = f2.read().splitlines()
                         last_line = lines[-1]
                         last_line = last_line[last_line.find("&")+1:]

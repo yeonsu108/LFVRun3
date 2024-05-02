@@ -29,8 +29,8 @@ for year, lumi in years.items():
 common_syst_list = sorted(set(common_syst_list), key=common_syst_list.index)
 
 dest_path = input
-if not os.path.exists(os.path.join(dest_path, 'figure_run2')):
-  try: os.makedirs(os.path.join(dest_path, 'figure_run2'))
+if not os.path.exists(os.path.join(dest_path, 'figure_run2' + args.postfix)):
+  try: os.makedirs(os.path.join(dest_path, 'figure_run2' + args.postfix))
   except: pass
 #if not os.path.exists(os.path.join(dest_path, 'figure_run2/qcd')):
 #  try: os.makedirs(os.path.join(dest_path, 'figure_run2/qcd'))
@@ -70,7 +70,7 @@ for year, lumi in years.items():
 
 with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   print("""
-'{0}/Run2/hist_ST_LFV_TCMuTau_Scalar.root':
+'{0}/Run2{1}/hist_ST_LFV_TCMuTau_Scalar.root':
   type: signal
   pretty-name: 'LFVSTcs'
   cross-section: 0.007375
@@ -78,7 +78,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVSTcs
   order: 1
 
-'{0}/Run2/hist_ST_LFV_TCMuTau_Vector.root':
+'{0}/Run2{1}/hist_ST_LFV_TCMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVSTcv'
   cross-section: 0.03673
@@ -86,7 +86,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVSTcv
   order: 1
 
-'{0}/Run2/hist_ST_LFV_TCMuTau_Tensor.root':
+'{0}/Run2{1}/hist_ST_LFV_TCMuTau_Tensor.root':
   type: signal
   pretty-name: 'LFVSTct'
   cross-section: 0.177
@@ -94,7 +94,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVSTct
   order: 1
 
-'{0}/Run2/hist_ST_LFV_TUMuTau_Scalar.root':
+'{0}/Run2{1}/hist_ST_LFV_TUMuTau_Scalar.root':
   type: signal
   pretty-name: 'LFVSTus'
   cross-section: 0.08494
@@ -102,7 +102,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVSTus
   order: 1
 
-'{0}/Run2/hist_ST_LFV_TUMuTau_Vector.root':
+'{0}/Run2{1}/hist_ST_LFV_TUMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVSTuv'
   cross-section: 0.3924
@@ -110,7 +110,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVSTuv
   order: 2
 
-'{0}/Run2/hist_ST_LFV_TUMuTau_Tensor.root':
+'{0}/Run2{1}/hist_ST_LFV_TUMuTau_Tensor.root':
   type: signal
   pretty-name: 'LFVSTut'
   cross-section: 1.781
@@ -118,7 +118,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVSTut
   order: 1
 
-'{0}/Run2/hist_TT_LFV_TCMuTau_Scalar.root':
+'{0}/Run2{1}/hist_TT_LFV_TCMuTau_Scalar.root':
   type: signal
   pretty-name: 'LFVTTcs'
   cross-section: 0.00269
@@ -126,7 +126,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVTTcs
   order: 1
 
-'{0}/Run2/hist_TT_LFV_TCMuTau_Vector.root':
+'{0}/Run2{1}/hist_TT_LFV_TCMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVTTcv'
   cross-section: 0.0215
@@ -134,7 +134,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVTTcv
   order: 3
 
-'{0}/Run2/hist_TT_LFV_TCMuTau_Tensor.root':
+'{0}/Run2{1}/hist_TT_LFV_TCMuTau_Tensor.root':
   type: signal
   pretty-name: 'LFVTTct'
   cross-section: 0.1290
@@ -142,7 +142,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVTTct
   order: 1
 
-'{0}/Run2/hist_TT_LFV_TUMuTau_Scalar.root':
+'{0}/Run2{1}/hist_TT_LFV_TUMuTau_Scalar.root':
   type: signal
   pretty-name: 'LFVTTus'
   cross-section: 0.00269
@@ -150,7 +150,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVTTus
   order: 1
 
-'{0}/Run2/hist_TT_LFV_TUMuTau_Vector.root':
+'{0}/Run2{1}/hist_TT_LFV_TUMuTau_Vector.root':
   type: signal
   pretty-name: 'LFVTTuv'
   cross-section: 0.0215
@@ -158,14 +158,14 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVTTuv
   order: 4
 
-'{0}/Run2/hist_TT_LFV_TUMuTau_Tensor.root':
+'{0}/Run2{1}/hist_TT_LFV_TUMuTau_Tensor.root':
   type: signal
   pretty-name: 'LFVTTut'
   cross-section: 0.1290
   generated-events: 1
   group: GLFVTTut
   order: 1
-  """.format(dest_path), file=fnew)
+  """.format(dest_path, args.postfix), file=fnew)
   fnew.write(string_for_files)
 
 with open(config_path + 'template_Run2.yml') as f:
@@ -187,12 +187,12 @@ with open(config_path + 'template_Run2.yml') as f:
             f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']\n")
 
 if yield_only:
-    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s', '-a'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2' + args.postfix, config_path + 'config_Run2.yml', '-y', '-s', '-a'], shell=False)
     #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-q', '-a'], shell=False)
     #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-a'], shell=False)
     #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-q', '-a'], shell=False)
 else:
-    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2', config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2' + args.postfix, config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
     #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-q'], shell=False)
     #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-s', '-d'], shell=False)
     #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-q'], shell=False)
