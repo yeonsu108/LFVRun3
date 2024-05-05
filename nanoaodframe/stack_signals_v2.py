@@ -10,14 +10,15 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-I', '--input', dest='input', type=str, default="test")
+parser.add_argument("--postfix", dest="postfix", type=str, default="", help="Add postfix to output here, to have rebinning for histograms")
 args = parser.parse_args()
 input = args.input
 
 lumi_dict = {'2016pre': 19502, '2016post': 16812, '2017': 41480, '2018':59832}#16: 36314, run2:137625
 file_names = collections.OrderedDict()
 
-if not os.path.exists(input + "/Run2"):
-    try: os.makedirs(input + "/Run2")
+if not os.path.exists(os.path.join(input, 'Run2' + args.postfix)):
+    try: os.makedirs(os.path.join(input, 'Run2' + args.postfix))
     except: pass
 
 def store_file(it):
@@ -36,7 +37,7 @@ def store_file(it):
 
         ntmp = ftmp.Get("hcounter").GetBinContent(2)
 
-        dest_name = input + '/Run2/' + f
+        dest_name = os.path.join(input, 'Run2' + args.postfix, f)
         print("destination :", dest_name)
         dest = TFile.Open(dest_name, 'RECREATE')
         dest.cd()
@@ -60,7 +61,7 @@ def store_file(it):
 if __name__ == '__main__':
 
     for era in ['2016pre', '2016post', '2017', '2018']:
-        dir_path = os.path.join(input, era+'_postprocess')
+        dir_path = os.path.join(input, era+'_postprocess' + args.postfix)
         dirs = os.listdir(dir_path)
         print("POST process path: " , dir_path)
         dirs[:] = [item.replace('.root', '_' + era + '.root') for item in dirs if any(i in item for i in ['LFV']) if '__' not in item]
@@ -78,5 +79,5 @@ if __name__ == '__main__':
            'TT_LFV_TUMuTau_Scalar', 'TT_LFV_TUMuTau_Tensor', 'TT_LFV_TUMuTau_Vector']
 
     for ch in chs:
-        print(input + '/Run2/hist_' + ch + '_201*.root')
-        check_call(['hadd','-f', input + '/Run2/hist_' + ch + '.root'] +  glob.glob(input + '/Run2/hist_' + ch + '_201*.root'))
+        print(os.path.join(input, 'Run2' + args.postfix, 'hist_' + ch + '_201*.root'))
+        check_call(['hadd','-f', os.path.join(input, 'Run2' + args.postfix, 'hist_' + ch + '.root')] +  glob.glob(os.path.join(input, 'Run2' + args.postfix, 'hist_' + ch + '_201*.root')))

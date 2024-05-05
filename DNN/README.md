@@ -30,15 +30,20 @@ python eval_multi.py -I top_lfv_multiClass_March2024_AfterPreAppTalk -O DNN_out_
 On top of evaluated folder, we run usual post processing scripts and them collect all histograms for combine tool
 ```{.Bash}
 python ../nanoaodframe/postprocess.py -I DNN_out_0424 -Y 2018
-cd DNN_out_0424/2018_postprocess
-../../../plotIt/plotIt -o ../figure_2018 ../../../plotIt/configs/TOP-22-011/config_2018.yml -y
+#If you produce fine binned histograms for smoothing but want to draw histos in the original bin:
+python ../nanoaodframe/postprocess.py -I DNN_out_0424 -Y 2018 --postfix _orgbin
 
-cd ../..
-python ../nanoaodframe/print_syst_table.py -I DNN_out_0424 -D -Y 2018
+python ../nanoaodframe/print_syst_table.py -I DNN_out_0424 --postfix _orgbin -D -Y 2018
 
-python ../nanoaodframe/postprocess_2.py -I DNN_out_0424
-python ../nanoaodframe/stack_signals_v2.py -I DNN_out_0424
-python ../nanoaodframe/plot_run2.py -I DNN_out_0424
+cd DNN_out_0424/2018_postprocess_orgbin
+../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/TOP-22-011/config_2018.yml -y -s
+../../../plotIt/plotIt -o ../figure_2017/ ../../../plotIt/configs/TOP-22-011/config_2017.yml -y -s
+../../../plotIt/plotIt -o ../figure_2016post/ ../../../plotIt/configs/TOP-22-011/config_2016post.yml -y -s
+../../../plotIt/plotIt -o ../figure_2016pre/ ../../../plotIt/configs/TOP-22-011/config_2016pre.yml -y -s
+
+python postprocess_2.py -I DNN_out_0424
+python ../nanoaodframe/stack_signals_v2.py -I DNN_out_0424 --postfix _orgbin
+python ../nanoaodframe/plot_run2.py -I DNN_out_0424 --postfix _orgbin -D
 ```
 **Evaluation** is performed with the best model from training and produce dnn output score histograms with data and MC samples.
 
