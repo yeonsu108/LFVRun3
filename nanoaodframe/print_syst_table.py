@@ -172,8 +172,10 @@ for key, value in unc_cat.items():
 
     #Remove signals in TT specific sources
     with open(os.path.join(dest_path, 'figure_' + year + options.postfix, 'systematics.tex'), 'r') as f:
+    #with open(os.path.join(dest_path, 'figure_' + year + options.postfix +'_org', 'systematics_' + syst_postfix + '.tex'), 'r') as f:
         with open(os.path.join(dest_path, 'figure_' + year + options.postfix, 'systematics_' + syst_postfix + '.tex'), 'w+') as f1:
             isTheorySyst = False
+            isTtbarTheorySyst = False
             if key in ['scale', 'mescale', 'renscale', 'facscale', 'isr', 'fsr', 'hdamp', 'tune', 'pdfalphas', 'toppt']:
               isTheorySyst = True
             for line in f:
@@ -181,6 +183,14 @@ for key, value in unc_cat.items():
                 if 'ttbar' in line or 'LFV' in line: isTheory = True
                 #if 'ttbar' in line or 'LFV' in line or 'Single' in line: isTheory = True #To print ST theory unc
                 if not isTheory and isTheorySyst and 'hline' not in line and 'Total' not in line: continue
+                if (key in ['xsec', 'hdamp', 'tune', 'pdfalphas']) and 'LFV' in line:
+                    isTtbarTheorySyst = True
+                    continue
+                if isTtbarTheorySyst and 'hline' in line:
+                    # skip only first hline
+                    isTtbarTheorySyst = False
+                    continue
+                if (key in ['toppt']) and 'STLFV' in line: continue
                 if any(str(x) in line[0] for x in list(range(1,10))): line = line[1:]
                 f1.write(line)
 

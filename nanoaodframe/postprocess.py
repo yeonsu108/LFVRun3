@@ -383,6 +383,6 @@ for fname in file_list:
 
 for dataname in data_list:
     try:
-        subprocess.call(['rm', os.path.join(out_path, dataname + year + '.root')])
+        subprocess.call(['rm', os.path.join(out_path, dataname + '.root')])
     except: pass
-    subprocess.check_call( ["hadd", "-f", os.path.join(out_path, dataname + year + '.root')] + glob.glob(os.path.join(out_path, dataname) + '201*') )
+    subprocess.check_call( ["hadd", "-f", os.path.join(out_path, dataname + '.root')] + glob.glob(os.path.join(out_path, dataname) + '201*') )

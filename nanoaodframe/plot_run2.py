@@ -48,7 +48,7 @@ for item in common_syst_list:
 string_for_files = ''
 for year, lumi in years.items():
   #Firstly, merge file list + scale
-  with open(config_path + 'files_' + year + '.yml') as f:
+  with open(config_path + 'files.yml') as f:
     lines = f.readlines()
     skip_signal = False
     for line in lines:
@@ -59,8 +59,10 @@ for year, lumi in years.items():
       if '#' in line[0]: skip_signal = True
       if 'hist' in line:
         line = line[0] + dest_path + '/' + year + '_postprocess' + args.postfix + '/' + line[1:]
-        if not any(i in line for i in ['LFV', 'SingleMuon']):
+        if not any(i in line for i in ['LFV', 'SingleMuon', 'WJetsToLNu_HT0To100']):
           line += '  scale: ' + str(int(lumi)/137625.0) + '\n'
+        elif 'WJetsToLNu_HT0To100' in line:
+          line += '  scale: ' + str(1.0288 * int(lumi)/137625.0) + '\n'
       #if not skip_signal and not any(i in line for i in ['yields-group']):
       if not skip_signal:
         #if 'group' in line and not any(i in line for i in groups): string_for_files += '  group: Gother \n'
@@ -184,7 +186,7 @@ with open(config_path + 'template_Run2.yml') as f:
         if yield_only:
             f1.write("\nplots:\n  include: ['histos_yield.yml']\n")
         else:
-            f1.write("\nplots:\n  include: ['histos_control.yml', 'histos_reco.yml', 'histos_yield.yml']\n")
+            f1.write("\nplots:\n  include: ['histos_yield.yml', 'histos_control.yml', 'histos_reco.yml']\n")
 
 if yield_only:
     call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2' + args.postfix, config_path + 'config_Run2.yml', '-y', '-s', '-a'], shell=False)
