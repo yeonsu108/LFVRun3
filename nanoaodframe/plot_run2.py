@@ -12,6 +12,12 @@ args = parser.parse_args()
 input = args.input
 yield_only = args.yield_only
 
+#########################################################
+# WARNING: Do NOT use run2 systematic table!!
+# 1) no proper correlations
+# 2) this add up only nominal signals, not considering unc
+# Therefore, yearly unc from weight Unc. are exploding
+##########################################################
 
 config_path = '../plotIt/configs/TOP-22-011/'
 common_syst = 'systematics:\n'
@@ -49,6 +55,7 @@ string_for_files = ''
 for year, lumi in years.items():
   #Firstly, merge file list + scale
   with open(config_path + 'files.yml') as f:
+  #with open(config_path + 'files_fake.yml') as f:
     lines = f.readlines()
     skip_signal = False
     for line in lines:

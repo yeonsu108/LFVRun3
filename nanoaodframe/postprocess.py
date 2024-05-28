@@ -43,11 +43,16 @@ else:
 
 isFFcalc = False
 isFFapply = False
-if 'fake' in input: isFFcalc = True
+if '_fake_' in input: isFFcalc = True
 elif 'FF' in input: isFFapply = True
+
+isFakeHistos = False
+if 'fakeTau' in input: isFakeHistos = True
 
 # Set output folders
 out_path = os.path.join(base_path, input, year + '_postprocess' + options.postfix)
+if 'fakeTau' in input:
+    out_path = os.path.join(base_path, input.replace('fakeTau', 'genuineTau'), year + '_postprocess' + options.postfix, 'fake')
 fig_path = os.path.join(base_path, input, 'figure_' + year + options.postfix)
 if not os.path.exists(out_path):
     os.makedirs(out_path)
@@ -68,6 +73,19 @@ try:
     split_list = [re.sub(r'_[0-9]*.root', '', i) for i in os.listdir(os.path.join(nom_path, 'split')) if '.root' in i]
 except: pass
 split_list = list(set(split_list))
+
+if len(split_list) > 0:
+    os.makedirs(os.path.join(nom_path, 'split/empty'), exist_ok=True)
+    for fname_split in os.listdir(os.path.join(nom_path, 'split')):
+        if '.root' not in fname_split: continue
+        f_split_path = os.path.join(nom_path, 'split', fname_split)
+        f_split = TFile.Open(f_split_path)
+        nentries = f_split.Get('Events').GetEntries()
+        f_split.Close()
+        if nentries == 0:
+            fname_root = f_split_path.split('/')[-1]
+            os.rename(f_split_path, f_split_path.replace(fname_root, 'empty/' + fname_root))
+
 #print(data_list)
 #print(file_list)
 #print(split_list)
@@ -382,6 +400,7 @@ for fname in file_list:
 
 
 for dataname in data_list:
+    if isFakeHistos: continue # will use data/signal in genuine folder
     try:
         subprocess.call(['rm', os.path.join(out_path, dataname + '.root')])
     except: pass

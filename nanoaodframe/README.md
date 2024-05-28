@@ -181,6 +181,7 @@ Drawing histogram by plotIt
 cd 2018_postprocess
 mkdir ../figure_2018
 ../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/TOP-22-011/config_2018.yml -y -s
+# Add --allSig to draw all signals for plot ir yield
 cd ../../
 python print_syst_table.py -I test -Y 2018
 

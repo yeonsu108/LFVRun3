@@ -262,6 +262,8 @@ if __name__ == '__main__':
     for year in ["2016pre", "2016post", "2017", "2018"]:
         print(year)
         project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_uforeweight_jesflav_FF/" + year + "/"
+        #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_uforeweight_jesflav_genuineTau_FF/" + year + "/"
+        #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_uforeweight_jesflav_fakeTau_FF/" + year + "/"
         flist = os.listdir(project_dir)
         flist = [i for i in flist if (".root" in i)]
         for curfile in flist:

@@ -59,6 +59,12 @@ if options.syst == "nosyst": syst_list = [""]
 parameters = [] #order: (tgdir, indir, outdir, outfilename, syst)
 for ds in dataset_list:
 
+    # will use data/signal in genuine folder
+    if 'fakeTau' in options.outdir and any(n in ds for n in ['_LFV_', 'SingleMuon', 'QCD_']):
+        continue
+    elif 'genuineTau' in options.outdir and any(n in ds for n in ['QCD_']):
+        continue
+
     #Split TT2L2Nu and TTToSemilep into files
     toSplit = False
     if any(name_ in ds for name_ in splitList) and '__' not in ds: toSplit = True

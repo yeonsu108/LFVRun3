@@ -38,10 +38,19 @@ TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string ye
 // Define your cuts here
 void TopLFVAnalyzer::defineCuts() {
 
-    //addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","0");
-    // Wil remove PV cut after new skim
-    addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0","0");
+    addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0", "0");
+
+    // All
     addCuts("ncleantaupass == 1", "00");
+    // genuine taus
+    //if (_isSignal or _syst == "data") {
+    //    addCuts("ncleantaupass == 1", "00");
+    //} else {
+    //    addCuts("ncleantaupass == 1 && Tau_pt_gen.size()>0", "00");
+    //}
+    // fake taus
+    //addCuts("ncleantaupass == 1 && Tau_pt_gen.size()==0", "00");
+
     addCuts("mutau_charge < 0", "000");
     addCuts("ncleanjetspass >= 3", "0000");
     addCuts("ncleanbjetspass == 1", "00000");
@@ -70,6 +79,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     //defineVar("muonWeightTrg", ::addMuonUnc, {"muonWeightTrg"});
 
     // Already object selection is done before this
+    addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
     if (!_applytauFF) addVar({"tauFF", "1.0", ""});
     else if (_isSignal) {
         addVar({"tauFF", "1.0", ""});
@@ -77,7 +87,6 @@ void TopLFVAnalyzer::defineMoreVars() {
         addVar({"tauFFstatdown", "1.0", ""});
         addVar({"tauFFsystup", "1.0", ""});
         addVar({"tauFFsystdown", "1.0", ""});
-        addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
     } else {
         if (_year == "2016pre") {
             addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.5555"});
@@ -85,28 +94,24 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9342"});
             addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.224"});
             addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.776"});
-            addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
         } else if (_year == "2016post") {
             addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.6094"});
             addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.07113"});
             addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9288"});
             addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.0428"});
             addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9572"});
-            addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
         } else if (_year == "2017") {
             addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7233"});
             addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.03817"});
             addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9618"});
             addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.1292"});
             addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.8708"});
-            addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
         } else if (_year == "2018") {
             addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7393"});
             addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.03238"});
             addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9676"});
             addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.0829"});
             addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9171"});
-            addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
         }
     }
     addVar({"unitGenWeightFF", "unitGenWeight * tauFF * UFO_reweight", ""});
@@ -425,6 +430,8 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("TopPtWeight");
     addVartoStore("LHEPart_pt");
     addVartoStore("LHEPart_pdgId");
+    addVartoStore("tauFF.*");
+    addVartoStore("isFakeTau");
 }
 
 void TopLFVAnalyzer::bookHists() {
