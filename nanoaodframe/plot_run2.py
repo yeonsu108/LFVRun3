@@ -54,8 +54,8 @@ for item in common_syst_list:
 string_for_files = ''
 for year, lumi in years.items():
   #Firstly, merge file list + scale
-  with open(config_path + 'files.yml') as f:
-  #with open(config_path + 'files_fake.yml') as f:
+  #with open(config_path + 'files.yml') as f:
+  with open(config_path + 'files_fake.yml') as f:
     lines = f.readlines()
     skip_signal = False
     for line in lines:
@@ -196,12 +196,12 @@ with open(config_path + 'template_Run2.yml') as f:
             f1.write("\nplots:\n  include: ['histos_yield.yml', 'histos_control.yml', 'histos_reco.yml']\n")
 
 if yield_only:
-    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2' + args.postfix, config_path + 'config_Run2.yml', '-y', '-s', '-a'], shell=False)
-    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-q', '-a'], shell=False)
-    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-a'], shell=False)
-    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-q', '-a'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2' + args.postfix, config_path + 'config_Run2.yml', '-y', '-a'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-q', '-a'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-d', '-a'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-d', '-q', '-a'], shell=False)
 else:
-    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2' + args.postfix, config_path + 'config_Run2.yml', '-y', '-s'], shell=False)
-    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-q'], shell=False)
-    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-y', '-s', '-d'], shell=False)
-    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-y', '-s', '-d', '-q'], shell=False)
+    call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2' + args.postfix, config_path + 'config_Run2.yml'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/qcd', config_path + 'config_Run2.yml', '-q'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl', config_path + 'config_Run2.yml', '-d'], shell=False)
+    #call(['../plotIt/plotIt', '-o ' + dest_path + '/figure_run2/dyincl/qcd', config_path + 'config_Run2.yml', '-d', '-q'], shell=False)
