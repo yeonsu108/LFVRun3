@@ -43,6 +43,7 @@ syst_list = ["", "__tesup", "__tesdown", "__jerup","__jerdown", "__jesAbsoluteup
 if year == "2018": syst_list.extend(["__jesHEMup", "__jesHEMdown"])
 syst_list.extend(["__jesFlavorPureGluonup", "__jesFlavorPureGluondown", "__jesFlavorPureQuarkup", "__jesFlavorPureQuarkdown",
                   "__jesFlavorPureCharmup", "__jesFlavorPureCharmdown", "__jesFlavorPureBottomup", "__jesFlavorPureBottomdown"])
+syst_list.extend(["__metUnclustup", "__metUnclustdown"])
 
 # tune and hdamp will appear as an individual dataset.
 # thus no need to run in loop, but left here for double check
@@ -127,6 +128,12 @@ for ds in dataset_list:
                 #os.makedir(os.path.join(tgdir, dataset_name+src)
                 if any(i in dataset_name for i in syst_ext): continue
                 parameters.append([year, ds, outdir, outfname, src[2:]])
+                # for tests
+                #if toSplit:
+                #    os.makedirs(tgdir.replace(year, year + '/' + "split"), exist_ok=True)
+                #    parameters.append([year, rootfilestoprocess, outdir.replace(year, year + '/' + "split"), outfname, src[2:]])
+                #else:
+                #    parameters.append([year, ds, outdir, outfname, src[2:]])
 
 
 runString_list = []
