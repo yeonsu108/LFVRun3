@@ -55,7 +55,7 @@ for year in year_list:
 
     SF = fake_nevent/nevents_region['tos']['nsub_mc']
     print('SF = new fake / mc fake = {:.4f}'.format(SF.n), 'pm {:5f}'.format(SF.std_dev), '-> ' + str(round(100*SF.std_dev/SF.n, 3)) + '%')
-    print('UNC : statup {0:.6g},'.format(1+SF.std_dev/SF.n), 'statdown {0:.6g}'.format(1-SF.std_dev/SF.n))
+    print('UNC : {0:.4g} '.format(SF.std_dev/SF.n), 'statup {0:.4g},'.format(1+SF.std_dev/SF.n), 'statdown {0:.4g}'.format(1-SF.std_dev/SF.n))
 
     new_mc = nevents_region['tos']['gentau_total'] + fake_nevent
     print('Recalculated MC = {:.2f}'.format(new_mc))
@@ -66,6 +66,6 @@ for year in year_list:
 
     SF_closure = (nevents_region['tos']['nsub_mc'] - fake_closure)/nevents_region['tos']['nsub_mc']
     print('Difference: {0:.4g} %'.format(100 * (nevents_region['tos']['nsub_mc'] - fake_closure)/nevents_region['tos']['nsub_mc']))
-    print('UNC : systup {0:.4g},'.format(1+SF_closure.n), 'systdown {0:.4g}'.format(1-SF_closure.n))
+    print('UNC : {0:.4g} '.format(SF_closure.n), 'systup {0:.4g},'.format(1+SF_closure.n), 'systdown {0:.4g}'.format(1-SF_closure.n))
 
     print('/////////////////////////////////////////////////')
