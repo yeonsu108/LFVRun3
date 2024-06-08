@@ -54,8 +54,8 @@ for item in common_syst_list:
 string_for_files = ''
 for year, lumi in years.items():
   #Firstly, merge file list + scale
-  #with open(config_path + 'files.yml') as f:
-  with open(config_path + 'files_fake.yml') as f:
+  with open(config_path + 'files.yml') as f:
+  #with open(config_path + 'files_fake.yml') as f:
     lines = f.readlines()
     skip_signal = False
     for line in lines:
@@ -70,6 +70,12 @@ for year, lumi in years.items():
           line += '  scale: ' + str(int(lumi)/137625.0) + '\n'
         elif 'WJetsToLNu_HT0To100' in line:
           line += '  scale: ' + str(1.0288 * int(lumi)/137625.0) + '\n'
+      # Merge processes. This is only needed for paper plots - i.e. Run2 plots
+      if 'group' in line:
+        if any(i in line for i in ['Gttlj', 'Gttll']):
+          line = '  group: Gtt \n'
+        elif any(i in line for i in ['Gttjj', 'GttV', 'GVV', 'GZJets', 'GWJets']):
+          line = '  group: Gother \n'
       #if not skip_signal and not any(i in line for i in ['yields-group']):
       if not skip_signal:
         #if 'group' in line and not any(i in line for i in groups): string_for_files += '  group: Gother \n'
