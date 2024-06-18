@@ -582,7 +582,7 @@ void TopLFVAnalyzer::bookHists() {
 
         // Histogram of Top mass reconstruction
         add1DHist({"h_chi2", ";Minimum #chi^{2};Events", 20, 0, 1000}, "chi2", "eventWeight", weightstr, minstep_S5, maxstep);
-        add1DHist({"h_chi2_SMTop_mass", ";SM top quark mass (GeV);Events", 20, 0, 400}, "chi2_SMTop_mass", "eventWeight", weightstr, minstep_S5, maxstep);
+        add1DHist({"h_chi2_SMTop_mass", ";SM top quark mass (GeV);Events", 20, 80, 880}, "chi2_SMTop_mass", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_chi2_SMTop_pt", ";SM top quark pt (GeV);Events", 20, 0, 400}, "chi2_SMTop_pt", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_chi2_SMTop_pt_notoppt", ";SM top quark pt (GeV);Events", 20, 0, 400}, "chi2_SMTop_pt", "eventWeight_notoppt", "", minstep_S5, maxstep);
         add1DHist({"h_chi2_SMW_mass", ";SM W_{had} mass (GeV);Events", 20, 0, 400}, "chi2_SMW_mass", "eventWeight", weightstr, minstep_S5, maxstep);
@@ -606,50 +606,51 @@ double TopLFVAnalyzer::tauFF(std::string year_, std::string unc_, int direction_
     if (abs(direction_) != 1 and direction_ != 0) return val;
     std::map<std::string, std::map<std::string, double>> map_ff;
 
-    //map_ff["2016pre"]["nom"]   = 0.5555 ;
-    //map_ff["2016pre"]["stat"]  = 0.06578;
-    //map_ff["2016pre"]["syst"]  = 0.224  ;
-    //map_ff["2016post"]["nom"]  = 0.6094 ;
-    //map_ff["2016post"]["stat"] = 0.07114;
-    //map_ff["2016post"]["syst"] = 0.04278;
-    //map_ff["2017"]["nom"]      = 0.7233 ;
-    //map_ff["2017"]["stat"]     = 0.03818;
-    //map_ff["2017"]["syst"]     = 0.1292 ;
-    //map_ff["2018"]["nom"]      = 0.7393 ;
-    //map_ff["2018"]["stat"]     = 0.03239;
-    //map_ff["2018"]["syst"]     = 0.08293;
+    // unc: ratio to nominal
+    map_ff["2016pre"]["nom"]   = 0.5555 ;
+    map_ff["2016pre"]["stat"]  = 0.06578;
+    map_ff["2016pre"]["syst"]  = 0.224  ;
+    map_ff["2016post"]["nom"]  = 0.6094 ;
+    map_ff["2016post"]["stat"] = 0.07114;
+    map_ff["2016post"]["syst"] = 0.04278;
+    map_ff["2017"]["nom"]      = 0.7233 ;
+    map_ff["2017"]["stat"]     = 0.03818;
+    map_ff["2017"]["syst"]     = 0.1292 ;
+    map_ff["2018"]["nom"]      = 0.7393 ;
+    map_ff["2018"]["stat"]     = 0.03239;
+    map_ff["2018"]["syst"]     = 0.08293;
 
-    if (tau_pt_[0] < 140) {
-        map_ff["2016pre"]["nom"]   = 0.4889 ;
-        map_ff["2016pre"]["stat"]  = 0.06907;
-        map_ff["2016pre"]["syst"]  = 0.2267 ;
-        map_ff["2016post"]["nom"]  = 0.5870 ;
-        map_ff["2016post"]["stat"] = 0.07535;
-        map_ff["2016post"]["syst"] = 0.08154;
-        map_ff["2017"]["nom"]      = 0.6909 ;
-        map_ff["2017"]["stat"]     = 0.03997;
-        map_ff["2017"]["syst"]     = 0.1499 ;
-        map_ff["2018"]["nom"]      = 0.7232 ;
-        map_ff["2018"]["stat"]     = 0.0331 ;
-        map_ff["2018"]["syst"]     = 0.08565;
-    } else if (tau_pt_[0] >= 140) {
-        map_ff["2016pre"]["nom"]   = 0.9194 ;
-        map_ff["2016pre"]["stat"]  = 0.2231 ;
-        map_ff["2016pre"]["syst"]  = 0.3434 ;
-        map_ff["2016post"]["nom"]  = 0.6079 ;
-        map_ff["2016post"]["stat"] = 0.2227 ;
-        map_ff["2016post"]["syst"] = 0.1087 ;
-        map_ff["2017"]["nom"]      = 0.7810 ;
-        map_ff["2017"]["stat"]     = 0.13   ;
-        map_ff["2017"]["syst"]     = 0.05533;
-        map_ff["2018"]["nom"]      = 0.8236 ;
-        map_ff["2018"]["stat"]     = 0.1362 ;
-        map_ff["2018"]["syst"]     = 0.1879 ;
-    }
+    //if (tau_pt_[0] < 140) {
+    //    map_ff["2016pre"]["nom"]   = 0.4889 ;
+    //    map_ff["2016pre"]["stat"]  = 0.06907;
+    //    map_ff["2016pre"]["syst"]  = 0.2267 ;
+    //    map_ff["2016post"]["nom"]  = 0.5870 ;
+    //    map_ff["2016post"]["stat"] = 0.07535;
+    //    map_ff["2016post"]["syst"] = 0.08154;
+    //    map_ff["2017"]["nom"]      = 0.6909 ;
+    //    map_ff["2017"]["stat"]     = 0.03997;
+    //    map_ff["2017"]["syst"]     = 0.1499 ;
+    //    map_ff["2018"]["nom"]      = 0.7232 ;
+    //    map_ff["2018"]["stat"]     = 0.0331 ;
+    //    map_ff["2018"]["syst"]     = 0.08565;
+    //} else if (tau_pt_[0] >= 140) {
+    //    map_ff["2016pre"]["nom"]   = 0.9194 ;
+    //    map_ff["2016pre"]["stat"]  = 0.2231 ;
+    //    map_ff["2016pre"]["syst"]  = 0.3434 ;
+    //    map_ff["2016post"]["nom"]  = 0.6079 ;
+    //    map_ff["2016post"]["stat"] = 0.2227 ;
+    //    map_ff["2016post"]["syst"] = 0.1087 ;
+    //    map_ff["2017"]["nom"]      = 0.7810 ;
+    //    map_ff["2017"]["stat"]     = 0.13   ;
+    //    map_ff["2017"]["syst"]     = 0.05533;
+    //    map_ff["2018"]["nom"]      = 0.8236 ;
+    //    map_ff["2018"]["stat"]     = 0.1362 ;
+    //    map_ff["2018"]["syst"]     = 0.1879 ;
+    //}
 
     if      (unc_ == "nom") val = map_ff[year_][unc_];
-    else if (direction_ == 1) val  = 1 + map_ff[year_][unc_];
-    else if (direction_ == -1) val = 1 - map_ff[year_][unc_];
+    else if (direction_ == 1) val  = 1.0 + map_ff[year_][unc_];
+    else if (direction_ == -1) val = 1.0 - map_ff[year_][unc_];
 
     return val;
 }

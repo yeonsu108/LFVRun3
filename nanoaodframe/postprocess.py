@@ -12,10 +12,12 @@ parser = OptionParser(usage="%prog [options]")
 parser.add_option("-I", "--infile", dest="infile", type="string", default="", help="Input file name")
 parser.add_option("-Y", "--year", dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")
 parser.add_option("--postfix", dest="postfix", type="string", default="", help="Add postfix to output here, to have rebinning for histograms")
+parser.add_option("-F", "--forceHadd", dest="forceHadd", action="store_true", default=False, help="Force hadd split files")
 (options, args) = parser.parse_args()
 
 year = options.year
 input = options.infile
+forceHadd = options.forceHadd
 
 # starting bin -> 0.01, trick for logX
 #rebin_arr = array.array('d', [0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
@@ -28,8 +30,6 @@ if len(options.postfix) > 0:
 if year not in ['2016pre', '2016post', '2017', '2018']:
     print('Wrong year, check again')
     sys.exit()
-forceHadd = False
-if len(sys.argv) > 3: forceHadd = sys.argv[3] == "True"
 if forceHadd: print("Hadd all split MC!!")
 
 yield_name = 'h_ncleanjetspass'

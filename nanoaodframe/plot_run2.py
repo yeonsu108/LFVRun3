@@ -72,10 +72,17 @@ for year, lumi in years.items():
           line += '  scale: ' + str(1.0288 * int(lumi)/137625.0) + '\n'
       # Merge processes. This is only needed for paper plots - i.e. Run2 plots
       if 'group' in line:
-        if any(i in line for i in ['Gttlj', 'Gttll']):
-          line = '  group: Gtt \n'
-        elif any(i in line for i in ['Gttjj', 'GttV', 'GVV', 'GZJets', 'GWJets']):
-          line = '  group: Gother \n'
+        #First, yield group
+        if 'yields-group' in line:
+            if any(i in line for i in ['ttbar LL', 'ttbar LJ']):
+              line = "  yields-group: '1\\ttbar' \n"
+            elif any(i in line for i in ['ttbar Had', 'tt+X', 'VV', 'Z+Jets', 'W+Jets']):
+              line = "  yields-group: '9Other' \n"
+        else:
+            if any(i in line for i in ['Gttlj', 'Gttll']):
+              line = '  group: Gtt \n'
+            elif any(i in line for i in ['Gttjj', 'GttV', 'GVV', 'GZJets', 'GWJets']):
+              line = '  group: Gother \n'
       #if not skip_signal and not any(i in line for i in ['yields-group']):
       if not skip_signal:
         #if 'group' in line and not any(i in line for i in groups): string_for_files += '  group: Gother \n'
@@ -85,36 +92,14 @@ for year, lumi in years.items():
 
 with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   print("""
-'{0}/Run2{1}/hist_ST_LFV_TCMuTau_Scalar.root':
-  type: signal
-  pretty-name: 'LFVSTcs'
-  cross-section: 0.007375
-  generated-events: 1
-  group: GLFVSTcs
-  order: 1
-
-'{0}/Run2{1}/hist_ST_LFV_TCMuTau_Vector.root':
-  type: signal
-  pretty-name: 'LFVSTcv'
-  cross-section: 0.03673
-  generated-events: 1
-  group: GLFVSTcv
-  order: 1
-
-'{0}/Run2{1}/hist_ST_LFV_TCMuTau_Tensor.root':
-  type: signal
-  pretty-name: 'LFVSTct'
-  cross-section: 0.177
-  generated-events: 1
-  group: GLFVSTct
-  order: 1
-
 '{0}/Run2{1}/hist_ST_LFV_TUMuTau_Scalar.root':
   type: signal
   pretty-name: 'LFVSTus'
   cross-section: 0.08494
   generated-events: 1
   group: GLFVSTus
+  #yields-group: '1ST LFV$^{{\\cPqt\\cPqu\\mu\\tau}}_{{Scalar}}$'
+  yields-group: '1ST LFV $\\cPqt\\cPqu\\mu\\tau$ Scalar'
   order: 1
 
 '{0}/Run2{1}/hist_ST_LFV_TUMuTau_Vector.root':
@@ -123,7 +108,9 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   cross-section: 0.3924
   generated-events: 1
   group: GLFVSTuv
-  order: 2
+  #yields-group: '1ST LFV$^{{\\cPqt\\cPqu\\mu\\tau}}_{{Vector}}$'
+  yields-group: '1ST LFV $\\cPqt\\cPqu\\mu\\tau$ Vector'
+  order: 1
 
 '{0}/Run2{1}/hist_ST_LFV_TUMuTau_Tensor.root':
   type: signal
@@ -131,30 +118,38 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   cross-section: 1.781
   generated-events: 1
   group: GLFVSTut
+  #yields-group: '2ST LFV$^{{\\cPqt\\cPqu\\mu\\tau}}_{{Tensor}}$'
+  yields-group: '2ST LFV $\\cPqt\\cPqu\\mu\\tau$ Tensor'
   order: 1
 
-'{0}/Run2{1}/hist_TT_LFV_TCMuTau_Scalar.root':
+'{0}/Run2{1}/hist_ST_LFV_TCMuTau_Scalar.root':
   type: signal
-  pretty-name: 'LFVTTcs'
-  cross-section: 0.00269
+  pretty-name: 'LFVSTcs'
+  cross-section: 0.007375
   generated-events: 1
-  group: GLFVTTcs
+  group: GLFVSTcs
+  #yields-group: '3ST LFV$^{{\\cPqt\\cPqc\\mu\\tau}}_{{Scalar}}$'
+  yields-group: '3ST LFV $\\cPqt\\cPqc\\mu\\tau$ Scalar'
   order: 1
 
-'{0}/Run2{1}/hist_TT_LFV_TCMuTau_Vector.root':
+'{0}/Run2{1}/hist_ST_LFV_TCMuTau_Vector.root':
   type: signal
-  pretty-name: 'LFVTTcv'
-  cross-section: 0.0215
+  pretty-name: 'LFVSTcv'
+  cross-section: 0.03673
   generated-events: 1
-  group: GLFVTTcv
-  order: 3
+  group: GLFVSTcv
+  #yields-group: '3ST LFV$^{{\\cPqt\\cPqc\\mu\\tau}}_{{Vector}}$'
+  yields-group: '3ST LFV $\\cPqt\\cPqc\\mu\\tau$ Vector'
+  order: 1
 
-'{0}/Run2{1}/hist_TT_LFV_TCMuTau_Tensor.root':
+'{0}/Run2{1}/hist_ST_LFV_TCMuTau_Tensor.root':
   type: signal
-  pretty-name: 'LFVTTct'
-  cross-section: 0.1290
+  pretty-name: 'LFVSTct'
+  cross-section: 0.177
   generated-events: 1
-  group: GLFVTTct
+  group: GLFVSTct
+  #yields-group: '4ST LFV$^{{\\cPqt\\cPqc\\mu\\tau}}_{{Tensor}}$'
+  yields-group: '4ST LFV $\\cPqt\\cPqc\\mu\\tau$ Tensor'
   order: 1
 
 '{0}/Run2{1}/hist_TT_LFV_TUMuTau_Scalar.root':
@@ -163,6 +158,8 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   cross-section: 0.00269
   generated-events: 1
   group: GLFVTTus
+  #yields-group: '5TT LFV$^{{\\cPqt\\cPqu\\mu\\tau}}_{{Scalar}}$'
+  yields-group: '5TT LFV $\\cPqt\\cPqu\\mu\\tau$ Scalar'
   order: 1
 
 '{0}/Run2{1}/hist_TT_LFV_TUMuTau_Vector.root':
@@ -171,7 +168,9 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   cross-section: 0.0215
   generated-events: 1
   group: GLFVTTuv
-  order: 4
+  #yields-group: '5TT LFV$^{{\\cPqt\\cPqu\\mu\\tau}}_{{Vector}}$'
+  yields-group: '5TT LFV $\\cPqt\\cPqu\\mu\\tau$ Vector'
+  order: 1
 
 '{0}/Run2{1}/hist_TT_LFV_TUMuTau_Tensor.root':
   type: signal
@@ -179,6 +178,38 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   cross-section: 0.1290
   generated-events: 1
   group: GLFVTTut
+  #yields-group: '6TT LFV$^{{\\cPqt\\cPqu\\mu\\tau}}_{{Tensor}}$'
+  yields-group: '6TT LFV $\\cPqt\\cPqu\\mu\\tau$ Tensor'
+  order: 1
+
+'{0}/Run2{1}/hist_TT_LFV_TCMuTau_Scalar.root':
+  type: signal
+  pretty-name: 'LFVTTcs'
+  cross-section: 0.00269
+  generated-events: 1
+  group: GLFVTTcs
+  #yields-group: '7TT LFV$^{{\\cPqt\\cPqc\\mu\\tau}}_{{Scalar}}$'
+  yields-group: '7TT LFV $\\cPqt\\cPqc\\mu\\tau$ Scalar'
+  order: 1
+
+'{0}/Run2{1}/hist_TT_LFV_TCMuTau_Vector.root':
+  type: signal
+  pretty-name: 'LFVTTcv'
+  cross-section: 0.0215
+  generated-events: 1
+  group: GLFVTTcv
+  #yields-group: '7TT LFV$^{{\\cPqt\\cPqc\\mu\\tau}}_{{Vector}}$'
+  yields-group: '7TT LFV $\\cPqt\\cPqc\\mu\\tau$ Vector'
+  order: 1
+
+'{0}/Run2{1}/hist_TT_LFV_TCMuTau_Tensor.root':
+  type: signal
+  pretty-name: 'LFVTTct'
+  cross-section: 0.1290
+  generated-events: 1
+  group: GLFVTTct
+  #yields-group: '8TT LFV$^{{\\cPqt\\cPqc\\mu\\tau}}_{{Tensor}}$'
+  yields-group: '8TT LFV $\\cPqt\\cPqc\\mu\\tau$ Tensor'
   order: 1
   """.format(dest_path, args.postfix), file=fnew)
   fnew.write(string_for_files)
