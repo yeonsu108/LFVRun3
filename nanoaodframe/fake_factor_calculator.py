@@ -58,7 +58,7 @@ for year in year_list:
     print('UNC : {0:.4g} '.format(SF.std_dev/SF.n), 'statup {0:.4g},'.format(1+SF.std_dev/SF.n), 'statdown {0:.4g}'.format(1-SF.std_dev/SF.n))
 
     new_mc = nevents_region['tos']['gentau_total'] + fake_nevent
-    print('Recalculated MC = {:.2f}'.format(new_mc))
+    print('Recalculated MC = {:.2f}'.format(new_mc), ' from {:.2f}'.format(nevents_region['tos']['mc_total']), ' ratio: {:.2f}'.format(new_mc/nevents_region['tos']['mc_total']))
     print('data/mc = {0:.2g}'.format(nevents_region['tos']['ndata']/nevents_region['tos']['mc_total'].n), '-> {0:.2g}'.format(nevents_region['tos']['ndata']/new_mc.n))
 
     fake_closure = nevents_region['los']['nsub_mc'] * (nevents_region['tss']['nsub_mc'] / nevents_region['lss']['nsub_mc'])
