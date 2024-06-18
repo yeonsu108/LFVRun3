@@ -537,7 +537,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                     continue; //We only need var name, no up/down
                 }
             }
-            cout << "Treating breakdown of FlavorPure*" << endl;
+            //cout << "Treating breakdown of FlavorPure*" << endl;
             for (std::string src : jes_var_flav) {
                 if (src.find("up") != std::string::npos) {
                     auto uncsource = src.substr(3, src.size()-2-3);
@@ -1183,6 +1183,12 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
                .Define("taujetoverlap", checkoverlap, {"jet4vecs","cleantau4vecs"})
                .Define("jetoverlap","muonjetoverlap && taujetoverlap");
 
+    _rlm = _rlm.Define("loosetaujetoverlap", checkoverlap, {"jet4vecs","cleanloosetau4vecs"})
+               .Define("jetoverlaploose","muonjetoverlap && loosetaujetoverlap")
+               .Define("Jet_pt_loose", "Jet_pt[jetoverlaploose]")
+               .Define("Jet_btagDeepFlavB_loose", "Jet_btagDeepFlavB[jetoverlaploose]")
+               .Define("ncleanjetsloosepass", "int(Jet_pt_loose.size())");
+
     _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetoverlap]")
                .Redefine("Jet_eta", "Jet_eta[jetoverlap]")
                .Redefine("Jet_phi", "Jet_phi[jetoverlap]")
@@ -1195,10 +1201,12 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
     if (!_isData) {
         int nbsf_var = btag_var.size();
         int njes_var = jes_var.size();
-        _rlm = _rlm.Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlap"})
-                   .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetoverlap"})
-                   .Define("nbsf_var", [nbsf_var](){return int(nbsf_var);})
+        _rlm = _rlm.Define("nbsf_var", [nbsf_var](){return int(nbsf_var);})
                    .Define("njes_var", [njes_var](){return int(njes_var);})
+                   .Define("btagWeight_DeepFlavB_perJet_loose", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlaploose"})
+                   .Define("btagWeight_DeepFlavB_loose", calcBSF, {"btagWeight_DeepFlavB_perJet_loose", "nbsf_var"})
+                   .Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlap"})
+                   .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetoverlap"})
                    .Define("btagWeight_DeepFlavB", calcBSF, {"btagWeight_DeepFlavB_perJet", "nbsf_var"})
                    .Define("btagWeight_DeepFlavB_jes", calcBSF, {"btagWeight_DeepFlavB_jes_perJet", "njes_var"});
     }
@@ -1207,16 +1215,20 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
     // b-tagging
     if (_isRun16pre) {
         //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16preVFP
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2598"); //l: 0.0508, m: 0.2598, t: 0.6502
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2598") //l: 0.0508, m: 0.2598, t: 0.6502
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.2598");
     } else if (_isRun16post) {
         //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16postVFP#AK4_b_tagging
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2489"); //l: 0.0480, m: 0.2489, t: 0.6377
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2489") //l: 0.0480, m: 0.2489, t: 0.6377
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.2489");
     } else if (_isRun17) {
         //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL17
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3040"); //l: 0.0532, m: 0.3040, t: 0.7476
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3040") //l: 0.0532, m: 0.3040, t: 0.7476
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.3040");
     } else if (_isRun18) {
         //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL18
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2783"); //l: 0.0490, m: 0.2783, t: 0.7100
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2783") //l: 0.0490, m: 0.2783, t: 0.7100
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.2783");
     }
 
     _rlm = _rlm.Define("bJet_pt", "Jet_pt[btagcuts]")
@@ -1226,7 +1238,9 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
                .Define("bJet_btagDeepFlavB", "Jet_btagDeepFlavB[btagcuts]")
                .Define("ncleanbjetspass", "int(bJet_pt.size())")
                .Define("bJet_HT", "Sum(bJet_pt)")
-               .Define("cleanbjet4vecs", ::gen4vec, {"bJet_pt", "bJet_eta", "bJet_phi", "bJet_mass"});
+               .Define("cleanbjet4vecs", ::gen4vec, {"bJet_pt", "bJet_eta", "bJet_phi", "bJet_mass"})
+               .Define("bJet_pt_loose", "Jet_pt_loose[btagcuts_loose]")
+               .Define("ncleanbjetsloosepass", "int(bJet_pt_loose.size())");
 }
 
 void NanoAODAnalyzerrdframe::selectTaus() {
@@ -1296,9 +1310,13 @@ void NanoAODAnalyzerrdframe::selectTaus() {
     _rlm = _rlm.Define("seltaucuts_loose","taucuts && deeptauidcuts_loose && mutauoverlap")
                .Define("Tau_pt_loose", "Tau_pt[seltaucuts_loose]")
                .Define("Tau_pt_loose_gen", "Tau_pt[seltaucuts_loose]")
+               .Define("Tau_eta_loose", "Tau_eta[seltaucuts_loose]")
+               .Define("Tau_phi_loose", "Tau_phi[seltaucuts_loose]")
+               .Define("Tau_mass_loose", "Tau_mass[seltaucuts_loose]")
                .Define("Tau_charge_loose", "Tau_charge[seltaucuts_loose]")
                .Define("Tau_decayMode_loose", "Tau_decayMode[seltaucuts_loose]")
-               .Define("nloosetaupass", "int(Tau_pt_loose.size())");
+               .Define("nloosetaupass", "int(Tau_pt_loose.size())")
+               .Define("cleanloosetau4vecs", ::gen4vec, {"Tau_pt_loose", "Tau_eta_loose", "Tau_phi_loose", "Tau_mass_loose"});
 
     if (!_isData) {
         _rlm = _rlm.Define("Tau_genPartFlav_loose","Tau_genPartFlav[seltaucuts_loose]")
@@ -1736,7 +1754,7 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
                 bool reachedMax = false;
                 if (x.maxcutstep.length() > 0 and acut.idx.compare(0, x.maxcutstep.length(), x.maxcutstep)>=0) reachedMax = true;
                 if (!reachedMax)
-                    helper_1DHistCreator(std::string(x.hmodel.fName.Data())+hpost+x.systname,  std::string(x.hmodel.fTitle.Data()), x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, rnext);
+                    helper_1DHistCreator(std::string(x.hmodel.fName.Data())+hpost+x.systname, std::string(x.hmodel.fTitle.Data()), x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, rnext);
             }
         }
         _rnt.addDaughter(rnext, acut.idx);
