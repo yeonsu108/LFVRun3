@@ -13,7 +13,8 @@ TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string ye
 :NanoAODAnalyzerrdframe(t, outfilename, year, syst, jsonfname, globaltag, nthreads), _outfilename(outfilename), _syst(syst), _year(year), _applytauFF(applytauFF)
 {
     if(syst.find("jes") != std::string::npos or syst.find("jer") != std::string::npos or syst.find("metUnclust") != std::string::npos or
-            syst.find("tes") != std::string::npos or syst.find("hdamp") != std::string::npos or syst.find("tune") != std::string::npos) {
+            syst.find("tes") != std::string::npos or syst.find("hdamp") != std::string::npos or syst.find("tune") != std::string::npos or
+            syst.find("muonhighscale") != std::string::npos) {
         ext_syst = true;
     }
     _syst = syst;
@@ -167,6 +168,10 @@ void TopLFVAnalyzer::defineMoreVars() {
     // eventWeight_xx : xxweight
     // eventWeight__xx: xx unc.
 
+    addVar({"muonHighPtAddUncUp", "Muon1_pt > 200 ? 1.0 + (0.000125 * Muon1_pt - 0.025): 1.0", ""});
+    addVar({"muonHighPtAddUncDn", "Muon1_pt > 200 ? 1.0 - (0.000125 * Muon1_pt - 0.025): 1.0", ""});
+
+
     if (_syst == "data") {
         addVar({"eventWeight", "1.0"});
         addVar({"eventWeight_notau", "1.0"});
@@ -262,6 +267,8 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"eventWeight__muisodown", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[2] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight__mutrgup", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[1] * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight__mutrgdown", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[2] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__muhighptup", "eventWeight * muonHighPtAddUncUp"});
+            addVar({"eventWeight__muhighptdown", "eventWeight * muonHighPtAddUncDn"});
             //addVar({"eventWeight__tauidjetup", "eventWeight_notau * tauWeightIdVsJet[0][1] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
             //addVar({"eventWeight__tauidjetdown", "eventWeight_notau * tauWeightIdVsJet[0][2] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
             addVar({"eventWeight__tauidjetUncert0up", "eventWeight_notau * tauWeightIdVsJet[0][1] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
@@ -332,6 +339,8 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"eventWeight_notau__muisodown", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[2] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__mutrgup", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[1] * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__mutrgdown", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[2] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__muhighptup", "eventWeight_notau * muonHighPtAddUncUp"});
+            addVar({"eventWeight_notau__muhighptdown", "eventWeight_notau * muonHighPtAddUncDn"});
             addVar({"eventWeight_notau__btaghfup", "eventWeight_genpumu * btagWeight_DeepFlavB[1]"});
             addVar({"eventWeight_notau__btaghfdown", "eventWeight_genpumu * btagWeight_DeepFlavB[2]"});
             addVar({"eventWeight_notau__btaglfup", "eventWeight_genpumu * btagWeight_DeepFlavB[3]"});
@@ -425,6 +434,7 @@ void TopLFVAnalyzer::bookHists() {
     std::vector<std::string> sf_weight = {"", "_nobtag", "_nopu", "_notau", "_notoppt",
                    "__puup", "__pudown", "__topptup", "__topptdown", "__prefireup", "__prefiredown",
                    "__muidup", "__muiddown", "__muisoup", "__muisodown", "__mutrgup", "__mutrgdown",
+                   "__muhighptup", "__muhighptdown",
                    "__btaghfup", "__btaghfdown", "__btaglfup", "__btaglfdown",
                    "__btaghfstats1up", "__btaghfstats1down", "__btaghfstats2up", "__btaghfstats2down",
                    "__btaglfstats1up", "__btaglfstats1down", "__btaglfstats2up", "__btaglfstats2down",
