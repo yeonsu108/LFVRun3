@@ -482,10 +482,8 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
         auto metx = met * cos(metphi);
         auto mety = met * sin(metphi);
         for (unsigned int i=0; i<pts.size(); i++) {
-            if (pts[i] > 200) {
-                metx -= (ptcors[i] - pts[i]) * cos(phis[i]);
-                mety -= (ptcors[i] - pts[i]) * sin(phis[i]);
-            }
+            metx -= (ptcors[i] - pts[i]) * cos(phis[i]);
+            mety -= (ptcors[i] - pts[i]) * sin(phis[i]);
         }
         out = float(atan2(mety, metx));
         return out;

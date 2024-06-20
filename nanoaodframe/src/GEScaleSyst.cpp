@@ -62,8 +62,9 @@ float GEScaleSyst::GEScaleCorrPt(float pt, float eta, float phi, int charge, int
     return -1e9;
   }
   if( fabs(phi) > M_PI ) {
-    cout << "ERROR GEScaleSyst::GEScaleCorrPt invalid muon phi= " << phi << " while pt= " << pt << " while eta= " << eta << endl;
-    return -1e9;
+    cout << "ERROR GEScaleSyst::GEScaleCorrPt invalid muon phi= " << phi << endl;
+    //return -1e9;
+    return pt;
   }
   if( fabs(charge) != 1 ) {
     cout << "ERROR GEScaleSyst::GEScaleCorrPt invalid muon charge= " << charge << endl;
