@@ -38,11 +38,14 @@ dataset_list = data_list + mc_list
 syst_list = ["", "__tesup", "__tesdown", "__jerup","__jerdown", "__jesAbsoluteup","__jesAbsolutedown",
              "__jesAbsolute_"+year[:4]+"up", "__jesAbsolute_"+year[:4]+"down",
              "__jesBBEC1up", "__jesBBEC1down", "__jesBBEC1_"+year[:4]+"up", "__jesBBEC1_"+year[:4]+"down",
-             "__jesFlavorQCDup", "__jesFlavorQCDdown", "__jesRelativeBalup", "__jesRelativeBaldown",
+             #"__jesFlavorQCDup", "__jesFlavorQCDdown", "__jesRelativeBalup", "__jesRelativeBaldown",
+             "__jesRelativeBalup", "__jesRelativeBaldown",
              "__jesRelativeSample_"+year[:4]+"up", "__jesRelativeSample_"+year[:4]+"down"]
 if year == "2018": syst_list.extend(["__jesHEMup", "__jesHEMdown"])
 syst_list.extend(["__jesFlavorPureGluonup", "__jesFlavorPureGluondown", "__jesFlavorPureQuarkup", "__jesFlavorPureQuarkdown",
                   "__jesFlavorPureCharmup", "__jesFlavorPureCharmdown", "__jesFlavorPureBottomup", "__jesFlavorPureBottomdown"])
+syst_list.extend(["__metUnclustup", "__metUnclustdown"])
+syst_list.extend(["__muonhighscaleup", "__muonhighscaledown"])
 
 # tune and hdamp will appear as an individual dataset.
 # thus no need to run in loop, but left here for double check
@@ -58,6 +61,15 @@ if options.syst == "nosyst": syst_list = [""]
 
 parameters = [] #order: (tgdir, indir, outdir, outfilename, syst)
 for ds in dataset_list:
+
+    if any(n in ds for n in ['QCD_']):
+        continue
+
+    # will use data/signal in genuine folder
+    if 'fakeTau' in options.outdir and any(n in ds for n in ['_LFV_', 'SingleMuon', 'QCD_']):
+        continue
+    elif 'genuineTau' in options.outdir and any(n in ds for n in ['QCD_']):
+        continue
 
     #Split TT2L2Nu and TTToSemilep into files
     toSplit = False
@@ -113,7 +125,11 @@ for ds in dataset_list:
                             parameters.append([year, ds, outdir, outfname, "theory"])
                     else: parameters.append([year, ds, outdir, outfname, "all"])
                 elif options.syst == "nosyst":
-                    parameters.append([year, ds, outdir, outfname, "nosyst"])
+                    if toSplit:
+                        os.makedirs(tgdir.replace(year, year + '/' + "split"), exist_ok=True)
+                        parameters.append([year, rootfilestoprocess, outdir.replace(year, year + '/' + "split"), outfname, "nosyst"])
+                    else:
+                        parameters.append([year, ds, outdir, outfname, "nosyst"])
             elif src == "" and ext_syst:
                 if any(i in dataset_name for i in syst_ext) and options.syst == "nosyst": continue
                 else: parameters.append([year, ds, outdir, outfname, "nosyst"])
@@ -121,6 +137,12 @@ for ds in dataset_list:
                 #os.makedir(os.path.join(tgdir, dataset_name+src)
                 if any(i in dataset_name for i in syst_ext): continue
                 parameters.append([year, ds, outdir, outfname, src[2:]])
+                # for tests
+                #if toSplit:
+                #    os.makedirs(tgdir.replace(year, year + '/' + "split"), exist_ok=True)
+                #    parameters.append([year, rootfilestoprocess, outdir.replace(year, year + '/' + "split"), outfname, src[2:]])
+                #else:
+                #    parameters.append([year, ds, outdir, outfname, src[2:]])
 
 
 runString_list = []
@@ -139,7 +161,8 @@ for item in parameters:
                         " scripts/job_slurm_process.sh " + item[0] + " " + item[1][fidx] + " " +\
                         item[2] + " " + item[3].replace(".root", "_" + str(fidx) + ".root")  + " " +\
                         workdir + " " +logdir + " " + item[4]
-            if options.ff: runString += " --ff"
+            if len(options.mode) > 0: runString += " " + options.mode
+            elif options.ff: runString += " --ff"
             runString_list.append(runString)
 
 for runString in runString_list:

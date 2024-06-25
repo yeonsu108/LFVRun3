@@ -23,6 +23,7 @@
 #include <regex>
 #include "ROOT/RDFHelpers.hxx"
 #include "correction.h"
+#include "GEScaleSyst.h"
 
 using namespace std;
 
@@ -343,6 +344,163 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
     //           .Define("nelepass", "int(Sel_elept.size())")
     //           .Define("ele4vecs", ::gen4vec, {"Sel_elept", "Sel_eleta", "Sel_elephi", "Sel_elemass"});
 
+    //Trick: run muon momentum scale at the very first function running in the processing
+    //auto muonhighscaleup = [](floats &pts)->floats {
+    //    floats out;
+    //    out.reserve(pts.size());
+    //    for (unsigned int i=0; i<pts.size(); i++) {
+    //        float pt_tmp = pts[i];
+    //        if (pts[i] > 200) pt_tmp *= 1.2;
+    //        out.emplace_back(pt_tmp);
+    //    }
+    //    return out;
+    //};
+
+    //auto muonhighscaledn = [](floats &pts)->floats {
+    //    floats out;
+    //    out.reserve(pts.size());
+    //    for (unsigned int i=0; i<pts.size(); i++) {
+    //        float pt_tmp =pts[i];
+    //        if (pts[i] > 200) pt_tmp *= 0.8;
+    //        out.emplace_back(pt_tmp);
+    //    }
+    //    return out;
+    //};
+
+    //auto muonhighscalemetup = [](floats &pts, float met)->float {
+    //    float out = met;
+    //    for (unsigned int i=0; i<pts.size(); i++) {
+    //        if (pts[i] > 200) out = out - 0.2 * pts[i];
+    //    }
+    //    return out;
+    //};
+
+    //auto muonhighscalemetdn = [](floats &pts, float met)->float {
+    //    float out = met;
+    //    for (unsigned int i=0; i<pts.size(); i++) {
+    //        if (pts[i] > 200) out =  + 0.2 * pts[i];
+    //    }
+    //    return out;
+    //};
+
+    //auto muonhighscalemetphiup = [](floats &pts, floats &phis, float met, float metphi)->float {
+    //    float out = 0.;
+    //    auto metx = met * cos(metphi);
+    //    auto mety = met * sin(metphi);
+    //    for (unsigned int i=0; i<pts.size(); i++) {
+    //        if (pts[i] > 200) {
+    //            metx -= (0.2 * pts[i]) * cos(phis[i]);
+    //            mety -= (0.2 * pts[i]) * sin(phis[i]);
+    //        }
+    //    }
+    //    out = float(atan2(mety, metx));
+    //    return out;
+    //};
+
+    //auto muonhighscalemetphidn = [](floats &pts, floats &phis, float met, float metphi)->float {
+    //    float out = 0.;
+    //    auto metx = met * cos(metphi);
+    //    auto mety = met * sin(metphi);
+    //    for (unsigned int i=0; i<pts.size(); i++) {
+    //        if (pts[i] > 200) {
+    //            metx += (0.2 * pts[i]) * cos(phis[i]);
+    //            mety += (0.2 * pts[i]) * sin(phis[i]);
+    //        }
+    //    }
+    //    out = float(atan2(mety, metx));
+    //    return out;
+    //};
+
+    //if (_syst.find("muonhighscaleup") != std::string::npos) {
+    //    _rlm = _rlm.Redefine("MET_phi", muonhighscalemetphiup, {"Muon_pt", "Muon_phi", "MET_pt", "MET_phi"})
+    //               .Redefine("MET_pt", muonhighscalemetup, {"Muon_pt", "MET_pt"})
+    //               .Redefine("Muon_pt", muonhighscaleup, {"Muon_pt"}); //order matters
+    //} else if (_syst.find("muonhighscaledown") != std::string::npos) {
+    //    _rlm = _rlm.Redefine("MET_phi", muonhighscalemetphiup, {"Muon_pt", "Muon_phi", "MET_pt", "MET_phi"})
+    //               .Redefine("MET_pt", muonhighscalemetdn, {"Muon_pt", "MET_pt"})
+    //               .Redefine("Muon_pt", muonhighscaledn, {"Muon_pt"});
+    //}
+
+    std::string muonYear = "";
+
+    if (_isRun16pre) {
+        muonYear = "2016_UL_HIPM";
+    } else if (_isRun16post) {
+        muonYear = "2016_UL";
+    } else {
+        muonYear = _year + "_UL";
+    }
+
+    auto muonhighscaleup = [muonYear](floats &pts, floats &etas, floats &phis, ints &charges)->floats {
+        floats out;
+        out.reserve(pts.size());
+        for (unsigned int i=0; i<pts.size(); i++) {
+            float pt_tmp = pts[i];
+            float pt_out = pt_tmp;
+            if (pt_tmp > 200) {
+                float eta_tmp = etas[i];
+                float phi_tmp = phis[i];
+                int charge_tmp = charges[i];
+                GEScaleSyst GE(muonYear);
+                GE.SetVerbose(0);
+                pt_out = GE.GEScaleCorrPt(pt_tmp, eta_tmp, phi_tmp, charge_tmp, 0, 1);
+            }
+            out.emplace_back(pt_out);
+        }
+        return out;
+    };
+
+    auto muonhighscaledn = [muonYear](floats &pts, floats &etas, floats &phis, ints &charges)->floats {
+        floats out;
+        out.reserve(pts.size());
+        for (unsigned int i=0; i<pts.size(); i++) {
+            float pt_tmp = pts[i];
+            float pt_out = pt_tmp;
+            if (pt_tmp > 200) {
+                float eta_tmp = etas[i];
+                float phi_tmp = phis[i];
+                int charge_tmp = charges[i];
+                GEScaleSyst GE(muonYear);
+                GE.SetVerbose(0);
+                pt_out = GE.GEScaleCorrPt(pt_tmp, eta_tmp, phi_tmp, charge_tmp, 0, 2);
+            }
+            out.emplace_back(pt_out);
+        }
+        return out;
+    };
+
+    auto muonhighscalemet = [](floats &pts, floats &ptcors, float met)->float {
+        float out = met;
+        for (unsigned int i=0; i<pts.size(); i++) {
+            out -= ptcors[i] - pts[i];
+        }
+        return out;
+    };
+
+    auto muonhighscalemetphi = [](floats &pts, floats &ptcors, floats &phis, float met, float metphi)->float {
+        float out = 0.;
+        auto metx = met * cos(metphi);
+        auto mety = met * sin(metphi);
+        for (unsigned int i=0; i<pts.size(); i++) {
+            metx -= (ptcors[i] - pts[i]) * cos(phis[i]);
+            mety -= (ptcors[i] - pts[i]) * sin(phis[i]);
+        }
+        out = float(atan2(mety, metx));
+        return out;
+    };
+
+
+    if (_syst.find("muonhighscaleup") != std::string::npos) {
+        _rlm = _rlm.Define("Muon_pt_scale", muonhighscaleup, {"Muon_pt", "Muon_eta", "Muon_phi", "Muon_charge"})
+                   .Redefine("MET_phi", muonhighscalemetphi, {"Muon_pt", "Muon_pt_scale", "Muon_phi", "MET_pt", "MET_phi"})
+                   .Redefine("MET_pt", muonhighscalemet, {"Muon_pt", "Muon_pt_scale", "MET_pt"})
+                   .Redefine("Muon_pt", "Muon_pt_scale"); //order matters
+    } else if (_syst.find("muonhighscaledown") != std::string::npos) {
+        _rlm = _rlm.Define("Muon_pt_scale", muonhighscaledn, {"Muon_pt", "Muon_eta", "Muon_phi", "Muon_charge"})
+                   .Redefine("MET_phi", muonhighscalemetphi, {"Muon_pt", "Muon_pt_scale", "Muon_phi", "MET_pt", "MET_phi"})
+                   .Redefine("MET_pt", muonhighscalemet, {"Muon_pt", "Muon_pt_scale", "MET_pt"})
+                   .Redefine("Muon_pt", "Muon_pt_scale"); //order matters
+    }
     _rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
                .Define("nvetoelepass","Sum(vetoelecuts)");
 }
@@ -537,7 +695,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                     continue; //We only need var name, no up/down
                 }
             }
-            cout << "Treating breakdown of FlavorPure*" << endl;
+            //cout << "Treating breakdown of FlavorPure*" << endl;
             for (std::string src : jes_var_flav) {
                 if (src.find("up") != std::string::npos) {
                     auto uncsource = src.substr(3, src.size()-2-3);
@@ -1136,6 +1294,17 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
                        .Redefine("Jet_pt", "Jet_pt * Jet_jer_toapply")
                        .Redefine("Jet_mass", "Jet_mass * Jet_jer_toapply");
         }
+
+        if (_syst.find("metUnclust") != std::string::npos) {
+
+            if (_syst.find("up") != std::string::npos) {
+                _rlm = _rlm.Redefine("MET_pt", "float (sqrt(pow(MET_pt * cos(MET_phi) + MET_MetUnclustEnUpDeltaX, 2) + pow(MET_pt * sin(MET_phi) + MET_MetUnclustEnUpDeltaY, 2)) )")
+                           .Redefine("MET_phi", "float (atan2((MET_pt * sin(MET_phi) + MET_MetUnclustEnUpDeltaY), (MET_pt * cos(MET_phi) + MET_MetUnclustEnUpDeltaX)) )");
+            } else if (_syst.find("down") != std::string::npos) {
+                _rlm = _rlm.Redefine("MET_pt", "float (sqrt(pow(MET_pt * cos(MET_phi) - MET_MetUnclustEnUpDeltaX, 2) + pow(MET_pt * sin(MET_phi) - MET_MetUnclustEnUpDeltaY, 2)) )")
+                           .Redefine("MET_phi", "float (atan2((MET_pt * sin(MET_phi) - MET_MetUnclustEnUpDeltaY), (MET_pt * cos(MET_phi) - MET_MetUnclustEnUpDeltaX)) )");
+            }
+        }
     }
 
     _rlm = _rlm.Define("jetcuts", "Jet_pt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
@@ -1172,6 +1341,12 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
                .Define("taujetoverlap", checkoverlap, {"jet4vecs","cleantau4vecs"})
                .Define("jetoverlap","muonjetoverlap && taujetoverlap");
 
+    _rlm = _rlm.Define("loosetaujetoverlap", checkoverlap, {"jet4vecs","cleanloosetau4vecs"})
+               .Define("jetoverlaploose","muonjetoverlap && loosetaujetoverlap")
+               .Define("Jet_pt_loose", "Jet_pt[jetoverlaploose]")
+               .Define("Jet_btagDeepFlavB_loose", "Jet_btagDeepFlavB[jetoverlaploose]")
+               .Define("ncleanjetsloosepass", "int(Jet_pt_loose.size())");
+
     _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetoverlap]")
                .Redefine("Jet_eta", "Jet_eta[jetoverlap]")
                .Redefine("Jet_phi", "Jet_phi[jetoverlap]")
@@ -1184,10 +1359,12 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
     if (!_isData) {
         int nbsf_var = btag_var.size();
         int njes_var = jes_var.size();
-        _rlm = _rlm.Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlap"})
-                   .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetoverlap"})
-                   .Define("nbsf_var", [nbsf_var](){return int(nbsf_var);})
+        _rlm = _rlm.Define("nbsf_var", [nbsf_var](){return int(nbsf_var);})
                    .Define("njes_var", [njes_var](){return int(njes_var);})
+                   .Define("btagWeight_DeepFlavB_perJet_loose", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlaploose"})
+                   .Define("btagWeight_DeepFlavB_loose", calcBSF, {"btagWeight_DeepFlavB_perJet_loose", "nbsf_var"})
+                   .Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlap"})
+                   .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetoverlap"})
                    .Define("btagWeight_DeepFlavB", calcBSF, {"btagWeight_DeepFlavB_perJet", "nbsf_var"})
                    .Define("btagWeight_DeepFlavB_jes", calcBSF, {"btagWeight_DeepFlavB_jes_perJet", "njes_var"});
     }
@@ -1196,16 +1373,20 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
     // b-tagging
     if (_isRun16pre) {
         //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16preVFP
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2598"); //l: 0.0508, m: 0.2598, t: 0.6502
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2598") //l: 0.0508, m: 0.2598, t: 0.6502
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.2598");
     } else if (_isRun16post) {
         //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16postVFP#AK4_b_tagging
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2489"); //l: 0.0480, m: 0.2489, t: 0.6377
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2489") //l: 0.0480, m: 0.2489, t: 0.6377
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.2489");
     } else if (_isRun17) {
         //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL17
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3040"); //l: 0.0532, m: 0.3040, t: 0.7476
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3040") //l: 0.0532, m: 0.3040, t: 0.7476
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.3040");
     } else if (_isRun18) {
         //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL18
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2783"); //l: 0.0490, m: 0.2783, t: 0.7100
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2783") //l: 0.0490, m: 0.2783, t: 0.7100
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.2783");
     }
 
     _rlm = _rlm.Define("bJet_pt", "Jet_pt[btagcuts]")
@@ -1215,7 +1396,9 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
                .Define("bJet_btagDeepFlavB", "Jet_btagDeepFlavB[btagcuts]")
                .Define("ncleanbjetspass", "int(bJet_pt.size())")
                .Define("bJet_HT", "Sum(bJet_pt)")
-               .Define("cleanbjet4vecs", ::gen4vec, {"bJet_pt", "bJet_eta", "bJet_phi", "bJet_mass"});
+               .Define("cleanbjet4vecs", ::gen4vec, {"bJet_pt", "bJet_eta", "bJet_phi", "bJet_mass"})
+               .Define("bJet_pt_loose", "Jet_pt_loose[btagcuts_loose]")
+               .Define("ncleanbjetsloosepass", "int(bJet_pt_loose.size())");
 }
 
 void NanoAODAnalyzerrdframe::selectTaus() {
@@ -1285,9 +1468,13 @@ void NanoAODAnalyzerrdframe::selectTaus() {
     _rlm = _rlm.Define("seltaucuts_loose","taucuts && deeptauidcuts_loose && mutauoverlap")
                .Define("Tau_pt_loose", "Tau_pt[seltaucuts_loose]")
                .Define("Tau_pt_loose_gen", "Tau_pt[seltaucuts_loose]")
+               .Define("Tau_eta_loose", "Tau_eta[seltaucuts_loose]")
+               .Define("Tau_phi_loose", "Tau_phi[seltaucuts_loose]")
+               .Define("Tau_mass_loose", "Tau_mass[seltaucuts_loose]")
                .Define("Tau_charge_loose", "Tau_charge[seltaucuts_loose]")
                .Define("Tau_decayMode_loose", "Tau_decayMode[seltaucuts_loose]")
-               .Define("nloosetaupass", "int(Tau_pt_loose.size())");
+               .Define("nloosetaupass", "int(Tau_pt_loose.size())")
+               .Define("cleanloosetau4vecs", ::gen4vec, {"Tau_pt_loose", "Tau_eta_loose", "Tau_phi_loose", "Tau_mass_loose"});
 
     if (!_isData) {
         _rlm = _rlm.Define("Tau_genPartFlav_loose","Tau_genPartFlav[seltaucuts_loose]")
@@ -1725,7 +1912,7 @@ void NanoAODAnalyzerrdframe::setupCuts_and_Hists() {
                 bool reachedMax = false;
                 if (x.maxcutstep.length() > 0 and acut.idx.compare(0, x.maxcutstep.length(), x.maxcutstep)>=0) reachedMax = true;
                 if (!reachedMax)
-                    helper_1DHistCreator(std::string(x.hmodel.fName.Data())+hpost+x.systname,  std::string(x.hmodel.fTitle.Data()), x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, rnext);
+                    helper_1DHistCreator(std::string(x.hmodel.fName.Data())+hpost+x.systname, std::string(x.hmodel.fTitle.Data()), x.hmodel.fNbinsX, x.hmodel.fXLow, x.hmodel.fXUp, x.varname, x.weightname+x.systname, rnext);
             }
         }
         _rnt.addDaughter(rnext, acut.idx);

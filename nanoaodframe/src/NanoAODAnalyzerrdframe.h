@@ -23,6 +23,7 @@
 #include "json/json.h"
 
 #include "utility.h" // floats, etc are defined here
+#include "GEScaleSyst.h"
 #include "RNodeTree.h"
 #include "JetCorrectorParameters.h"
 #include "FactorizedJetCorrector.h"

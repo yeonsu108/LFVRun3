@@ -96,6 +96,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Tau_rawIso.*");
         addVartoStore("MET_p.*");
         addVartoStore("MET_sumEt");
+        addVartoStore("MET_MetUnclust.*");
         addVartoStore("RawMET.*");
         addVartoStore("LHE_HT");
         addVartoStore("nElectron");

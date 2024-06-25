@@ -12,8 +12,9 @@
 TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string year, std::string syst, std::string jsonfname, bool applytauFF, string globaltag, int nthreads)
 :NanoAODAnalyzerrdframe(t, outfilename, year, syst, jsonfname, globaltag, nthreads), _outfilename(outfilename), _syst(syst), _year(year), _applytauFF(applytauFF)
 {
-    if(syst.find("jes") != std::string::npos or syst.find("jer") != std::string::npos or
-            syst.find("tes") != std::string::npos or syst.find("hdamp") != std::string::npos or syst.find("tune") != std::string::npos) {
+    if(syst.find("jes") != std::string::npos or syst.find("jer") != std::string::npos or syst.find("metUnclust") != std::string::npos or
+            syst.find("tes") != std::string::npos or syst.find("hdamp") != std::string::npos or syst.find("tune") != std::string::npos or
+            syst.find("muonhighscale") != std::string::npos) {
         ext_syst = true;
     }
     _syst = syst;
@@ -38,10 +39,19 @@ TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string ye
 // Define your cuts here
 void TopLFVAnalyzer::defineCuts() {
 
-    //addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0","0");
-    // Wil remove PV cut after new skim
-    addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0","0");
+    addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0", "0");
+
+    // All
     addCuts("ncleantaupass == 1", "00");
+    // genuine taus
+    //if (_isSignal or _syst == "data") {
+    //    addCuts("ncleantaupass == 1", "00");
+    //} else {
+    //    addCuts("ncleantaupass == 1 && Tau_pt_gen.size()>0", "00");
+    //}
+    // fake taus
+    //addCuts("ncleantaupass == 1 && Tau_pt_gen.size()==0", "00");
+
     addCuts("mutau_charge < 0", "000");
     addCuts("ncleanjetspass >= 3", "0000");
     addCuts("ncleanbjetspass == 1", "00000");
@@ -51,11 +61,11 @@ void TopLFVAnalyzer::defineMoreVars() {
 
     defineVar("muonvec", ::select_leadingvec, {"muon4vecs"});
     defineVar("tauvec", ::select_leadingvec, {"cleantau4vecs"});
-    defineVar("mutau_mass",::calculate_invMass,{"muonvec","tauvec"});
-    defineVar("mutau_dEta",::calculate_deltaEta,{"muonvec","tauvec"});
-    defineVar("mutau_dPhi",::calculate_deltaPhi,{"muonvec","tauvec"});
-    defineVar("mutau_dR",::calculate_deltaR,{"muonvec","tauvec"});
-    defineVar("muMET_mt",::calculate_MT,{"muon4vecs","MET_pt","MET_phi"});
+    defineVar("mutau_mass", ::calculate_invMass, {"muonvec","tauvec"});
+    defineVar("mutau_dEta", ::calculate_deltaEta, {"muonvec","tauvec"});
+    defineVar("mutau_dPhi", ::calculate_deltaPhi, {"muonvec","tauvec"});
+    defineVar("mutau_dR", ::calculate_deltaR, {"muonvec","tauvec"});
+    defineVar("muMET_mt", ::calculate_MT, {"muon4vecs","MET_pt","MET_phi"});
 
     // Temporary solution to blind low mutau mass
     if (_syst == "data") {
@@ -70,6 +80,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     //defineVar("muonWeightTrg", ::addMuonUnc, {"muonWeightTrg"});
 
     // Already object selection is done before this
+    addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
     if (!_applytauFF) addVar({"tauFF", "1.0", ""});
     else if (_isSignal) {
         addVar({"tauFF", "1.0", ""});
@@ -77,37 +88,17 @@ void TopLFVAnalyzer::defineMoreVars() {
         addVar({"tauFFstatdown", "1.0", ""});
         addVar({"tauFFsystup", "1.0", ""});
         addVar({"tauFFsystdown", "1.0", ""});
-        addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
     } else {
-        if (_year == "2016pre") {
-            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.5555"});
-            addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.06578"});//ratio to nominal
-            addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9342"});
-            addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.224"});
-            addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.776"});
-            addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
-        } else if (_year == "2016post") {
-            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.6094"});
-            addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.07113"});
-            addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9288"});
-            addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.0428"});
-            addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9572"});
-            addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
-        } else if (_year == "2017") {
-            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7233"});
-            addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.03817"});
-            addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9618"});
-            addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.1292"});
-            addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.8708"});
-            addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
-        } else if (_year == "2018") {
-            addVar({"tauFF", "(Tau_pt_gen.size()>0) ? 1.0 : 0.7393"});
-            addVar({"tauFFstatup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.03238"});
-            addVar({"tauFFstatdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9676"});
-            addVar({"tauFFsystup", "(Tau_pt_gen.size()>0) ? 1.0 : 1.0829"});
-            addVar({"tauFFsystdown", "(Tau_pt_gen.size()>0) ? 1.0 : 0.9171"});
-            addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
-        }
+        auto tauFF_nom = tauFFfunctor(_year, "nom", 0);
+        auto tauFF_statup = tauFFfunctor(_year, "stat", 1);
+        auto tauFF_statdown = tauFFfunctor(_year, "stat", -1);
+        auto tauFF_systup = tauFFfunctor(_year, "syst", 1);
+        auto tauFF_systdown = tauFFfunctor(_year, "syst", -1);
+        defineVar("tauFF", tauFF_nom, {"Tau_pt", "Tau_pt_gen"});
+        defineVar("tauFFstatup", tauFF_statup, {"Tau_pt", "Tau_pt_gen"});
+        defineVar("tauFFstatdown", tauFF_statdown, {"Tau_pt", "Tau_pt_gen"});
+        defineVar("tauFFsystup", tauFF_systup, {"Tau_pt", "Tau_pt_gen"});
+        defineVar("tauFFsystdown", tauFF_systdown, {"Tau_pt", "Tau_pt_gen"});
     }
     addVar({"unitGenWeightFF", "unitGenWeight * tauFF * UFO_reweight", ""});
 
@@ -176,6 +167,10 @@ void TopLFVAnalyzer::defineMoreVars() {
     // Not implemented: EEprefire, top pt reweighting,
     // eventWeight_xx : xxweight
     // eventWeight__xx: xx unc.
+
+    addVar({"muonHighPtAddUncUp", "Muon1_pt > 200 ? 1.0 + (0.000125 * Muon1_pt - 0.025): 1.0", ""});
+    addVar({"muonHighPtAddUncDn", "Muon1_pt > 200 ? 1.0 - (0.000125 * Muon1_pt - 0.025): 1.0", ""});
+
 
     if (_syst == "data") {
         addVar({"eventWeight", "1.0"});
@@ -272,6 +267,8 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"eventWeight__muisodown", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[2] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight__mutrgup", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[1] * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight__mutrgdown", "eventWeight_genputau * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[2] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight__muhighptup", "eventWeight * muonHighPtAddUncUp"});
+            addVar({"eventWeight__muhighptdown", "eventWeight * muonHighPtAddUncDn"});
             //addVar({"eventWeight__tauidjetup", "eventWeight_notau * tauWeightIdVsJet[0][1] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
             //addVar({"eventWeight__tauidjetdown", "eventWeight_notau * tauWeightIdVsJet[0][2] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
             addVar({"eventWeight__tauidjetUncert0up", "eventWeight_notau * tauWeightIdVsJet[0][1] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
@@ -342,6 +339,8 @@ void TopLFVAnalyzer::defineMoreVars() {
             addVar({"eventWeight_notau__muisodown", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[2] * muonWeightTrg[0] * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__mutrgup", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[1] * btagWeight_DeepFlavB[0]"});
             addVar({"eventWeight_notau__mutrgdown", "eventWeight_genpu * muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[2] * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight_notau__muhighptup", "eventWeight_notau * muonHighPtAddUncUp"});
+            addVar({"eventWeight_notau__muhighptdown", "eventWeight_notau * muonHighPtAddUncDn"});
             addVar({"eventWeight_notau__btaghfup", "eventWeight_genpumu * btagWeight_DeepFlavB[1]"});
             addVar({"eventWeight_notau__btaghfdown", "eventWeight_genpumu * btagWeight_DeepFlavB[2]"});
             addVar({"eventWeight_notau__btaglfup", "eventWeight_genpumu * btagWeight_DeepFlavB[3]"});
@@ -425,6 +424,8 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("TopPtWeight");
     addVartoStore("LHEPart_pt");
     addVartoStore("LHEPart_pdgId");
+    addVartoStore("tauFF.*");
+    addVartoStore("isFakeTau");
 }
 
 void TopLFVAnalyzer::bookHists() {
@@ -433,6 +434,7 @@ void TopLFVAnalyzer::bookHists() {
     std::vector<std::string> sf_weight = {"", "_nobtag", "_nopu", "_notau", "_notoppt",
                    "__puup", "__pudown", "__topptup", "__topptdown", "__prefireup", "__prefiredown",
                    "__muidup", "__muiddown", "__muisoup", "__muisodown", "__mutrgup", "__mutrgdown",
+                   "__muhighptup", "__muhighptdown",
                    "__btaghfup", "__btaghfdown", "__btaglfup", "__btaglfdown",
                    "__btaghfstats1up", "__btaghfstats1down", "__btaghfstats2up", "__btaghfstats2down",
                    "__btaglfstats1up", "__btaglfstats1down", "__btaglfstats2up", "__btaglfstats2down",
@@ -590,7 +592,7 @@ void TopLFVAnalyzer::bookHists() {
 
         // Histogram of Top mass reconstruction
         add1DHist({"h_chi2", ";Minimum #chi^{2};Events", 20, 0, 1000}, "chi2", "eventWeight", weightstr, minstep_S5, maxstep);
-        add1DHist({"h_chi2_SMTop_mass", ";SM top quark mass (GeV);Events", 20, 0, 400}, "chi2_SMTop_mass", "eventWeight", weightstr, minstep_S5, maxstep);
+        add1DHist({"h_chi2_SMTop_mass", ";SM top quark mass (GeV);Events", 20, 80, 880}, "chi2_SMTop_mass", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_chi2_SMTop_pt", ";SM top quark pt (GeV);Events", 20, 0, 400}, "chi2_SMTop_pt", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_chi2_SMTop_pt_notoppt", ";SM top quark pt (GeV);Events", 20, 0, 400}, "chi2_SMTop_pt", "eventWeight_notoppt", "", minstep_S5, maxstep);
         add1DHist({"h_chi2_SMW_mass", ";SM W_{had} mass (GeV);Events", 20, 0, 400}, "chi2_SMW_mass", "eventWeight", weightstr, minstep_S5, maxstep);
@@ -599,4 +601,66 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_chi2_wqq_dR", ";#Delta R of jets from W;Events", 20, 0, 4.0}, "chi2_wqq_dR", "eventWeight", weightstr, minstep_S5, maxstep);
     }
 
+}
+
+double TopLFVAnalyzer::tauFF(std::string year_, std::string unc_, int direction_, floats &tau_pt_, floats &tau_gen_pt_) {
+
+    double val = 1.0;
+
+    // For geniune tau, unc and SF are always 1.0
+    if (tau_gen_pt_.size() > 0) return 1.0;
+
+    //Assume exactly one tau for FF (S5)
+    //if (tau_pt_.size() != 1) return 9999999.;
+
+    if (abs(direction_) != 1 and direction_ != 0) return val;
+    std::map<std::string, std::map<std::string, double>> map_ff;
+
+    // unc: ratio to nominal
+    map_ff["2016pre"]["nom"]   = 0.5555 ;
+    map_ff["2016pre"]["stat"]  = 0.06578;
+    map_ff["2016pre"]["syst"]  = 0.224  ;
+    map_ff["2016post"]["nom"]  = 0.6094 ;
+    map_ff["2016post"]["stat"] = 0.07114;
+    map_ff["2016post"]["syst"] = 0.04278;
+    map_ff["2017"]["nom"]      = 0.7233 ;
+    map_ff["2017"]["stat"]     = 0.03818;
+    map_ff["2017"]["syst"]     = 0.1292 ;
+    map_ff["2018"]["nom"]      = 0.7393 ;
+    map_ff["2018"]["stat"]     = 0.03239;
+    map_ff["2018"]["syst"]     = 0.08293;
+
+    //if (tau_pt_[0] < 140) {
+    //    map_ff["2016pre"]["nom"]   = 0.4889 ;
+    //    map_ff["2016pre"]["stat"]  = 0.06907;
+    //    map_ff["2016pre"]["syst"]  = 0.2267 ;
+    //    map_ff["2016post"]["nom"]  = 0.5870 ;
+    //    map_ff["2016post"]["stat"] = 0.07535;
+    //    map_ff["2016post"]["syst"] = 0.08154;
+    //    map_ff["2017"]["nom"]      = 0.6909 ;
+    //    map_ff["2017"]["stat"]     = 0.03997;
+    //    map_ff["2017"]["syst"]     = 0.1499 ;
+    //    map_ff["2018"]["nom"]      = 0.7232 ;
+    //    map_ff["2018"]["stat"]     = 0.0331 ;
+    //    map_ff["2018"]["syst"]     = 0.08565;
+    //} else if (tau_pt_[0] >= 140) {
+    //    map_ff["2016pre"]["nom"]   = 0.9194 ;
+    //    map_ff["2016pre"]["stat"]  = 0.2231 ;
+    //    map_ff["2016pre"]["syst"]  = 0.3434 ;
+    //    map_ff["2016post"]["nom"]  = 0.6079 ;
+    //    map_ff["2016post"]["stat"] = 0.2227 ;
+    //    map_ff["2016post"]["syst"] = 0.1087 ;
+    //    map_ff["2017"]["nom"]      = 0.7810 ;
+    //    map_ff["2017"]["stat"]     = 0.13   ;
+    //    map_ff["2017"]["syst"]     = 0.05533;
+    //    map_ff["2018"]["nom"]      = 0.8236 ;
+    //    map_ff["2018"]["stat"]     = 0.1362 ;
+    //    map_ff["2018"]["syst"]     = 0.1879 ;
+    //}
+
+    if      (unc_ == "nom") val = map_ff[year_][unc_];
+    else if (direction_ == 1) val  = 1.0 + map_ff[year_][unc_];
+    else if (direction_ == -1) val = 1.0 - map_ff[year_][unc_];
+
+    return val;
 }

@@ -18,18 +18,26 @@ TauFakeFactorAnalyzer::TauFakeFactorAnalyzer(TTree *t, std::string outfilename, 
 void TauFakeFactorAnalyzer::defineCuts() {
 
     if (_mode == "lss") { // loose tau vs jet && SS
-        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && nloosetaupass == 1 && ncleantaupass == 0 && mutau_charge_loose > 0","0");
+        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && nloosetaupass == 1 && ncleantaupass == 0 && mutau_charge_loose > 0", "0");
+        addCuts("ncleanjetsloosepass >= 3", "00");
+        addCuts("ncleanbjetsloosepass == 1", "000");
     } else if (_mode == "los") { // loose tau vs jet && OS
-        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && nloosetaupass == 1 && ncleantaupass == 0 && mutau_charge_loose < 0","0");
+        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && nloosetaupass == 1 && ncleantaupass == 0 && mutau_charge_loose < 0", "0");
+        addCuts("ncleanjetsloosepass >= 3", "00");
+        addCuts("ncleanbjetsloosepass == 1", "000");
     } else if (_mode == "tss") { // tight tau vs jet && SS
-        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && ncleantaupass == 1 && mutau_charge > 0","0");
+        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && ncleantaupass == 1 && mutau_charge > 0", "0");
+        addCuts("ncleanjetspass >= 3", "00");
+        addCuts("ncleanbjetspass == 1", "000");
     } else if (_mode == "tos") { // tight tau vs jet && OS
-        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && ncleantaupass == 1 && mutau_charge < 0","0");
+        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0 && ncleantaupass == 1 && mutau_charge < 0", "0");
+        addCuts("ncleanjetspass >= 3", "00");
+        addCuts("ncleanbjetspass == 1", "000");
     } else {
         std::cout << "WRONG MODE!!!!" << std::endl;
     }
-    addCuts("ncleanjetspass >= 3", "00");
-    addCuts("ncleanbjetspass == 1", "000");
+    //addCuts("ncleanjetspass >= 3", "00");
+    //addCuts("ncleanbjetspass == 1", "000");
 }
 
 void TauFakeFactorAnalyzer::defineMoreVars() {
@@ -52,15 +60,18 @@ void TauFakeFactorAnalyzer::defineMoreVars() {
     if (_syst == "data") {
         addVar({"eventWeight", "1.0"});
     } else {
-        addVar({"eventWeight_genpu", "unitGenWeight * TopPtWeight * puWeight[0] * L1PreFiringWeight_Nom"});
+        addVar({"eventWeight_genpu", "unitGenWeight * TopPtWeight[0] * puWeight[0] * L1PreFiringWeight_Nom"});
         addVar({"eventWeight_mu", "muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0]"});
         if (_mode == "lss" or _mode == "los") {
             addVar({"eventWeight_tau", "tauWeightIdVsJet_loose[0][0] * tauWeightIdVsEl_loose[0][0] * tauWeightIdVsMu_loose[0][0]"});
+            addVar({"eventWeight_nobtag", "eventWeight_genpu * eventWeight_mu * eventWeight_tau"});
+            //addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_loose[0]"});
         } else {
             addVar({"eventWeight_tau", "tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
+            addVar({"eventWeight_nobtag", "eventWeight_genpu * eventWeight_mu * eventWeight_tau"});
+            addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB[0]"});
         }
-        addVar({"eventWeight_nobtag", "eventWeight_genpu * eventWeight_mu * eventWeight_tau"});
-        addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB[0]"});
     }
 
     // define variables that you want to store

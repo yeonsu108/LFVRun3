@@ -45,7 +45,12 @@ if [ "$#" -eq 8 ]; then
             python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
         fi
     else
-        echo "python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log"
-        python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
+        if [[ "$indir" == *".root"* ]]; then
+            echo "python processonefile.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log"
+            python processonefile.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
+        else
+            echo "python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log"
+            python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
+        fi
     fi
 fi

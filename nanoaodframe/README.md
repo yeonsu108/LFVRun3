@@ -113,6 +113,7 @@ python scripts/skim.py -V skim_test -F mc -Y 2018
 #To find failed jobs knowing that `folder_filename.log`
 find log/201*/*/* | xargs grep runtime_error
 find log/201*/*/* | xargs grep fault
+find log/201*/*/* | xargs grep fatal
 find log/201*/*/* | xargs grep Traceback
 find log/201*/*/* | xargs grep ERROR
 find log/201*/*/* | xargs grep error
@@ -123,6 +124,7 @@ python scripts/skim.py -V skim_test -Y 2018 --dry | grep 270000_221AB515 | sh
 #Using commands above, write resubmit list. Create each list and run submit command. Unless, there may be duplicated list.
 find log/201*/*/* | xargs grep -l runtime_error | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
 find log/201*/*/* | xargs grep -l fault | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+find log/201*/*/* | xargs grep -l fatal | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
 find log/201*/*/* | xargs grep -l Traceback | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
 find log/201*/*/* | xargs grep -l error | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
 find log/201*/*/* | xargs grep ERROR | grep -v "SimpleJetCorrectionUncertainty" | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
@@ -156,6 +158,7 @@ Usage: python scripts/process.py -V skim_test -O test -Y 2018 -S theory (-F data
 For failing job detection:
 find log/* | xargs grep runtime_error
 find log/* | xargs grep fault
+find log/* | xargs grep fatal
 find log/* | xargs grep Traceback
 ```
 To apply Tau Fake Factor with ABCD, simple analyzer is introduced (TauFakeFactorAnalyzer). Output foulder MUST include 'fake'. The l stands for loose tau, t for tight.
@@ -181,6 +184,7 @@ Drawing histogram by plotIt
 cd 2018_postprocess
 mkdir ../figure_2018
 ../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/TOP-22-011/config_2018.yml -y -s
+# Add --allSig to draw all signals for plot ir yield
 cd ../../
 python print_syst_table.py -I test -Y 2018
 
