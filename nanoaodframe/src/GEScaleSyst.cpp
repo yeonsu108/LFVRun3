@@ -62,7 +62,8 @@ float GEScaleSyst::GEScaleCorrPt(float pt, float eta, float phi, int charge, int
     return -1e9;
   }
   if( fabs(phi) > M_PI ) {
-    cout << "ERROR GEScaleSyst::GEScaleCorrPt invalid muon phi= " << phi << endl;
+    //This creates too many lines in log files
+    //cout << "ERROR GEScaleSyst::GEScaleCorrPt invalid muon phi= " << phi << endl;
     //return -1e9;
     return pt;
   }
