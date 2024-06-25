@@ -17,6 +17,7 @@ base_path = options.input
 def collect_systhists(inpath, outfile, fname, year):
     fileList_wt_syst = [i for i in os.listdir(inpath) if fname in i]
     for sysfile in fileList_wt_syst:
+        if 'SingleMuon' in sysfile and sysfile != 'hist_SingleMuon.root': continue
         tmpf = TFile.Open(os.path.join(inpath, sysfile), 'READ')
         hlists = [ h.GetName() for h in tmpf.GetListOfKeys() if any(i in h.GetName() for i in ['dnn_pred_S5', 'counter']) ]
         for histname in hlists:
