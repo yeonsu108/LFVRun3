@@ -13,6 +13,7 @@ parser.add_option("-I", "--infile", dest="infile", type="string", default="", he
 parser.add_option("-Y", "--year", dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")
 parser.add_option("--postfix", dest="postfix", type="string", default="", help="Add postfix to output here, to have rebinning for histograms")
 parser.add_option("-F", "--forceHadd", dest="forceHadd", action="store_true", default=False, help="Force hadd split files")
+parser.add_option("-N", "--noHadd", dest="noHadd", action="store_true", default=False, help="Skip hadd split files")
 (options, args) = parser.parse_args()
 
 year = options.year
@@ -68,23 +69,25 @@ if not os.path.exists(fig_path):
 file_list = [i.replace('.root', '') for i in os.listdir(nom_path) if '.root' in i]
 data_list = [i[:i.find('201')] for i in os.listdir(nom_path) if '.root' in i and '201' in i and 'jes' not in i]
 data_list = list(set(data_list))
-split_list = []
-try:
-    split_list = [re.sub(r'_[0-9]*.root', '', i) for i in os.listdir(os.path.join(nom_path, 'split')) if '.root' in i]
-except: pass
-split_list = list(set(split_list))
 
-if len(split_list) > 0:
-    os.makedirs(os.path.join(nom_path, 'split/empty'), exist_ok=True)
-    for fname_split in os.listdir(os.path.join(nom_path, 'split')):
-        if '.root' not in fname_split: continue
-        f_split_path = os.path.join(nom_path, 'split', fname_split)
-        f_split = TFile.Open(f_split_path)
-        nentries = f_split.Get('Events').GetEntries()
-        f_split.Close()
-        if nentries == 0:
-            fname_root = f_split_path.split('/')[-1]
-            os.rename(f_split_path, f_split_path.replace(fname_root, 'empty/' + fname_root))
+if not options.noHadd:
+    split_list = []
+    try:
+        split_list = [re.sub(r'_[0-9]*.root', '', i) for i in os.listdir(os.path.join(nom_path, 'split')) if '.root' in i]
+    except: pass
+    split_list = list(set(split_list))
+
+    if len(split_list) > 0:
+        os.makedirs(os.path.join(nom_path, 'split/empty'), exist_ok=True)
+        for fname_split in os.listdir(os.path.join(nom_path, 'split')):
+            if '.root' not in fname_split: continue
+            f_split_path = os.path.join(nom_path, 'split', fname_split)
+            f_split = TFile.Open(f_split_path)
+            nentries = f_split.Get('Events').GetEntries()
+            f_split.Close()
+            if nentries == 0:
+                fname_root = f_split_path.split('/')[-1]
+                os.rename(f_split_path, f_split_path.replace(fname_root, 'empty/' + fname_root))
 
 #print(data_list)
 #print(file_list)
@@ -256,19 +259,20 @@ def write_envelope(inputh, inputf, bsff, syst, nhists, gen_sumW, wgt_sumW, do_re
             dn_yield.Write()
 
 
-#Check if hadd is already done for MC:
-exist_list = {}
-for splitname in split_list:
-    isExist = os.path.exists(os.path.join(nom_path, splitname + '.root'))
-    exist_list[splitname] = isExist
+if not options.noHadd:
+    #Check if hadd is already done for MC:
+    exist_list = {}
+    for splitname in split_list:
+        isExist = os.path.exists(os.path.join(nom_path, splitname + '.root'))
+        exist_list[splitname] = isExist
 
-print(exist_list)
+    print(exist_list)
 
-for splitname, isExist in exist_list.items():
-    if isExist and not forceHadd: continue
-    else:
-        subprocess.check_call( ["hadd", "-f", os.path.join(nom_path, splitname + '.root')] + glob.glob(os.path.join(nom_path, "split" , splitname) + '*.root') )
-    file_list.append(splitname)
+    for splitname, isExist in exist_list.items():
+        if isExist and not forceHadd: continue
+        else:
+            subprocess.check_call( ["hadd", "-f", os.path.join(nom_path, splitname + '.root')] + glob.glob(os.path.join(nom_path, "split" , splitname) + '*.root') )
+        file_list.append(splitname)
 
 
 # Loop over all files.
