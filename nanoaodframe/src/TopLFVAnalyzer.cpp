@@ -663,19 +663,6 @@ double TopLFVAnalyzer::tauFF(std::string year_, std::string unc_, int direction_
     //}
 
     if (tau_dm_[0] == 0) {
-        map_ff["2016pre"]["nom"]  = 0.3029;
-        map_ff["2016pre"]["stat"] = 0.1235;
-        map_ff["2016pre"]["syst"] = 0.3515;
-        map_ff["2016post"]["nom"]  = 0.6584;
-        map_ff["2016post"]["stat"] = 0.1212;
-        map_ff["2016post"]["syst"] = 0.3563;
-        map_ff["2017"]["nom"]  = 0.6122;
-        map_ff["2017"]["stat"] = 0.06591;
-        map_ff["2017"]["syst"] = 0.2855;
-        map_ff["2018"]["nom"]  = 0.5042;
-        map_ff["2018"]["stat"] = 0.05853;
-        map_ff["2018"]["syst"] = 0.2186;
-    } else if (tau_dm_[0] == 1) {
         map_ff["2016pre"]["nom"]  = 0.4542;
         map_ff["2016pre"]["stat"] = 0.07787;
         map_ff["2016pre"]["syst"] = 0.2936;
@@ -688,6 +675,19 @@ double TopLFVAnalyzer::tauFF(std::string year_, std::string unc_, int direction_
         map_ff["2018"]["nom"]  = 0.5274;
         map_ff["2018"]["stat"] = 0.03891;
         map_ff["2018"]["syst"] = 0.1718;
+    } else if (tau_dm_[0] == 1) {
+        map_ff["2016pre"]["nom"]  = 0.5605;
+        map_ff["2016pre"]["stat"] = 0.1067;
+        map_ff["2016pre"]["syst"] = 0.2431;
+        map_ff["2016post"]["nom"]  = 0.4114;
+        map_ff["2016post"]["stat"] = 0.117;
+        map_ff["2016post"]["syst"] = 0.006893;
+        map_ff["2017"]["nom"]  = 0.5614;
+        map_ff["2017"]["stat"] = 0.05839;
+        map_ff["2017"]["syst"] = 0.2171;
+        map_ff["2018"]["nom"]  = 0.5407;
+        map_ff["2018"]["stat"] = 0.05101;
+        map_ff["2018"]["syst"] = 0.1356;
     } else if (tau_dm_[0] == 10) {
         map_ff["2016pre"]["nom"]  = 0.5634;
         map_ff["2016pre"]["stat"] = 0.147;

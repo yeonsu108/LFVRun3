@@ -10,6 +10,8 @@ yield_file = 'yields.tex'
 if isQcd: yield_file = 'qcd/' + yield_file
 
 year_list = ['2016pre', '2016post', '2017', '2018']
+#no_clean = True
+no_clean = False
 
 #pt binning: 20, 0, 400
 #hist_name = 'h_tau1_pt_S3'
@@ -21,7 +23,7 @@ year_list = ['2016pre', '2016post', '2017', '2018']
 #dm binning: 1, 2, 11, 12 (dm = bin num - 1)
 hist_name = 'h_tau1_decayMode_S3'
 hist_gen_name = 'h_tau1_decayMode_gen_S3'
-bin_edges = [[0, 1], [1, 2], [10, 11], [11, 12]]
+bin_edges = [[1, 2], [2, 3], [10, 11], [11, 12]]
 
 #los = loose tau, OS mu tau (C)
 #lss = loose tau, SS mu tau (A)
@@ -48,7 +50,10 @@ for year in year_list:
 
         for region, nevents in nevents_region.items():
 
-            plot_file = TFile.Open(os.path.join(input_ver + '_' + region, 'figure_'+year, 'plots.root'))
+            plot_file_path = os.path.join(input_ver + '_' + region, 'figure_'+year, 'plots.root')
+            if no_clean and (region == 'los' or region == 'lss'):
+                plot_file_path = os.path.join(input_ver + '_' + region + '_org', 'figure_'+year, 'plots.root')
+            plot_file = TFile.Open(plot_file_path)
 
             c_gen = plot_file.Get(hist_gen_name)
             p_gen = c_gen.GetPrimitive('pad_hi')
