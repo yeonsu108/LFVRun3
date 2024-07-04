@@ -23,7 +23,7 @@ no_clean = False
 #dm binning: 1, 2, 11, 12 (dm = bin num - 1)
 hist_name = 'h_tau1_decayMode_S3'
 hist_gen_name = 'h_tau1_decayMode_gen_S3'
-bin_edges = [[1, 2], [2, 3], [10, 11], [11, 12]]
+bin_edges = [[1, 1], [2, 2], [11, 11], [12, 12]]
 
 #los = loose tau, OS mu tau (C)
 #lss = loose tau, SS mu tau (A)

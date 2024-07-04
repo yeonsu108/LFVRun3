@@ -663,18 +663,18 @@ double TopLFVAnalyzer::tauFF(std::string year_, std::string unc_, int direction_
     //}
 
     if (tau_dm_[0] == 0) {
-        map_ff["2016pre"]["nom"]  = 0.4542;
-        map_ff["2016pre"]["stat"] = 0.07787;
-        map_ff["2016pre"]["syst"] = 0.2936;
-        map_ff["2016post"]["nom"]  = 0.4853;
-        map_ff["2016post"]["stat"] = 0.08549;
-        map_ff["2016post"]["syst"] = 0.1426;
-        map_ff["2017"]["nom"]  = 0.5715;
-        map_ff["2017"]["stat"] = 0.04472;
-        map_ff["2017"]["syst"] = 0.2421;
-        map_ff["2018"]["nom"]  = 0.5274;
-        map_ff["2018"]["stat"] = 0.03891;
-        map_ff["2018"]["syst"] = 0.1718;
+        map_ff["2016pre"]["nom"]  = 0.3029;
+        map_ff["2016pre"]["stat"] = 0.1235;
+        map_ff["2016pre"]["syst"] = 0.3515;
+        map_ff["2016post"]["nom"]  = 0.6584;
+        map_ff["2016post"]["stat"] = 0.1212;
+        map_ff["2016post"]["syst"] = 0.3563;
+        map_ff["2017"]["nom"]  = 0.6122;
+        map_ff["2017"]["stat"] = 0.06591;
+        map_ff["2017"]["syst"] = 0.2855;
+        map_ff["2018"]["nom"]  = 0.5042;
+        map_ff["2018"]["stat"] = 0.05853;
+        map_ff["2018"]["syst"] = 0.2186;
     } else if (tau_dm_[0] == 1) {
         map_ff["2016pre"]["nom"]  = 0.5605;
         map_ff["2016pre"]["stat"] = 0.1067;
@@ -702,18 +702,18 @@ double TopLFVAnalyzer::tauFF(std::string year_, std::string unc_, int direction_
         map_ff["2018"]["stat"] = 0.06959;
         map_ff["2018"]["syst"] = 0.224;
     } else if (tau_dm_[0] == 11) {
-        map_ff["2016pre"]["nom"]  = 0.5191;
-        map_ff["2016pre"]["stat"] = 0.1276;
-        map_ff["2016pre"]["syst"] = 0.2643;
-        map_ff["2016post"]["nom"]  = 0.6425;
-        map_ff["2016post"]["stat"] = 0.1324;
-        map_ff["2016post"]["syst"] = 0.1778;
-        map_ff["2017"]["nom"]  = 0.5626;
-        map_ff["2017"]["stat"] = 0.07437;
-        map_ff["2017"]["syst"] = 0.2383;
-        map_ff["2018"]["nom"]  = 0.7733;
-        map_ff["2018"]["stat"] = 0.05948;
-        map_ff["2018"]["syst"] = 0.2118;
+        map_ff["2016pre"]["nom"]  = 0.3913;
+        map_ff["2016pre"]["stat"] = 0.2608;
+        map_ff["2016pre"]["syst"] = 0.1003;
+        map_ff["2016post"]["nom"]  = 1.384;
+        map_ff["2016post"]["stat"] = 0.2204;
+        map_ff["2016post"]["syst"] = 0.09176;
+        map_ff["2017"]["nom"]  = 0.208;
+        map_ff["2017"]["stat"] = 0.168;
+        map_ff["2017"]["syst"] = 0.2655;
+        map_ff["2018"]["nom"]  = 0.3594;
+        map_ff["2018"]["stat"] = 0.1152;
+        map_ff["2018"]["syst"] = 0.1831;
     } else {
         std::cout << "fatal: wrong decay mode detected" << std::endl;
     }
