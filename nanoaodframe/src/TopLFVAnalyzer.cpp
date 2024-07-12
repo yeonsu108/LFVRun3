@@ -662,6 +662,7 @@ double TopLFVAnalyzer::tauFF(std::string year_, std::string unc_, int direction_
     //    map_ff["2018"]["syst"]     = 0.1879 ;
     //}
 
+    // cleaned jet, dm binned
     if (tau_dm_[0] == 0) {
         map_ff["2016pre"]["nom"]  = 0.3029;
         map_ff["2016pre"]["stat"] = 0.1235;
@@ -717,6 +718,64 @@ double TopLFVAnalyzer::tauFF(std::string year_, std::string unc_, int direction_
     } else {
         std::cout << "fatal: wrong decay mode detected" << std::endl;
     }
+
+
+    // uncleaned jet, dm-binned
+    //if (tau_dm_[0] == 0) {
+    //    map_ff["2016pre"]["nom"]  = 0.3374;
+    //    map_ff["2016pre"]["stat"] = 0.1225;
+    //    map_ff["2016pre"]["syst"] = 0.2222;
+    //    map_ff["2016post"]["nom"]  = 0.6906;
+    //    map_ff["2016post"]["stat"] = 0.1207;
+    //    map_ff["2016post"]["syst"] = 0.04169;
+    //    map_ff["2017"]["nom"]  = 0.6926;
+    //    map_ff["2017"]["stat"] = 0.06575;
+    //    map_ff["2017"]["syst"] = 0.06896;
+    //    map_ff["2018"]["nom"]  = 0.7836;
+    //    map_ff["2018"]["stat"] = 0.05808;
+    //    map_ff["2018"]["syst"] = 0.05632;
+    //} else if (tau_dm_[0] == 1) {
+    //    map_ff["2016pre"]["nom"]  = 0.7494;
+    //    map_ff["2016pre"]["stat"] = 0.1061;
+    //    map_ff["2016pre"]["syst"] = 0.1686;
+    //    map_ff["2016post"]["nom"]  = 0.4625;
+    //    map_ff["2016post"]["stat"] = 0.1164;
+    //    map_ff["2016post"]["syst"] = -0.1691;
+    //    map_ff["2017"]["nom"]  = 0.8012;
+    //    map_ff["2017"]["stat"] = 0.05811;
+    //    map_ff["2017"]["syst"] = 0.07565;
+    //    map_ff["2018"]["nom"]  = 0.6315;
+    //    map_ff["2018"]["stat"] = 0.05077;
+    //    map_ff["2018"]["syst"] = -0.01345;
+    //} else if (tau_dm_[0] == 10) {
+    //    map_ff["2016pre"]["nom"]  = 0.6149;
+    //    map_ff["2016pre"]["stat"] = 0.1458;
+    //    map_ff["2016pre"]["syst"] = 0.2284;
+    //    map_ff["2016post"]["nom"]  = 0.5323;
+    //    map_ff["2016post"]["stat"] = 0.1584;
+    //    map_ff["2016post"]["syst"] = 0.1483;
+    //    map_ff["2017"]["nom"]  = 0.8322;
+    //    map_ff["2017"]["stat"] = 0.08726;
+    //    map_ff["2017"]["syst"] = 0.1278;
+    //    map_ff["2018"]["nom"]  = 1.101;
+    //    map_ff["2018"]["stat"] = 0.06937;
+    //    map_ff["2018"]["syst"] = 0.1098;
+    //} else if (tau_dm_[0] == 11) {
+    //    map_ff["2016pre"]["nom"]  = 0.3911;
+    //    map_ff["2016pre"]["stat"] = 0.2607;
+    //    map_ff["2016pre"]["syst"] = -0.07622;
+    //    map_ff["2016post"]["nom"]  = 1.668;
+    //    map_ff["2016post"]["stat"] = 0.2201;
+    //    map_ff["2016post"]["syst"] = 0.04093;
+    //    map_ff["2017"]["nom"]  = 0.292;
+    //    map_ff["2017"]["stat"] = 0.1677;
+    //    map_ff["2017"]["syst"] = 0.1221;
+    //    map_ff["2018"]["nom"]  = 0.4322;
+    //    map_ff["2018"]["stat"] = 0.1149;
+    //    map_ff["2018"]["syst"] = 0.1013;
+    //} else {
+    //    std::cout << "fatal: wrong decay mode detected" << std::endl;
+    //}
 
     if      (unc_ == "nom") val = map_ff[year_][unc_];
     else if (direction_ == 1) val  = 1.0 + map_ff[year_][unc_];

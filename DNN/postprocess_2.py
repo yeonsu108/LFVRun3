@@ -19,7 +19,8 @@ def collect_systhists(inpath, outfile, fname, year):
     for sysfile in fileList_wt_syst:
         if 'SingleMuon' in sysfile and sysfile != 'hist_SingleMuon.root': continue
         tmpf = TFile.Open(os.path.join(inpath, sysfile), 'READ')
-        hlists = [ h.GetName() for h in tmpf.GetListOfKeys() if any(i in h.GetName() for i in ['dnn_pred_S5', 'counter']) ]
+        hlists = [ h.GetName() for h in tmpf.GetListOfKeys() \
+                   if any(i in h.GetName() for i in ['dnn_pred_S5', 'counter', 'muon1_pt', 'tau1_pt', 'jet1_pt', 'jet2_pt', 'mutau_mass', 'mutau_dr']) ]
         for histname in hlists:
             tmpf.cd()
             tmphist = tmpf.Get(histname)
