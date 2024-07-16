@@ -160,7 +160,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVSTcv
   #yields-group: '3ST LFV$^{{\\cPqt\\cPqc\\mu\\tau}}_{{Vector}}$'
   yields-group: '3ST LFV $\\cPqt\\cPqc\\mu\\tau$ Vector'
-  order: 1
+  order: 3
 
 '{0}/Run2{1}/hist_ST_LFV_TCMuTau_Tensor.root':
   type: signal
@@ -190,7 +190,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVTTuv
   #yields-group: '5TT LFV$^{{\\cPqt\\cPqu\\mu\\tau}}_{{Vector}}$'
   yields-group: '5TT LFV $\\cPqt\\cPqu\\mu\\tau$ Vector'
-  order: 1
+  order: 2
 
 '{0}/Run2{1}/hist_TT_LFV_TUMuTau_Tensor.root':
   type: signal
@@ -220,7 +220,7 @@ with open(config_path + 'files_Run2.yml', 'w+') as fnew:
   group: GLFVTTcv
   #yields-group: '7TT LFV$^{{\\cPqt\\cPqc\\mu\\tau}}_{{Vector}}$'
   yields-group: '7TT LFV $\\cPqt\\cPqc\\mu\\tau$ Vector'
-  order: 1
+  order: 4
 
 '{0}/Run2{1}/hist_TT_LFV_TCMuTau_Tensor.root':
   type: signal

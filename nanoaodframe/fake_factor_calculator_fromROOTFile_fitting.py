@@ -4,6 +4,7 @@ import ctypes
 from ROOT import *
 import numpy as np
 import array
+from symmetrize import smoothing
 gROOT.SetBatch(True)
 
 input_ver = 'v9_0714_fake'
@@ -29,6 +30,7 @@ hist_gen_name = 'h_tau1_gen_pt_S3'
 #tos = tight tau, OS mu tau (D)
 #tss = tight tau, SS mu tau (B)
 
+sf_file = TFile.Open('ff_plots/test_sf.root', 'RECREATE')
 
 for year in year_list:
 
@@ -126,6 +128,8 @@ for year in year_list:
 
 
     #############
+    # ss mc vs data
+    #############
     ss_data = nevents_region['tss']['nsub_data'].Clone('ss_data')
     ss_data.Divide(nevents_region['lss']['nsub_data'])
     ss_data.SetMarkerStyle(1)
@@ -166,13 +170,36 @@ for year in year_list:
     legend.Clear()
     c.Clear()
 
+
+    ###############
+    # store unbinned hist
     ###############
     os_data = nevents_region['los']['nsub_data'].Clone('os_data')
+    ss_data = nevents_region['tss']['nsub_data'].Clone('ss_data')
+    lss_data = nevents_region['lss']['nsub_data'].Clone('lss_data')
+    ss_data.Divide(lss_data)
+
+    tos_mc = nevents_region['tos']['nsub_mc'].Clone('tos_mc')
+    os_data.Multiply(ss_data)
+    os_data.Divide(tos_mc)
+
+    sf_file.cd()
+    os_data.SetName(year)
+    os_data.Write()
+
+
+    ###############
+    # rebinned SF
+    ###############
     arr = array.array('d',[0., 40, 120, 200, 280, 400])
+    #arr = array.array('d',[0., 100, 200, 400])
+
+    os_data = nevents_region['los']['nsub_data'].Clone('os_data')
     os_data = os_data.Rebin(len(arr)-1, os_data.GetName(), arr)
 
     ss_data = nevents_region['tss']['nsub_data'].Clone('ss_data')
     ss_data = ss_data.Rebin(len(arr)-1, ss_data.GetName(), arr)
+
     lss_data = nevents_region['lss']['nsub_data'].Clone('lss_data')
     lss_data = lss_data.Rebin(len(arr)-1, lss_data.GetName(), arr)
     ss_data.Divide(lss_data)
@@ -223,34 +250,105 @@ for year in year_list:
     latexLabel.DrawLatex(0.9, 0.92, "%s"%(year))
     latexLabel.Clear()
 
-    c.Print('ff_plots/sf_' + year + '.png')
-    c.Print('ff_plots/sf_' + year + '.pdf')
+    #c.Print('ff_plots/sf_' + year + '.png')
+    #c.Print('ff_plots/sf_' + year + '.pdf')
+    c.Print('ff_plots/test_sf_' + year + '.png')
+    c.Print('ff_plots/test_sf_' + year + '.pdf')
     legend.Clear()
     c.Clear()
 
-    #FF = nevents_region['tss']['nsub_data'] / nevents_region['lss']['nsub_data']
-    #print('FF: {:.5f}'.format(FF.n), 'pm {:.6f}'.format(FF.std_dev), '-> ' + str(round(100*FF.std_dev/FF.n, 3)) + '%')
 
-    #fake_nevent = nevents_region['los']['nsub_data'] * FF
-    #print('Fake event in tos (SR) = los * (tss / lss) = {:.2f}'.format(fake_nevent))
+    ###############
+    # store smooth hist
+    ###############
+    os_data = nevents_region['los']['nsub_data'].Clone('os_data')
+    os_data = smoothing(os_data)
 
-    #SF = fake_nevent/nevents_region['tos']['nsub_mc']
-    #print('SF = new fake / mc fake = {:.4f}'.format(SF.n), 'pm {:5f}'.format(SF.std_dev), '-> ' + str(round(100*SF.std_dev/SF.n, 3)) + '%')
-    #print('UNC : {0:.4g}'.format(SF.std_dev/SF.n), ', statup {0:.4g},'.format(SF.n+SF.std_dev/SF.n), 'statdown {0:.4g}'.format(SF.n-SF.std_dev/SF.n))
+    ss_data = nevents_region['tss']['nsub_data'].Clone('ss_data')
+    ss_data = smoothing(ss_data)
 
-    #new_mc = nevents_region['tos']['gentau_total'] + fake_nevent
-    #print('Recalculated MC = {:.2f}'.format(new_mc))
-    #print('data/mc = {0:.2g}'.format(nevents_region['tos']['ndata']/nevents_region['tos']['mc_total'].n), '-> {0:.2g}'.format(nevents_region['tos']['ndata']/new_mc.n))
+    lss_data = nevents_region['lss']['nsub_data'].Clone('lss_data')
+    lss_data = smoothing(lss_data)
 
-    #fake_closure = nevents_region['los']['nsub_mc'] * (nevents_region['tss']['nsub_mc'] / nevents_region['lss']['nsub_mc'])
-    #print('Fake closure: {:.2f}'.format(fake_closure))
+    tos_mc = nevents_region['tos']['nsub_mc'].Clone('tos_mc')
+    #tos_mc = smoothing(tos_mc)
 
-    #SF_closure = (nevents_region['tos']['nsub_mc'] - fake_closure)/nevents_region['tos']['nsub_mc']
-    #print('Difference: {0:.4g} %'.format(100 * (nevents_region['tos']['nsub_mc'].n - fake_closure.n)/nevents_region['tos']['nsub_mc'].n))
-    #print('UNC : {0:.4g}'.format(SF_closure.n), ', systup {0:.4g},'.format(SF.n+SF_closure.n), 'systdown {0:.4g}'.format(SF.n-SF_closure.n))
+    os_data.Multiply(ss_data)
+    os_data.Divide(tos_mc)
 
-    #print('        map_ff["{0}"]["nom"]  = {1:.4g};'.format(year, SF.n))
-    #print('        map_ff["{0}"]["stat"] = {1:.4g};'.format(year, SF.std_dev/SF.n))
-    #print('        map_ff["{0}"]["syst"] = {1:.4g};'.format(year, SF_closure.n))
+    sf_file.cd()
+    os_data.SetName(year + '_smooth')
+    os_data.Write()
+
+    ###############
+    # smooth rebinned SF
+    ###############
+    os_data = nevents_region['los']['nsub_data'].Clone('os_data')
+    os_data = smoothing(os_data)
+    arr = array.array('d',[0., 40, 120, 200, 280, 400])
+    os_data = os_data.Rebin(len(arr)-1, os_data.GetName(), arr)
+
+    ss_data = nevents_region['tss']['nsub_data'].Clone('ss_data')
+    ss_data = smoothing(ss_data)
+    ss_data = ss_data.Rebin(len(arr)-1, ss_data.GetName(), arr)
+
+    lss_data = nevents_region['lss']['nsub_data'].Clone('lss_data')
+    lss_data = smoothing(lss_data)
+    lss_data = lss_data.Rebin(len(arr)-1, lss_data.GetName(), arr)
+    ss_data.Divide(lss_data)
+
+    tos_mc = nevents_region['tos']['nsub_mc'].Clone('tos_mc')
+    tos_mc = tos_mc.Rebin(len(arr)-1, tos_mc.GetName(), arr)
+    #tos_mc = smoothing(tos_mc)
+
+    os_data.Multiply(ss_data)
+    os_data.Divide(tos_mc)
+
+    for i in range(os_data.GetNbinsX()):
+        print("Bin", str(i+1), os_data.GetBinContent(i+1))
+
+    os_data.SetMarkerStyle(1)
+    os_data.SetLineWidth(2)
+    os_data.SetLineColor(4)
+    os_data.SetFillColor(0)
+    os_data.Fit('pol1')
+    os_data.GetFunction("pol1").SetLineColor(4)
+    os_data.SetStats(1)
+    gStyle.SetOptStat(000000000)
+    gStyle.SetOptFit(11)
+    os_data.GetYaxis().SetRangeUser(0, 2)
+    os_data.GetYaxis().SetTitle('MisID SF')
+
+    stats1 = os_data.GetListOfFunctions().FindObject("stats").Clone("stats1")
+    c.Modified()
+    c.Update();
+    stats = c.GetPrimitive("stats")
+    stats.SetName("Fit stats");
+    stats.SetX1NDC(.6);
+    stats.SetX2NDC(.9);
+    stats.SetY1NDC(.8);
+    stats.SetY2NDC(.9);
+
+    os_data.Draw('b e')
+
+    legend.AddEntry(os_data, 'misID SF', 'l')
+    legend.Draw('same')
+
+    latexLabel = TLatex()
+    latexLabel.SetNDC()
+    latexLabel.SetTextFont(62) # helvetica bold face
+    latexLabel.SetTextSize(0.4 * c.GetTopMargin())
+    latexLabel.DrawLatex(0.11, 0.92, "CMS private work")
+    latexLabel.SetTextSize(0.4 * c.GetTopMargin())
+    latexLabel.SetTextAlign(31)
+    latexLabel.DrawLatex(0.9, 0.92, "%s"%(year))
+    latexLabel.Clear()
+
+    #c.Print('ff_plots/sf_' + year + '.png')
+    #c.Print('ff_plots/sf_' + year + '.pdf')
+    c.Print('ff_plots/test_sf_smooth_' + year + '.png')
+    c.Print('ff_plots/test_sf_smooth_' + year + '.pdf')
+    legend.Clear()
+    c.Clear()
 
     print('/////////////////////////////////////////////////')
