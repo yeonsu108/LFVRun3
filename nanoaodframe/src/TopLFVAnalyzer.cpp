@@ -169,7 +169,10 @@ void TopLFVAnalyzer::defineMoreVars() {
     // eventWeight__xx: xx unc.
 
     addVar({"muonHighPtAddUncUp", "Muon1_pt > 200 ? 1.0 + (0.000125 * Muon1_pt - 0.025): 1.0", ""});
-    addVar({"muonHighPtAddUncDn", "Muon1_pt > 200 ? 1.0 - (0.000125 * Muon1_pt - 0.025): 1.0", ""});
+    addVar({"muonHighPtAddUncDn", "Muon1_pt > 200 ? 1.0 - (0.000125 * Muon1_pt - 0.025): 1.0", ""});a
+    //pt dep SF unc for test
+    //addVar({"tauSFAddUncUp", "Tau_pt_gen.size()==0 ? 1.0 + (0.0005 * Tau1_pt): 1.0", ""});
+    //addVar({"tauSFAddUncDn", "Tau_pt_gen.size()==0 ? 1.0 - (0.0005 * Tau1_pt): 1.0", ""});
 
 
     if (_syst == "data") {
@@ -323,6 +326,8 @@ void TopLFVAnalyzer::defineMoreVars() {
                 addVar({"eventWeight__tauFFstatdown", "eventWeight * tauFFstatdown"});
                 addVar({"eventWeight__tauFFsystup", "eventWeight * tauFFsystup"});
                 addVar({"eventWeight__tauFFsystdown", "eventWeight * tauFFsystdown"});
+                //addVar({"eventWeight__tauFFptdepup", "eventWeight * tauSFAddUncUp"});
+                //addVar({"eventWeight__tauFFptdepdown", "eventWeight * tauSFAddUncDn"});
             }
 
             // no tau - nominal is eventWeight_notau
@@ -457,6 +462,7 @@ void TopLFVAnalyzer::bookHists() {
                                               "__tauidelup", "__tauideldown", "__tauidmuup", "__tauidmudown"};
 
     std::vector<std::string> sf_weight_FF ={"__tauFFstatup", "__tauFFstatdown", "__tauFFsystup", "__tauFFsystdown"};
+    //std::vector<std::string> sf_weight_FF ={"__tauFFstatup", "__tauFFstatdown", "__tauFFsystup", "__tauFFsystdown", "__tauFFptdepup", "__tauFFptdepdown"};
 
     std::vector<std::string> theory_weight = {"__isrup", "__fsrup", "__isrdown", "__fsrdown",
                    "__mescaleup", "__mescaledown", "__renscaleup", "__renscaledown", "__facscaleup", "__facscaledown",

@@ -1,4 +1,4 @@
-folder=DNN_out_0424
+folder=DNN_out_0705
 postfix=_orgbin
 
 cd $folder

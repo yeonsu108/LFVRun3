@@ -28,8 +28,8 @@ def min_max_scaling(series):
     return (series - series.min()) / (series.max() - series.min())
 
 
-training_path = options.indir
-#"top_lfv_multiClass_March2024_AfterPreAppTalk"
+#training_path = options.indir
+training_path = "top_lfv_multiClass_March2024_AfterPreAppTalk"
 
 inputvars = ["Muon1_pt", "Muon1_eta",
              "Tau1_pt", "Tau1_mass", "Tau1_eta",
@@ -261,7 +261,7 @@ if __name__ == '__main__':
     parameters = []
     for year in ["2016pre", "2016post", "2017", "2018"]:
         print(year)
-        project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_uforeweight_jesflav_FF/" + year + "/"
+        project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_uforeweight_jesflav_v6_FF/" + year + "/"
         #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_uforeweight_jesflav_genuineTau_FF/" + year + "/"
         #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_uforeweight_jesflav_fakeTau_FF/" + year + "/"
         flist = os.listdir(project_dir)
