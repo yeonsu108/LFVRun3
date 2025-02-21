@@ -97,31 +97,31 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
     }
     std::string org_name = seglist.end()[-1].substr(seglist.end()[-1].find('_')+1);
 
-    if (outfilename.find("_LFV_") != std::string::npos) {
-        std::string friend_file = "/data1/common/skimmed_NanoAOD/UFO_reweight/" + _year + "/" + seglist.end()[-2] + "/" + org_name;
-        if(gSystem->AccessPathName(friend_file.c_str())){
-            std::cout << "\n ERROR: It is a signal, but reweighting file doesn't exist" << std::endl;
-        } else {
-            TFile* wgtf = TFile::Open(friend_file.c_str(), "READ");
-            TTree* wgtt = (TTree*) wgtf->Get("weights");
-            *atree->AddFriend("weights", friend_file.c_str());
+    //if (outfilename.find("_LFV_") != std::string::npos) {
+    //    std::string friend_file = "/data1/common/skimmed_NanoAOD/UFO_reweight/" + _year + "/" + seglist.end()[-2] + "/" + org_name;
+    //    if(gSystem->AccessPathName(friend_file.c_str())){
+    //        std::cout << "\n ERROR: It is a signal, but reweighting file doesn't exist" << std::endl;
+    //    } else {
+    //        TFile* wgtf = TFile::Open(friend_file.c_str(), "READ");
+    //        TTree* wgtt = (TTree*) wgtf->Get("weights");
+    //        *atree->AddFriend("weights", friend_file.c_str());
 
-            //_rd = ROOT::RDataFrame(*atree);
-            //_rlm = RNode(_rd);
-            //_rnt = RNodeTree(&_rlm);
+    //        //_rd = ROOT::RDataFrame(*atree);
+    //        //_rlm = RNode(_rd);
+    //        //_rnt = RNodeTree(&_rlm);
 
-            TObjArray *allbranchesFriend = wgtt->GetListOfBranches();
-            for (int i =0; i<allbranchesFriend->GetSize(); i++) {
-                TBranch *abranch = dynamic_cast<TBranch *>(allbranchesFriend->At(i));
-                if (abranch!= nullptr) {
-                    std::string brname = abranch->GetName();
-                    if (brname.find("HLT_") == std::string::npos and brname.find("L1_") == std::string::npos)
-                        cout << brname << ", ";
-                    _originalvars.push_back(abranch->GetName());
-                }
-            }
-        }
-    }
+    //        TObjArray *allbranchesFriend = wgtt->GetListOfBranches();
+    //        for (int i =0; i<allbranchesFriend->GetSize(); i++) {
+    //            TBranch *abranch = dynamic_cast<TBranch *>(allbranchesFriend->At(i));
+    //            if (abranch!= nullptr) {
+    //                std::string brname = abranch->GetName();
+    //                if (brname.find("HLT_") == std::string::npos and brname.find("L1_") == std::string::npos)
+    //                    cout << brname << ", ";
+    //                _originalvars.push_back(abranch->GetName());
+    //            }
+    //        }
+    //    }
+    //}
     cout << endl;
 }
 
@@ -167,13 +167,13 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         _rlm = _rlm.Define("unitGenWeight", "one");
         _rlm = _rlm.Define("isData", "true");
 
-        if (_outfilename.find("_LFV_") == std::string::npos) {
-            _rlm = _rlm.Define("UFO_reweight", "one");
-        } else {
-            _rlm = _rlm.Redefine("UFO_reweight", "weights.UFO_reweight");
-        }
+        //if (_outfilename.find("_LFV_") == std::string::npos) {
+        //    _rlm = _rlm.Define("UFO_reweight", "one");
+        //} else {
+        //    _rlm = _rlm.Redefine("UFO_reweight", "weights.UFO_reweight");
+        //}
 
-        if(!_isData){
+        /*if(!_isData){
 
             _rlm = _rlm.Redefine("isData", "false");
 
@@ -245,7 +245,7 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
             _rlm = _rlm.Redefine("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
                        .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->floats
                               {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
-        }
+        }*/
     }
 
     std::vector<std::string> jes_var;
@@ -262,20 +262,22 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
     // Selected objects will be stored in new vectors.
     if (_isSkim) {
         selectMuons();
-        setupJetMETCorrection(_globaltag, jes_var, jes_var_flav, "AK4PFchs", _isData);
-        skimJets();
-        if (!_isData){
-            calculateEvWeight();
-            applyBSFs(jes_var);
-        }
-    } else {
         selectElectrons();
-        selectTaus();
-        selectJets(jes_var, jes_var_flav);
-        if (!_isData){
-            topPtReweight();
-        }
+        //setupJetMETCorrection(_globaltag, jes_var, jes_var_flav, "AK4PFchs", _isData);
+        skimJets();
+        //if (!_isData){
+        //    calculateEvWeight();
+        //    applyBSFs(jes_var);
+        //}
     }
+    //else {
+    //    selectElectrons();
+    //    selectTaus();
+    //    selectJets(jes_var, jes_var_flav);
+    //    if (!_isData){
+    //        topPtReweight();
+    //    }
+    //}
     defineMoreVars();
     defineCuts();
     bookHists();
@@ -333,6 +335,8 @@ bool NanoAODAnalyzerrdframe::readjson() {
 
 void NanoAODAnalyzerrdframe::selectElectrons() {
 
+    _rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
+               .Define("nvetoelepass","Sum(vetoelecuts)");
     //cout << "select electrons" << endl;
     // Run II recommendation: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaRunIIRecommendations
     // Run II recomendation - cutbased: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2
@@ -503,8 +507,8 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
                    .Redefine("MET_pt", muonhighscalemet, {"Muon_pt", "Muon_pt_scale", "MET_pt"})
                    .Redefine("Muon_pt", "Muon_pt_scale"); //order matters
     }
-    _rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
-               .Define("nvetoelepass","Sum(vetoelecuts)");
+    //_rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
+    //           .Define("nvetoelepass","Sum(vetoelecuts)");
 }
 
 void NanoAODAnalyzerrdframe::selectMuons() {
@@ -525,6 +529,7 @@ void NanoAODAnalyzerrdframe::selectMuons() {
 
 
     // Muon SF
+    /*
     cout<<"Loading Muon SF"<<endl;
     std::string muonFile = _year + "_UL";
     std::string muonTrgHist = "";
@@ -619,6 +624,7 @@ void NanoAODAnalyzerrdframe::selectMuons() {
     _rlm = _rlm.Define("muonWeightId", muonSFId, {"Muon_pt","Muon_eta"})
                .Define("muonWeightIso", muonSFIso, {"Muon_pt","Muon_eta"})
                .Define("muonWeightTrg", muonSFTrg, {"Muon_pt","Muon_eta"});
+    */
 }
 
 /*
@@ -969,6 +975,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     };
 
     //FIXME: should correct jet mass. but can we do it at once?
+    
     if (_jetCorrector != 0) {
         _rlm = _rlm.Define("Jet_pt_uncorr", "Jet_pt");
         _rlm = _rlm.Define("Jet_pt_corr", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_pt"})
@@ -1109,16 +1116,17 @@ void NanoAODAnalyzerrdframe::skimJets() {
                .Redefine("Jet_mass", "Jet_mass[jetcuts]")
                .Redefine("Jet_jetId", "Jet_jetId[jetcuts]")
                .Redefine("Jet_area", "Jet_area[jetcuts]")
-               .Redefine("Jet_pt_uncorr", "Jet_pt_uncorr[jetcuts]")
                .Redefine("Jet_rawFactor", "Jet_rawFactor[jetcuts]")
+               //.Redefine("Jet_pt_uncorr", "Jet_pt_uncorr[jetcuts]")
+               //.Redefine("Jet_rawFactor", "Jet_rawFactor[jetcuts]")
                .Redefine("Jet_btagDeepFlavB", "Jet_btagDeepFlavB[jetcuts]")
                .Redefine("nJet", "int(Jet_pt.size())");
-    if (!_isData) {
-        _rlm = _rlm.Redefine("Jet_pt_unc", skimCol, {"Jet_pt_unc", "jetcuts"})
-                   .Redefine("Jet_jer", skimCol, {"Jet_jer", "jetcuts"})
-                   .Redefine("Jet_hadronFlavour","Jet_hadronFlavour[jetcuts]")
-                   .Redefine("Jet_genJetIdx","Jet_genJetIdx[jetcuts]");
-    }
+    //if (!_isData) {
+    //    _rlm = _rlm.Redefine("Jet_pt_unc", skimCol, {"Jet_pt_unc", "jetcuts"})
+    //               .Redefine("Jet_jer", skimCol, {"Jet_jer", "jetcuts"})
+    //               .Redefine("Jet_hadronFlavour","Jet_hadronFlavour[jetcuts]")
+    //               .Redefine("Jet_genJetIdx","Jet_genJetIdx[jetcuts]");
+    //}
 
 }
 

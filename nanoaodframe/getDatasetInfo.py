@@ -3,14 +3,14 @@ from urllib.request import urlopen
 import pandas as pd
 
 if len(sys.argv) < 2:
-    print("Provide run era: 2016pre, 2016post, 2017, 2018")
+    print("Provide run era: 2016pre, 2016post, 2017, 2018, 2022, 2023_BPix")
     sys.exit()
 else: era = sys.argv[1]
 
-gdocbase = "https://docs.google.com/spreadsheets/d/1KNvsRvXi3sgU45T2qOUztFSX3As4elZB325WaPnSkA8/pub?gid=%s&single=true&output=csv"
+gdocbase = "https://docs.google.com/spreadsheets/d/1A2cKv080xvfVEJBhkDo6NzQdvXbeGu95/pub?gid=%s&single=true&output=csv"
 
 def getCampaignSummary():
-    url = gdocbase % "171229399"
+    url = gdocbase % "545547353"
     print("Retrieving campaign info...")
     print("Source URL = ", url)
     df = pd.read_csv(urlopen(url)).set_index('Campaign')
@@ -84,6 +84,7 @@ print(json.dumps(ds, indent=4, sort_keys=True), file=f)
 f.close()
 
 
+exit()
 era_path = {'2016pre': ()}
 
 from ROOT import *
@@ -147,5 +148,5 @@ if len(emptydirectory) > 0:
     for i in emptydirectory:
         print(i)
     print("-"*40)
-   
+
 print("Saved dataset location info to %s/dataset_SampleName.txt" % (outDir))

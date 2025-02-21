@@ -12,9 +12,15 @@
 #SBATCH --comment python
 #SBATCH --time 03:00:00
 #SBATCH --hint=compute_bound
+export X509_USER_PROXY=$HOME/proxy/x509up
+
+echo "Using proxy at: $X509_USER_PROXY"
+/opt/ohpc/pub/voms/voms-proxy-info --all
 
 year=$1
-infile=$2
+filename=$2
+infile="root://xrootd-cms.infn.it/${filename}"
+echo $infile
 outpath=$3
 outfile=$4
 workdir=$5

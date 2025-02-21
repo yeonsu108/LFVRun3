@@ -62,8 +62,8 @@ if options.syst == "nosyst": syst_list = [""]
 parameters = [] #order: (tgdir, indir, outdir, outfilename, syst)
 for ds in dataset_list:
 
-    if any(n in ds for n in ['QCD_']):
-        continue
+    #if any(n in ds for n in ['QCD_']):
+    #    continue
 
     if len(options.mode) > 0 and any(n in ds for n in ['_LFV_']):
         continue

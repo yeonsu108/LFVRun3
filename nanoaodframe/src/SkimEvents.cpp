@@ -30,6 +30,8 @@ void SkimEvents::defineCuts()
       addCuts("Flag_filter && HLT_IsoMu27 && nmuonpass == 1 && PV_npvsGood > 0","0");
   } else if (_year.find("18") != std::string::npos) {
       addCuts("Flag_filter && HLT_IsoMu24 && nmuonpass == 1 && PV_npvsGood > 0","0");
+  } else if (_year.find("23") != std::string::npos) {
+      addCuts("HLT_IsoMu24 && nmuonpass == 1 && PV_npvsGood > 0","0");
   }
   //Prescription to fill up WJets HT = 0-100
   if (_isHTstitching)
@@ -40,9 +42,11 @@ void SkimEvents::defineMoreVars()
 {
         if(_year.find("16") != std::string::npos){
             addVar({"Flag_filter","Flag_goodVertices && Flag_globalSuperTightHalo2016Filter && Flag_HBHENoiseFilter && Flag_HBHENoiseIsoFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_BadPFMuonFilter && Flag_BadPFMuonDzFilter && Flag_eeBadScFilter && Flag_hfNoisyHitsFilter",""});
-        }else{
+        }else if( (_year.find("17") != std::string::npos) || (_year.find("18") != std::string::npos)) {
             // For 17, 18 UL
             addVar({"Flag_filter","Flag_goodVertices && Flag_globalSuperTightHalo2016Filter && Flag_HBHENoiseFilter && Flag_HBHENoiseIsoFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_BadPFMuonFilter && Flag_BadPFMuonDzFilter && Flag_hfNoisyHitsFilter && Flag_eeBadScFilter && Flag_ecalBadCalibFilter",""});
+        }else {
+            addVar({"Flag_filter", "Flag_goodVertices"});
         }
         // define variables that you want to store
         addVartoStore("run");
@@ -120,10 +124,11 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Muon_tightId");
         addVartoStore("nmuonpass");
         addVartoStore("nvetomuons");
+        addVartoStore("nvetoelepass");
         addVartoStore("muon4vecs");
         addVartoStore("fixedGridRhoFastjetAll");
         addVartoStore("L1PreFiringWeight_.*");
-        addVartoStore("UFO_reweight");
+        //addVartoStore("UFO_reweight");
         addVartoStore("LHEPart_pt");
         addVartoStore("LHEPart_pdgId");
 }

@@ -41,8 +41,9 @@ void TopLFVAnalyzer::defineCuts() {
 
     addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0", "0");
 
+    addCuts("nJet >= 3", "00");
     // All
-    addCuts("ncleantaupass == 1", "00");
+    //addCuts("ncleantaupass == 1", "00");
     // genuine taus
     //if (_isSignal or _syst == "data") {
     //    addCuts("ncleantaupass == 1", "00");
@@ -52,14 +53,15 @@ void TopLFVAnalyzer::defineCuts() {
     // fake taus
     //addCuts("ncleantaupass == 1 && Tau_pt_gen.size()==0", "00");
 
-    addCuts("mutau_charge < 0", "000");
-    addCuts("ncleanjetspass >= 3", "0000");
-    addCuts("ncleanbjetspass == 1", "00000");
+    //addCuts("mutau_charge < 0", "000");
+    //addCuts("ncleanjetspass >= 3", "0000");
+    //addCuts("ncleanbjetspass == 1", "00000");
 }
 
 void TopLFVAnalyzer::defineMoreVars() {
 
     defineVar("muonvec", ::select_leadingvec, {"muon4vecs"});
+    /*
     defineVar("tauvec", ::select_leadingvec, {"cleantau4vecs"});
     defineVar("mutau_mass", ::calculate_invMass, {"muonvec","tauvec"});
     defineVar("mutau_dEta", ::calculate_deltaEta, {"muonvec","tauvec"});
@@ -73,13 +75,14 @@ void TopLFVAnalyzer::defineMoreVars() {
     } else {
         addVar({"mutau_mass_blind", "mutau_mass"});
     }
-
+    */
     //Adding unc for muon SF to top phase space: done in plotit and combine tool
     //defineVar("muonWeightId", ::addMuonUnc, {"muonWeightId"});
     //defineVar("muonWeightIso", ::addMuonUnc, {"muonWeightIso"});
     //defineVar("muonWeightTrg", ::addMuonUnc, {"muonWeightTrg"});
 
     // Already object selection is done before this
+    /*
     addVar({"isFakeTau", "!(Tau_pt_gen.size()>0)"});
     if (!_applytauFF) addVar({"tauFF", "1.0", ""});
     else if (_isSignal) {
@@ -103,11 +106,13 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVar({"unitGenWeightFF", "unitGenWeight * tauFF * UFO_reweight", ""});
 
     // There should be 'good' tau (or none) and exactly one muon
+    */
     addVar({"Muon1_pt", "Muon_pt[0]", ""});
     addVar({"Muon1_eta", "Muon_eta[0]", ""});
     addVar({"Muon1_mass", "Muon_mass[0]", ""});
     addVar({"Muon1_charge", "Muon_charge[0]", ""});
-
+    addVar({"eventWeight", "1.0"});
+    /*
     addVar({"Tau1_pt", "Tau_pt[0]", ""});
     addVar({"Tau1_eta", "Tau_eta[0]", ""});
     addVar({"Tau1_mass", "Tau_mass[0]", ""});
@@ -169,7 +174,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     // eventWeight__xx: xx unc.
 
     addVar({"muonHighPtAddUncUp", "Muon1_pt > 200 ? 1.0 + (0.000125 * Muon1_pt - 0.025): 1.0", ""});
-    addVar({"muonHighPtAddUncDn", "Muon1_pt > 200 ? 1.0 - (0.000125 * Muon1_pt - 0.025): 1.0", ""});a
+    addVar({"muonHighPtAddUncDn", "Muon1_pt > 200 ? 1.0 - (0.000125 * Muon1_pt - 0.025): 1.0", ""});
     //pt dep SF unc for test
     //addVar({"tauSFAddUncUp", "Tau_pt_gen.size()==0 ? 1.0 + (0.0005 * Tau1_pt): 1.0", ""});
     //addVar({"tauSFAddUncDn", "Tau_pt_gen.size()==0 ? 1.0 - (0.0005 * Tau1_pt): 1.0", ""});
@@ -402,12 +407,13 @@ void TopLFVAnalyzer::defineMoreVars() {
             }
         }
     }
-
+    */
     // define variables that you want to store
     addVartoStore("run");
     addVartoStore("event");
     addVartoStore("eventWeight.*");
     addVartoStore("nmuonpass");
+    /*
     addVartoStore("ncleanjetspass");
     addVartoStore("ncleanbjetspass");
     addVartoStore("ncleantaupass");
@@ -417,7 +423,9 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("Jet3_.*");
     addVartoStore("bJet1_.*");
     addVartoStore("Tau1.*");
+    */
     addVartoStore("Muon1.*");
+    /*
     addVartoStore("mutau.*");
     addVartoStore("MET_pt");
     addVartoStore("MET_phi");
@@ -431,10 +439,14 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("LHEPart_pdgId");
     addVartoStore("tauFF.*");
     addVartoStore("isFakeTau");
+    */
 }
 
 void TopLFVAnalyzer::bookHists() {
+  add1DHist({"h_muon1_pt", ";Muon p_{T} (GeV);Events", 30, 0, 600}, "Muon1_pt", "eventWeight", "", "", "");
+  add1DHist({"h_muon1_eta", ";Muon eta;Events", 30, 0, 600}, "Muon1_eta", "eventWeight", "", "", "");
 
+    /*
     std::vector<std::string> init_weight = {""};
     std::vector<std::string> sf_weight = {"", "_nobtag", "_nopu", "_notau", "_notoppt",
                    "__puup", "__pudown", "__topptup", "__topptdown", "__prefireup", "__prefiredown",
@@ -606,7 +618,7 @@ void TopLFVAnalyzer::bookHists() {
         add1DHist({"h_chi2_wqq_dPhi", ";#Delta#phi of jets from W;Events;", 20, -4, 4}, "chi2_wqq_dPhi", "eventWeight", weightstr, minstep_S5, maxstep);
         add1DHist({"h_chi2_wqq_dR", ";#Delta R of jets from W;Events", 20, 0, 4.0}, "chi2_wqq_dR", "eventWeight", weightstr, minstep_S5, maxstep);
     }
-
+    */
 }
 
 double TopLFVAnalyzer::tauFF(std::string year_, std::string unc_, int direction_, floats &tau_pt_, floats &tau_gen_pt_, ints &tau_dm_) {

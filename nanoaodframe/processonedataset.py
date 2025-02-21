@@ -41,6 +41,8 @@ if __name__=='__main__':
                 json = os.path.join(workdir, "data/GoldenJSON/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt")
             elif "2018" in indir:
                 json = os.path.join(workdir, "data/GoldenJSON/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt")
+            elif "2023" in indir:
+                json = os.path.join(workdir, "data/GoldenJSON/Cert_Collisions2023_366442_370790_Golden.json")
 
     print("Input: " + indir + ", " + "Output: " + outputroot + ", Syst: " + syst + ", Json: " + json + "\n")
 

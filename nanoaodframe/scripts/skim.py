@@ -19,7 +19,7 @@ os.makedirs(tgdir.replace('DATAMC', 'data'), exist_ok=True)
 os.makedirs(tgdir.replace('DATAMC', 'mc'), exist_ok=True)
 os.makedirs(log, exist_ok=True)
 
-for fn in os.listdir("data/dataset/v9UL_" + year):
+for fn in os.listdir("data/dataset/" + year):
     if 'json' in fn: continue
     fname = fn.replace('dataset_', '').replace('.txt', '')
     test_list = options.dataset
@@ -27,20 +27,21 @@ for fn in os.listdir("data/dataset/v9UL_" + year):
         if not any(i in fname for i in test_list): continue
     if len(sys.argv) > 3:
         if options.dataOrMC == 'data':
-            if '201' not in fname: continue
+            if '202' not in fname: continue
         elif options.dataOrMC == 'mc':
-            if '201' in fname: continue
+            if '202' in fname: continue
 
-    with open(os.path.join("data/dataset/v9UL_" + year, fn), 'r') as f:
+    with open(os.path.join("data/dataset/" + year, fn), 'r') as f:
         for line in f.readlines():
             if line.startswith('#'): continue
+            if ".root" not in line: continue
 
             infile = line.rstrip('\n') 
             lsplit = infile.split('/')
             dirNum = lsplit[-2]
             rootName = lsplit[-1]
 
-            if any('Run201' in l for l in lsplit):
+            if any('Run20' in l for l in lsplit):
                 outputdir = tgdir.replace('DATAMC', 'data')
             else:
                 outputdir = tgdir.replace('DATAMC', 'mc')
@@ -49,7 +50,8 @@ for fn in os.listdir("data/dataset/v9UL_" + year):
             logdir = os.path.join(log, fname)
             os.makedirs(logdir, exist_ok=True)
 
-            if len(options.name) > 0 and options.name != dirNum + '_' + rootName.replace(".root", ""): continue
+            if len(options.name) > 0 and (dirNum + '_' + rootName.replace(".root", "") not in options.name):
+                continue
 
             runString = "sbatch -J " + year + '_' + fname +\
                         " scripts/job_slurm_skim.sh " + year + " " + infile + " " +\
