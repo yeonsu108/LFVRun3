@@ -71,7 +71,7 @@ Now you install plotIt for plotting histograms. Tha package is maintained from t
 ``` bash
 # Start from the base directory
 cd LFVRun3
-git clone git@github.com:minerva1993/plotIt.git
+git clone https://github.com/yeonsu108/plotIt.git
 cd plotIt
 cd external
 ./build-external.sh
