@@ -97,14 +97,15 @@ All of the options are set in the script files `scripts/*.sh`.
 python getDatasetInfo.py v2023_BPix
 
 # Now, run script submitting slurm job
-## Command Line Options
+```
+### Command Line Options
 
 This script supports the following command line options:
 
-| Option | Long Option   | Argument     | Description                                                                                          |
+| Option |               | Argument     | Description                                                                                          |
 |--------|---------------|--------------|------------------------------------------------------------------------------------------------------|
 | `-V`   | `--version`   | *string*     | **Skim version.** Specify the folder name under `/data1/common/skimmed_NanoAOD/` to use for skimming. |
-| `-Y`   | `--year`      | *string*     | **Year of data.** Select one of: `2016pre`, `2016post`, `2017`, or `2018`.                            |
+| `-Y`   | `--year`      | *string*     | **Year of data.** Select one of: `v2022`, `v2023`, or `v2023_BPix`.                                   |
 | `-C`   | `--ch`        | *string*     | **Channel.** Choose the analysis channel: `muon` or `electron`. *(Default: muon)*                     |
 | `-D`   | `--dataset`   | *string(s)*  | **Dataset(s) to process.** Specify one or more dataset folder names (e.g., `TTTo2L2Nu`).              |
 | `-N`   | `--name`      | *string*     | **Output file name.** Process only a specific file (e.g., `280000_7316D0F0-4250-7D44-8244-921B41B9C092`). |
@@ -115,17 +116,18 @@ This script supports the following command line options:
 ### Example Usage
 
 ```bash
-python script.py -V v1_2023 -Y 2018 -C muon -D TTTo2L2Nu DYJetsToLL -F mc --dry
-
 # You can add data or mc flag at the end of command if needed
 
-python scripts/skim.py -V skim_test -Y v2023_BPix -C electron
+python scripts/skim.py -V skim_test -Y v2023_BPix -C muon
 
 OR
 
-python scripts/skim.py -V skim_test -F mc -Y v2023_BPix
+python scripts/skim.py -V skim_test -F mc -Y v2023_BPix -C muon
 
-# To run specific datasets, add them in test_list of skim.py
+# To run specific datasets
+
+python scripts/skim.py -V skim_test -F mc -Y v2023_BPix -C muon -D TTtoLNu2Q
+
 # This script uses slurm on htop.
 # Please specify which node to EXCLUDE from the batch job, in scripts/job_slurm_skim.sh
 
