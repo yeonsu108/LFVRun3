@@ -70,8 +70,8 @@ or within pyROOT (look in `processnanoaod.py`).
 Now you install plotIt for plotting histograms. Tha package is maintained from the other repo, to be used in the various analyses.
 ``` bash
 # Start from the base directory
-cd LFVRun2
-git clone git@github.com:minerva1993/plotIt.git
+cd LFVRun3
+git clone https://github.com/yeonsu108/plotIt.git
 cd plotIt
 cd external
 ./build-external.sh
@@ -94,59 +94,56 @@ All of the options are set in the script files `scripts/*.sh`.
 # The argument will be the name of campaign in 'Campaign Summary' tab
 # This will create file lists in data/dataset
 
-python getDatasetInfo.py v9UL_2018
+python getDatasetInfo.py v2023_BPix
 
 # Now, run script submitting slurm job
-# arguments: folder, year (2016pre, 2016post, 2017, and 2018)
+# arguments: folder, year (v2023_BPix)
 # You can add data or mc flag at the end of command if needed
 
-python scripts/skim.py -V skim_test -Y 2018
+python scripts/skim.py -V skim_test -Y v2023_BPix
 
 OR
 
-python scripts/skim.py -V skim_test -F mc -Y 2018
+python scripts/skim.py -V skim_test -F mc -Y v2023_BPix
 
 # To run specific datasets, add them in test_list of skim.py
 # This script uses slurm on htop.
 # Please specify which node to EXCLUDE from the batch job, in scripts/job_slurm_skim.sh
 
 #To find failed jobs knowing that `folder_filename.log`
-find log/201*/*/* | xargs grep runtime_error
-find log/201*/*/* | xargs grep fault
-find log/201*/*/* | xargs grep fatal
-find log/201*/*/* | xargs grep Traceback
-find log/201*/*/* | xargs grep ERROR
-find log/201*/*/* | xargs grep error
+find log/*/*/* | xargs grep runtime_error
+find log/*/*/* | xargs grep fault
+find log/*/*/* | xargs grep fatal
+find log/*/*/* | xargs grep Traceback
+find log/*/*/* | xargs grep ERROR
+find log/*/*/* | xargs grep error
 
 #Do this ONLY for systematic root file, unless will submit all variations in addition to nominal one
 python scripts/skim.py -V skim_test -Y 2018 --dry | grep 270000_221AB515 | sh
 
 #Using commands above, write resubmit list. Create each list and run submit command. Unless, there may be duplicated list.
-find log/201*/*/* | xargs grep -l runtime_error | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
-find log/201*/*/* | xargs grep -l fault | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
-find log/201*/*/* | xargs grep -l fatal | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
-find log/201*/*/* | xargs grep -l Traceback | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
-find log/201*/*/* | xargs grep -l error | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
-find log/201*/*/* | xargs grep ERROR | grep -v "SimpleJetCorrectionUncertainty" | sed 's/.log//' | sed 's/log\/201[6-8a-z]*\/.*\///' > ~/resub
+find log/*/*/* | xargs grep -l runtime_error | sed 's/.log//' | sed 's/log\/*202*\/.*\///' > ~/resub
+find log/*/*/* | xargs grep -l fault | sed 's/.log//' | sed 's/log\/*202*\/.*\///' > ~/resub
+find log/*/*/* | xargs grep -l fatal | sed 's/.log//' | sed 's/log\/*202*\/.*\///' > ~/resub
+find log/*/*/* | xargs grep -l Traceback | sed 's/.log//' | sed 's/log\/*202*\/.*\///' > ~/resub
+find log/*/*/* | xargs grep -l error | sed 's/.log//' | sed 's/log\/*202*\/.*\///' > ~/resub
+find log/*/*/* | xargs grep ERROR | grep -v "SimpleJetCorrectionUncertainty" | sed 's/.log//' | sed 's/log\/*202*\/.*\///' > ~/resub
 
 #Submit for each year...
-cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_test -Y 2016pre -N 
-cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_test -Y 2016post -N
-cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_test -Y 2017 -N 
-cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_test -Y 2018 -N 
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_test -Y v2023_BPix -N 
 ```
 
 #### Processing
 `scripts/process.py` scripts can automatically run over all ROOT files in an input directory.
 ``` txt
-Usage: python scripts/process.py -V skim_test -O test -Y 2018 -S theory
+Usage: python scripts/process.py -V skim_test -O test -Y v2023_BPix -S theory
 
 Options:
   -V, --version         Skim version: folder under /data1/common/skimmed_NanoAOD/
   -O, --outdir          Output folder in your working directory
-  -Y YEAR, --year=YEAR  Select 2016pre, 2016post, 2017, or 2018
+  -Y YEAR, --year=YEAR  Select v2023_BPix
   -S SYST, --syst=SYST  Systematic: 'data' for Data, 'nosyst' for mc without uncertainties. Default is 'theory'. To run without theory unc for TT samples, put 'all'
-  -D, --dataset         Put dataset folder name (eg. -D TTTo2L2Nu,QCD_Pt1000_MuEnriched) to process specific dataset.
+  -D, --dataset         Put dataset folder name (eg. -D TTto2L2Nu,QCD_Pt1000_MuEnriched) to process specific dataset.
   -F, --dataOrMC        Flag to choose Data or MC.
 ```
 
