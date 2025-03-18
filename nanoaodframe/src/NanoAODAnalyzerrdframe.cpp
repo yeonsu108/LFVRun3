@@ -27,8 +27,8 @@
 
 using namespace std;
 
-NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
-:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), PDFWeights(103, 0.0), PSWeights(4, 0.0), ScaleWeights(9, 0.0) {
+NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfilename, std::string year, std::string ch, std::string syst, std::string jsonfname, std::string globaltag, int nthreads)
+:_rd(*atree), _isData(false), _jsonOK(false), _outfilename(outfilename), _year(year), _ch(ch), _syst(syst), _jsonfname(jsonfname), _globaltag(globaltag), _inrootfile(0), _outrootfile(0), _rlm(_rd), _rnt(&_rlm), currentnode(0), PDFWeights(103, 0.0), PSWeights(4, 0.0), ScaleWeights(9, 0.0) {
 
     // record time
     auto start = std::chrono::system_clock::now();
@@ -43,21 +43,18 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
         cout << "<< Start Process NanoAOD >>" << endl;
     }
 
-    // Year switch
-    if (_year.find("2016pre") != std::string::npos) {
-        _isRun16pre = true;
-        cout << "Year : Run 2016 pre (16 APV)" << endl;
-    } else if (_year.find("2016post") != std::string::npos) {
-        _isRun16post = true;
-        cout << "Year : Run 2016 post" << endl;
-    } else if (_year.find("2017") != std::string::npos) {
-        _isRun17 = true;
-        cout << "Year : Run 2017" << endl;
-    } else if (_year.find("2018") != std::string::npos) {
-        _isRun18 = true;
-        cout << "Year : Run 2018" << endl;
+    // Channel(electron/muon) switch  // Default is electron channel
+    if (_ch.find("muon") != std::string::npos) {
+        cout << "Muon channel" << endl;
+    } else {
+        cout << "Electron channel" << endl;
     }
-    _isRun16 = _isRun16pre || _isRun16post;
+
+    // Year switch
+    if (_year.find("2023_BPix") != std::string::npos) {
+        _isRun23BPix = true;
+        cout << "Year : Run 2023 BPix" << endl;
+    }
 
     // Data/mc switch
     if (atree->GetBranch("genWeight") == nullptr) {
@@ -86,43 +83,6 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
             _originalvars.push_back(abranch->GetName());
         }
     }
-
-    // Concat weight tree for signal ufo
-    stringstream outname_split(outfilename);
-    std::string segment;
-    std::vector<std::string> seglist;
-
-    while (std::getline(outname_split, segment, '/')) {
-       seglist.push_back(segment);
-    }
-    std::string org_name = seglist.end()[-1].substr(seglist.end()[-1].find('_')+1);
-
-    //if (outfilename.find("_LFV_") != std::string::npos) {
-    //    std::string friend_file = "/data1/common/skimmed_NanoAOD/UFO_reweight/" + _year + "/" + seglist.end()[-2] + "/" + org_name;
-    //    if(gSystem->AccessPathName(friend_file.c_str())){
-    //        std::cout << "\n ERROR: It is a signal, but reweighting file doesn't exist" << std::endl;
-    //    } else {
-    //        TFile* wgtf = TFile::Open(friend_file.c_str(), "READ");
-    //        TTree* wgtt = (TTree*) wgtf->Get("weights");
-    //        *atree->AddFriend("weights", friend_file.c_str());
-
-    //        //_rd = ROOT::RDataFrame(*atree);
-    //        //_rlm = RNode(_rd);
-    //        //_rnt = RNodeTree(&_rlm);
-
-    //        TObjArray *allbranchesFriend = wgtt->GetListOfBranches();
-    //        for (int i =0; i<allbranchesFriend->GetSize(); i++) {
-    //            TBranch *abranch = dynamic_cast<TBranch *>(allbranchesFriend->At(i));
-    //            if (abranch!= nullptr) {
-    //                std::string brname = abranch->GetName();
-    //                if (brname.find("HLT_") == std::string::npos and brname.find("L1_") == std::string::npos)
-    //                    cout << brname << ", ";
-    //                _originalvars.push_back(abranch->GetName());
-    //            }
-    //        }
-    //    }
-    //}
-    cout << endl;
 }
 
 NanoAODAnalyzerrdframe::~NanoAODAnalyzerrdframe() {
@@ -158,105 +118,90 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
 
     if (_isData) _jsonOK = readjson();
 
-    //_rlm = _rlm.Filter("event < 12534199");
-
     _rlm = _rlm.Define("one", "1.0")
                .Define("zero", "0.0");
+
     // Event weight for data it's always one. For MC, it depends on the sign
     if(_isSkim){
         _rlm = _rlm.Define("unitGenWeight", "one");
         _rlm = _rlm.Define("isData", "true");
 
-        //if (_outfilename.find("_LFV_") == std::string::npos) {
-        //    _rlm = _rlm.Define("UFO_reweight", "one");
-        //} else {
-        //    _rlm = _rlm.Redefine("UFO_reweight", "weights.UFO_reweight");
+        //if(!_isData){
+
+        //    _rlm = _rlm.Redefine("isData", "false");
+
+        //    // Store sum of weights
+        //    auto storePDFWeights = [this](floats weights, float gen)->floats {
+
+        //        for (unsigned int i=0; i<weights.size(); i++)
+        //            PDFWeights[i] += (gen / abs(gen)) * weights[i];
+
+        //        return PDFWeights;
+        //    };
+        //    auto storePSWeights = [this](floats weights, float gen)->floats {
+
+        //        for (unsigned int i=0; i<weights.size(); i++) {
+        //            if (i > 3) continue; //JME Nano stores all PS
+        //            PSWeights[i] += (gen / abs(gen)) * weights[i];
+        //        }
+
+        //        return PSWeights;
+        //    };
+        //    auto storeScaleWeights = [this](floats weights, float gen)->floats {
+
+        //        for (unsigned int i=0; i<weights.size(); i++)
+        //            ScaleWeights[i] += (gen / abs(gen)) * weights[i];
+
+        //        return ScaleWeights;
+        //    };
+        //    try {
+        //        _rlm.Foreach(storePDFWeights, {"LHEPdfWeight", "genWeight"});
+        //    } catch (exception& e) {
+        //        cout << e.what() << endl;
+        //        cout << "No PDF weight in this root file!" << endl;
+        //    }
+        //    try {
+        //        _rlm.Foreach(storePSWeights, {"PSWeight", "genWeight"});
+        //    } catch (exception& e) {
+        //        cout << e.what() << endl;
+        //        cout << "No PS weight in this root file!" << endl;
+        //    }
+        //    try {
+        //        _rlm.Foreach(storeScaleWeights, {"LHEScaleWeight", "genWeight"});
+        //    } catch (exception& e) {
+        //        cout << e.what() << endl;
+        //        cout << "No Scale weight in this root file!" << endl;
+        //    }
+
+        //    // pu weight setup
+        //    cout<<"Loading Pileup profiles"<<endl;
+        //    // MC 2016pre = MC 2016post (same file)
+        //    TFile tfmc(("data/Pileup/PileupMC_UL" + _year + ".root").c_str());
+        //    TH1D* _hpumc = dynamic_cast<TH1D *>(tfmc.Get("pu_mc"));
+        //    _hpumc->SetDirectory(0);
+        //    tfmc.Close();
+
+        //    TFile tfdata(("data/Pileup/PileupDATA_UL" + _year + ".root").c_str());
+        //    TH1D* _hpudata = dynamic_cast<TH1D *>(tfdata.Get("pileup"));
+        //    TH1D* _hpudata_plus = dynamic_cast<TH1D *>(tfdata.Get("pileup_plus"));
+        //    TH1D* _hpudata_minus = dynamic_cast<TH1D *>(tfdata.Get("pileup_minus"));
+
+        //    _hpudata->SetDirectory(0);
+        //    _hpudata_plus->SetDirectory(0);
+        //    _hpudata_minus->SetDirectory(0);
+        //    tfdata.Close();
+
+        //    WeightCalculatorFromHistogram* _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
+        //    WeightCalculatorFromHistogram* _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
+        //    WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus); 
+        //    //Check Normalisation issue for genWeight
+        //    _rlm = _rlm.Redefine("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
+        //               .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->floats
+        //                      {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
         //}
-
-        /*if(!_isData){
-
-            _rlm = _rlm.Redefine("isData", "false");
-
-            // Store sum of weights
-            auto storePDFWeights = [this](floats weights, float gen)->floats {
-
-                for (unsigned int i=0; i<weights.size(); i++)
-                    PDFWeights[i] += (gen / abs(gen)) * weights[i];
-
-                return PDFWeights;
-            };
-            auto storePSWeights = [this](floats weights, float gen)->floats {
-
-                for (unsigned int i=0; i<weights.size(); i++) {
-                    if (i > 3) continue; //JME Nano stores all PS
-                    PSWeights[i] += (gen / abs(gen)) * weights[i];
-                }
-
-                return PSWeights;
-            };
-            auto storeScaleWeights = [this](floats weights, float gen)->floats {
-
-                for (unsigned int i=0; i<weights.size(); i++)
-                    ScaleWeights[i] += (gen / abs(gen)) * weights[i];
-
-                return ScaleWeights;
-            };
-            try {
-                _rlm.Foreach(storePDFWeights, {"LHEPdfWeight", "genWeight"});
-            } catch (exception& e) {
-                cout << e.what() << endl;
-                cout << "No PDF weight in this root file!" << endl;
-            }
-            try {
-                _rlm.Foreach(storePSWeights, {"PSWeight", "genWeight"});
-            } catch (exception& e) {
-                cout << e.what() << endl;
-                cout << "No PS weight in this root file!" << endl;
-            }
-            try {
-                _rlm.Foreach(storeScaleWeights, {"LHEScaleWeight", "genWeight"});
-            } catch (exception& e) {
-                cout << e.what() << endl;
-                cout << "No Scale weight in this root file!" << endl;
-            }
-
-            // pu weight setup
-            cout<<"Loading Pileup profiles"<<endl;
-            // MC 2016pre = MC 2016post (same file)
-            TFile tfmc(("data/Pileup/PileupMC_UL" + _year + ".root").c_str());
-            TH1D* _hpumc = dynamic_cast<TH1D *>(tfmc.Get("pu_mc"));
-            _hpumc->SetDirectory(0);
-            tfmc.Close();
-
-            TFile tfdata(("data/Pileup/PileupDATA_UL" + _year + ".root").c_str());
-            TH1D* _hpudata = dynamic_cast<TH1D *>(tfdata.Get("pileup"));
-            TH1D* _hpudata_plus = dynamic_cast<TH1D *>(tfdata.Get("pileup_plus"));
-            TH1D* _hpudata_minus = dynamic_cast<TH1D *>(tfdata.Get("pileup_minus"));
-
-            _hpudata->SetDirectory(0);
-            _hpudata_plus->SetDirectory(0);
-            _hpudata_minus->SetDirectory(0);
-            tfdata.Close();
-
-            WeightCalculatorFromHistogram* _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
-            WeightCalculatorFromHistogram* _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
-            WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus); 
-            //Check Normalisation issue for genWeight
-            _rlm = _rlm.Redefine("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
-                       .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->floats
-                              {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
-        }*/
     }
 
     std::vector<std::string> jes_var;
-    if (_isRun16)
-        jes_var = jes_var_2016;
-    else if (_isRun17)
-        jes_var = jes_var_2017;
-    else if (_isRun18)
-        jes_var = jes_var_2018;
-    else
-        cout << "WARNING !!!!!! : No JES - BTAG SF found" << endl;
 
     // Object selection will be defined in sequence.
     // Selected objects will be stored in new vectors.
@@ -335,107 +280,9 @@ bool NanoAODAnalyzerrdframe::readjson() {
 
 void NanoAODAnalyzerrdframe::selectElectrons() {
 
-    _rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
-               .Define("nvetoelepass","Sum(vetoelecuts)");
-    //cout << "select electrons" << endl;
-    // Run II recommendation: https://twiki.cern.ch/twiki/bin/viewauth/CMS/EgammaRunIIRecommendations
-    // Run II recomendation - cutbased: https://twiki.cern.ch/twiki/bin/view/CMS/CutBasedElectronIdentificationRun2
-    // Temporary elecuts (Not to be used!)
-    //_rlm = _rlm.Define("elecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1 && ((abs(Electron_deltaEtaSC<=1.479) && abs(Electron_dxy) < 0.05 && abs(Electron_dz) < 0.10 ) || (abs(Electron_deltaEtaSC>1.479) && abs(Electron_dxy) < 0.10 && abs(Electron_dz) < 0.20))")
-    //           .Define("Sel_elept", "Electron_pt[elecuts]") // define new variables
-    //           .Define("Sel_eleta", "Electron_eta[elecuts]")
-    //           .Define("Sel_elephi", "Electron_phi[elecuts]")
-    //           .Define("Sel_elemass", "Electron_mass[elecuts]")
-    //           .Define("Sel_eleidx", ::good_idx, {"elecuts"})
-    //           .Define("nelepass", "int(Sel_elept.size())")
-    //           .Define("ele4vecs", ::gen4vec, {"Sel_elept", "Sel_eleta", "Sel_elephi", "Sel_elemass"});
-
-    //Trick: run muon momentum scale at the very first function running in the processing
-    //auto muonhighscaleup = [](floats &pts)->floats {
-    //    floats out;
-    //    out.reserve(pts.size());
-    //    for (unsigned int i=0; i<pts.size(); i++) {
-    //        float pt_tmp = pts[i];
-    //        if (pts[i] > 200) pt_tmp *= 1.2;
-    //        out.emplace_back(pt_tmp);
-    //    }
-    //    return out;
-    //};
-
-    //auto muonhighscaledn = [](floats &pts)->floats {
-    //    floats out;
-    //    out.reserve(pts.size());
-    //    for (unsigned int i=0; i<pts.size(); i++) {
-    //        float pt_tmp =pts[i];
-    //        if (pts[i] > 200) pt_tmp *= 0.8;
-    //        out.emplace_back(pt_tmp);
-    //    }
-    //    return out;
-    //};
-
-    //auto muonhighscalemetup = [](floats &pts, float met)->float {
-    //    float out = met;
-    //    for (unsigned int i=0; i<pts.size(); i++) {
-    //        if (pts[i] > 200) out = out - 0.2 * pts[i];
-    //    }
-    //    return out;
-    //};
-
-    //auto muonhighscalemetdn = [](floats &pts, float met)->float {
-    //    float out = met;
-    //    for (unsigned int i=0; i<pts.size(); i++) {
-    //        if (pts[i] > 200) out =  + 0.2 * pts[i];
-    //    }
-    //    return out;
-    //};
-
-    //auto muonhighscalemetphiup = [](floats &pts, floats &phis, float met, float metphi)->float {
-    //    float out = 0.;
-    //    auto metx = met * cos(metphi);
-    //    auto mety = met * sin(metphi);
-    //    for (unsigned int i=0; i<pts.size(); i++) {
-    //        if (pts[i] > 200) {
-    //            metx -= (0.2 * pts[i]) * cos(phis[i]);
-    //            mety -= (0.2 * pts[i]) * sin(phis[i]);
-    //        }
-    //    }
-    //    out = float(atan2(mety, metx));
-    //    return out;
-    //};
-
-    //auto muonhighscalemetphidn = [](floats &pts, floats &phis, float met, float metphi)->float {
-    //    float out = 0.;
-    //    auto metx = met * cos(metphi);
-    //    auto mety = met * sin(metphi);
-    //    for (unsigned int i=0; i<pts.size(); i++) {
-    //        if (pts[i] > 200) {
-    //            metx += (0.2 * pts[i]) * cos(phis[i]);
-    //            mety += (0.2 * pts[i]) * sin(phis[i]);
-    //        }
-    //    }
-    //    out = float(atan2(mety, metx));
-    //    return out;
-    //};
-
-    //if (_syst.find("muonhighscaleup") != std::string::npos) {
-    //    _rlm = _rlm.Redefine("MET_phi", muonhighscalemetphiup, {"Muon_pt", "Muon_phi", "MET_pt", "MET_phi"})
-    //               .Redefine("MET_pt", muonhighscalemetup, {"Muon_pt", "MET_pt"})
-    //               .Redefine("Muon_pt", muonhighscaleup, {"Muon_pt"}); //order matters
-    //} else if (_syst.find("muonhighscaledown") != std::string::npos) {
-    //    _rlm = _rlm.Redefine("MET_phi", muonhighscalemetphiup, {"Muon_pt", "Muon_phi", "MET_pt", "MET_phi"})
-    //               .Redefine("MET_pt", muonhighscalemetdn, {"Muon_pt", "MET_pt"})
-    //               .Redefine("Muon_pt", muonhighscaledn, {"Muon_pt"});
-    //}
-
     std::string muonYear = "";
 
-    if (_isRun16pre) {
-        muonYear = "2016_UL_HIPM";
-    } else if (_isRun16post) {
-        muonYear = "2016_UL";
-    } else {
-        muonYear = _year + "_UL";
-    }
+    muonYear = _year + "_UL";
 
     auto muonhighscaleup = [muonYear](floats &pts, floats &etas, floats &phis, ints &charges)->floats {
         floats out;
@@ -507,12 +354,27 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
                    .Redefine("MET_pt", muonhighscalemet, {"Muon_pt", "Muon_pt_scale", "MET_pt"})
                    .Redefine("Muon_pt", "Muon_pt_scale"); //order matters
     }
-    //_rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
-    //           .Define("nvetoelepass","Sum(vetoelecuts)");
+    _rlm = _rlm.Define("elecuts", "Electron_pt>30 && abs(Electron_eta)<2.4 && Electron_mvaIso_WP90")
+               .Define("vetoelecuts", "!elecuts && Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
+               .Define("nvetoelepass","Sum(vetoelecuts)")
+               .Redefine("Electron_pt", "Electron_pt[elecuts]")
+               .Redefine("Electron_eta", "Electron_eta[elecuts]")
+               .Redefine("Electron_phi", "Electron_phi[elecuts]")
+               .Redefine("Electron_mass", "Electron_mass[elecuts]")
+               .Redefine("Electron_charge", "Electron_charge[elecuts]")
+               //.Define("Electron_Id", "Electron_looseId[elecuts]")
+               .Redefine("Electron_pfRelIso03_all", "Electron_pfRelIso03_all[elecuts]")
+               .Define("Sel_eleidx", ::good_idx, {"elecuts"})
+               .Define("nelepass", "int(Electron_pt.size())")
+               .Define("ele4vecs", ::gen4vec, {"Electron_pt", "Electron_eta", "Electron_phi", "Electron_mass"});
+
+    if (_ch.find("muon") != std::string::npos) {
+        _rlm = _rlm.Redefine("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
+                   .Redefine("nvetoelepass", "Sum(vetoelecuts)");
+    }
 }
 
 void NanoAODAnalyzerrdframe::selectMuons() {
-
     _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15")
                .Define("vetomuoncuts", "!muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25")
                .Define("nvetomuons","Sum(vetomuoncuts)")
@@ -527,81 +389,84 @@ void NanoAODAnalyzerrdframe::selectMuons() {
                .Define("nmuonpass", "int(Muon_pt.size())")
                .Define("muon4vecs", ::gen4vec, {"Muon_pt", "Muon_eta", "Muon_phi", "Muon_mass"});
 
+    if (_ch.find("electron" != std::string::npos)) {
+        _rlm = _rlm.Redefine("vetomuoncuts", "Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25")
+                   .Redefine("nvetomuons", "Sum(vetomuoncuts)");
+    }
+
 
     // Muon SF
-    /*
     cout<<"Loading Muon SF"<<endl;
-    std::string muonFile = _year + "_UL";
-    std::string muonTrgHist = "";
+    std::string muonFile = _year;
+    std::string muonTrgHist = "NUM_IsoMu24_or_Mu50_or_CascadeMu100_or_HighPtTkMu100_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
     TFile *muontrg;
     TFile *muonid;
     TFile *muoniso;
 
-    if (_isRun16pre) {
-        muonFile = "2016_UL_HIPM";
-        muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-    } else if (_isRun16post) {
-        muonFile = "2016_UL";
-        muonTrgHist = "NUM_IsoMu24_or_IsoTkMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-    } else if (_isRun17) {
-        muonTrgHist = "NUM_IsoMu27_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-    } else if (_isRun18) {
-        muonTrgHist = "NUM_IsoMu24_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+    if (_isRun23BPix) {
+        muonFile = "2023_BPix";
     }
-    muonid = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ID.root").c_str());
-    TH2F* _hmuonid = dynamic_cast<TH2F *>(muonid->Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
-    _hmuonid->SetDirectory(0);
-    muonid->Close();
-    WeightCalculatorFromHistogram* _muonid = new WeightCalculatorFromHistogram(_hmuonid);
-
-    muoniso = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ISO.root").c_str());
-    TH2F* _hmuoniso = dynamic_cast<TH2F *>(muoniso->Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
-    _hmuoniso->SetDirectory(0);
-    muoniso->Close();
-    WeightCalculatorFromHistogram* _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
-
-    muontrg = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_SingleMuonTriggers.root").c_str());
+    muontrg = TFile::Open(("data/MuonSF/ScaleFactors_Muon_Z_HLT_"+muonFile+"_abseta_pt.root").c_str());
     TH2F* _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
     _hmuontrg->SetDirectory(0);
     muontrg->Close();
     WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
 
+
+    //muonid = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ID.root").c_str());
+    //TH2F* _hmuonid = dynamic_cast<TH2F *>(muonid->Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
+    //_hmuonid->SetDirectory(0);
+    //muonid->Close();
+    //WeightCalculatorFromHistogram* _muonid = new WeightCalculatorFromHistogram(_hmuonid);
+
+    //muoniso = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ISO.root").c_str());
+    //TH2F* _hmuoniso = dynamic_cast<TH2F *>(muoniso->Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
+    //_hmuoniso->SetDirectory(0);
+    //muoniso->Close();
+    //WeightCalculatorFromHistogram* _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
+
+    //muontrg = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_SingleMuonTriggers.root").c_str());
+    //TH2F* _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
+    //_hmuontrg->SetDirectory(0);
+    //muontrg->Close();
+    //WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
+
     // We have only one muon!
-    auto muonSFId = [this, _muonid](floats &pt, floats &eta)->floats {
+    //auto muonSFId = [this, _muonid](floats &pt, floats &eta)->floats {
 
-        floats wVec;
-        wVec.reserve(3); //cent, up, down
+    //    floats wVec;
+    //    wVec.reserve(3); //cent, up, down
 
-        if (pt.size() == 1) {
-            for (unsigned int i=0; i<pt.size(); i++) {
-                float sf = _muonid->getWeight(std::abs(eta[i]),pt[i]);
-                float err = _muonid->getWeightErr(std::abs(eta[i]),pt[i]);
-                wVec.emplace_back(sf);
-                wVec.emplace_back(sf + err);
-                wVec.emplace_back(sf - err);
-            }
-        }
-        else wVec = {1.0, 1.0, 1.0};
-        return wVec;
-    };
+    //    if (pt.size() == 1) {
+    //        for (unsigned int i=0; i<pt.size(); i++) {
+    //            float sf = _muonid->getWeight(std::abs(eta[i]),pt[i]);
+    //            float err = _muonid->getWeightErr(std::abs(eta[i]),pt[i]);
+    //            wVec.emplace_back(sf);
+    //            wVec.emplace_back(sf + err);
+    //            wVec.emplace_back(sf - err);
+    //        }
+    //    }
+    //    else wVec = {1.0, 1.0, 1.0};
+    //    return wVec;
+    //};
 
-    auto muonSFIso = [this, _muoniso](floats &pt, floats &eta)->floats {
+    //auto muonSFIso = [this, _muoniso](floats &pt, floats &eta)->floats {
 
-        floats wVec;
-        wVec.reserve(3); //cent, up, down
+    //    floats wVec;
+    //    wVec.reserve(3); //cent, up, down
 
-        if (pt.size() == 1) {
-            for (unsigned int i=0; i<pt.size(); i++) {
-                float sf = _muoniso->getWeight(std::abs(eta[i]),pt[i]);
-                float err = _muoniso->getWeightErr(std::abs(eta[i]),pt[i]);
-                wVec.emplace_back(sf);
-                wVec.emplace_back(sf + err);
-                wVec.emplace_back(sf - err);
-            }
-        }
-        else wVec = {1.0, 1.0, 1.0};
-        return wVec;
-    };
+    //    if (pt.size() == 1) {
+    //        for (unsigned int i=0; i<pt.size(); i++) {
+    //            float sf = _muoniso->getWeight(std::abs(eta[i]),pt[i]);
+    //            float err = _muoniso->getWeightErr(std::abs(eta[i]),pt[i]);
+    //            wVec.emplace_back(sf);
+    //            wVec.emplace_back(sf + err);
+    //            wVec.emplace_back(sf - err);
+    //        }
+    //    }
+    //    else wVec = {1.0, 1.0, 1.0};
+    //    return wVec;
+    //};
 
     auto muonSFTrg = [this, _muontrg](floats &pt, floats &eta)->floats {
 
@@ -621,10 +486,10 @@ void NanoAODAnalyzerrdframe::selectMuons() {
         return wVec;
     };
 
-    _rlm = _rlm.Define("muonWeightId", muonSFId, {"Muon_pt","Muon_eta"})
-               .Define("muonWeightIso", muonSFIso, {"Muon_pt","Muon_eta"})
-               .Define("muonWeightTrg", muonSFTrg, {"Muon_pt","Muon_eta"});
-    */
+    //_rlm = _rlm.Define("muonWeightId", muonSFId, {"Muon_pt","Muon_eta"})
+    //           .Define("muonWeightIso", muonSFIso, {"Muon_pt","Muon_eta"})
+    //           .Define("muonWeightTrg", muonSFTrg, {"Muon_pt","Muon_eta"});
+    _rlm = _rlm.Define("muonWeightTrg", muonSFTrg, {"Muon_pt", "Muon_eta"});
 }
 
 /*
@@ -817,19 +682,6 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
 
         if(npv>100) npv=100;
         auto METxcorr(0.),METycorr(0.);
-        if (!_isData) {
-            //UL2016
-            if(_isRun16pre) METxcorr = -(-0.153497 * npv + -0.231751);
-            if(_isRun16pre) METycorr = -(0.00731978 * npv + 0.243323);
-            if(_isRun16post) METxcorr = -(-0.188743 * npv + 0.136539);
-            if(_isRun16post) METycorr = -(0.0127927 * npv + 0.117747);
-            //UL2017
-            if(_isRun17) METxcorr = -(-0.300155 * npv + 1.90608);
-            if(_isRun17) METycorr = -(0.300213 * npv + -2.02232);
-            //UL2018
-            if(_isRun18) METxcorr = -(0.183518 * npv + 0.546754);
-            if(_isRun18) METycorr = -(0.192263 * npv + -0.42121);
-        }
         if (_isData) {
             //UL2018
             if(runnb >= 315252 && runnb <= 316995 ) {METxcorr = -(0.263733 * npv + -1.91115); METycorr = -(0.0431304 * npv + -0.112043);}
@@ -902,20 +754,6 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
 
         if(npv>100) npv=100;
         auto METxcorr(0.),METycorr(0.);
-
-        if (!_isData) {
-            //UL2016
-            if (_isRun16pre) METxcorr = -(-0.153497 * npv + -0.231751);
-            if (_isRun16pre) METycorr = -(0.00731978 * npv + 0.243323);
-            if (_isRun16post) METxcorr = -(-0.188743 * npv + 0.136539);
-            if (_isRun16post) METycorr = -(0.0127927 * npv + 0.117747);
-            //UL2017
-            if (_isRun17) METxcorr = -(-0.300155 * npv + 1.90608);
-            if (_isRun17) METycorr = -(0.300213 * npv + -2.02232);
-            //UL2018
-            if (_isRun18) METxcorr = -(0.183518 * npv + 0.546754);
-            if (_isRun18) METycorr = -(0.192263 * npv + -0.42121);
-        }
         if (_isData) {
             //UL2018
             if (runnb >= 315252 && runnb <= 316995 ) {METxcorr = -(0.263733 * npv + -1.91115); METycorr = -(0.0431304 * npv + -0.112043);}
@@ -994,19 +832,6 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     // JER
     std::string jetResFilePath_ = "data/jer/";
     std::string jetResSFFilePath_ = "data/jer/";
-    if (_isRun16pre) {
-        jetResFilePath_ += "Summer20UL16APV_JRV3_MC_PtResolution_AK4PFchs.txt";
-        jetResSFFilePath_ += "Summer20UL16APV_JRV3_MC_SF_AK4PFchs.txt";
-    } else if (_isRun16post) {
-        jetResFilePath_ += "Summer20UL16_JRV3_MC_PtResolution_AK4PFchs.txt";
-        jetResSFFilePath_ += "Summer20UL16_JRV3_MC_SF_AK4PFchs.txt";
-    } else if (_isRun17) {
-        jetResFilePath_ += "Summer19UL17_JRV2_MC_PtResolution_AK4PFchs.txt";
-        jetResSFFilePath_ += "Summer19UL17_JRV2_MC_SF_AK4PFchs.txt";
-    } else if (_isRun18) {
-        jetResFilePath_ += "Summer19UL18_JRV2_MC_PtResolution_AK4PFchs.txt";
-        jetResSFFilePath_ += "Summer19UL18_JRV2_MC_SF_AK4PFchs.txt";
-    }
 
     JME::JetResolution jetResObj;
     JME::JetResolutionScaleFactor jetResSFObj;
@@ -1381,22 +1206,10 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
 
 
     // b-tagging
-    if (_isRun16pre) {
-        //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16preVFP
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2598") //l: 0.0508, m: 0.2598, t: 0.6502
-                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.2598");
-    } else if (_isRun16post) {
-        //https://twiki.cern.ch/twiki/bin/view/CMS/BtagRecommendation106XUL16postVFP#AK4_b_tagging
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2489") //l: 0.0480, m: 0.2489, t: 0.6377
-                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.2489");
-    } else if (_isRun17) {
-        //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL17
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3040") //l: 0.0532, m: 0.3040, t: 0.7476
-                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.3040");
-    } else if (_isRun18) {
-        //https://twiki.cern.ch/twiki/bin/viewauth/CMS/BtagRecommendation106XUL18
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2783") //l: 0.0490, m: 0.2783, t: 0.7100
-                   .Define("btagcuts_loose", "Jet_btagDeepFlavB_loose>0.2783");
+    if (_isRun23BPix) { 
+        //https://btv-wiki.docs.cern.ch/PerformanceCalibration/#important-links
+        _rlm = _rlm.Define("btagcuts", "Jet_btagPNetB>0.2450") //l: 0.0470, m: 0.2450, t: 0.6734 
+                   .Define("btagcuts_loose", "Jet_btagPNetB>0.0470");
     }
 
     _rlm = _rlm.Define("bJet_pt", "Jet_pt[btagcuts]")
@@ -1416,30 +1229,30 @@ void NanoAODAnalyzerrdframe::selectTaus() {
     auto syst_unc = _syst;
 
     //TES var.
-    if (!_isData) {
+    //if (!_isData) {
 
-        auto selectTES = [syst_unc](floatsVec unc)->floats {
+    //    auto selectTES = [syst_unc](floatsVec unc)->floats {
 
-            int idx = -1;
-            if (syst_unc.find("tesup") != std::string::npos) idx = 0;
-            else if (syst_unc.find("tesdown") != std::string::npos) idx = 1;
-            floats selected;
-            selected.reserve(unc.size());
+    //        int idx = -1;
+    //        if (syst_unc.find("tesup") != std::string::npos) idx = 0;
+    //        else if (syst_unc.find("tesdown") != std::string::npos) idx = 1;
+    //        floats selected;
+    //        selected.reserve(unc.size());
 
-            for (size_t i=0; i<unc.size(); i++) {
-                if (idx < 0) selected.emplace_back(1.0f);
-                selected.emplace_back(unc[i][idx]);
-                std::cout << idx << " " << unc[i][idx]  << endl;
-            }
-            return selected;
-        };
+    //        for (size_t i=0; i<unc.size(); i++) {
+    //            if (idx < 0) selected.emplace_back(1.0f);
+    //            selected.emplace_back(unc[i][idx]);
+    //            std::cout << idx << " " << unc[i][idx]  << endl;
+    //        }
+    //        return selected;
+    //    };
 
-        if (_syst.find("tes") != std::string::npos) {
-          _rlm = _rlm.Define("Tau_pt_unc_toapply", selectTES, {"Tau_pt_unc"})
-                     .Redefine("Tau_pt", "Tau_pt * Tau_pt_unc_toapply")
-                     .Redefine("Tau_mass", "Tau_mass * Tau_pt_unc_toapply");
-        }
-    }
+    //    if (_syst.find("tes") != std::string::npos) {
+    //      _rlm = _rlm.Define("Tau_pt_unc_toapply", selectTES, {"Tau_pt_unc"})
+    //                 .Redefine("Tau_pt", "Tau_pt * Tau_pt_unc_toapply")
+    //                 .Redefine("Tau_mass", "Tau_mass * Tau_pt_unc_toapply");
+    //    }
+    //}
 
     auto overlap_removal_mutau = [](FourVectorVec &muon4vecs, FourVectorVec &tau4vecs) {
         ints out;
@@ -1456,6 +1269,9 @@ void NanoAODAnalyzerrdframe::selectTaus() {
 
     _rlm = _rlm.Define("tau4vecs", ::gen4vec, {"Tau_pt", "Tau_eta", "Tau_phi", "Tau_mass"})
                .Define("mutauoverlap", overlap_removal_mutau, {"muon4vecs","tau4vecs"});
+    if (_ch.find("electron") != std::string::npos) {
+        _rlm = _rlm.Redefine("mutauoverlap", overlap_removal_mutau, {"ele4vex", "tau4vecs"});
+    }
 
     // input vector: vec[pt][vars]
     auto skimCol = [this](floatsVec toSkim, ints cut)->floatsVec {
@@ -1669,13 +1485,7 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
 
     std::string tauYear = "";
 
-    if (_isRun16pre) {
-        tauYear = "UL2016_preVFP";
-    } else if (_isRun16post) {
-        tauYear = "UL2016_postVFP";
-    } else {
-        tauYear = "UL" + _year;
-    }
+    tauYear = "UL" + _year;
 
     auto tauSFreader = correction::CorrectionSet::from_file("data/TauIDSFs/tau_" + tauYear + ".json.gz");
     //auto _tauidSFjet = tauSFreader->at("DeepTau2017v2p1VSjet");

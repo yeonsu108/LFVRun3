@@ -41,8 +41,8 @@ class NanoAODAnalyzerrdframe {
   using RDF2DHist = RResultPtr<TH2D>;
 
 public:
-  NanoAODAnalyzerrdframe(std::string infilename, std::string intreename, std::string outfilename, std::string year="", std::string syst="", std::string jsonfname="", string globaltag="", int nthreads=1);
-  NanoAODAnalyzerrdframe(TTree *t, std::string outfilename, std::string year="", std::string syst="", std::string jsonfname="", string globaltag="", int nthreads=1);
+  NanoAODAnalyzerrdframe(std::string infilename, std::string intreename, std::string outfilename, std::string year="", std::string ch="", std::string syst="", std::string jsonfname="", string globaltag="", int nthreads=1);
+  NanoAODAnalyzerrdframe(TTree *t, std::string outfilename, std::string year="", std::string ch="", std::string syst="", std::string jsonfname="", string globaltag="", int nthreads=1);
   virtual ~NanoAODAnalyzerrdframe();
   void setupAnalysis();
 
@@ -87,6 +87,7 @@ public:
   bool _isSkim = false;
   bool _isHTstitching = false;
   std::string _outfilename;
+  std::string _ch;
   std::string _syst;
 
 private:
@@ -94,11 +95,7 @@ private:
   bool _isData;
   bool _jsonOK;
   std::string _year;
-  bool _isRun16pre = false;
-  bool _isRun16post = false;
-  bool _isRun16 = false;
-  bool _isRun17 = false;
-  bool _isRun18 = false;
+  bool _isRun23BPix = false;
   // you MUST copy syst names from the output of 'python skimcsv.py'
   inline static std::vector<std::string> btag_var = {"central",
                 "hfup", "hfdown", "lfup", "lfdown", "hfstats1up", "hfstats1down",

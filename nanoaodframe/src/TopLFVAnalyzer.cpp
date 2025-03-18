@@ -9,8 +9,8 @@
 #include "TopLFVAnalyzer.h"
 #include "utility.h"
 
-TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string year, std::string syst, std::string jsonfname, bool applytauFF, string globaltag, int nthreads)
-:NanoAODAnalyzerrdframe(t, outfilename, year, syst, jsonfname, globaltag, nthreads), _outfilename(outfilename), _syst(syst), _year(year), _applytauFF(applytauFF)
+TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string year, std::string ch, std::string syst, std::string jsonfname, bool applytauFF, string globaltag, int nthreads)
+:NanoAODAnalyzerrdframe(t, outfilename, year, ch, syst, jsonfname, globaltag, nthreads), _outfilename(outfilename), _syst(syst), _year(year), _ch(ch), _applytauFF(applytauFF)
 {
     if(syst.find("jes") != std::string::npos or syst.find("jer") != std::string::npos or syst.find("metUnclust") != std::string::npos or
             syst.find("tes") != std::string::npos or syst.find("hdamp") != std::string::npos or syst.find("tune") != std::string::npos or
@@ -19,13 +19,7 @@ TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string ye
     }
     _syst = syst;
 
-    if (_year == "2016pre") {
-        tauYear = "UL2016_preVFP";
-    } else if (_year == "2016post") {
-        tauYear = "UL2016_postVFP";
-    } else {
-        tauYear = "UL" + _year;
-    }
+    tauYear = "UL" + _year;
 
     if (_outfilename.find("_LFV_TUMuTau_") != std::string::npos or _outfilename.find("_LFV_TCMuTau_") != std::string::npos) {
         _isSignal = true;
@@ -39,7 +33,13 @@ TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string ye
 // Define your cuts here
 void TopLFVAnalyzer::defineCuts() {
 
-    addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0", "0");
+    if (_ch.find("muon") != std::string::npos) {
+        addCuts("nmuonpass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0", "0");
+    } else if (_ch.find("electron") != std::string::npos) {
+        addCuts("nelepass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0", "0");
+    }
+
+    //addCuts("ncleantaupass == 1", "00");
 
     addCuts("nJet >= 3", "00");
     // All
@@ -61,6 +61,7 @@ void TopLFVAnalyzer::defineCuts() {
 void TopLFVAnalyzer::defineMoreVars() {
 
     defineVar("muonvec", ::select_leadingvec, {"muon4vecs"});
+    defineVar("elevec", ::select_leadingvec, {"muon4vecs"});
     /*
     defineVar("tauvec", ::select_leadingvec, {"cleantau4vecs"});
     defineVar("mutau_mass", ::calculate_invMass, {"muonvec","tauvec"});
@@ -107,11 +108,19 @@ void TopLFVAnalyzer::defineMoreVars() {
 
     // There should be 'good' tau (or none) and exactly one muon
     */
-    addVar({"Muon1_pt", "Muon_pt[0]", ""});
-    addVar({"Muon1_eta", "Muon_eta[0]", ""});
-    addVar({"Muon1_mass", "Muon_mass[0]", ""});
-    addVar({"Muon1_charge", "Muon_charge[0]", ""});
-    addVar({"eventWeight", "1.0"});
+    if (_ch.find("muon") != std::string::npos) {
+        addVar({"Muon1_pt", "Muon_pt[0]", ""});
+        addVar({"Muon1_eta", "Muon_eta[0]", ""});
+        addVar({"Muon1_mass", "Muon_mass[0]", ""});
+        addVar({"Muon1_charge", "Muon_charge[0]", ""});
+        addVar({"eventWeight", "1.0"});
+    } else if (_ch.find("electron") != std::string::npos) {
+        addVar({"Electron1_pt", "Electron_pt[0]", ""});
+        addVar({"Electron1_eta", "Electron_eta[0]", ""});
+        addVar({"Electron1_mass", "Electron_mass[0]", ""});
+        addVar({"Electron1_charge", "Electron_charge[0]", ""});
+        addVar({"eventWeight", "1.0"});
+    }
     /*
     addVar({"Tau1_pt", "Tau_pt[0]", ""});
     addVar({"Tau1_eta", "Tau_eta[0]", ""});
@@ -424,7 +433,11 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("bJet1_.*");
     addVartoStore("Tau1.*");
     */
-    addVartoStore("Muon1.*");
+    if (_ch.find("muon") != std::string::npos) {
+        addVartoStore("Muon1.*");
+    } else if (_ch.find("electron") != std::string::npos) {
+        addVartoStore("Electron1.*");
+    }
     /*
     addVartoStore("mutau.*");
     addVartoStore("MET_pt");
@@ -443,8 +456,13 @@ void TopLFVAnalyzer::defineMoreVars() {
 }
 
 void TopLFVAnalyzer::bookHists() {
-  add1DHist({"h_muon1_pt", ";Muon p_{T} (GeV);Events", 30, 0, 600}, "Muon1_pt", "eventWeight", "", "", "");
-  add1DHist({"h_muon1_eta", ";Muon eta;Events", 30, 0, 600}, "Muon1_eta", "eventWeight", "", "", "");
+    if (_ch.find("muon") != std::string::npos) {
+        add1DHist({"h_muon1_pt", ";Muon p_{T} (GeV);Events", 30, 0, 600}, "Muon1_pt", "eventWeight", "", "", "");
+        add1DHist({"h_muon1_eta", ";Muon #eta;Events", 20, -2.4, 2.4}, "Muon1_eta", "eventWeight", "", "", "");
+    } else if (_ch.find("electron") != std::string::npos) {
+        add1DHist({"h_electron1_pt", ";Electron p_{T} (GeV);Events", 30, 0, 600}, "Electron1_pt", "eventWeight", "", "", "");
+        add1DHist({"h_electron1_eta", ";Electron #eta;Events", 20, -2.4, 2.4}, "Electron1_eta", "eventWeight", "", "", "");
+    }
 
     /*
     std::vector<std::string> init_weight = {""};

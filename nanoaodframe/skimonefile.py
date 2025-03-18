@@ -19,6 +19,7 @@ if __name__=='__main__':
     parser.add_option("-I", "--infile",  dest="infile", type="string", default="", help="Input file name")
     parser.add_option("-O", "--outfile",  dest="outfile", type="string", default="", help="Output file name")
     parser.add_option("-Y", "--year",  dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")
+    parser.add_option("-C", "--ch",  dest="ch", type="string", default="", help="Select electron or muon")
     parser.add_option("-S", "--syst",  dest="syst", type="string", default="", help="Systematic sources")
     parser.add_option("-J", "--json",  dest="json", type="string", default="", help="Select events using this JSON file, meaningful only for data")
     parser.add_option("--saveallbranches", dest="saveallbranches", action="store_true", default=False, help="Save all branches. False by default")
@@ -55,7 +56,7 @@ if __name__=='__main__':
     cppyy.load_reflection_info("libnanoadrdframe.so")
     t = ROOT.TChain("Events")
     t.Add(options.infile)
-    aproc = ROOT.SkimEvents(t, options.outfile, options.year, options.syst, options.json, options.globaltag)
+    aproc = ROOT.SkimEvents(t, options.outfile, options.year, options.ch, options.syst, options.json, options.globaltag)
     aproc.setupAnalysis()
     aproc.run(options.saveallbranches, "Events")
 

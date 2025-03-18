@@ -8,8 +8,8 @@
 #include "TauFakeFactorAnalyzer.h"
 #include "utility.h"
 
-TauFakeFactorAnalyzer::TauFakeFactorAnalyzer(TTree *t, std::string outfilename, std::string year, std::string syst, std::string jsonfname, string globaltag, int nthreads, std::string mode)
-:NanoAODAnalyzerrdframe(t, outfilename, year, syst, jsonfname, globaltag, nthreads), _syst(syst), _year(year), _mode(mode)
+TauFakeFactorAnalyzer::TauFakeFactorAnalyzer(TTree *t, std::string outfilename, std::string year, std::string ch, std::string syst, std::string jsonfname, string globaltag, int nthreads, std::string mode)
+:NanoAODAnalyzerrdframe(t, outfilename, year, ch, syst, jsonfname, globaltag, nthreads), _syst(syst), _year(year), _ch(ch), _mode(mode)
 {
     _syst = syst;
 }

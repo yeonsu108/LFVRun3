@@ -18,15 +18,16 @@ echo "Using proxy at: $X509_USER_PROXY"
 /opt/ohpc/pub/voms/voms-proxy-info --all
 
 year=$1
-filename=$2
-infile="root://xrootd-cms.infn.it/${filename}"
+ch=$2
+filename=$3
+infile="${filename}"
 echo $infile
-outpath=$3
-outfile=$4
-workdir=$5
-logdir=$6
+outpath=$4
+outfile=$5
+workdir=$6
+logdir=$7
 
 cd $workdir
 source /cvmfs/sft.cern.ch/lcg/views/LCG_103/x86_64-centos7-gcc12-opt/setup.sh
-echo "python skimonefile.py -Y $year -I $infile -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log"
-python skimonefile.py -Y $year -I $infile -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log
+echo "python skimonefile.py -Y $year -C $ch -I $infile -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log"
+python skimonefile.py -Y $year -C $ch -I $infile -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log

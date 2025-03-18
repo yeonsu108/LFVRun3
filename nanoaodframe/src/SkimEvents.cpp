@@ -8,12 +8,12 @@
 #include "SkimEvents.h"
 #include "utility.h"
 
-SkimEvents::SkimEvents(TTree *t, std::string outfilename, std::string year, std::string syst, std::string jsonfname, string globaltag, int nthreads)
-:NanoAODAnalyzerrdframe(t, outfilename, year, syst, jsonfname, globaltag, nthreads),_year(year),_syst(syst)
+SkimEvents::SkimEvents(TTree *t, std::string outfilename, std::string year, std::string ch, std::string syst, std::string jsonfname, string globaltag, int nthreads)
+:NanoAODAnalyzerrdframe(t, outfilename, year, ch, syst, jsonfname, globaltag, nthreads),_year(year),_ch(ch),_syst(syst)
 {
   _isSkim = true;
   _isHTstitching = false;
-  if (_outfilename.find("WJetsToLNu_HT0To100") != string::npos) {
+  if (_outfilename.find("WtoLNu-4Jets") != string::npos) {
       _isHTstitching = true;
   }
 }
@@ -24,28 +24,20 @@ void SkimEvents::defineCuts()
   // Cuts to be applied in order
   // These will be passed to Filter method of RDF
   // check for good json event is defined earlier
-  if (_year.find("16") != std::string::npos) {
-      addCuts("Flag_filter && (HLT_IsoMu24 || HLT_IsoTkMu24) && nmuonpass == 1 && PV_npvsGood > 0","0");
-  } else if (_year.find("17") != std::string::npos) {
-      addCuts("Flag_filter && HLT_IsoMu27 && nmuonpass == 1 && PV_npvsGood > 0","0");
-  } else if (_year.find("18") != std::string::npos) {
-      addCuts("Flag_filter && HLT_IsoMu24 && nmuonpass == 1 && PV_npvsGood > 0","0");
-  } else if (_year.find("23") != std::string::npos) {
-      addCuts("HLT_IsoMu24 && nmuonpass == 1 && PV_npvsGood > 0","0");
+  if (_ch.find("muon") != std::string::npos) {
+      addCuts("(HLT_IsoMu24 || HLT_Mu50 || HLT_CascadeMu100 || HLT_HighPtTkMu100) && nmuonpass == 1 && PV_npvsGood > 0","0");
+  } else if (_ch.find("electron") != std::string::npos) {
+      addCuts("HLT_Ele30_WPTight_Gsf && nelepass == 1 && PV_npvsGood > 0","0");
   }
+
   //Prescription to fill up WJets HT = 0-100
-  if (_isHTstitching)
-      addCuts("LHE_HT < 100","00");
+  //if (_isHTstitching)
+  //    addCuts("LHE_HT < 40","00");
 }
 
 void SkimEvents::defineMoreVars()
 {
-        if(_year.find("16") != std::string::npos){
-            addVar({"Flag_filter","Flag_goodVertices && Flag_globalSuperTightHalo2016Filter && Flag_HBHENoiseFilter && Flag_HBHENoiseIsoFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_BadPFMuonFilter && Flag_BadPFMuonDzFilter && Flag_eeBadScFilter && Flag_hfNoisyHitsFilter",""});
-        }else if( (_year.find("17") != std::string::npos) || (_year.find("18") != std::string::npos)) {
-            // For 17, 18 UL
-            addVar({"Flag_filter","Flag_goodVertices && Flag_globalSuperTightHalo2016Filter && Flag_HBHENoiseFilter && Flag_HBHENoiseIsoFilter && Flag_EcalDeadCellTriggerPrimitiveFilter && Flag_BadPFMuonFilter && Flag_BadPFMuonDzFilter && Flag_hfNoisyHitsFilter && Flag_eeBadScFilter && Flag_ecalBadCalibFilter",""});
-        }else {
+        if (_year.find("23") != std::string::npos) {
             addVar({"Flag_filter", "Flag_goodVertices"});
         }
         // define variables that you want to store
@@ -128,7 +120,6 @@ void SkimEvents::defineMoreVars()
         addVartoStore("muon4vecs");
         addVartoStore("fixedGridRhoFastjetAll");
         addVartoStore("L1PreFiringWeight_.*");
-        //addVartoStore("UFO_reweight");
         addVartoStore("LHEPart_pt");
         addVartoStore("LHEPart_pdgId");
 }
@@ -141,5 +132,5 @@ void SkimEvents::bookHists()
 	//
 	// The braces are used to initalize the struct
 	// TH1D
-  add1DHist( {"hcounter", "Number of events", 2, -0.5, 1.5}, "one", "unitGenWeight", "", "", "");
+    add1DHist( {"hcounter", "Number of events", 2, -0.5, 1.5}, "one", "unitGenWeight", "", "", "");
 }
