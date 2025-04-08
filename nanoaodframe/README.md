@@ -95,8 +95,12 @@ All of the options are set in the script files `scripts/*.sh`.
 # This will create file lists in data/dataset
 
 python getDatasetInfo.py v2023_BPix
+# output: data/dataset/v2023_BPix/dataset.json
 
-# Now, run script submitting slurm job
+# Get file list from DAS
+# Set up your vOMS proxy before running this step
+source getDatasetDasList.sh v2023_BPix
+# output: data/dataset/v2023_BPix/dataset_{dataset_name}.txt
 ```
 ### Command Line Options
 
