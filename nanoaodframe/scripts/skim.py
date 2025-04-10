@@ -2,7 +2,7 @@ import os, sys, argparse
 from subprocess import call
 
 parser = argparse.ArgumentParser(usage="%prog [options]")
-parser.add_argument("-V", "--version", dest="version", type=str, default="", help="Skim version: folder under /data1/common/skimmed_NanoAOD/")
+parser.add_argument("-V", "--version", dest="version", type=str, default="", help="Skim version: folder under /data2/common/skimmed_NanoAOD/")
 parser.add_argument("-Y", "--year", dest="year", type=str, default="", help="Select 2016pre, 2016post, 2017, or 2018 runs")
 parser.add_argument("-C", "--ch", dest="ch", type=str, default="muon", help="muon or electron channel frag")
 parser.add_argument("-D", "--dataset", dest="dataset", action="store", nargs="+", default=[], help="Put dataset folder name (eg. TTTo2L2Nu) to process specific one.")
@@ -10,14 +10,15 @@ parser.add_argument("-N", "--name", dest="name", type=str, default="", help="Put
 parser.add_argument("-F", "--dataOrMC", dest="dataOrMC", type=str, default="", help="data or mc flag, if you want to process data-only or mc-only")
 parser.add_argument("--dry", dest="dry", action="store_true", default=False, help="dryrun: not submitting jobs to slurm")
 parser.add_argument("--local", dest="local", action="store_true", default=False, help="localrun: running with local root files")
+parser.add_argument("-P", "--path", dest="path",  type=str, default="root://xrootd-cms.infn.it/", help="path of NanoAOD files")
 options = parser.parse_args()
 
 year = options.year
 ch = options.ch
 workdir = os.getcwd()
 
-tgdir = '/data1/common/skimmed_NanoAOD/' + options.version + '/' + ch + '/DATAMC/' + year
-log = '/data1/common/skimmed_NanoAOD/' + options.version + '/' + ch + '/log/' + year
+tgdir = '/data2/common/skimmed_NanoAOD/' + options.version + '/' + ch + '/DATAMC/' + year
+log = '/data2/common/skimmed_NanoAOD/' + options.version + '/' + ch + '/log/' + year
 
 os.makedirs(tgdir.replace('DATAMC', 'data'), exist_ok=True)
 os.makedirs(tgdir.replace('DATAMC', 'mc'), exist_ok=True)
@@ -58,9 +59,10 @@ for fn in os.listdir("data/dataset/" + year):
                 continue
 
             if options.local:
-                infile= "/data1/common/NanoAOD/" + infile[len("/store/"):]
-            else:
-                infile = "root://xrootd-cms.infn.it/"+infile
+                infile = "/data2/common/NanoAOD/" + infile[len("/store/"):]
+            elif options.path:
+                infile = options.path+infile
+            else: infile = "root://xrootd-cms.infn.it/"+infile
 
             runString = "sbatch -J " + year + '_' + fname +\
                         " scripts/job_slurm_skim.sh " + year + " " + ch + " " + infile + " " +\

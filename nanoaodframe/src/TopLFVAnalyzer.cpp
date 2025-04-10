@@ -39,9 +39,8 @@ void TopLFVAnalyzer::defineCuts() {
         addCuts("nelepass == 1 && nvetoelepass == 0 && nvetomuons == 0 && PV_npvsGood > 0", "0");
     }
 
-    //addCuts("ncleantaupass == 1", "00");
+    addCuts("ncleantaupass == 1", "00");
 
-    addCuts("nJet >= 3", "00");
     // All
     //addCuts("ncleantaupass == 1", "00");
     // genuine taus
@@ -53,9 +52,15 @@ void TopLFVAnalyzer::defineCuts() {
     // fake taus
     //addCuts("ncleantaupass == 1 && Tau_pt_gen.size()==0", "00");
 
-    //addCuts("mutau_charge < 0", "000");
-    //addCuts("ncleanjetspass >= 3", "0000");
-    //addCuts("ncleanbjetspass == 1", "00000");
+
+    if (_ch.find("muon") != std::string::npos) {
+        addCuts("mutau_charge < 0", "000");
+    } else if (_ch.find("electron") != std::string::npos) {
+        addCuts("eletau_charge < 0", "000");
+    }
+
+    addCuts("ncleanjetspass >= 3", "0000");
+    addCuts("ncleanbjetspass == 1", "00000");
 }
 
 void TopLFVAnalyzer::defineMoreVars() {
@@ -121,14 +126,18 @@ void TopLFVAnalyzer::defineMoreVars() {
         addVar({"Electron1_charge", "Electron_charge[0]", ""});
         addVar({"eventWeight", "1.0"});
     }
-    /*
+    
     addVar({"Tau1_pt", "Tau_pt[0]", ""});
     addVar({"Tau1_eta", "Tau_eta[0]", ""});
     addVar({"Tau1_mass", "Tau_mass[0]", ""});
     addVar({"Tau1_charge", "Tau_charge[0]", ""});
     addVar({"Tau1_decayMode", "Tau_decayMode[0]", ""});
 
-    addVar({"mutau_charge", "Muon1_charge * Tau1_charge", ""});
+    if (_ch.find("muon") != std::string::npos) {
+        addVar({"mutau_charge", "Muon1_charge * Tau1_charge", ""});
+    } else if (_ch.find("electron") != std::string::npos) {
+        addVar({"eletau_charge", "Electron1_charge * Tau1_charge", ""});
+    }
 
     addVar({"Jet1_pt", "(Jet_pt.size()>0) ? Jet_pt[0] : -1", ""});
     addVar({"Jet1_eta", "Jet_eta[0]", ""});
@@ -150,6 +159,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVar({"bJet1_eta", "bJet_eta[0]", ""});
     addVar({"bJet1_mass", "bJet_mass[0]", ""});
 
+    /*
     //if (_syst == "data") {
     //    defineVar("tauWeightIdVsJetFIX", ::fixtausf, {"tauWeightIdVsJet", "Tau_pt"});
     //}

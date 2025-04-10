@@ -95,6 +95,9 @@ private:
   bool _isData;
   bool _jsonOK;
   std::string _year;
+  bool _isRun22 = false;
+  bool _isRun22EE = false;
+  bool _isRun23 = false;
   bool _isRun23BPix = false;
   // you MUST copy syst names from the output of 'python skimcsv.py'
   inline static std::vector<std::string> btag_var = {"central",

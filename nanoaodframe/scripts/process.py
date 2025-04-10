@@ -2,7 +2,7 @@ import os, sys, re, argparse
 from subprocess import call
 
 parser = argparse.ArgumentParser(usage="%prog [options]")
-parser.add_argument("-V", "--version", dest="version", type=str, default="", help="Skim version: folder under /data1/common/skimmed_NanoAOD/")
+parser.add_argument("-V", "--version", dest="version", type=str, default="", help="Skim version: folder under /data2/common/skimmed_NanoAOD/")
 parser.add_argument("-O", "--outdir", dest="outdir", type=str, default="test", help="Output folder in your working directory")
 parser.add_argument("-Y", "--year", dest="year", type=str, default="", help="Select 2016pre, 2016post, 2017, or 2018 runs")
 parser.add_argument("-S", "--syst", dest="syst", type=str, default="theory", help="Systematic: 'data' for Data, 'nosyst' for mc without uncertainties. Default is 'theory'. To run without theory unc for TT samples, put 'all'.")
@@ -15,7 +15,7 @@ options = parser.parse_args()
 
 year = options.year
 workdir = os.getcwd()
-indir = os.path.join('/data1/common/skimmed_NanoAOD/', options.version)
+indir = os.path.join('/data2/common/skimmed_NanoAOD/', options.version)
 tgdir = os.path.join(workdir, options.outdir, year)
 logdir = os.path.join(workdir, options.outdir, year, 'log')
 splitList = ["TTTo2L2Nu", "TTToSemiLeptonic",

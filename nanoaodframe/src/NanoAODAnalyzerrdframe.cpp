@@ -51,7 +51,19 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
     }
 
     // Year switch
-    if (_year.find("2023_BPix") != std::string::npos) {
+    if (_year.find("2022") != std::string::npos && _year.find("EE") == std::string::npos) {
+        _isRun22 = true;
+        cout << "Year : Run 2022" << endl;
+    }
+    if (_year.find("2022") != std::string::npos && _year.find("EE") != std::string::npos) {
+        _isRun22EE = true;
+        cout << "Year : Run 2022EE" << endl;
+    }
+    if (_year.find("2023") != std::string::npos && _year.find("BPix") == std::string::npos) {
+        _isRun23 = true;
+        cout << "Year : Run 2023" << endl;
+    }
+    if (_year.find("2023") != std::string::npos && _year.find("BPix") != std::string::npos) {
         _isRun23BPix = true;
         cout << "Year : Run 2023 BPix" << endl;
     }
@@ -215,14 +227,14 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         //    applyBSFs(jes_var);
         //}
     }
-    //else {
-    //    selectElectrons();
-    //    selectTaus();
-    //    selectJets(jes_var, jes_var_flav);
-    //    if (!_isData){
-    //        topPtReweight();
-    //    }
-    //}
+    else {
+        //selectElectrons();
+        selectTaus();
+        selectJets(jes_var, jes_var_flav);
+        //if (!_isData){
+        //    topPtReweight();
+        //}
+    }
     defineMoreVars();
     defineCuts();
     bookHists();
@@ -354,9 +366,14 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
                    .Redefine("MET_pt", muonhighscalemet, {"Muon_pt", "Muon_pt_scale", "MET_pt"})
                    .Redefine("Muon_pt", "Muon_pt_scale"); //order matters
     }
-    _rlm = _rlm.Define("elecuts", "Electron_pt>30 && abs(Electron_eta)<2.4 && Electron_mvaIso_WP90")
-               .Define("vetoelecuts", "!elecuts && Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
-               .Define("nvetoelepass","Sum(vetoelecuts)")
+    _rlm = _rlm.Define("elecuts", "Electron_pt>50 && abs(Electron_eta)<2.5 && Electron_mvaIso_WP90")
+               .Define("vetoelecuts", "!elecuts && Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1");
+    
+    if (_ch.find("muon") != std::string::npos) {
+        _rlm = _rlm.Redefine("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1");
+    }
+
+    _rlm = _rlm.Define("nvetoelepass","Sum(vetoelecuts)")
                .Redefine("Electron_pt", "Electron_pt[elecuts]")
                .Redefine("Electron_eta", "Electron_eta[elecuts]")
                .Redefine("Electron_phi", "Electron_phi[elecuts]")
@@ -368,16 +385,16 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
                .Define("nelepass", "int(Electron_pt.size())")
                .Define("ele4vecs", ::gen4vec, {"Electron_pt", "Electron_eta", "Electron_phi", "Electron_mass"});
 
-    if (_ch.find("muon") != std::string::npos) {
-        _rlm = _rlm.Redefine("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.4 && Electron_cutBased == 1")
-                   .Redefine("nvetoelepass", "Sum(vetoelecuts)");
-    }
 }
 
 void NanoAODAnalyzerrdframe::selectMuons() {
     _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15")
-               .Define("vetomuoncuts", "!muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25")
-               .Define("nvetomuons","Sum(vetomuoncuts)")
+               .Define("vetomuoncuts", "!muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
+    if (_ch.find("electron" != std::string::npos)) {
+        _rlm = _rlm.Redefine("vetomuoncuts", "Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
+    }
+
+    _rlm = _rlm.Define("nvetomuons","Sum(vetomuoncuts)")
                .Redefine("Muon_pt", "Muon_pt[muoncuts]")
                .Redefine("Muon_eta", "Muon_eta[muoncuts]")
                .Redefine("Muon_phi", "Muon_phi[muoncuts]")
@@ -389,28 +406,33 @@ void NanoAODAnalyzerrdframe::selectMuons() {
                .Define("nmuonpass", "int(Muon_pt.size())")
                .Define("muon4vecs", ::gen4vec, {"Muon_pt", "Muon_eta", "Muon_phi", "Muon_mass"});
 
-    if (_ch.find("electron" != std::string::npos)) {
-        _rlm = _rlm.Redefine("vetomuoncuts", "Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25")
-                   .Redefine("nvetomuons", "Sum(vetomuoncuts)");
-    }
 
 
-    // Muon SF
-    cout<<"Loading Muon SF"<<endl;
-    std::string muonFile = _year;
-    std::string muonTrgHist = "NUM_IsoMu24_or_Mu50_or_CascadeMu100_or_HighPtTkMu100_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-    TFile *muontrg;
-    TFile *muonid;
-    TFile *muoniso;
+    //// Muon SF
+    //cout<<"Loading Muon SF"<<endl;
+    //std::string muonFile = _year;
+    //std::string muonTrgHist = "NUM_IsoMu24_or_Mu50_or_CascadeMu100_or_HighPtTkMu100_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+    //TFile *muontrg;
+    //TFile *muonid;
+    //TFile *muoniso;
 
-    if (_isRun23BPix) {
-        muonFile = "2023_BPix";
-    }
-    muontrg = TFile::Open(("data/MuonSF/ScaleFactors_Muon_Z_HLT_"+muonFile+"_abseta_pt.root").c_str());
-    TH2F* _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
-    _hmuontrg->SetDirectory(0);
-    muontrg->Close();
-    WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
+    //if (_isRun22) {
+    //    muonFile = "2022";
+    //}
+    //if (_isRun22EE) {
+    //    muonFile = "2022EE";
+    //}
+    //if (_isRun23) {
+    //    muonFile = "2023";
+    //}
+    //if (_isRun23BPix) {
+    //    muonFile = "2023_BPix";
+    //}
+    //muontrg = TFile::Open(("data/MuonSF/ScaleFactors_Muon_Z_HLT_"+muonFile+"_abseta_pt.root").c_str());
+    //TH2F* _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
+    //_hmuontrg->SetDirectory(0);
+    //muontrg->Close();
+    //WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
 
 
     //muonid = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ID.root").c_str());
@@ -468,28 +490,27 @@ void NanoAODAnalyzerrdframe::selectMuons() {
     //    return wVec;
     //};
 
-    auto muonSFTrg = [this, _muontrg](floats &pt, floats &eta)->floats {
+    //auto muonSFTrg = [this, _muontrg](floats &pt, floats &eta)->floats {
 
-        floats wVec;
-        wVec.reserve(3); //cent, up, down
+    //    floats wVec;
+    //    wVec.reserve(3); //cent, up, down
 
-        if (pt.size() == 1) {
-            for (unsigned int i=0; i<pt.size(); i++) {
-                float sf = _muontrg->getWeight(std::abs(eta[i]),pt[i]);
-                float err = _muontrg->getWeightErr(std::abs(eta[i]),pt[i]);
-                wVec.emplace_back(sf);
-                wVec.emplace_back(sf + err);
-                wVec.emplace_back(sf - err);
-            }
-        }
-        else wVec = {1.0, 1.0, 1.0};
-        return wVec;
-    };
+    //    if (pt.size() == 1) {
+    //        for (unsigned int i=0; i<pt.size(); i++) {
+    //            float sf = _muontrg->getWeight(std::abs(eta[i]),pt[i]);
+    //            float err = _muontrg->getWeightErr(std::abs(eta[i]),pt[i]);
+    //            wVec.emplace_back(sf);
+    //            wVec.emplace_back(sf + err);
+    //            wVec.emplace_back(sf - err);
+    //        }
+    //    }
+    //    else wVec = {1.0, 1.0, 1.0};
+    //    return wVec;
+    //};
 
     //_rlm = _rlm.Define("muonWeightId", muonSFId, {"Muon_pt","Muon_eta"})
     //           .Define("muonWeightIso", muonSFIso, {"Muon_pt","Muon_eta"})
     //           .Define("muonWeightTrg", muonSFTrg, {"Muon_pt","Muon_eta"});
-    _rlm = _rlm.Define("muonWeightTrg", muonSFTrg, {"Muon_pt", "Muon_eta"});
 }
 
 /*
@@ -1053,94 +1074,94 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
 void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::vector<std::string> jes_var_flav) {
 
 
-    // input vector: vec[pt][vars], for bSF
-    auto skimCol = [this](doublesVec toSkim, ints cut)->doublesVec {
+    //// input vector: vec[pt][vars], for bSF
+    //auto skimCol = [this](doublesVec toSkim, ints cut)->doublesVec {
 
-        doublesVec out;
-        for (size_t i=0; i<toSkim.size(); i++) {
-            if (cut[i] > 0) out.emplace_back(toSkim[i]);
-        }
-        return out;
-    };
+    //    doublesVec out;
+    //    for (size_t i=0; i<toSkim.size(); i++) {
+    //        if (cut[i] > 0) out.emplace_back(toSkim[i]);
+    //    }
+    //    return out;
+    //};
 
-    // input vector: vec[pt][vars]
-    auto calcBSF = [this](doublesVec perJetSF, int nvar)->doubles {
+    //// input vector: vec[pt][vars]
+    //auto calcBSF = [this](doublesVec perJetSF, int nvar)->doubles {
 
-        doubles out;
-        out.reserve(nvar);
-        for (size_t i=0; i<nvar; i++) {
-            double bSF = 1.0;
-            for (size_t j=0; j<perJetSF.size(); j++) {
-                if (perJetSF[j].empty()) continue;
-                bSF *= perJetSF[j][i];
-            }
-            out.emplace_back(bSF);
-        }
-        return out;
-    };
+    //    doubles out;
+    //    out.reserve(nvar);
+    //    for (size_t i=0; i<nvar; i++) {
+    //        double bSF = 1.0;
+    //        for (size_t j=0; j<perJetSF.size(); j++) {
+    //            if (perJetSF[j].empty()) continue;
+    //            bSF *= perJetSF[j][i];
+    //        }
+    //        out.emplace_back(bSF);
+    //    }
+    //    return out;
+    //};
 
-    if (!_isData) {
+    //if (!_isData) {
 
-        auto syst_unc = _syst;
+    //    auto syst_unc = _syst;
 
-        auto selectJer = [syst_unc](floatsVec unc)->floats {
+    //    auto selectJer = [syst_unc](floatsVec unc)->floats {
 
-            int idx = 0;
-            if (syst_unc == "jerup") idx = 1;
-            else if (syst_unc == "jerdown") idx = 2;
-            floats selected;
-            selected.reserve(unc.size());
+    //        int idx = 0;
+    //        if (syst_unc == "jerup") idx = 1;
+    //        else if (syst_unc == "jerdown") idx = 2;
+    //        floats selected;
+    //        selected.reserve(unc.size());
 
-            for (size_t i=0; i<unc.size(); i++) {
-                selected.emplace_back(unc[i][idx]);
-            }
-            return selected;
-        };
+    //        for (size_t i=0; i<unc.size(); i++) {
+    //            selected.emplace_back(unc[i][idx]);
+    //        }
+    //        return selected;
+    //    };
 
-        if (_syst.find("jes") != std::string::npos) {
+    //    if (_syst.find("jes") != std::string::npos) {
 
-            auto selectJes = [syst_unc, jes_var, jes_var_flav](floatsVec unc)->floats {
+    //        auto selectJes = [syst_unc, jes_var, jes_var_flav](floatsVec unc)->floats {
 
-                floats selected;
-                selected.reserve(unc.size());
+    //            floats selected;
+    //            selected.reserve(unc.size());
 
-                std::vector<std::string> jes_var_all = jes_var;
-                jes_var_all.insert(jes_var_all.end(), jes_var_flav.begin(), jes_var_flav.end());
-                unsigned int jesidx = -1;
-                for (size_t i=0; i<jes_var_all.size(); i++) {
-                    if (jes_var_all[i] == syst_unc) jesidx = i;
-                }
-                if (int(jesidx) == -1) cerr << "Found No JES Unc Name!!" << endl;
+    //            std::vector<std::string> jes_var_all = jes_var;
+    //            jes_var_all.insert(jes_var_all.end(), jes_var_flav.begin(), jes_var_flav.end());
+    //            unsigned int jesidx = -1;
+    //            for (size_t i=0; i<jes_var_all.size(); i++) {
+    //                if (jes_var_all[i] == syst_unc) jesidx = i;
+    //            }
+    //            if (int(jesidx) == -1) cerr << "Found No JES Unc Name!!" << endl;
 
-                for (size_t i=0; i<unc.size(); i++) {
-                    selected.emplace_back(unc[i][jesidx]);
-                }
-                return selected;
+    //            for (size_t i=0; i<unc.size(); i++) {
+    //                selected.emplace_back(unc[i][jesidx]);
+    //            }
+    //            return selected;
 
-            };
+    //        };
 
-            _rlm = _rlm.Define("Jet_pt_unc_toapply", selectJes, {"Jet_pt_unc"})
-                       .Define("Jet_jer_toapply", selectJer, {"Jet_jer"})
-                       .Redefine("Jet_pt", "Jet_pt * Jet_jer_toapply * Jet_pt_unc_toapply")
-                       .Redefine("Jet_mass", "Jet_mass * Jet_jer_toapply * Jet_pt_unc_toapply");
+    //        _rlm = _rlm.Define("Jet_pt_unc_toapply", selectJes, {"Jet_pt_unc"})
+    //                   .Define("Jet_jer_toapply", selectJer, {"Jet_jer"})
+    //                   .Redefine("Jet_pt", "Jet_pt * Jet_jer_toapply * Jet_pt_unc_toapply")
+    //                   .Redefine("Jet_mass", "Jet_mass * Jet_jer_toapply * Jet_pt_unc_toapply");
 
-        } else {
-            _rlm = _rlm.Define("Jet_jer_toapply", selectJer, {"Jet_jer"})
-                       .Redefine("Jet_pt", "Jet_pt * Jet_jer_toapply")
-                       .Redefine("Jet_mass", "Jet_mass * Jet_jer_toapply");
-        }
+    //    } else {
+    //        _rlm = _rlm.Define("Jet_jer_toapply", selectJer, {"Jet_jer"})
+    //                   .Redefine("Jet_pt", "Jet_pt * Jet_jer_toapply")
+    //                   .Redefine("Jet_mass", "Jet_mass * Jet_jer_toapply");
+    //    }
 
-        if (_syst.find("metUnclust") != std::string::npos) {
+    //    if (_syst.find("metUnclust") != std::string::npos) {
 
-            if (_syst.find("up") != std::string::npos) {
-                _rlm = _rlm.Redefine("MET_pt", "float (sqrt(pow(MET_pt * cos(MET_phi) + MET_MetUnclustEnUpDeltaX, 2) + pow(MET_pt * sin(MET_phi) + MET_MetUnclustEnUpDeltaY, 2)) )")
-                           .Redefine("MET_phi", "float (atan2((MET_pt * sin(MET_phi) + MET_MetUnclustEnUpDeltaY), (MET_pt * cos(MET_phi) + MET_MetUnclustEnUpDeltaX)) )");
-            } else if (_syst.find("down") != std::string::npos) {
-                _rlm = _rlm.Redefine("MET_pt", "float (sqrt(pow(MET_pt * cos(MET_phi) - MET_MetUnclustEnUpDeltaX, 2) + pow(MET_pt * sin(MET_phi) - MET_MetUnclustEnUpDeltaY, 2)) )")
-                           .Redefine("MET_phi", "float (atan2((MET_pt * sin(MET_phi) - MET_MetUnclustEnUpDeltaY), (MET_pt * cos(MET_phi) - MET_MetUnclustEnUpDeltaX)) )");
-            }
-        }
-    }
+    //        if (_syst.find("up") != std::string::npos) {
+    //            _rlm = _rlm.Redefine("MET_pt", "float (sqrt(pow(MET_pt * cos(MET_phi) + MET_MetUnclustEnUpDeltaX, 2) + pow(MET_pt * sin(MET_phi) + MET_MetUnclustEnUpDeltaY, 2)) )")
+    //                       .Redefine("MET_phi", "float (atan2((MET_pt * sin(MET_phi) + MET_MetUnclustEnUpDeltaY), (MET_pt * cos(MET_phi) + MET_MetUnclustEnUpDeltaX)) )");
+    //        } else if (_syst.find("down") != std::string::npos) {
+    //            _rlm = _rlm.Redefine("MET_pt", "float (sqrt(pow(MET_pt * cos(MET_phi) - MET_MetUnclustEnUpDeltaX, 2) + pow(MET_pt * sin(MET_phi) - MET_MetUnclustEnUpDeltaY, 2)) )")
+    //                       .Redefine("MET_phi", "float (atan2((MET_pt * sin(MET_phi) - MET_MetUnclustEnUpDeltaY), (MET_pt * cos(MET_phi) - MET_MetUnclustEnUpDeltaX)) )");
+    //        }
+    //    }
+    //}
 
     _rlm = _rlm.Define("jetcuts", "Jet_pt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
     _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetcuts]")
@@ -1150,10 +1171,10 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
                .Redefine("Jet_btagDeepFlavB", "Jet_btagDeepFlavB[jetcuts]")
                .Define("jet4vecs", ::gen4vec, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass"});
 
-    if (!_isData) {
-        _rlm = _rlm.Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetcuts"})
-                   .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetcuts"});
-    }
+    //if (!_isData) {
+    //    _rlm = _rlm.Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetcuts"})
+    //               .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetcuts"});
+    //}
 
     // for checking overlapped jets with leptons
     auto checkoverlap = [](FourVectorVec &seljets, FourVectorVec &sellep) {
@@ -1171,14 +1192,19 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
         return mindrlepton;
     };
 
-    // Overlap removal with muon (used for btagging SF)
-    _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","muon4vecs"})
-               .Define("taujetoverlap", checkoverlap, {"jet4vecs","cleantau4vecs"})
-               .Define("jetoverlap","muonjetoverlap && taujetoverlap");
+    // Overlap removal with muon / electron (used for btagging SF)
+    if (_ch.find("muon") != std::string::npos) {
+        _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","muon4vecs"});
+    } else if (_ch.find("electron") != std::string::npos) {
+        _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","ele4vecs"});
+    }
 
-    _rlm = _rlm.Define("loosetaujetoverlap", checkoverlap, {"jet4vecs","cleanloosetau4vecs"})
-               .Define("jetoverlaploose","muonjetoverlap && loosetaujetoverlap")
-               .Define("Jet_pt_loose", "Jet_pt[jetoverlaploose]")
+    _rlm = _rlm.Define("taujetoverlap", checkoverlap, {"jet4vecs","cleantau4vecs"})
+               .Define("loosetaujetoverlap", checkoverlap, {"jet4vecs","cleanloosetau4vecs"})
+               .Define("jetoverlap","muonjetoverlap && taujetoverlap")
+               .Define("jetoverlaploose","muonjetoverlap && loosetaujetoverlap");
+
+    _rlm = _rlm.Define("Jet_pt_loose", "Jet_pt[jetoverlaploose]")
                .Define("Jet_btagDeepFlavB_loose", "Jet_btagDeepFlavB[jetoverlaploose]")
                .Define("ncleanjetsloosepass", "int(Jet_pt_loose.size())");
 
@@ -1191,25 +1217,40 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
                .Define("cleanjet4vecs", ::gen4vec, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass"})
                .Define("Jet_HT", "Sum(Jet_pt)");
 
-    if (!_isData) {
-        int nbsf_var = btag_var.size();
-        int njes_var = jes_var.size();
-        _rlm = _rlm.Define("nbsf_var", [nbsf_var](){return int(nbsf_var);})
-                   .Define("njes_var", [njes_var](){return int(njes_var);})
-                   .Define("btagWeight_DeepFlavB_perJet_loose", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlaploose"})
-                   .Define("btagWeight_DeepFlavB_loose", calcBSF, {"btagWeight_DeepFlavB_perJet_loose", "nbsf_var"})
-                   .Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlap"})
-                   .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetoverlap"})
-                   .Define("btagWeight_DeepFlavB", calcBSF, {"btagWeight_DeepFlavB_perJet", "nbsf_var"})
-                   .Define("btagWeight_DeepFlavB_jes", calcBSF, {"btagWeight_DeepFlavB_jes_perJet", "njes_var"});
-    }
+    //if (!_isData) {
+    //    int nbsf_var = btag_var.size();
+    //    int njes_var = jes_var.size();
+    //    _rlm = _rlm.Define("nbsf_var", [nbsf_var](){return int(nbsf_var);})
+    //               .Define("njes_var", [njes_var](){return int(njes_var);})
+    //               .Define("btagWeight_DeepFlavB_perJet_loose", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlaploose"})
+    //               .Define("btagWeight_DeepFlavB_loose", calcBSF, {"btagWeight_DeepFlavB_perJet_loose", "nbsf_var"})
+    //               .Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlap"})
+    //               .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetoverlap"})
+    //               .Define("btagWeight_DeepFlavB", calcBSF, {"btagWeight_DeepFlavB_perJet", "nbsf_var"})
+    //               .Define("btagWeight_DeepFlavB_jes", calcBSF, {"btagWeight_DeepFlavB_jes_perJet", "njes_var"});
+    //}
 
 
     // b-tagging
+    // https://btv-wiki.docs.cern.ch/ScaleFactors/Run3Summer22/#ak4-b-tagging
+    if (_isRun22) { 
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3086") //l: 0.0583, m: 0.3086, t: 0.7183
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.0583");
+    }
+    if (_isRun22EE) { 
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3196") //l: 0.0614, m: 0.3196, t: 0.73
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.0614");
+    }
+    if (_isRun23) { 
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2431") //l: 0.0479, m: 0.2431, t: 0.6553
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.0479");
+    }
     if (_isRun23BPix) { 
         //https://btv-wiki.docs.cern.ch/PerformanceCalibration/#important-links
-        _rlm = _rlm.Define("btagcuts", "Jet_btagPNetB>0.2450") //l: 0.0470, m: 0.2450, t: 0.6734 
-                   .Define("btagcuts_loose", "Jet_btagPNetB>0.0470");
+        //_rlm = _rlm.Define("btagcuts", "Jet_btagPNetB>0.2450") //l: 0.0470, m: 0.2450, t: 0.6734 
+        //           .Define("btagcuts_loose", "Jet_btagPNetB>0.0470");
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2435") //l: 0.048, m: 0.2435, t: 0.6563
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.048");
     }
 
     _rlm = _rlm.Define("bJet_pt", "Jet_pt[btagcuts]")
@@ -1267,10 +1308,11 @@ void NanoAODAnalyzerrdframe::selectTaus() {
         return out;
     };
 
-    _rlm = _rlm.Define("tau4vecs", ::gen4vec, {"Tau_pt", "Tau_eta", "Tau_phi", "Tau_mass"})
-               .Define("mutauoverlap", overlap_removal_mutau, {"muon4vecs","tau4vecs"});
-    if (_ch.find("electron") != std::string::npos) {
-        _rlm = _rlm.Redefine("mutauoverlap", overlap_removal_mutau, {"ele4vex", "tau4vecs"});
+    _rlm = _rlm.Define("tau4vecs", ::gen4vec, {"Tau_pt", "Tau_eta", "Tau_phi", "Tau_mass"});
+    if (_ch.find("muon") != std::string::npos) {
+        _rlm = _rlm.Define("mutauoverlap", overlap_removal_mutau, {"muon4vecs","tau4vecs"});
+    } else if (_ch.find("electron") != std::string::npos) {
+        _rlm = _rlm.Define("mutauoverlap", overlap_removal_mutau, {"ele4vex", "tau4vecs"});
     }
 
     // input vector: vec[pt][vars]
@@ -1286,9 +1328,9 @@ void NanoAODAnalyzerrdframe::selectTaus() {
 
     // Fake factor study - loose but not tight
     // Hadronic Tau Object Selections
-    _rlm = _rlm.Define("taucuts", "Tau_pt>40.0 && abs(Tau_eta)<2.3  && (Tau_decayMode == 0 || Tau_decayMode == 1 || Tau_decayMode == 2 || Tau_decayMode == 10 || Tau_decayMode == 11)")
-               .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 64")
-               .Define("deeptauidcuts_loose","Tau_idDeepTau2017v2p1VSmu & 8 && Tau_idDeepTau2017v2p1VSe & 4 && Tau_idDeepTau2017v2p1VSjet & 8");
+    _rlm = _rlm.Define("taucuts", "Tau_pt>30.0 && abs(Tau_eta)<2.3  && Tau_idDecayModeNewDMs")
+               .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu >= 4 && Tau_idDeepTau2017v2p1VSe >= 6 && Tau_idDeepTau2017v2p1VSjet >= 8")
+               .Define("deeptauidcuts_loose","Tau_idDeepTau2017v2p1VSmu >= 4 && Tau_idDeepTau2017v2p1VSe >= 2 && Tau_idDeepTau2017v2p1VSjet >= 4");
 
     // Hadronic Tau Selection
     _rlm = _rlm.Define("seltaucuts_loose","taucuts && deeptauidcuts_loose && mutauoverlap")
@@ -1302,14 +1344,14 @@ void NanoAODAnalyzerrdframe::selectTaus() {
                .Define("nloosetaupass", "int(Tau_pt_loose.size())")
                .Define("cleanloosetau4vecs", ::gen4vec, {"Tau_pt_loose", "Tau_eta_loose", "Tau_phi_loose", "Tau_mass_loose"});
 
-    if (!_isData) {
-        _rlm = _rlm.Define("Tau_genPartFlav_loose","Tau_genPartFlav[seltaucuts_loose]")
-                   .Define("taugencut_loose","Tau_genPartFlav_loose == 5")
-                   .Redefine("Tau_pt_loose_gen", "Tau_pt_loose_gen[taugencut_loose]")
-                   .Redefine("tauWeightIdVsJet_loose", skimCol, {"tauWeightIdVsJet_loose", "seltaucuts_loose"})
-                   .Define("tauWeightIdVsEl_loose", skimCol, {"tauWeightIdVsEl", "seltaucuts_loose"})
-                   .Define("tauWeightIdVsMu_loose", skimCol, {"tauWeightIdVsMu", "seltaucuts_loose"});
-    }
+    //if (!_isData) {
+    //    _rlm = _rlm.Define("Tau_genPartFlav_loose","Tau_genPartFlav[seltaucuts_loose]")
+    //               .Define("taugencut_loose","Tau_genPartFlav_loose == 5")
+    //               .Redefine("Tau_pt_loose_gen", "Tau_pt_loose_gen[taugencut_loose]")
+    //               .Redefine("tauWeightIdVsJet_loose", skimCol, {"tauWeightIdVsJet_loose", "seltaucuts_loose"})
+    //               .Define("tauWeightIdVsEl_loose", skimCol, {"tauWeightIdVsEl", "seltaucuts_loose"})
+    //               .Define("tauWeightIdVsMu_loose", skimCol, {"tauWeightIdVsMu", "seltaucuts_loose"});
+    //}
 
     _rlm = _rlm.Define("seltaucuts","taucuts && deeptauidcuts && mutauoverlap")
                .Define("Tau_pt_gen", "Tau_pt[seltaucuts]")
@@ -1323,14 +1365,14 @@ void NanoAODAnalyzerrdframe::selectTaus() {
                .Define("ncleantaupass", "int(Tau_pt.size())")
                .Define("cleantau4vecs", ::gen4vec, {"Tau_pt", "Tau_eta", "Tau_phi", "Tau_mass"});
 
-    if (!_isData) {
-        _rlm = _rlm.Redefine("Tau_genPartFlav","Tau_genPartFlav[seltaucuts]")
-                   .Define("taugencut","Tau_genPartFlav == 5")
-                   .Redefine("Tau_pt_gen", "Tau_pt[taugencut]")
-                   .Redefine("tauWeightIdVsJet", skimCol, {"tauWeightIdVsJet", "seltaucuts"})
-                   .Redefine("tauWeightIdVsEl", skimCol, {"tauWeightIdVsEl", "seltaucuts"})
-                   .Redefine("tauWeightIdVsMu", skimCol, {"tauWeightIdVsMu", "seltaucuts"});
-    }
+    //if (!_isData) {
+    //    _rlm = _rlm.Redefine("Tau_genPartFlav","Tau_genPartFlav[seltaucuts]")
+    //               .Define("taugencut","Tau_genPartFlav == 5")
+    //               .Redefine("Tau_pt_gen", "Tau_pt[taugencut]")
+    //               .Redefine("tauWeightIdVsJet", skimCol, {"tauWeightIdVsJet", "seltaucuts"})
+    //               .Redefine("tauWeightIdVsEl", skimCol, {"tauWeightIdVsEl", "seltaucuts"})
+    //               .Redefine("tauWeightIdVsMu", skimCol, {"tauWeightIdVsMu", "seltaucuts"});
+    //}
 
 }
 
@@ -1813,6 +1855,7 @@ void NanoAODAnalyzerrdframe::addVartoStore(string varname) {
 }
 
 void NanoAODAnalyzerrdframe::setupTree() {
+    cout << "setting up Tree" <<endl;
 
     vector<RNodeTree *> rntends;
     _rnt.getRNodeLeafs(rntends);

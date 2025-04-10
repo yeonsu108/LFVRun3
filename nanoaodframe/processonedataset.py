@@ -41,6 +41,8 @@ if __name__=='__main__':
                 json = os.path.join(workdir, "data/GoldenJSON/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt")
             elif "2018" in indir:
                 json = os.path.join(workdir, "data/GoldenJSON/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt")
+            elif "2022" in indir:
+                json = os.path.join(workdir, "data/GoldenJSON/Cert_Collisions2022_355100_362760_Golden.json")
             elif "2023" in indir:
                 json = os.path.join(workdir, "data/GoldenJSON/Cert_Collisions2023_366442_370790_Golden.json")
 
@@ -61,7 +63,7 @@ if __name__=='__main__':
         fullname = os.path.join(indir, fname)
         fullnamelist.append(fullname)
 
-    for fname in fullnamelist:            
+    for fname in fullnamelist:
         if re.match('.*\.root', fname) and os.path.isfile(fname): # if it has .root file extension
             rootfilestoprocess.append(fname)
     print("files to process")
