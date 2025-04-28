@@ -60,8 +60,8 @@ for fn in os.listdir("data/dataset/" + year):
 
             if options.local:
                 infile = "/data2/common/NanoAOD/" + infile[len("/store/"):]
-            elif options.path:
-                infile = options.path+infile
+            elif options.path=="fnal":
+                infile = "root://cmsxrootd.fnal.gov/"+infile
             else: infile = "root://xrootd-cms.infn.it/"+infile
 
             runString = "sbatch -J " + year + '_' + fname +\

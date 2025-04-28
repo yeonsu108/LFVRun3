@@ -5,6 +5,7 @@ parser = argparse.ArgumentParser(usage="%prog [options]")
 parser.add_argument("-V", "--version", dest="version", type=str, default="", help="Skim version: folder under /data2/common/skimmed_NanoAOD/")
 parser.add_argument("-O", "--outdir", dest="outdir", type=str, default="test", help="Output folder in your working directory")
 parser.add_argument("-Y", "--year", dest="year", type=str, default="", help="Select 2016pre, 2016post, 2017, or 2018 runs")
+parser.add_argument("-C", "--ch",  dest="ch", type=str, default="", help="Select electron or muon")
 parser.add_argument("-S", "--syst", dest="syst", type=str, default="theory", help="Systematic: 'data' for Data, 'nosyst' for mc without uncertainties. Default is 'theory'. To run without theory unc for TT samples, put 'all'.")
 parser.add_argument("-D", "--dataset", dest="dataset", action="store", nargs="+", default=[], help="Put dataset folder name (eg. TTTo2L2Nu) to process specific one.")
 parser.add_argument("-F", "--dataOrMC", dest="dataOrMC", type=str, default="", help="data or mc flag, if you want to process data-only or mc-only")
@@ -14,10 +15,11 @@ parser.add_argument("--ff", dest="ff", action="store_true", default=False, help=
 options = parser.parse_args()
 
 year = options.year
+ch   = options.ch
 workdir = os.getcwd()
-indir = os.path.join('/data2/common/skimmed_NanoAOD/', options.version)
-tgdir = os.path.join(workdir, options.outdir, year)
-logdir = os.path.join(workdir, options.outdir, year, 'log')
+indir = os.path.join('/data2/common/skimmed_NanoAOD/', options.version, ch)
+tgdir = os.path.join(workdir, options.outdir, ch, year)
+logdir = os.path.join(workdir, options.outdir, ch, year, 'log')
 splitList = ["TTTo2L2Nu", "TTToSemiLeptonic",
              #"ST_LFV_TCMuTau_Scalar", "ST_LFV_TCMuTau_Vector", "ST_LFV_TCMuTau_Tensor",
              #"ST_LFV_TUMuTau_Scalar", "ST_LFV_TUMuTau_Vector", "ST_LFV_TUMuTau_Tensor",
@@ -108,7 +110,7 @@ for ds in dataset_list:
 
         if 'data' in ds[5:]:
             if src == "":
-                parameters.append([year, ds, outdir, outfname, "data"])
+                parameters.append([year, ch, ds, outdir, outfname, "data"])
             else: continue
 
         else:
@@ -116,30 +118,30 @@ for ds in dataset_list:
                 if options.syst == "all":
                     if toSplit:
                         os.makedirs(tgdir.replace(year, year + '/' + "split"), exist_ok=True)
-                        parameters.append((year, rootfilestoprocess, outdir.replace(year, year + '/' + "split"), outfname, "all"))
+                        parameters.append((year, ch, rootfilestoprocess, outdir.replace(year, year + '/' + "split"), outfname, "all"))
                     else:
-                        parameters.append((year, ds, outdir, outfname, "all"))
+                        parameters.append((year, ch, ds, outdir, outfname, "all"))
                 elif options.syst == "theory":
                     if any(i in dataset_name for i in ["TTTo", "ST_t", "TT_LFV", "ST_LFV"]):
                         if toSplit:
                             os.makedirs(tgdir.replace(year, year + '/' + "split"), exist_ok=True)
-                            parameters.append([year, rootfilestoprocess, outdir.replace(year, year + '/' + "split"), outfname, "theory"])
+                            parameters.append([year, ch, rootfilestoprocess, outdir.replace(year, year + '/' + "split"), outfname, "theory"])
                         else:
-                            parameters.append([year, ds, outdir, outfname, "theory"])
-                    else: parameters.append([year, ds, outdir, outfname, "all"])
+                            parameters.append([year, ch, ds, outdir, outfname, "theory"])
+                    else: parameters.append([year, ch, ds, outdir, outfname, "all"])
                 elif options.syst == "nosyst":
                     if toSplit:
                         os.makedirs(tgdir.replace(year, year + '/' + "split"), exist_ok=True)
-                        parameters.append([year, rootfilestoprocess, outdir.replace(year, year + '/' + "split"), outfname, "nosyst"])
+                        parameters.append([year, ch, rootfilestoprocess, outdir.replace(year, year + '/' + "split"), outfname, "nosyst"])
                     else:
-                        parameters.append([year, ds, outdir, outfname, "nosyst"])
+                        parameters.append([year, ch, ds, outdir, outfname, "nosyst"])
             elif src == "" and ext_syst:
                 if any(i in dataset_name for i in syst_ext) and options.syst == "nosyst": continue
-                else: parameters.append([year, ds, outdir, outfname, "nosyst"])
+                else: parameters.append([year, ch, ds, outdir, outfname, "nosyst"])
             else:
                 #os.makedir(os.path.join(tgdir, dataset_name+src)
                 if any(i in dataset_name for i in syst_ext): continue
-                parameters.append([year, ds, outdir, outfname, src[2:]])
+                parameters.append([year, ch, ds, outdir, outfname, src[2:]])
                 # for tests
                 #if toSplit:
                 #    os.makedirs(tgdir.replace(year, year + '/' + "split"), exist_ok=True)
@@ -150,20 +152,20 @@ for ds in dataset_list:
 
 runString_list = []
 for item in parameters:
-    if isinstance(item[1], str):
-        runString = "sbatch -J " + item[0] + "_" + item[3].replace("hist_", "").replace(".root", "") +\
+    if isinstance(item[2], str):
+        runString = "sbatch -J " + item[0] + "_" + item[4].replace("hist_", "").replace(".root", "") +\
                     " scripts/job_slurm_process.sh " + item[0] + " " + item[1] + " " +\
-                    item[2] + " " + item[3] + " " +\
-                    workdir + " " +logdir + " " + item[4]
+                    item[2] + " " + item[3] + " " + item[4] + " " +\
+                    workdir + " " +logdir + " " + item[5]
         if len(options.mode) > 0: runString += " " + options.mode
         elif options.ff:          runString += " --ff"
         runString_list.append(runString)
     else:
-        for fidx in range(len(item[1])):
-            runString = "sbatch -J " + item[0] + "_" + item[3].replace("hist_", "").replace(".root", "_" + str(fidx)) +\
-                        " scripts/job_slurm_process.sh " + item[0] + " " + item[1][fidx] + " " +\
-                        item[2] + " " + item[3].replace(".root", "_" + str(fidx) + ".root")  + " " +\
-                        workdir + " " +logdir + " " + item[4]
+        for fidx in range(len(item[2])):
+            runString = "sbatch -J " + item[0] + "_" + item[4].replace("hist_", "").replace(".root", "_" + str(fidx)) +\
+                        " scripts/job_slurm_process.sh " + item[0] + " " + item[1] + " " + item[2][fidx] + " " +\
+                        item[3] + " " + item[4].replace(".root", "_" + str(fidx) + ".root")  + " " +\
+                        workdir + " " +logdir + " " + item[5]
             if len(options.mode) > 0: runString += " " + options.mode
             elif options.ff: runString += " --ff"
             runString_list.append(runString)

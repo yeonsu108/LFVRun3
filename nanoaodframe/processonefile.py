@@ -18,6 +18,7 @@ if __name__=='__main__':
     parser.add_argument("-I", "--infile",  dest="infile", type=str, default="", help="Input file name")
     parser.add_argument("-O", "--outputroot", dest="outputroot", type=str, default="", help="Output file in your working directory")
     parser.add_argument("-Y", "--year", dest="year", type=str, default="", help="Select 2016pre, 2016post, 2017, or 2018 runs")
+    parser.add_argument("-C", "--ch",  dest="ch", type=str, default="", help="Select electron or muon")
     parser.add_argument("-S", "--syst", dest="syst", type=str, default="theory", help="Systematic: 'data' for Data, 'nosyst' for mc without uncertainties. Default is 'theory'. To run without theory unc for TT samples, put 'all'.")
     parser.add_argument("-D", "--dataset", dest="dataset", action="store", nargs="+", default=[], help="Put dataset folder name (eg. TTTo2L2Nu) to process specific one.")
     parser.add_argument("-F", "--dataOrMC", dest="dataOrMC", type=str, default="", help="data or mc flag, if you want to process data-only or mc-only")
@@ -28,6 +29,7 @@ if __name__=='__main__':
     outputroot = options.outputroot
     infile = options.infile
     year = options.year
+    ch   = options.ch
     syst = options.syst
     mode = options.mode
     applytauFF = options.ff
@@ -41,6 +43,8 @@ if __name__=='__main__':
                 json = os.path.join(workdir, "data/GoldenJSON/Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt")
             elif "2018" in infile:
                 json = os.path.join(workdir, "data/GoldenJSON/Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt")
+            elif "2022" in infile:
+                json = os.path.join(workdir, "data/GoldenJSON/Cert_Collisions2022_355100_362760_Golden.json")
             elif "2023" in infile:
                 json = os.path.join(workdir, "data/GoldenJSON/Cert_Collisions2023_366442_370790_Golden.json")
 
@@ -59,9 +63,9 @@ if __name__=='__main__':
         t.Add(infile)
     aproc = None
     if len(mode) > 1:
-        aproc = ROOT.TauFakeFactorAnalyzer(t, outputroot, year, syst, json, "", 1, mode)
+        aproc = ROOT.TauFakeFactorAnalyzer(t, outputroot, year, ch, syst, json, "", 1, mode)
     else:
-        aproc = ROOT.TopLFVAnalyzer(t, outputroot, year, syst, json, applytauFF, "", 1)
+        aproc = ROOT.TopLFVAnalyzer(t, outputroot, year, ch, syst, json, applytauFF, "", 1)
     aproc.setupAnalysis()
     aproc.run(False, "Events")
 

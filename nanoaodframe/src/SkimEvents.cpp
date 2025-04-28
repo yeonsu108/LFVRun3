@@ -83,7 +83,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Tau_d.*");
         addVartoStore("Tau_eta");
         addVartoStore("Tau_gen.*");
-        addVartoStore("Tau_idDeepTau.*");
+        addVartoStore("Tau_id.*");
         addVartoStore("Tau_jetIdx");
         addVartoStore("Tau_mass");
         addVartoStore("Tau_phi");
@@ -109,6 +109,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Electron_pf.*");
         addVartoStore("Electron_phi");
         addVartoStore("Electron_pt");
+        addVartoStore("ele4vecs");
         addVartoStore("nMuon");
         addVartoStore("Muon_charge");
         addVartoStore("Muon_eta");
@@ -118,6 +119,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Muon_pt.*");
         addVartoStore("Muon_tightId");
         addVartoStore("nmuonpass");
+        addVartoStore("nelepass");
         addVartoStore("nvetomuons");
         addVartoStore("nvetoelepass");
         addVartoStore("muon4vecs");

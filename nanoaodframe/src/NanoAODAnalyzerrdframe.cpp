@@ -45,9 +45,9 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
 
     // Channel(electron/muon) switch  // Default is electron channel
     if (_ch.find("muon") != std::string::npos) {
-        cout << "Muon channel" << endl;
+        cout << _ch << " channel" << endl;
     } else {
-        cout << "Electron channel" << endl;
+        cout << _ch << " channel" << endl;
     }
 
     // Year switch
@@ -243,6 +243,7 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
 }
 
 bool NanoAODAnalyzerrdframe::readjson() {
+    cout << "Applying Golden Json" << endl;
 
     auto isgoodjsonevent = [this](unsigned int runnumber, unsigned int lumisection) {
 
@@ -366,11 +367,14 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
                    .Redefine("MET_pt", muonhighscalemet, {"Muon_pt", "Muon_pt_scale", "MET_pt"})
                    .Redefine("Muon_pt", "Muon_pt_scale"); //order matters
     }
-    _rlm = _rlm.Define("elecuts", "Electron_pt>50 && abs(Electron_eta)<2.5 && Electron_mvaIso_WP90")
-               .Define("vetoelecuts", "!elecuts && Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1");
+    _rlm = _rlm.Define("elecuts", "Electron_pt>50 && abs(Electron_eta)<2.5 && Electron_mvaIso_WP90");
     
     if (_ch.find("muon") != std::string::npos) {
-        _rlm = _rlm.Redefine("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1");
+        cout<<"selectElectrons muon channel vetoelecuts"<<endl;
+        _rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1");
+    } else if (_ch.find("electron") != std::string::npos) {
+        cout<<"selectElectrons electron channel vetoelecuts"<<endl;
+        _rlm = _rlm.Define("vetoelecuts", "!elecuts && Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1");
     }
 
     _rlm = _rlm.Define("nvetoelepass","Sum(vetoelecuts)")
@@ -388,10 +392,13 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
 }
 
 void NanoAODAnalyzerrdframe::selectMuons() {
-    _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15")
-               .Define("vetomuoncuts", "!muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
-    if (_ch.find("electron" != std::string::npos)) {
-        _rlm = _rlm.Redefine("vetomuoncuts", "Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
+    _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
+    if (_ch.find("muon" != std::string::npos)) {
+        cout<<"selectMuons " << _ch << " channel vetomuoncuts"<<endl;
+        _rlm = _rlm.Define("vetomuoncuts", "!muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
+    } else if (_ch.find("electron" != std::string::npos)) {
+        cout<<"selectMuons " << _ch << " electron channel vetomuoncuts"<<endl;
+        _rlm = _rlm.Define("vetomuoncuts", "Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
     }
 
     _rlm = _rlm.Define("nvetomuons","Sum(vetomuoncuts)")
@@ -420,7 +427,7 @@ void NanoAODAnalyzerrdframe::selectMuons() {
     //    muonFile = "2022";
     //}
     //if (_isRun22EE) {
-    //    muonFile = "2022EE";
+    //    muonFile = "2022_EE";
     //}
     //if (_isRun23) {
     //    muonFile = "2023";
@@ -435,7 +442,7 @@ void NanoAODAnalyzerrdframe::selectMuons() {
     //WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
 
 
-    //muonid = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ID.root").c_str());
+    //muonidiso = TFile::Open(("data/MuonSF/ScaleFactors_Muon_Z_ID_ISO_" + muonFile + "_schemaV2.json").c_str());
     //TH2F* _hmuonid = dynamic_cast<TH2F *>(muonid->Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
     //_hmuonid->SetDirectory(0);
     //muonid->Close();
@@ -1194,8 +1201,10 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
 
     // Overlap removal with muon / electron (used for btagging SF)
     if (_ch.find("muon") != std::string::npos) {
+        cout << "muon channel muon jet overlap" << endl;
         _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","muon4vecs"});
     } else if (_ch.find("electron") != std::string::npos) {
+        cout << "electron channel electron jet overlap" << endl;
         _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","ele4vecs"});
     }
 
@@ -1312,7 +1321,7 @@ void NanoAODAnalyzerrdframe::selectTaus() {
     if (_ch.find("muon") != std::string::npos) {
         _rlm = _rlm.Define("mutauoverlap", overlap_removal_mutau, {"muon4vecs","tau4vecs"});
     } else if (_ch.find("electron") != std::string::npos) {
-        _rlm = _rlm.Define("mutauoverlap", overlap_removal_mutau, {"ele4vex", "tau4vecs"});
+        _rlm = _rlm.Define("mutauoverlap", overlap_removal_mutau, {"ele4vecs", "tau4vecs"});
     }
 
     // input vector: vec[pt][vars]

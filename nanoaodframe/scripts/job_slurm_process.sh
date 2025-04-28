@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH -J LFV
-#SBATCH -p gpu,cpu,high_cpu -x gpu-0-2,compute-0-3
+#SBATCH -p gpu,cpu,high_cpu -x gpu-0-2
 #SBATCH -N 1
 #SBATCH --output=/dev/null
 #SBATCH --error=/dev/null
@@ -14,43 +14,45 @@
 #SBATCH --hint=compute_bound
 
 year=$1
-indir=$2
-outpath=$3
-outfile=$4
-workdir=$5
-logdir=$6
-syst=$7
-mode=$8
+ch=$2
+indir=$3
+outpath=$4
+outfile=$5
+workdir=$6
+logdir=$7
+syst=$8
+mode=$9
 
 cd $workdir
 source /cvmfs/sft.cern.ch/lcg/views/LCG_103/x86_64-centos7-gcc12-opt/setup.sh
+echo "haha"
 
-if [ "$#" -eq 7 ]; then
+if [ "$#" -eq 8 ]; then
     if [[ "$indir" == *".root"* ]]; then
-        echo "python processonefile.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log"
-        python processonefile.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log
+        echo "python processonefile.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log"
+        python processonefile.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log
     else
-        echo "python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log"
-        python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log
+        echo "python processonedataset.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log"
+        python processonedataset.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} 2>&1 | tee ${logdir}/${outfile%%root}log
     fi
 fi
 #FF for channel selction
-if [ "$#" -eq 8 ]; then
+if [ "$#" -eq 9 ]; then
     if [[ "$mode" == "--ff" ]]; then #FF application
         if [[ "$indir" == *".root"* ]]; then
-            echo "python processonefile.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log"
-            python processonefile.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
+            echo "python processonefile.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log"
+            python processonefile.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
         else
-            echo "python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log"
-            python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
+            echo "python processonedataset.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log"
+            python processonedataset.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
         fi
     else
         if [[ "$indir" == *".root"* ]]; then
-            echo "python processonefile.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log"
-            python processonefile.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
+            echo "python processonefile.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log"
+            python processonefile.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
         else
-            echo "python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log"
-            python processonedataset.py -Y $year -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
+            echo "python processonedataset.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log"
+            python processonedataset.py -Y $year -C ${ch} -S ${syst} -I $indir -O ${outpath}/${outfile} -M ${mode} 2>&1 | tee ${logdir}/${outfile%%root}log
         fi
     fi
 fi
