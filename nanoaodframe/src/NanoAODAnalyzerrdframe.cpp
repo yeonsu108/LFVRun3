@@ -416,108 +416,92 @@ void NanoAODAnalyzerrdframe::selectMuons() {
 
 
     //// Muon SF
-    //cout<<"Loading Muon SF"<<endl;
-    //std::string muonFile = _year;
-    //std::string muonTrgHist = "NUM_IsoMu24_or_Mu50_or_CascadeMu100_or_HighPtTkMu100_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-    //TFile *muontrg;
-    //TFile *muonid;
-    //TFile *muoniso;
+    cout<<"Loading Muon SF"<<endl;
+    std::string muonFile = _year;
+    std::string muonTrgHist = "NUM_IsoMu24_or_Mu50_or_CascadeMu100_or_HighPtTkMu100_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
+    TFile *muontrg;
+    TFile *muonid;
+    TFile *muoniso;
 
-    //if (_isRun22) {
-    //    muonFile = "2022";
-    //}
-    //if (_isRun22EE) {
-    //    muonFile = "2022_EE";
-    //}
-    //if (_isRun23) {
-    //    muonFile = "2023";
-    //}
-    //if (_isRun23BPix) {
-    //    muonFile = "2023_BPix";
-    //}
-    //muontrg = TFile::Open(("data/MuonSF/ScaleFactors_Muon_Z_HLT_"+muonFile+"_abseta_pt.root").c_str());
-    //TH2F* _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
-    //_hmuontrg->SetDirectory(0);
-    //muontrg->Close();
-    //WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
+    if (_isRun22) {
+        muonFile = "2022";
+    }
+    if (_isRun22EE) {
+        muonFile = "2022_EE";
+    }
+    if (_isRun23) {
+        muonFile = "2023";
+    }
+    if (_isRun23BPix) {
+        muonFile = "2023_BPix";
+    }
+    muontrg = TFile::Open(("data/MuonSF/ScaleFactors_Muon_Z_HLT_"+muonFile+"_abseta_pt.root").c_str());
+    TH2F* _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
+    _hmuontrg->SetDirectory(0);
+    muontrg->Close();
+    WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
 
 
-    //muonidiso = TFile::Open(("data/MuonSF/ScaleFactors_Muon_Z_ID_ISO_" + muonFile + "_schemaV2.json").c_str());
-    //TH2F* _hmuonid = dynamic_cast<TH2F *>(muonid->Get("NUM_TightID_DEN_TrackerMuons_abseta_pt"));
-    //_hmuonid->SetDirectory(0);
-    //muonid->Close();
-    //WeightCalculatorFromHistogram* _muonid = new WeightCalculatorFromHistogram(_hmuonid);
-
-    //muoniso = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_ISO.root").c_str());
-    //TH2F* _hmuoniso = dynamic_cast<TH2F *>(muoniso->Get("NUM_TightRelIso_DEN_TightIDandIPCut_abseta_pt"));
-    //_hmuoniso->SetDirectory(0);
-    //muoniso->Close();
-    //WeightCalculatorFromHistogram* _muoniso = new WeightCalculatorFromHistogram(_hmuoniso);
-
-    //muontrg = TFile::Open(("data/MuonSF/Efficiencies_muon_generalTracks_Z_Run" + muonFile + "_SingleMuonTriggers.root").c_str());
-    //TH2F* _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
-    //_hmuontrg->SetDirectory(0);
-    //muontrg->Close();
-    //WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
+    auto muonSFreader = correction::CorrectionSet::from_file("data/MuonSF/ScaleFactors_Muon_Z_ID_ISO_"+muonFile+"_schemaV2.json");
+    auto _muonid = muonSFreader->at("NUM_TightID_DEN_TrackerMuons");
+    auto _muoniso = muonSFreader->at("NUM_TightPFIso_DEN_TightID");
 
     // We have only one muon!
-    //auto muonSFId = [this, _muonid](floats &pt, floats &eta)->floats {
+    auto muonSFId = [this, _muonid, muonFile](floats &pt, floats &eta)->floats {
+        floats wVec;
+        wVec.reserve(3); //cent, up, down
 
-    //    floats wVec;
-    //    wVec.reserve(3); //cent, up, down
+        float tmp_eta = -1000;
+        if (pt.size() == 1){
+            tmp_eta = (muonFile.find("2022") != std::string::npos) ? std::abs(eta[0]) : eta[0];
+            float sf = _muonid->evaluate({tmp_eta, pt[0], "nominal"});
+            float sf_up = _muonid->evaluate({tmp_eta, pt[0], "systup"});
+            float sf_down = _muonid->evaluate({tmp_eta, pt[0], "systdown"});
+            wVec.emplace_back(sf);
+            wVec.emplace_back(sf_up);
+            wVec.emplace_back(sf_down);
+        } else wVec = {1.0, 1.0, 1.0};
+        return wVec;
+    };
 
-    //    if (pt.size() == 1) {
-    //        for (unsigned int i=0; i<pt.size(); i++) {
-    //            float sf = _muonid->getWeight(std::abs(eta[i]),pt[i]);
-    //            float err = _muonid->getWeightErr(std::abs(eta[i]),pt[i]);
-    //            wVec.emplace_back(sf);
-    //            wVec.emplace_back(sf + err);
-    //            wVec.emplace_back(sf - err);
-    //        }
-    //    }
-    //    else wVec = {1.0, 1.0, 1.0};
-    //    return wVec;
-    //};
+    // We have only one muon!
+    auto muonSFIso = [this, _muoniso, muonFile](floats &pt, floats &eta)->floats {
+        floats wVec;
+        wVec.reserve(3); //cent, up, down
 
-    //auto muonSFIso = [this, _muoniso](floats &pt, floats &eta)->floats {
+        if (pt.size() == 1){
+            float tmp_eta = (muonFile.find("2022") != std::string::npos) ? std::abs(eta[0]) : eta[0];
+            float sf = _muoniso->evaluate({tmp_eta, pt[0], "nominal"});
+            float sf_up = _muoniso->evaluate({tmp_eta, pt[0], "systup"});
+            float sf_down = _muoniso->evaluate({tmp_eta, pt[0], "systdown"});
+            wVec.emplace_back(sf);
+            wVec.emplace_back(sf_up);
+            wVec.emplace_back(sf_down);
+        } else wVec = {1.0, 1.0, 1.0};
+        return wVec;
+    };
 
-    //    floats wVec;
-    //    wVec.reserve(3); //cent, up, down
+    auto muonSFTrg = [this, _muontrg](floats &pt, floats &eta)->floats {
 
-    //    if (pt.size() == 1) {
-    //        for (unsigned int i=0; i<pt.size(); i++) {
-    //            float sf = _muoniso->getWeight(std::abs(eta[i]),pt[i]);
-    //            float err = _muoniso->getWeightErr(std::abs(eta[i]),pt[i]);
-    //            wVec.emplace_back(sf);
-    //            wVec.emplace_back(sf + err);
-    //            wVec.emplace_back(sf - err);
-    //        }
-    //    }
-    //    else wVec = {1.0, 1.0, 1.0};
-    //    return wVec;
-    //};
+        floats wVec;
+        wVec.reserve(3); //cent, up, down
 
-    //auto muonSFTrg = [this, _muontrg](floats &pt, floats &eta)->floats {
+        if (pt.size() == 1) {
+            for (unsigned int i=0; i<pt.size(); i++) {
+                float sf = _muontrg->getWeight(std::abs(eta[i]),pt[i]);
+                float err = _muontrg->getWeightErr(std::abs(eta[i]),pt[i]);
+                wVec.emplace_back(sf);
+                wVec.emplace_back(sf + err);
+                wVec.emplace_back(sf - err);
+            }
+        }
+        else wVec = {1.0, 1.0, 1.0};
+        return wVec;
+    };
 
-    //    floats wVec;
-    //    wVec.reserve(3); //cent, up, down
-
-    //    if (pt.size() == 1) {
-    //        for (unsigned int i=0; i<pt.size(); i++) {
-    //            float sf = _muontrg->getWeight(std::abs(eta[i]),pt[i]);
-    //            float err = _muontrg->getWeightErr(std::abs(eta[i]),pt[i]);
-    //            wVec.emplace_back(sf);
-    //            wVec.emplace_back(sf + err);
-    //            wVec.emplace_back(sf - err);
-    //        }
-    //    }
-    //    else wVec = {1.0, 1.0, 1.0};
-    //    return wVec;
-    //};
-
-    //_rlm = _rlm.Define("muonWeightId", muonSFId, {"Muon_pt","Muon_eta"})
-    //           .Define("muonWeightIso", muonSFIso, {"Muon_pt","Muon_eta"})
-    //           .Define("muonWeightTrg", muonSFTrg, {"Muon_pt","Muon_eta"});
+    _rlm = _rlm.Define("muonWeightId", muonSFId, {"Muon_pt","Muon_eta"})
+               .Define("muonWeightIso", muonSFIso, {"Muon_pt","Muon_eta"})
+               .Define("muonWeightTrg", muonSFTrg, {"Muon_pt","Muon_eta"});
 }
 
 /*
