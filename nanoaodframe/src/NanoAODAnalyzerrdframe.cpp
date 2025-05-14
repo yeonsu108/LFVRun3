@@ -138,9 +138,9 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         _rlm = _rlm.Define("unitGenWeight", "one");
         _rlm = _rlm.Define("isData", "true");
 
-        //if(!_isData){
+        if(!_isData){
 
-        //    _rlm = _rlm.Redefine("isData", "false");
+            _rlm = _rlm.Redefine("isData", "false");
 
         //    // Store sum of weights
         //    auto storePDFWeights = [this](floats weights, float gen)->floats {
@@ -211,6 +211,40 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         //               .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->floats
         //                      {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
         //}
+	    std::string pileFile = "";
+	    std::string map = "";
+	      if (_isRun22) {
+	        pileFile = "2022_Summer22";
+		map = "Collisions2022_355100_357900_eraBCD_GoldenJson";
+	      }
+	      if (_isRun22EE) {
+	        pileFile = "2022_Summer22EE";
+		map = "Collisions2022_359022_362760_eraEFG_GoldenJson";
+	      }
+	      if (_isRun23) {
+	        pileFile = "2023_Summer23";
+		map = "Collisions2023_366403_369802_eraBC_GoldenJson";
+	      }
+	      if (_isRun23BPix) {
+	        pileFile = "2023_Summer23BPix";
+		map = "Collisions2023_369803_370790_eraD_GoldenJson";
+	      }
+	    auto puWeightreader = correction::CorrectionSet::from_file("data/LUM/"+pileFile+"/puWeights.json.gz");
+	    auto _puweight = puWeightreader->at(map);
+
+	    auto PuWeight = [this, _puweight](float x) -> floats {
+	      floats out;
+	      out.emplace_back(_puweight->evaluate({"nominal", x}));
+	      out.emplace_back(_puweight->evaluate({"up", x}));
+	      out.emplace_back(_puweight->evaluate({"down", x}));
+
+	      return out;
+	    };
+
+	    _rlm = _rlm.Define("puWeight", PuWeight, {"Pileup_nTrueInt"});
+	    
+	    
+	}
     }
 
     std::vector<std::string> jes_var;
@@ -218,9 +252,10 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
     // Object selection will be defined in sequence.
     // Selected objects will be stored in new vectors.
     if (_isSkim) {
+        JetVetoMap();
         selectMuons();
         selectElectrons();
-        //setupJetMETCorrection(_globaltag, jes_var, jes_var_flav, "AK4PFchs", _isData);
+        setupJetMETCorrection(_globaltag, jes_var, jes_var_flav, "AK4PFPuppi", _isData);
         skimJets();
         //if (!_isData){
         //    calculateEvWeight();
@@ -391,6 +426,118 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
 
 }
 
+void NanoAODAnalyzerrdframe::JetVetoMap() {
+
+  auto checkoverlap = [](FourVectorVec &seljets, FourVectorVec &sellep) {
+
+    ints mindrlepton;
+    for (auto ajet: seljets) {
+      auto mindr = 6.0;
+      for ( auto alepton : sellep ) {
+	auto dr = ROOT::Math::VectorUtil::DeltaR(ajet, alepton);
+	if (dr < mindr) mindr = dr;
+      }
+      int out = mindr >= 0.2 ? 1 : 0;
+      mindrlepton.emplace_back(out);
+    }
+    return mindrlepton;
+  };
+
+  _rlm = _rlm.Define("loosejetcuts", "Jet_pt>15 && Jet_jetId >= 2 && (Jet_neEmEF+Jet_chEmEF)<0.9");
+
+  _rlm = _rlm.Define("Jet_pt_loose", "Jet_pt[loosejetcuts]")
+             .Define("Jet_phi_loose", "Jet_phi[loosejetcuts]")
+             .Define("Jet_eta_loose", "Jet_eta[loosejetcuts]")
+             .Define("Jet_mass_loose", "Jet_mass[loosejetcuts]")
+             .Define("njetloose", "int(Jet_pt_loose.size())")
+             .Define("loosejet4vecs", ::gen4vec, {"Jet_pt_loose", "Jet_eta_loose", "Jet_phi_loose", "Jet_mass_loose"});
+
+
+  _rlm = _rlm.Define("vetomuoncut","muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
+
+  _rlm = _rlm.Define("Muon_pt_veto", "Muon_pt[vetomuoncut]")
+             .Define("Muon_phi_veto", "Muon_phi[vetomuoncut]")
+             .Define("Muon_eta_veto", "Muon_eta[vetomuoncut]")
+             .Define("Muon_mass_veto", "Muon_mass[vetomuoncut]")
+             .Define("nmuonveto", "int(Muon_pt_veto.size())")
+             .Define("vetomuon4vecs", ::gen4vec, {"Muon_pt_veto", "Muon_eta_veto", "Muon_phi_veto", "Muon_mass_veto"});
+
+
+  _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"loosejet4vecs","vetomuon4vecs"});
+
+  _rlm = _rlm.Redefine("Jet_pt_loose", "Jet_pt_loose[muonjetoverlap]")
+             .Redefine("Jet_phi_loose", "Jet_phi_loose[muonjetoverlap]")
+             .Redefine("Jet_eta_loose", "Jet_eta_loose[muonjetoverlap]")
+             .Redefine("Jet_mass_loose", "Jet_mass_loose[muonjetoverlap]")
+             .Redefine("njetloose", "int(Jet_pt_loose.size())")
+             .Redefine("loosejet4vecs", ::gen4vec, {"Jet_pt_loose", "Jet_eta_loose", "Jet_phi_loose", "Jet_mass_loose"});
+
+
+  _rlm = _rlm.Redefine("Jet_phi_loose", [](const std::vector<float>& phis) {
+              std::vector<float> corrected(phis.size());
+              std::transform(phis.begin(), phis.end(), corrected.begin(), [](float phi) {
+	      return (std::abs(phi) > 3.141592653589790f) ? ((phi > 0 ? 1.0f : -1.0f) * 3.141592653589790f) : phi;
+	     });
+             return corrected;
+         }, {"Jet_phi_loose"})
+
+             .Redefine("Jet_eta_loose", [](const std::vector<float>& etas) {
+	      std::vector<float> corrected(etas.size());
+	      std::transform(etas.begin(), etas.end(), corrected.begin(), [](float eta) {
+	      return (std::abs(eta) > 5.191f) ? ((eta > 0 ? 1.0f : -1.0f) * 5.190f) : eta;
+	     });
+	     return corrected;
+         }, {"Jet_eta_loose"});
+
+
+
+  //Check if one of this is in the veto map if so skip the event
+  // .Define("badjets",int())
+
+  std::string jetFile = "";
+  std::string map = "";
+  
+  if (_isRun22) {
+        jetFile = "2022_Summer22";
+	map = "Summer22_23Sep2023_RunCD_V1";
+    }
+    if (_isRun22EE) {
+        jetFile = "2022_Summer22EE";
+	map = "Summer22EE_23Sep2023_RunEFG_V1";
+    }
+    if (_isRun23) {
+        jetFile = "2023_Summer23";
+	map = "Summer23Prompt23_RunC_V1";
+    }
+    if (_isRun23BPix) {
+        jetFile = "2023_Summer23BPix";
+        map = "Summer23BPixPrompt23_RunD_V1";
+    }
+  auto vetoMapreader = correction::CorrectionSet::from_file("data/JME/"+jetFile+"/jetvetomaps.json.gz");
+
+  auto _vetomap = vetoMapreader->at(map);
+
+  auto vetomap = [this, _vetomap](floats &eta, floats &phi)->floats {
+
+      floats xout;
+      
+      for (unsigned int i=0; i<eta.size(); i++) {
+	float es = 0.0;
+	es = _vetomap->evaluate({std::string("jetvetomap"),eta[i],phi[i]});
+	xout.emplace_back(es);
+      }
+      return xout;
+  };
+
+  _rlm = _rlm.Define("Jet_isVeto_loose", vetomap, {"Jet_eta_loose","Jet_phi_loose"})
+             .Define("events_isVeto","Sum(Jet_isVeto_loose)");
+
+
+
+
+}
+
+
 void NanoAODAnalyzerrdframe::selectMuons() {
     _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
     if (_ch.find("muon" != std::string::npos)) {
@@ -517,7 +664,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     FactorizedJetCorrector* _jetCorrector;
 
     if (_globaltag != "") {
-        cout << "Applying new JetMET corrections. GT: " + _globaltag + " on jetAlgo: AK4PFchs" << endl;
+        cout << "Applying new JetMET corrections. GT: " + _globaltag + " on jetAlgo: AK4PFPuppi" << endl;
         string basedirectory = "data/jes/";
 
         string datamcflag = "";
@@ -572,7 +719,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                     if (src.find("HEM") != std::string::npos) continue;
                     auto uncsource = src.substr(3, src.size()-2-3);
                     cout << "JEC Uncertainty Source : " + uncsource << endl;
-                    string dbfilenameunc = basedirectory + "RegroupedV2_" + _globaltag + "_MC_UncertaintySources_AK4PFchs.txt";
+                    string dbfilenameunc = basedirectory + "RegroupedV2_" + _globaltag + "_MC_UncertaintySources_AK4PFPuppi.txt";
                     JetCorrectorParameters* uncCorrPar = new JetCorrectorParameters(dbfilenameunc, uncsource);
                     JetCorrectionUncertainty* _jetCorrectionUncertainty = new JetCorrectionUncertainty(*uncCorrPar);
                     regroupedUnc.emplace_back(_jetCorrectionUncertainty);
@@ -585,7 +732,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 if (src.find("up") != std::string::npos) {
                     auto uncsource = src.substr(3, src.size()-2-3);
                     cout << "JEC Uncertainty Source : " + uncsource << endl;
-                    string dbfilenameunc = basedirectory + _globaltag + "_MC_UncertaintySources_AK4PFchs.txt";
+                    string dbfilenameunc = basedirectory + _globaltag + "_MC_UncertaintySources_AK4PFPuppi.txt";
                     JetCorrectorParameters* uncCorrPar = new JetCorrectorParameters(dbfilenameunc, uncsource);
                     JetCorrectionUncertainty* _jetCorrectionUncertainty = new JetCorrectionUncertainty(*uncCorrPar);
                     flavPureUnc.emplace_back(_jetCorrectionUncertainty);
@@ -671,7 +818,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         }
         return uncertainties;
     };
-
+    /*
     auto metCorr = [=](float met, float metphi, floats jetptsbefore, floats jetptsafter, floats jetphis, int npv, unsigned int _runnb)->float {
 
         int runnb = int(_runnb);
@@ -823,19 +970,19 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         }
         return corrfactors;
     };
-
+    */
     //FIXME: should correct jet mass. but can we do it at once?
     
     if (_jetCorrector != 0) {
         _rlm = _rlm.Define("Jet_pt_uncorr", "Jet_pt");
         _rlm = _rlm.Define("Jet_pt_corr", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_pt"})
-                   .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_mass"})
-                   .Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi","PV_npvsGood", "run"})
-                   .Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi", "PV_npvsGood", "run"});
+	  .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_mass"});
+	  //.Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi","PV_npvsGood", "run"})
+	  //.Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi", "PV_npvsGood", "run"});
         if (!dataMc) {
-            _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_partonFlavour"})
-                       .Define("MET_pt_unc", metUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"})
-                       .Define("MET_phi_unc", metPhiUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"});
+	  _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_partonFlavour"});
+	    //.Define("MET_pt_unc", metUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"})
+	    //.Define("MET_phi_unc", metPhiUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"});
         }
         _rlm = _rlm.Redefine("Jet_pt", "Jet_pt_corr");
     }
@@ -845,9 +992,24 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     std::string jetResFilePath_ = "data/jer/";
     std::string jetResSFFilePath_ = "data/jer/";
 
+    if (_isRun22) {
+        jetResFilePath_ += "Summer22_22Sep2023_JRV1_MC_PtResolution_AK4PFPuppi.txt";
+        jetResSFFilePath_ += "Summer22_22Sep2023_JRV1_MC_SF_AK4PFPuppi.txt";
+    } else if (_isRun22EE) {
+        jetResFilePath_ += "Summer22EE_22Sep2023_JRV1_MC_PtResolution_AK4PFPuppi.txt";
+        jetResSFFilePath_ += "Summer22EE_22Sep2023_JRV1_MC_SF_AK4PFPuppi.txt";
+    } else if (_isRun23) {
+        jetResFilePath_ += "Summer23Prompt23_RunCv1234_JRV1_MC_PtResolution_AK4PFPuppi.txt";
+        jetResSFFilePath_ += "Summer23Prompt23_RunCv1234_JRV1_MC_SF_AK4PFPuppi.txt";
+    } else if (_isRun23BPix) {
+        jetResFilePath_ += "Summer23BPixPrompt23_RunD_JRV1_MC_PtResolution_AK4PFPuppi.txt";
+        jetResSFFilePath_ += "Summer23BPixPrompt23_RunD_JRV1_MC_SF_AK4PFPuppi.txt";
+    }
+
+    
     JME::JetResolution jetResObj;
     JME::JetResolutionScaleFactor jetResSFObj;
-    if (!_isData) {
+    if (!_isData) {JME::JetResolution
         jetResObj = JME::JetResolution(jetResFilePath_);
         jetResSFObj = JME::JetResolutionScaleFactor(jetResSFFilePath_);
     }
