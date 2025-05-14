@@ -43,6 +43,19 @@ if __name__=='__main__':
     elif any(i in options.infile for i in ["Run2017", "Run2018"]):
         era = options.infile[options.infile.find("Run" + options.year)+7]
         options.globaltag = "Summer19UL" + options.year[2:] + "_Run" + era + "_V5"
+    elif any(i in options.infile for i in ["Run2022C","Run2022D"]):
+        options.globaltag = "Summer22_22Sep2023_RunCD_V2"
+    elif any(i in options.infile for i in ["Run2022E"]):
+        options.globaltag = "Summer22EE_22Sep2023_RunE_V2"
+    elif any(i in options.infile for i in ["Run2022F"]):
+        options.globaltag = "Summer22EE_22Sep2023_RunF_V2"
+    elif any(i in options.infile for i in ["Run2022G"]):
+        options.globaltag = "Summer22EE_22Sep2023_RunG_V2"
+    elif any(i in options.infile for i in ["Run2023C"]):
+        options.globaltag = "Summer23Prompt23_RunCv4_V1"
+    elif any(i in options.infile for i in ["Run2023D"]):
+        options.globaltag = "Summer23BPixPrompt23_RunD_V1"
+        
     elif "UL16NanoAODAPVv" in options.infile:
         options.globaltag = "Summer19UL16APV_V7"
     elif "UL16NanoAODv" in options.infile:
@@ -51,6 +64,16 @@ if __name__=='__main__':
         options.globaltag = "Summer19UL17_V5"
     elif "UL18NanoAODv" in options.infile:
         options.globaltag = "Summer19UL18_V5"
+    elif "Run3Summer22NanoAODv" in options.infile:
+        options.globaltag = "Summer22_22Sep2023_V2"
+    elif "Run3Summer22EENanoAODv" in options.infile:
+        options.globaltag = "Summer22EE_22Sep2023_V2"
+    elif "Run3Summer23NanoAODv" in options.infile:
+        options.globaltag = "Summer23Prompt23_V1"
+    elif "Run3Summer23BPixNanoAODv" in options.infile:
+        options.globaltag = "Summer23BPixPrompt23_V1"
+
+    
 
     # load compiled C++ library into ROOT/python
     cppyy.load_reflection_info("libnanoadrdframe.so")

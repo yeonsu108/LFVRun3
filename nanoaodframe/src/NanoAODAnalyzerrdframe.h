@@ -49,6 +49,7 @@ public:
   // object selectors
   // RNode is in namespace ROOT::RDF
   bool readjson();
+  void JetVetoMap();
   void selectElectrons();
   void selectMuons();
   void selectJets(std::vector<std::string> jes_var, std::vector<std::string> jes_var_flav);
