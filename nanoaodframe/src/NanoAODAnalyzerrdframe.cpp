@@ -139,112 +139,109 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         _rlm = _rlm.Define("isData", "true");
 
         if(!_isData){
-
             _rlm = _rlm.Redefine("isData", "false");
 
-        //    // Store sum of weights
-        //    auto storePDFWeights = [this](floats weights, float gen)->floats {
+            //// Store sum of weights
+            //auto storePDFWeights = [this](floats weights, float gen)->floats {
 
-        //        for (unsigned int i=0; i<weights.size(); i++)
-        //            PDFWeights[i] += (gen / abs(gen)) * weights[i];
+            //    for (unsigned int i=0; i<weights.size(); i++)
+            //        PDFWeights[i] += (gen / abs(gen)) * weights[i];
 
-        //        return PDFWeights;
-        //    };
-        //    auto storePSWeights = [this](floats weights, float gen)->floats {
+            //    return PDFWeights;
+            //};
+            //auto storePSWeights = [this](floats weights, float gen)->floats {
 
-        //        for (unsigned int i=0; i<weights.size(); i++) {
-        //            if (i > 3) continue; //JME Nano stores all PS
-        //            PSWeights[i] += (gen / abs(gen)) * weights[i];
-        //        }
+            //    for (unsigned int i=0; i<weights.size(); i++) {
+            //        if (i > 3) continue; //JME Nano stores all PS
+            //        PSWeights[i] += (gen / abs(gen)) * weights[i];
+            //    }
 
-        //        return PSWeights;
-        //    };
-        //    auto storeScaleWeights = [this](floats weights, float gen)->floats {
+            //    return PSWeights;
+            //};
+            //auto storeScaleWeights = [this](floats weights, float gen)->floats {
 
-        //        for (unsigned int i=0; i<weights.size(); i++)
-        //            ScaleWeights[i] += (gen / abs(gen)) * weights[i];
+            //    for (unsigned int i=0; i<weights.size(); i++)
+            //        ScaleWeights[i] += (gen / abs(gen)) * weights[i];
 
-        //        return ScaleWeights;
-        //    };
-        //    try {
-        //        _rlm.Foreach(storePDFWeights, {"LHEPdfWeight", "genWeight"});
-        //    } catch (exception& e) {
-        //        cout << e.what() << endl;
-        //        cout << "No PDF weight in this root file!" << endl;
-        //    }
-        //    try {
-        //        _rlm.Foreach(storePSWeights, {"PSWeight", "genWeight"});
-        //    } catch (exception& e) {
-        //        cout << e.what() << endl;
-        //        cout << "No PS weight in this root file!" << endl;
-        //    }
-        //    try {
-        //        _rlm.Foreach(storeScaleWeights, {"LHEScaleWeight", "genWeight"});
-        //    } catch (exception& e) {
-        //        cout << e.what() << endl;
-        //        cout << "No Scale weight in this root file!" << endl;
-        //    }
+            //    return ScaleWeights;
+            //};
+            //try {
+            //    _rlm.Foreach(storePDFWeights, {"LHEPdfWeight", "genWeight"});
+            //} catch (exception& e) {
+            //    cout << e.what() << endl;
+            //    cout << "No PDF weight in this root file!" << endl;
+            //}
+            //try {
+            //    _rlm.Foreach(storePSWeights, {"PSWeight", "genWeight"});
+            //} catch (exception& e) {
+            //    cout << e.what() << endl;
+            //    cout << "No PS weight in this root file!" << endl;
+            //}
+            //try {
+            //    _rlm.Foreach(storeScaleWeights, {"LHEScaleWeight", "genWeight"});
+            //} catch (exception& e) {
+            //    cout << e.what() << endl;
+            //    cout << "No Scale weight in this root file!" << endl;
+            //}
 
-        //    // pu weight setup
-        //    cout<<"Loading Pileup profiles"<<endl;
-        //    // MC 2016pre = MC 2016post (same file)
-        //    TFile tfmc(("data/Pileup/PileupMC_UL" + _year + ".root").c_str());
-        //    TH1D* _hpumc = dynamic_cast<TH1D *>(tfmc.Get("pu_mc"));
-        //    _hpumc->SetDirectory(0);
-        //    tfmc.Close();
+            //// pu weight setup
+            //cout<<"Loading Pileup profiles"<<endl;
+            //// MC 2016pre = MC 2016post (same file)
+            //TFile tfmc(("data/Pileup/PileupMC_UL" + _year + ".root").c_str());
+            //TH1D* _hpumc = dynamic_cast<TH1D *>(tfmc.Get("pu_mc"));
+            //_hpumc->SetDirectory(0);
+            //tfmc.Close();
 
-        //    TFile tfdata(("data/Pileup/PileupDATA_UL" + _year + ".root").c_str());
-        //    TH1D* _hpudata = dynamic_cast<TH1D *>(tfdata.Get("pileup"));
-        //    TH1D* _hpudata_plus = dynamic_cast<TH1D *>(tfdata.Get("pileup_plus"));
-        //    TH1D* _hpudata_minus = dynamic_cast<TH1D *>(tfdata.Get("pileup_minus"));
+            //TFile tfdata(("data/Pileup/PileupDATA_UL" + _year + ".root").c_str());
+            //TH1D* _hpudata = dynamic_cast<TH1D *>(tfdata.Get("pileup"));
+            //TH1D* _hpudata_plus = dynamic_cast<TH1D *>(tfdata.Get("pileup_plus"));
+            //TH1D* _hpudata_minus = dynamic_cast<TH1D *>(tfdata.Get("pileup_minus"));
 
-        //    _hpudata->SetDirectory(0);
-        //    _hpudata_plus->SetDirectory(0);
-        //    _hpudata_minus->SetDirectory(0);
-        //    tfdata.Close();
+            //_hpudata->SetDirectory(0);
+            //_hpudata_plus->SetDirectory(0);
+            //_hpudata_minus->SetDirectory(0);
+            //tfdata.Close();
 
-        //    WeightCalculatorFromHistogram* _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
-        //    WeightCalculatorFromHistogram* _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
-        //    WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus); 
-        //    //Check Normalisation issue for genWeight
-        //    _rlm = _rlm.Redefine("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
-        //               .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->floats
-        //                      {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
-        //}
-	    std::string pileFile = "";
-	    std::string map = "";
-	      if (_isRun22) {
-	        pileFile = "2022_Summer22";
-		map = "Collisions2022_355100_357900_eraBCD_GoldenJson";
-	      }
-	      if (_isRun22EE) {
-	        pileFile = "2022_Summer22EE";
-		map = "Collisions2022_359022_362760_eraEFG_GoldenJson";
-	      }
-	      if (_isRun23) {
-	        pileFile = "2023_Summer23";
-		map = "Collisions2023_366403_369802_eraBC_GoldenJson";
-	      }
-	      if (_isRun23BPix) {
-	        pileFile = "2023_Summer23BPix";
-		map = "Collisions2023_369803_370790_eraD_GoldenJson";
-	      }
-	    auto puWeightreader = correction::CorrectionSet::from_file("data/LUM/"+pileFile+"/puWeights.json.gz");
-	    auto _puweight = puWeightreader->at(map);
+            //WeightCalculatorFromHistogram* _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
+            //WeightCalculatorFromHistogram* _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
+            //WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus); 
+            ////Check Normalisation issue for genWeight
+            //_rlm = _rlm.Redefine("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
+            //           .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->floats
+            //                  {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
+            
+            std::string pileFile = "";
+            std::string map = "";
+            if (_isRun22) {
+                pileFile = "2022_Summer22";
+                map = "Collisions2022_355100_357900_eraBCD_GoldenJson";
+            }
+            if (_isRun22EE) {
+                pileFile = "2022_Summer22EE";
+                map = "Collisions2022_359022_362760_eraEFG_GoldenJson";
+            }
+            if (_isRun23) {
+                pileFile = "2023_Summer23";
+                map = "Collisions2023_366403_369802_eraBC_GoldenJson";
+            }
+            if (_isRun23BPix) {
+                pileFile = "2023_Summer23BPix";
+                map = "Collisions2023_369803_370790_eraD_GoldenJson";
+            }
+            auto puWeightreader = correction::CorrectionSet::from_file("data/LUM/"+pileFile+"/puWeights.json.gz");
+            auto _puweight = puWeightreader->at(map);
 
-	    auto PuWeight = [this, _puweight](float x) -> floats {
-	      floats out;
-	      out.emplace_back(_puweight->evaluate({"nominal", x}));
-	      out.emplace_back(_puweight->evaluate({"up", x}));
-	      out.emplace_back(_puweight->evaluate({"down", x}));
+            auto PuWeight = [this, _puweight](float x) -> floats {
+                floats out;
+                out.emplace_back(_puweight->evaluate({"nominal", x}));
+                out.emplace_back(_puweight->evaluate({"up", x}));
+                out.emplace_back(_puweight->evaluate({"down", x}));
 
-	      return out;
-	    };
+                return out;
+            };
 
-	    _rlm = _rlm.Define("puWeight", PuWeight, {"Pileup_nTrueInt"});
-	    
-	    
-	}
+            _rlm = _rlm.Define("puWeight", PuWeight, {"Pileup_nTrueInt"});
+        }    
     }
 
     std::vector<std::string> jes_var;
@@ -317,11 +314,11 @@ bool NanoAODAnalyzerrdframe::readjson() {
             _jsonOK = true;
             return true;
         } else {
-          cout << "Problem reading json file " << _jsonfname << endl;
-          return false;
-          }
-        } else {
-            cout << "no JSON file given" << endl;
+            cout << "Problem reading json file " << _jsonfname << endl;
+            return false;
+        }
+    } else {
+        cout << "no JSON file given" << endl;
         return true;
     }
 }
@@ -427,114 +424,104 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
 }
 
 void NanoAODAnalyzerrdframe::JetVetoMap() {
-
-  auto checkoverlap = [](FourVectorVec &seljets, FourVectorVec &sellep) {
+    
+    auto checkoverlap = [](FourVectorVec &seljets, FourVectorVec &sellep) {
 
     ints mindrlepton;
     for (auto ajet: seljets) {
-      auto mindr = 6.0;
-      for ( auto alepton : sellep ) {
-	auto dr = ROOT::Math::VectorUtil::DeltaR(ajet, alepton);
-	if (dr < mindr) mindr = dr;
-      }
-      int out = mindr >= 0.2 ? 1 : 0;
-      mindrlepton.emplace_back(out);
+        auto mindr = 6.0;
+        for ( auto alepton : sellep ) {
+            auto dr = ROOT::Math::VectorUtil::DeltaR(ajet, alepton);
+            if (dr < mindr) mindr = dr;
+        }
+        int out = mindr >= 0.2 ? 1 : 0;
+        mindrlepton.emplace_back(out);
     }
     return mindrlepton;
-  };
+    };
+    
+    _rlm = _rlm.Define("loosejetcuts", "Jet_pt>15 && Jet_jetId >= 2 && (Jet_neEmEF+Jet_chEmEF)<0.9");
+    
+    _rlm = _rlm.Define("Jet_pt_loose", "Jet_pt[loosejetcuts]")
+               .Define("Jet_phi_loose", "Jet_phi[loosejetcuts]")
+               .Define("Jet_eta_loose", "Jet_eta[loosejetcuts]")
+               .Define("Jet_mass_loose", "Jet_mass[loosejetcuts]")
+               .Define("njetloose", "int(Jet_pt_loose.size())")
+               .Define("loosejet4vecs", ::gen4vec, {"Jet_pt_loose", "Jet_eta_loose", "Jet_phi_loose", "Jet_mass_loose"});
+    
+    _rlm = _rlm.Define("vetomuoncut","muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
+    
+    _rlm = _rlm.Define("Muon_pt_veto", "Muon_pt[vetomuoncut]")
+               .Define("Muon_phi_veto", "Muon_phi[vetomuoncut]")
+               .Define("Muon_eta_veto", "Muon_eta[vetomuoncut]")
+               .Define("Muon_mass_veto", "Muon_mass[vetomuoncut]")
+               .Define("nmuonveto", "int(Muon_pt_veto.size())")
+               .Define("vetomuon4vecs", ::gen4vec, {"Muon_pt_veto", "Muon_eta_veto", "Muon_phi_veto", "Muon_mass_veto"});
+    
+    _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"loosejet4vecs","vetomuon4vecs"});
+    
+    _rlm = _rlm.Redefine("Jet_pt_loose", "Jet_pt_loose[muonjetoverlap]")
+               .Redefine("Jet_phi_loose", "Jet_phi_loose[muonjetoverlap]")
+               .Redefine("Jet_eta_loose", "Jet_eta_loose[muonjetoverlap]")
+               .Redefine("Jet_mass_loose", "Jet_mass_loose[muonjetoverlap]")
+               .Redefine("njetloose", "int(Jet_pt_loose.size())")
+               .Redefine("loosejet4vecs", ::gen4vec, {"Jet_pt_loose", "Jet_eta_loose", "Jet_phi_loose", "Jet_mass_loose"});
+    
+    _rlm = _rlm.Redefine("Jet_phi_loose", [](const std::vector<float>& phis) {
+                    std::vector<float> corrected(phis.size());
+                    std::transform(phis.begin(), phis.end(), corrected.begin(), [](float phi) {
+                        return (std::abs(phi) > 3.141592653589790f) ? ((phi > 0 ? 1.0f : -1.0f) * 3.141592653589790f) : phi;
+                    });
+                    return corrected;
+                }, {"Jet_phi_loose"})
 
-  _rlm = _rlm.Define("loosejetcuts", "Jet_pt>15 && Jet_jetId >= 2 && (Jet_neEmEF+Jet_chEmEF)<0.9");
+               .Redefine("Jet_eta_loose", [](const std::vector<float>& etas) {
+                    std::vector<float> corrected(etas.size());
+                    std::transform(etas.begin(), etas.end(), corrected.begin(), [](float eta) {
+                        return (std::abs(eta) > 5.191f) ? ((eta > 0 ? 1.0f : -1.0f) * 5.190f) : eta;
+                    });
+	                return corrected;
+                }, {"Jet_eta_loose"});
 
-  _rlm = _rlm.Define("Jet_pt_loose", "Jet_pt[loosejetcuts]")
-             .Define("Jet_phi_loose", "Jet_phi[loosejetcuts]")
-             .Define("Jet_eta_loose", "Jet_eta[loosejetcuts]")
-             .Define("Jet_mass_loose", "Jet_mass[loosejetcuts]")
-             .Define("njetloose", "int(Jet_pt_loose.size())")
-             .Define("loosejet4vecs", ::gen4vec, {"Jet_pt_loose", "Jet_eta_loose", "Jet_phi_loose", "Jet_mass_loose"});
+    //Check if one of this is in the veto map if so skip the event
+    // .Define("badjets",int())
 
-
-  _rlm = _rlm.Define("vetomuoncut","muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
-
-  _rlm = _rlm.Define("Muon_pt_veto", "Muon_pt[vetomuoncut]")
-             .Define("Muon_phi_veto", "Muon_phi[vetomuoncut]")
-             .Define("Muon_eta_veto", "Muon_eta[vetomuoncut]")
-             .Define("Muon_mass_veto", "Muon_mass[vetomuoncut]")
-             .Define("nmuonveto", "int(Muon_pt_veto.size())")
-             .Define("vetomuon4vecs", ::gen4vec, {"Muon_pt_veto", "Muon_eta_veto", "Muon_phi_veto", "Muon_mass_veto"});
-
-
-  _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"loosejet4vecs","vetomuon4vecs"});
-
-  _rlm = _rlm.Redefine("Jet_pt_loose", "Jet_pt_loose[muonjetoverlap]")
-             .Redefine("Jet_phi_loose", "Jet_phi_loose[muonjetoverlap]")
-             .Redefine("Jet_eta_loose", "Jet_eta_loose[muonjetoverlap]")
-             .Redefine("Jet_mass_loose", "Jet_mass_loose[muonjetoverlap]")
-             .Redefine("njetloose", "int(Jet_pt_loose.size())")
-             .Redefine("loosejet4vecs", ::gen4vec, {"Jet_pt_loose", "Jet_eta_loose", "Jet_phi_loose", "Jet_mass_loose"});
-
-
-  _rlm = _rlm.Redefine("Jet_phi_loose", [](const std::vector<float>& phis) {
-              std::vector<float> corrected(phis.size());
-              std::transform(phis.begin(), phis.end(), corrected.begin(), [](float phi) {
-	      return (std::abs(phi) > 3.141592653589790f) ? ((phi > 0 ? 1.0f : -1.0f) * 3.141592653589790f) : phi;
-	     });
-             return corrected;
-         }, {"Jet_phi_loose"})
-
-             .Redefine("Jet_eta_loose", [](const std::vector<float>& etas) {
-	      std::vector<float> corrected(etas.size());
-	      std::transform(etas.begin(), etas.end(), corrected.begin(), [](float eta) {
-	      return (std::abs(eta) > 5.191f) ? ((eta > 0 ? 1.0f : -1.0f) * 5.190f) : eta;
-	     });
-	     return corrected;
-         }, {"Jet_eta_loose"});
-
-
-
-  //Check if one of this is in the veto map if so skip the event
-  // .Define("badjets",int())
-
-  std::string jetFile = "";
-  std::string map = "";
-  
-  if (_isRun22) {
+    std::string jetFile = "";
+    std::string map = "";
+    
+    if (_isRun22) {
         jetFile = "2022_Summer22";
-	map = "Summer22_23Sep2023_RunCD_V1";
+        map = "Summer22_23Sep2023_RunCD_V1";
     }
     if (_isRun22EE) {
         jetFile = "2022_Summer22EE";
-	map = "Summer22EE_23Sep2023_RunEFG_V1";
+        map = "Summer22EE_23Sep2023_RunEFG_V1";
     }
     if (_isRun23) {
         jetFile = "2023_Summer23";
-	map = "Summer23Prompt23_RunC_V1";
+        map = "Summer23Prompt23_RunC_V1";
     }
     if (_isRun23BPix) {
         jetFile = "2023_Summer23BPix";
         map = "Summer23BPixPrompt23_RunD_V1";
     }
-  auto vetoMapreader = correction::CorrectionSet::from_file("data/JME/"+jetFile+"/jetvetomaps.json.gz");
-
-  auto _vetomap = vetoMapreader->at(map);
-
-  auto vetomap = [this, _vetomap](floats &eta, floats &phi)->floats {
-
-      floats xout;
-      
-      for (unsigned int i=0; i<eta.size(); i++) {
-	float es = 0.0;
-	es = _vetomap->evaluate({std::string("jetvetomap"),eta[i],phi[i]});
-	xout.emplace_back(es);
-      }
-      return xout;
-  };
-
-  _rlm = _rlm.Define("Jet_isVeto_loose", vetomap, {"Jet_eta_loose","Jet_phi_loose"})
+    
+    auto vetoMapreader = correction::CorrectionSet::from_file("data/JME/"+jetFile+"/jetvetomaps.json.gz");
+    
+    auto _vetomap = vetoMapreader->at(map);
+    
+    auto vetomap = [this, _vetomap](floats &eta, floats &phi)->floats {
+        floats xout;
+        for (unsigned int i=0; i<eta.size(); i++) {
+            float es = 0.0;
+            es = _vetomap->evaluate({std::string("jetvetomap"),eta[i],phi[i]});
+            xout.emplace_back(es);
+        }
+        return xout;
+    };
+    
+    _rlm = _rlm.Define("Jet_isVeto_loose", vetomap, {"Jet_eta_loose","Jet_phi_loose"})
              .Define("events_isVeto","Sum(Jet_isVeto_loose)");
-
-
-
-
 }
 
 
