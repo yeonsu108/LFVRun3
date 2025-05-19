@@ -250,8 +250,11 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
     // Selected objects will be stored in new vectors.
     if (_isSkim) {
         JetVetoMap();
-        selectMuons();
-        selectElectrons();
+        if (_ch.find("muon") != std::string::npos){
+            selectMuons();
+        } else if (_ch.find("electron") != std::string::npos){
+            selectElectrons();
+        }
         setupJetMETCorrection(_globaltag, jes_var, jes_var_flav, "AK4PFPuppi", _isData);
         skimJets();
         //if (!_isData){
@@ -260,7 +263,11 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         //}
     }
     else {
-        //selectElectrons();
+        if (_ch.find("muon") != std::string::npos){
+            selectElectrons();
+        } else if (_ch.find("electron") != std::string::npos){
+            selectMuons();
+        }
         selectTaus();
         selectJets(jes_var, jes_var_flav);
         //if (!_isData){
