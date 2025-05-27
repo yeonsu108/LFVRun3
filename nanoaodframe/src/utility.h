@@ -18,6 +18,7 @@ using floatsVec =  ROOT::VecOps::RVec<ROOT::VecOps::RVec<float>>;
 using doubles =  ROOT::VecOps::RVec<double>;
 using doublesVec =  ROOT::VecOps::RVec<ROOT::VecOps::RVec<double>>;
 using ints =  ROOT::VecOps::RVec<int>;
+using shorts =  ROOT::VecOps::RVec<short>;
 using bools = ROOT::VecOps::RVec<bool>;
 using uchars = ROOT::VecOps::RVec<unsigned char>;
 using strings = ROOT::VecOps::RVec<std::string>;

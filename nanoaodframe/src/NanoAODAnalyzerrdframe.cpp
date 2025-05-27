@@ -233,9 +233,12 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
 
             auto PuWeight = [this, _puweight](float x) -> floats {
                 floats out;
-                out.emplace_back(_puweight->evaluate({"nominal", x}));
-                out.emplace_back(_puweight->evaluate({"up", x}));
-                out.emplace_back(_puweight->evaluate({"down", x}));
+                //out.emplace_back(_puweight->evaluate({"nominal", x}));
+                //out.emplace_back(_puweight->evaluate({"up", x}));
+                //out.emplace_back(_puweight->evaluate({"down", x}));
+                out.emplace_back(_puweight->evaluate({x, "nominal"}));
+                out.emplace_back(_puweight->evaluate({x, "up"}));
+                out.emplace_back(_puweight->evaluate({x, "down"}));
 
                 return out;
             };
@@ -456,7 +459,7 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
                .Define("njetloose", "int(Jet_pt_loose.size())")
                .Define("loosejet4vecs", ::gen4vec, {"Jet_pt_loose", "Jet_eta_loose", "Jet_phi_loose", "Jet_mass_loose"});
     
-    _rlm = _rlm.Define("vetomuoncut","muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
+    _rlm = _rlm.Define("vetomuoncut","Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
     
     _rlm = _rlm.Define("Muon_pt_veto", "Muon_pt[vetomuoncut]")
                .Define("Muon_phi_veto", "Muon_phi[vetomuoncut]")
@@ -465,25 +468,27 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
                .Define("nmuonveto", "int(Muon_pt_veto.size())")
                .Define("vetomuon4vecs", ::gen4vec, {"Muon_pt_veto", "Muon_eta_veto", "Muon_phi_veto", "Muon_mass_veto"});
     
-    _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"loosejet4vecs","vetomuon4vecs"});
+    _rlm = _rlm.Define("vetomuonjetoverlap", checkoverlap, {"loosejet4vecs","vetomuon4vecs"});
     
-    _rlm = _rlm.Redefine("Jet_pt_loose", "Jet_pt_loose[muonjetoverlap]")
-               .Redefine("Jet_phi_loose", "Jet_phi_loose[muonjetoverlap]")
-               .Redefine("Jet_eta_loose", "Jet_eta_loose[muonjetoverlap]")
-               .Redefine("Jet_mass_loose", "Jet_mass_loose[muonjetoverlap]")
+    _rlm = _rlm.Redefine("Jet_pt_loose", "Jet_pt_loose[vetomuonjetoverlap]")
+               .Redefine("Jet_phi_loose", "Jet_phi_loose[vetomuonjetoverlap]")
+               .Redefine("Jet_eta_loose", "Jet_eta_loose[vetomuonjetoverlap]")
+               .Redefine("Jet_mass_loose", "Jet_mass_loose[vetomuonjetoverlap]")
                .Redefine("njetloose", "int(Jet_pt_loose.size())")
                .Redefine("loosejet4vecs", ::gen4vec, {"Jet_pt_loose", "Jet_eta_loose", "Jet_phi_loose", "Jet_mass_loose"});
     
-    _rlm = _rlm.Redefine("Jet_phi_loose", [](const std::vector<float>& phis) {
-                    std::vector<float> corrected(phis.size());
+    //_rlm = _rlm.Redefine("Jet_phi_loose", [](const std::vector<float>& phis) {
+    _rlm = _rlm.Redefine("Jet_phi_loose", [](floats phis) {
+                    floats corrected(phis.size());
                     std::transform(phis.begin(), phis.end(), corrected.begin(), [](float phi) {
                         return (std::abs(phi) > 3.141592653589790f) ? ((phi > 0 ? 1.0f : -1.0f) * 3.141592653589790f) : phi;
                     });
                     return corrected;
                 }, {"Jet_phi_loose"})
 
-               .Redefine("Jet_eta_loose", [](const std::vector<float>& etas) {
-                    std::vector<float> corrected(etas.size());
+               //.Redefine("Jet_eta_loose", [](const std::vector<float>& etas) {
+               .Redefine("Jet_eta_loose", [](floats etas) {
+                    floats corrected(etas.size());
                     std::transform(etas.begin(), etas.end(), corrected.begin(), [](float eta) {
                         return (std::abs(eta) > 5.191f) ? ((eta > 0 ? 1.0f : -1.0f) * 5.190f) : eta;
                     });
@@ -528,7 +533,7 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
     };
     
     _rlm = _rlm.Define("Jet_isVeto_loose", vetomap, {"Jet_eta_loose","Jet_phi_loose"})
-             .Define("events_isVeto","Sum(Jet_isVeto_loose)");
+               .Define("events_isVeto","Sum(Jet_isVeto_loose)");
 }
 
 
@@ -671,6 +676,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         string dbfilenamel3 = basedirectory + _globaltag + "_" + datamcflag + "_L3Absolute_" + jetalgo + ".txt";
         string dbfilenamel2l3 = basedirectory + _globaltag + "_" + datamcflag + "_L2L3Residual_" + jetalgo + ".txt";
 
+
         JetCorrectorParameters *L1JetCorrPar = new JetCorrectorParameters(dbfilenamel1);
         if (!L1JetCorrPar->isValid()) {
           std::cerr << "L1FastJet correction parameters not read" << std::endl;
@@ -757,7 +763,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     };
 
     // structure: jes[jetIdx][varIdx]
-    auto jesUnc = [this, jes_var, jes_var_flav, regroupedUnc, flavPureUnc](floats jetpts, floats jetetas, floats jetphis, floats jetAreas, floats jetrawf, float rho, ints &partflav)->floatsVec {
+    auto jesUnc = [this, jes_var, jes_var_flav, regroupedUnc, flavPureUnc](floats jetpts, floats jetetas, floats jetphis, floats jetAreas, floats jetrawf, float rho, shorts &partflav)->floatsVec {
 
         floats uncSources;
         uncSources.reserve(2 * regroupedUnc.size() + flavPureUnc.size());
@@ -969,14 +975,14 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     
     if (_jetCorrector != 0) {
         _rlm = _rlm.Define("Jet_pt_uncorr", "Jet_pt");
-        _rlm = _rlm.Define("Jet_pt_corr", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_pt"})
-	  .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_mass"});
+        _rlm = _rlm.Define("Jet_pt_corr", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "Rho_fixedGridRhoFastjetAll", "Jet_pt"})
+	               .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "Rho_fixedGridRhoFastjetAll", "Jet_mass"});
 	  //.Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi","PV_npvsGood", "run"})
 	  //.Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi", "PV_npvsGood", "run"});
         if (!dataMc) {
-	  _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor", "fixedGridRhoFastjetAll", "Jet_partonFlavour"});
-	    //.Define("MET_pt_unc", metUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"})
-	    //.Define("MET_phi_unc", metPhiUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"});
+	        _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor", "Rho_fixedGridRhoFastjetAll", "Jet_partonFlavour"});
+	                   //.Define("MET_pt_unc", metUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"})
+                       //.Define("MET_phi_unc", metPhiUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"});
         }
         _rlm = _rlm.Redefine("Jet_pt", "Jet_pt_corr");
     }
@@ -1003,7 +1009,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     
     JME::JetResolution jetResObj;
     JME::JetResolutionScaleFactor jetResSFObj;
-    if (!_isData) {JME::JetResolution
+    if (!_isData) {//JME::JetResolution
         jetResObj = JME::JetResolution(jetResFilePath_);
         jetResSFObj = JME::JetResolutionScaleFactor(jetResSFFilePath_);
     }
@@ -1011,7 +1017,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     // Compute the JER and Unc ( v[pt][unc], unc = nom, up, down)
     // cattool + PhysicsTools/PatUtils/interface/SmearedJetProducerT.h
     auto applyJer = [this, jetResObj, jetResSFObj](floats jetpts, floats jetetas, floats jetphis, floats jetms,
-                    floats genjetpts, floats genjetetas, floats genjetphis, floats genjetms, ints genidx, float rho, unsigned long long event)
+                    floats genjetpts, floats genjetetas, floats genjetphis, floats genjetms, shorts genidx, float rho, unsigned long long event)
                     ->floatsVec {
 
         floatsVec out;
@@ -1025,6 +1031,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 JME::JetParameters jetPars = {{JME::Binning::JetPt, jetpts[i]},
                                               {JME::Binning::JetEta, jetetas[i]},
                                               {JME::Binning::Rho, rho}};
+
                 const float jetRes = static_cast<float>(jetResObj.getResolution(jetPars)); // Note: this is relative resolution.
                 const float cJER   = static_cast<float>(jetResSFObj.getScaleFactor(jetPars));
                 const float cJERUp = static_cast<float>(jetResSFObj.getScaleFactor(jetPars, Variation::UP));
@@ -1083,7 +1090,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     };
 
     if (!dataMc) {
-        _rlm = _rlm.Define("Jet_jer", applyJer, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass", "GenJet_pt", "GenJet_eta", "GenJet_phi", "GenJet_mass", "Jet_genJetIdx", "fixedGridRhoFastjetAll", "event"});
+        _rlm = _rlm.Define("Jet_jer", applyJer, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass", "GenJet_pt", "GenJet_eta", "GenJet_phi", "GenJet_mass", "Jet_genJetIdx", "Rho_fixedGridRhoFastjetAll", "event"});
     }
 
 }
@@ -2077,9 +2084,10 @@ void NanoAODAnalyzerrdframe::run(bool saveAll, string outtreename) {
             cout << " writing branches" << endl;
             for (auto bname: _varstostorepertree[nodename]) {
                 cout << bname << ", ";
+                //arnode->Snapshot(outtreename, outname, _varstostorepertree[nodename]);
             }
-            cout<<endl;
             arnode->Snapshot(outtreename, outname, _varstostorepertree[nodename]);
+            cout<<endl<<"Snapshot is done"<<endl;
         }
         _outrootfile = new TFile(outname.c_str(),"UPDATE");
         for (auto &h : _th1dhistos) {

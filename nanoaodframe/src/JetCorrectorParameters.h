@@ -106,7 +106,7 @@ class JetCorrectorParametersCollection {
  public:
   enum Level_t { L1Offset=0,
 		 L1JPTOffset=7,
-                 L1FastJet = 10,
+         L1FastJet = 10,
 		 L2Relative=1,
 		 L3Absolute=2,
 		 L2L3Residual=8,
