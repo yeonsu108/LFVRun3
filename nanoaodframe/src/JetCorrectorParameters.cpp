@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <cmath>
 #include <iterator>
+#include <filesystem>
 
 //------------------------------------------------------------------------ 
 //--- JetCorrectorParameters::Definitions constructor --------------------
@@ -112,6 +113,16 @@ JetCorrectorParameters::JetCorrectorParameters(const std::string& fFile, const s
   std::string currentSection = "";
   std::string line;
   std::string currentDefinitions = "";
+  
+  std::getline(input,line);
+  input.clear(); input.close();
+  if (line.find("txt") != std::string::npos){
+      std::filesystem::path filepath(line);
+      input.open(std::filesystem::path(fFile).parent_path().string()+"/"+filepath.filename().string());
+  } else{
+      input.open(fFile.c_str());
+  }
+
   while (std::getline(input,line)) 
     {
       std::string section = getSection(line);

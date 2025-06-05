@@ -27,14 +27,19 @@ os.makedirs(log, exist_ok=True)
 for fn in os.listdir("data/dataset/" + year):
     if 'json' in fn: continue
     fname = fn.replace('dataset_', '').replace('.txt', '')
+    if "Muon" in fname and "mu" not in ch: continue
+    if "Egamma" in fname and "ele" not in ch: continue
+    if "QCD" in fname and "EM" in fname and "ele" not in ch: continue
+    if "QCD" in fname and "Mu" in fname and "mu" not in ch: continue
     test_list = options.dataset
     if len(test_list) > 0:
         if not any(i in fname for i in test_list): continue
     if len(sys.argv) > 3:
         if options.dataOrMC == 'data':
-            if '202' not in fname: continue
+            if 'Muon' not in fname and "Egamma" not in fname: continue
         elif options.dataOrMC == 'mc':
-            if '202' in fname: continue
+            if 'Muon' in fname or "Egamma" in fname: continue
+
 
     with open(os.path.join("data/dataset/" + year, fn), 'r') as f:
         for line in f.readlines():
