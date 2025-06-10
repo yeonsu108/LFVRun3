@@ -50,6 +50,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("puWeight.*");
         addVartoStore("unitGenWeight.*");
         addVartoStore("muonWeight.*");
+        addVartoStore("elecWeight.*");
         addVartoStore("tauWeight.*");
         addVartoStore("LHEPdfWeight");
         addVartoStore("LHEScaleWeight");
@@ -101,6 +102,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("nElectron");
         addVartoStore("Electron_charge");
         addVartoStore("Electron_cutBased");
+        addVartoStore("Electron_mvaIso.*");
         addVartoStore("Electron_deltaEtaSC");
         addVartoStore("Electron_dxy.*");
         addVartoStore("Electron_dz.*");

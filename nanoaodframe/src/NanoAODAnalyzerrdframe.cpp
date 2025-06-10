@@ -409,13 +409,14 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
                    .Redefine("MET_pt", muonhighscalemet, {"Muon_pt", "Muon_pt_scale", "MET_pt"})
                    .Redefine("Muon_pt", "Muon_pt_scale"); //order matters
     }
-    _rlm = _rlm.Define("elecuts", "Electron_pt>50 && abs(Electron_eta)<2.5 && Electron_mvaIso_WP90");
     
     if (_ch.find("muon") != std::string::npos) {
         cout<<"selectElectrons muon channel vetoelecuts"<<endl;
+        _rlm = _rlm.Define("elecuts", "Electron_pt>50 && abs(Electron_eta)<2.5");
         _rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1");
     } else if (_ch.find("electron") != std::string::npos) {
         cout<<"selectElectrons electron channel vetoelecuts"<<endl;
+        _rlm = _rlm.Define("elecuts", "Electron_pt>50 && abs(Electron_eta)<2.5 && Electron_mvaIso_WP90");
         _rlm = _rlm.Define("vetoelecuts", "!elecuts && Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1");
     }
 
@@ -431,9 +432,73 @@ void NanoAODAnalyzerrdframe::selectElectrons() {
                .Define("nelepass", "int(Electron_pt.size())")
                .Define("ele4vecs", ::gen4vec, {"Electron_pt", "Electron_eta", "Electron_phi", "Electron_mass"});
 
+    //Electron SF
+    cout << "Loading Electron SF" << endl;
+    std::string elecFile = _year;
+    std::string elecYear = "";
+    if (_isRun22) {
+        elecFile = "2022_Summer22";
+        elecYear = "2022Re-recoBCD";
+    }
+    if (_isRun22EE) {
+        elecFile = "2022_Summer22EE";
+        elecYear = "2022Re-recoE+PromptFG";
+    }
+    if (_isRun23) {
+        elecFile = "2023_Summer23";
+        elecYear = "2023PromptC";
+    }
+    if (_isRun23BPix) {
+        elecFile = "2023_Summer23BPix";
+        elecYear = "2023PromptD";
+    }
+
+    auto elecSFreader = correction::CorrectionSet::from_file("data/ElectronSF/"+elecFile+"/electron.json.gz");
+    auto _elecid = elecSFreader->at("Electron-ID-SF");
+    auto elecSFId = [this, _elecid, elecYear](floats &pt, floats &eta, floats &phi)->floats {
+        floats wVec;
+        wVec.reserve(3); //cent, up, down
+        if (pt.size() == 1){
+            float sf=1.0; float sf_up=1.0; float sf_down=1.0;
+            if (elecYear.find("2022")!=std::string::npos){
+                sf = _elecid->evaluate({elecYear, "sf", "wp90iso", eta[0], pt[0]});
+                sf_up = _elecid->evaluate({elecYear, "sfup", "wp90iso", eta[0], pt[0]});
+                sf_down = _elecid->evaluate({elecYear, "sfdown", "wp90iso", eta[0], pt[0]});
+            } else if (elecYear.find("2023")!=std::string::npos){
+                sf = _elecid->evaluate({elecYear, "sf", "wp90iso", eta[0], pt[0], phi[0]});
+                sf_up = _elecid->evaluate({elecYear, "sfup", "wp90iso", eta[0], pt[0], phi[0]});
+                sf_down = _elecid->evaluate({elecYear, "sfdown", "wp90iso", eta[0], pt[0], phi[0]});
+            }
+            wVec.emplace_back(sf);
+            wVec.emplace_back(sf_up);
+            wVec.emplace_back(sf_down);
+        } else wVec = {1.0, 1.0, 1.0};
+        return wVec;
+    };
+
+    auto elecHltSFreader = correction::CorrectionSet::from_file("data/ElectronSF/"+elecFile+"/electronHlt.json.gz");
+    auto _elechlt = elecHltSFreader->at("Electron-HLT-SF");
+    auto elecSFTrg = [this, _elechlt, elecYear](floats &pt, floats &eta)->floats {
+        floats wVec;
+        wVec.reserve(3); //cent, up, down
+        if (pt.size() == 1){
+            float sf = _elechlt->evaluate({elecYear, "sf", "HLT_SF_Ele30_MVAiso90ID", eta[0], pt[0]});
+            float sf_up = _elechlt->evaluate({elecYear, "sfup", "HLT_SF_Ele30_MVAiso90ID", eta[0], pt[0]});
+            float sf_down = _elechlt->evaluate({elecYear, "sfdown", "HLT_SF_Ele30_MVAiso90ID", eta[0], pt[0]});
+            wVec.emplace_back(sf);
+            wVec.emplace_back(sf_up);
+            wVec.emplace_back(sf_down);
+        } else wVec = {1.0, 1.0, 1.0};
+        return wVec;
+    };
+
+    _rlm = _rlm.Define("elecWeightId", elecSFId, {"Electron_pt","Electron_eta","Electron_phi"})
+               .Define("elecWeightTrg", elecSFTrg, {"Electron_pt","Electron_eta"});
+
 }
 
 void NanoAODAnalyzerrdframe::JetVetoMap() {
+    cout << "apply JetVetoMap" << endl;
     
     auto checkoverlap = [](FourVectorVec &seljets, FourVectorVec &sellep) {
 
@@ -452,14 +517,15 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
     
     _rlm = _rlm.Define("loosejetcuts", "Jet_pt>15 && Jet_jetId >= 2 && (Jet_neEmEF+Jet_chEmEF)<0.9");
     
-    _rlm = _rlm.Define("Jet_pt_loose", "Jet_pt[loosejetcuts]")
-               .Define("Jet_phi_loose", "Jet_phi[loosejetcuts]")
-               .Define("Jet_eta_loose", "Jet_eta[loosejetcuts]")
-               .Define("Jet_mass_loose", "Jet_mass[loosejetcuts]")
-               .Define("njetloose", "int(Jet_pt_loose.size())")
-               .Define("loosejet4vecs", ::gen4vec, {"Jet_pt_loose", "Jet_eta_loose", "Jet_phi_loose", "Jet_mass_loose"});
+    _rlm = _rlm.Define("Jet_pt_loosejet", "Jet_pt[loosejetcuts]")
+               .Define("Jet_phi_loosejet", "Jet_phi[loosejetcuts]")
+               .Define("Jet_eta_loosejet", "Jet_eta[loosejetcuts]")
+               .Define("Jet_mass_loosejet", "Jet_mass[loosejetcuts]")
+               .Define("njetloose", "int(Jet_pt_loosejet.size())")
+               .Define("loosejet4vecs", ::gen4vec, {"Jet_pt_loosejet", "Jet_eta_loosejet", "Jet_phi_loosejet", "Jet_mass_loosejet"});
     
     _rlm = _rlm.Define("vetomuoncut","Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
+
     
     _rlm = _rlm.Define("Muon_pt_veto", "Muon_pt[vetomuoncut]")
                .Define("Muon_phi_veto", "Muon_phi[vetomuoncut]")
@@ -470,30 +536,30 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
     
     _rlm = _rlm.Define("vetomuonjetoverlap", checkoverlap, {"loosejet4vecs","vetomuon4vecs"});
     
-    _rlm = _rlm.Redefine("Jet_pt_loose", "Jet_pt_loose[vetomuonjetoverlap]")
-               .Redefine("Jet_phi_loose", "Jet_phi_loose[vetomuonjetoverlap]")
-               .Redefine("Jet_eta_loose", "Jet_eta_loose[vetomuonjetoverlap]")
-               .Redefine("Jet_mass_loose", "Jet_mass_loose[vetomuonjetoverlap]")
-               .Redefine("njetloose", "int(Jet_pt_loose.size())")
-               .Redefine("loosejet4vecs", ::gen4vec, {"Jet_pt_loose", "Jet_eta_loose", "Jet_phi_loose", "Jet_mass_loose"});
+    _rlm = _rlm.Redefine("Jet_pt_loosejet", "Jet_pt_loosejet[vetomuonjetoverlap]")
+               .Redefine("Jet_phi_loosejet", "Jet_phi_loosejet[vetomuonjetoverlap]")
+               .Redefine("Jet_eta_loosejet", "Jet_eta_loosejet[vetomuonjetoverlap]")
+               .Redefine("Jet_mass_loosejet", "Jet_mass_loosejet[vetomuonjetoverlap]")
+               .Redefine("njetloose", "int(Jet_pt_loosejet.size())")
+               .Redefine("loosejet4vecs", ::gen4vec, {"Jet_pt_loosejet", "Jet_eta_loosejet", "Jet_phi_loosejet", "Jet_mass_loosejet"});
     
     //_rlm = _rlm.Redefine("Jet_phi_loose", [](const std::vector<float>& phis) {
-    _rlm = _rlm.Redefine("Jet_phi_loose", [](floats phis) {
+    _rlm = _rlm.Redefine("Jet_phi_loosejet", [](floats phis) {
                     floats corrected(phis.size());
                     std::transform(phis.begin(), phis.end(), corrected.begin(), [](float phi) {
                         return (std::abs(phi) > 3.141592653589790f) ? ((phi > 0 ? 1.0f : -1.0f) * 3.141592653589790f) : phi;
                     });
                     return corrected;
-                }, {"Jet_phi_loose"})
+               }, {"Jet_phi_loosejet"})
 
-               //.Redefine("Jet_eta_loose", [](const std::vector<float>& etas) {
-               .Redefine("Jet_eta_loose", [](floats etas) {
+               //.Redefine("Jet_eta_loosejet", [](const std::vector<float>& etas) {
+               .Redefine("Jet_eta_loosejet", [](floats etas) {
                     floats corrected(etas.size());
                     std::transform(etas.begin(), etas.end(), corrected.begin(), [](float eta) {
                         return (std::abs(eta) > 5.191f) ? ((eta > 0 ? 1.0f : -1.0f) * 5.190f) : eta;
                     });
 	                return corrected;
-                }, {"Jet_eta_loose"});
+               }, {"Jet_eta_loosejet"});
 
     //Check if one of this is in the veto map if so skip the event
     // .Define("badjets",int())
@@ -532,7 +598,7 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
         return xout;
     };
     
-    _rlm = _rlm.Define("Jet_isVeto_loose", vetomap, {"Jet_eta_loose","Jet_phi_loose"})
+    _rlm = _rlm.Define("Jet_isVeto_loose", vetomap, {"Jet_eta_loosejet","Jet_phi_loosejet"})
                .Define("events_isVeto","Sum(Jet_isVeto_loose)");
 }
 
@@ -743,7 +809,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
         }
     }
 
-    auto applyJes = [this, _jetCorrector](floats jetpts, floats jetetas, floats jetAreas, floats jetrawf, float rho, floats tocorrect)->floats {
+    auto applyJes = [this, _jetCorrector](floats jetpts, floats jetetas, floats jetphis, floats jetAreas, floats jetrawf, float rho, floats tocorrect)->floats {
 
         floats corrfactors;
         corrfactors.reserve(jetpts.size());
@@ -753,6 +819,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
             float rawjetpt = jetpts[i] * (rawfrac);
             _jetCorrector->setJetPt(rawjetpt);
             _jetCorrector->setJetEta(jetetas[i]);
+            _jetCorrector->setJetPhi(jetphis[i]);
             _jetCorrector->setJetA(jetAreas[i]);
             _jetCorrector->setRho(rho);
             float corrfactor = _jetCorrector->getCorrection();
@@ -975,8 +1042,8 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     
     if (_jetCorrector != 0) {
         _rlm = _rlm.Define("Jet_pt_uncorr", "Jet_pt");
-        _rlm = _rlm.Define("Jet_pt_corr", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "Rho_fixedGridRhoFastjetAll", "Jet_pt"})
-	               .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_area", "Jet_rawFactor", "Rho_fixedGridRhoFastjetAll", "Jet_mass"});
+        _rlm = _rlm.Define("Jet_pt_corr", applyJes, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor", "Rho_fixedGridRhoFastjetAll", "Jet_pt"})
+	               .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor", "Rho_fixedGridRhoFastjetAll", "Jet_mass"});
 	  //.Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi","PV_npvsGood", "run"})
 	  //.Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi", "PV_npvsGood", "run"});
         if (!dataMc) {
@@ -2084,7 +2151,6 @@ void NanoAODAnalyzerrdframe::run(bool saveAll, string outtreename) {
             cout << " writing branches" << endl;
             for (auto bname: _varstostorepertree[nodename]) {
                 cout << bname << ", ";
-                //arnode->Snapshot(outtreename, outname, _varstostorepertree[nodename]);
             }
             arnode->Snapshot(outtreename, outname, _varstostorepertree[nodename]);
             cout<<endl<<"Snapshot is done"<<endl;
