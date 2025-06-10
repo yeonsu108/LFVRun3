@@ -76,7 +76,7 @@ cd plotIt
 cd external
 ./build-external.sh
 cd ..
-make -j4
+make -j 4
 ```
 
 ## III. Running over large dataset
@@ -155,7 +155,7 @@ find log/*/*/* | xargs grep -l error | sed 's/.log//' | sed 's/log\/*202*\/.*\//
 find log/*/*/* | xargs grep ERROR | grep -v "SimpleJetCorrectionUncertainty" | sed 's/.log//' | sed 's/log\/*202*\/.*\///' > ~/resub
 
 #Submit for each year...
-cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_test -Y v2023_BPix -N 
+cat ~/resub | xargs -i -l1 python scripts/skim.py -V skim_test -Y v2023_BPix -C muon -N 
 ```
 
 #### Processing
@@ -175,7 +175,7 @@ Options:
 In some cases, you may want to submit single file per core using slurm.
 `scripts/process.py` will do the job
 ``` txt
-Usage: python scripts/process.py -V skim_test -O test -Y 2018 -S theory (-F data/mc)
+Usage: python scripts/process.py -V skim_test -O test -Y v2023_BPix -C muon -S nosyst (-F data/mc)
 
 For failing job detection:
 find log/* | xargs grep runtime_error
@@ -203,12 +203,14 @@ python postprocess.py -I test -Y 2018
 ```
 Drawing histogram by plotIt
 ``` txt
-cd 2018_postprocess
-mkdir ../figure_2018
-../../../plotIt/plotIt -o ../figure_2018/ ../../../plotIt/configs/TOP-22-011/config_2018.yml -y -s
+cd v2023_BPix
+mkdir ../figure_v2023BPix
+hadd hist_Muon.root hist_Muon*.root
+../../../../plotIt/plotIt -o ../figure_v2023BPix/ ../../../../plotIt/configs/Run3_muon/config_2023_BPix.yml -y -s
+# Add -q to draw with QCD
 # Add --allSig to draw all signals for plot ir yield
 cd ../../
-python print_syst_table.py -I test -Y 2018
+python print_syst_table.py -I test -Y v2023_BPix
 
 #For Run2,
 python stack_signals_v2.py -I test #use v2 for now, v1 cannot deal with year based uncertainties
