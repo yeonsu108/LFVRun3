@@ -120,6 +120,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Muon_phi");
         addVartoStore("Muon_pt.*");
         addVartoStore("Muon_tightId");
+        addVartoStore("Muon_looseId");
         addVartoStore("nmuonpass");
         addVartoStore("nelepass");
         addVartoStore("nvetomuons");

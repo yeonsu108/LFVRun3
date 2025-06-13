@@ -222,7 +222,7 @@ void TopLFVAnalyzer::defineMoreVars() {
         if (_syst == "" or _syst == "nosyst") { //TODO
             addVar({"eventWeight_pu", "puWeight[0]"});
             addVar({"eventWeight_mu", "muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0]"});
-            addVar({"eventWeight_elec", "elecWeightId[0] * elecWeightIso[0]"});
+            addVar({"eventWeight_elec", "elecWeightId[0] * elecWeightTrg[0]"});
             addVar({"eventWeight_pumu", "eventWeight_pu * eventWeight_mu"});
             addVar({"eventWeight_puelec", "eventWeight_pu * eventWeight_elec"});
             addVar({"eventWeight_genpu", "1.0"});
@@ -612,7 +612,7 @@ void TopLFVAnalyzer::bookHists() {
             add1DHist({"h_electron1_pt_notausf", ";Electron p_{T} (GeV);Events", 30, 0, 600}, "Electron1_pt", "eventWeight_notau", weightstr, minstep_S1, maxstep);
             add1DHist({"h_electron1_eta_notausf", ";Electron #eta;Events", 20, -2.4, 2.4}, "Electron1_eta", "eventWeight_notau", weightstr, minstep_S1, maxstep);
         }
-        add1DHist({"h_muMET_mt_notausf", ";m_{T}(#mu, MET) (GeV);Events", 20, 0, 400}, "muMET_mt", "eventWeight_notau", weightstr, minstep_S1, maxstep);
+        add1DHist({"h_lepMET_mt_notausf", ";m_{T}(#mu, MET) (GeV);Events", 20, 0, 400}, "lepMET_mt", "eventWeight_notau", weightstr, minstep_S1, maxstep);
 
         add1DHist({"h_jet1_pt_notausf", ";Leading jet p_{T} (GeV);Events", 20, 0, 400}, "Jet1_pt", "eventWeight_notau", weightstr, minstep_S1, maxstep);
         add1DHist({"h_jet1_eta_notausf", ";Leading jet #eta;Events", 20, -2.4, 2.4}, "Jet1_eta", "eventWeight_notau", weightstr, minstep_S1, maxstep);
@@ -656,7 +656,7 @@ void TopLFVAnalyzer::bookHists() {
             add1DHist({"h_electron1_eta", ";Electron #eta;Events", 20, -2.4, 2.4}, "Electron1_eta", "eventWeight", weightstr, minstep_S1, maxstep);
         }
 
-        add1DHist({"h_muMET_mt", ";m_{T}(#mu, MET) (GeV);Events", 20, 0, 400}, "muMET_mt", "eventWeight", weightstr, minstep_S1, maxstep);
+        add1DHist({"h_lepMET_mt", ";m_{T}(#mu, MET) (GeV);Events", 20, 0, 400}, "lepMET_mt", "eventWeight", weightstr, minstep_S1, maxstep);
 
         add1DHist({"h_tau1_pt", ";#tau_{h} p_{T} (GeV);Events", 20, 0, 400}, "Tau1_pt", "eventWeight", weightstr, minstep_S2, maxstep);
         add1DHist({"h_tau1_eta", ";#tau_{h} #eta;Events", 20, -2.3, 2.3}, "Tau1_eta", "eventWeight", weightstr, minstep_S2, maxstep);
