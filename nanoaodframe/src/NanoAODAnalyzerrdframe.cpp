@@ -137,9 +137,16 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
     if(_isSkim){
         _rlm = _rlm.Define("unitGenWeight", "one");
         _rlm = _rlm.Define("isData", "true");
+	_rlm = _rlm.Define("lhereweight",1);
 
         if(!_isData){
-            _rlm = _rlm.Redefine("isData", "false");
+	  _rlm = _rlm.Redefine("isData", "false");
+
+	  if (_outfilename.find("WtoLNu-2Jets") != std::string::npos) {
+	    _rlm = _rlm.Redefine("lhereweight",LHEWeight_originalXWGTUP/abs(LHEWeight_originalXWGTUP));
+	    _rlm = _rlm.Redefine("unitGenWeight",LHEWeight_originalXWGTUP/abs(LHEWeight_originalXWGTUP));
+	  };
+
 
             //// Store sum of weights
             //auto storePDFWeights = [this](floats weights, float gen)->floats {
@@ -273,9 +280,9 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         }
         selectTaus();
         selectJets(jes_var, jes_var_flav);
-        //if (!_isData){
-        //    topPtReweight();
-        //}
+        if (!_isData){
+            topPtReweight();
+        }
     }
     defineMoreVars();
     defineCuts();
