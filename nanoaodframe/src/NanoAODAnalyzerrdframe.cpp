@@ -135,87 +135,64 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
 
     // Event weight for data it's always one. For MC, it depends on the sign
     if(_isSkim){
-        _rlm = _rlm.Define("unitGenWeight", "one");
         _rlm = _rlm.Define("isData", "true");
-	_rlm = _rlm.Define("lhereweight",1);
+        _rlm = _rlm.Define("lhereweight","one");
+        _rlm = _rlm.Define("unitGenWeight", "one");
 
         if(!_isData){
-	  _rlm = _rlm.Redefine("isData", "false");
+            _rlm = _rlm.Redefine("isData", "false");
 
-	  if (_outfilename.find("WtoLNu-2Jets") != std::string::npos) {
-	    _rlm = _rlm.Redefine("lhereweight",LHEWeight_originalXWGTUP/abs(LHEWeight_originalXWGTUP));
-	    _rlm = _rlm.Redefine("unitGenWeight",LHEWeight_originalXWGTUP/abs(LHEWeight_originalXWGTUP));
-	  };
+	        if (_outfilename.find("WtoLNu-2Jets") != std::string::npos) {
+	          _rlm = _rlm.Redefine("lhereweight","LHEWeight_originalXWGTUP/abs(LHEWeight_originalXWGTUP)");
+	          _rlm = _rlm.Redefine("unitGenWeight","LHEWeight_originalXWGTUP/abs(LHEWeight_originalXWGTUP)");
+	        };
 
 
-            //// Store sum of weights
-            //auto storePDFWeights = [this](floats weights, float gen)->floats {
+            // Store sum of weights
+            auto storePDFWeights = [this](floats weights, float gen)->floats {
 
-            //    for (unsigned int i=0; i<weights.size(); i++)
-            //        PDFWeights[i] += (gen / abs(gen)) * weights[i];
+                for (unsigned int i=0; i<weights.size(); i++)
+                    PDFWeights[i] += (gen / abs(gen)) * weights[i];
 
-            //    return PDFWeights;
-            //};
-            //auto storePSWeights = [this](floats weights, float gen)->floats {
+                return PDFWeights;
+            };
+            auto storePSWeights = [this](floats weights, float gen)->floats {
 
-            //    for (unsigned int i=0; i<weights.size(); i++) {
-            //        if (i > 3) continue; //JME Nano stores all PS
-            //        PSWeights[i] += (gen / abs(gen)) * weights[i];
-            //    }
+                for (unsigned int i=0; i<weights.size(); i++) {
+                    if (i > 3) continue; //JME Nano stores all PS
+                    PSWeights[i] += (gen / abs(gen)) * weights[i];
+                }
 
-            //    return PSWeights;
-            //};
-            //auto storeScaleWeights = [this](floats weights, float gen)->floats {
+                return PSWeights;
+            };
+            auto storeScaleWeights = [this](floats weights, float gen)->floats {
 
-            //    for (unsigned int i=0; i<weights.size(); i++)
-            //        ScaleWeights[i] += (gen / abs(gen)) * weights[i];
+                for (unsigned int i=0; i<weights.size(); i++)
+                    ScaleWeights[i] += (gen / abs(gen)) * weights[i];
 
-            //    return ScaleWeights;
-            //};
-            //try {
-            //    _rlm.Foreach(storePDFWeights, {"LHEPdfWeight", "genWeight"});
-            //} catch (exception& e) {
-            //    cout << e.what() << endl;
-            //    cout << "No PDF weight in this root file!" << endl;
-            //}
-            //try {
-            //    _rlm.Foreach(storePSWeights, {"PSWeight", "genWeight"});
-            //} catch (exception& e) {
-            //    cout << e.what() << endl;
-            //    cout << "No PS weight in this root file!" << endl;
-            //}
-            //try {
-            //    _rlm.Foreach(storeScaleWeights, {"LHEScaleWeight", "genWeight"});
-            //} catch (exception& e) {
-            //    cout << e.what() << endl;
-            //    cout << "No Scale weight in this root file!" << endl;
-            //}
+                return ScaleWeights;
+            };
+            try {
+                _rlm.Foreach(storePDFWeights, {"LHEPdfWeight", "genWeight"});
+            } catch (exception& e) {
+                cout << e.what() << endl;
+                cout << "No PDF weight in this root file!" << endl;
+            }
+            try {
+                _rlm.Foreach(storePSWeights, {"PSWeight", "genWeight"});
+            } catch (exception& e) {
+                cout << e.what() << endl;
+                cout << "No PS weight in this root file!" << endl;
+            }
+            try {
+                _rlm.Foreach(storeScaleWeights, {"LHEScaleWeight", "genWeight"});
+            } catch (exception& e) {
+                cout << e.what() << endl;
+                cout << "No Scale weight in this root file!" << endl;
+            }
 
-            //// pu weight setup
-            //cout<<"Loading Pileup profiles"<<endl;
-            //// MC 2016pre = MC 2016post (same file)
-            //TFile tfmc(("data/Pileup/PileupMC_UL" + _year + ".root").c_str());
-            //TH1D* _hpumc = dynamic_cast<TH1D *>(tfmc.Get("pu_mc"));
-            //_hpumc->SetDirectory(0);
-            //tfmc.Close();
-
-            //TFile tfdata(("data/Pileup/PileupDATA_UL" + _year + ".root").c_str());
-            //TH1D* _hpudata = dynamic_cast<TH1D *>(tfdata.Get("pileup"));
-            //TH1D* _hpudata_plus = dynamic_cast<TH1D *>(tfdata.Get("pileup_plus"));
-            //TH1D* _hpudata_minus = dynamic_cast<TH1D *>(tfdata.Get("pileup_minus"));
-
-            //_hpudata->SetDirectory(0);
-            //_hpudata_plus->SetDirectory(0);
-            //_hpudata_minus->SetDirectory(0);
-            //tfdata.Close();
-
-            //WeightCalculatorFromHistogram* _puweightcalc = new WeightCalculatorFromHistogram(_hpumc, _hpudata);
-            //WeightCalculatorFromHistogram* _puweightcalc_plus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_plus);
-            //WeightCalculatorFromHistogram* _puweightcalc_minus = new WeightCalculatorFromHistogram(_hpumc, _hpudata_minus); 
             ////Check Normalisation issue for genWeight
-            //_rlm = _rlm.Redefine("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0")
-            //           .Define("puWeight", [this, _puweightcalc, _puweightcalc_plus, _puweightcalc_minus](float x) ->floats
-            //                  {return {_puweightcalc->getWeight(x), _puweightcalc_plus->getWeight(x), _puweightcalc_minus->getWeight(x)};}, {"Pileup_nTrueInt"});
+            _rlm = _rlm.Redefine("unitGenWeight","genWeight != 0 ? genWeight/abs(genWeight) : 0");
             
             std::string pileFile = "";
             std::string map = "";
@@ -240,9 +217,6 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
 
             auto PuWeight = [this, _puweight](float x) -> floats {
                 floats out;
-                //out.emplace_back(_puweight->evaluate({"nominal", x}));
-                //out.emplace_back(_puweight->evaluate({"up", x}));
-                //out.emplace_back(_puweight->evaluate({"down", x}));
                 out.emplace_back(_puweight->evaluate({x, "nominal"}));
                 out.emplace_back(_puweight->evaluate({x, "up"}));
                 out.emplace_back(_puweight->evaluate({x, "down"}));
@@ -267,10 +241,10 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         }
         setupJetMETCorrection(_globaltag, jes_var, jes_var_flav, "AK4PFPuppi", _isData);
         skimJets();
-        //if (!_isData){
-        //    calculateEvWeight();
+        if (!_isData){
+            calculateEvWeight();
         //    applyBSFs(jes_var);
-        //}
+        }
     }
     else {
         if (_ch.find("muon") != std::string::npos){
@@ -1500,30 +1474,30 @@ void NanoAODAnalyzerrdframe::selectTaus() {
     auto syst_unc = _syst;
 
     //TES var.
-    //if (!_isData) {
+    if (!_isData) {
 
-    //    auto selectTES = [syst_unc](floatsVec unc)->floats {
+        auto selectTES = [syst_unc](floatsVec unc)->floats {
 
-    //        int idx = -1;
-    //        if (syst_unc.find("tesup") != std::string::npos) idx = 0;
-    //        else if (syst_unc.find("tesdown") != std::string::npos) idx = 1;
-    //        floats selected;
-    //        selected.reserve(unc.size());
+            int idx = -1;
+            if (syst_unc.find("tesup") != std::string::npos) idx = 0;
+            else if (syst_unc.find("tesdown") != std::string::npos) idx = 1;
+            floats selected;
+            selected.reserve(unc.size());
 
-    //        for (size_t i=0; i<unc.size(); i++) {
-    //            if (idx < 0) selected.emplace_back(1.0f);
-    //            selected.emplace_back(unc[i][idx]);
-    //            std::cout << idx << " " << unc[i][idx]  << endl;
-    //        }
-    //        return selected;
-    //    };
+            for (size_t i=0; i<unc.size(); i++) {
+                if (idx < 0) selected.emplace_back(1.0f);
+                selected.emplace_back(unc[i][idx]);
+                std::cout << idx << " " << unc[i][idx]  << endl;
+            }
+            return selected;
+        };
 
-    //    if (_syst.find("tes") != std::string::npos) {
-    //      _rlm = _rlm.Define("Tau_pt_unc_toapply", selectTES, {"Tau_pt_unc"})
-    //                 .Redefine("Tau_pt", "Tau_pt * Tau_pt_unc_toapply")
-    //                 .Redefine("Tau_mass", "Tau_mass * Tau_pt_unc_toapply");
-    //    }
-    //}
+        if (_syst.find("tes") != std::string::npos) {
+          _rlm = _rlm.Define("Tau_pt_unc_toapply", selectTES, {"Tau_pt_unc"})
+                     .Redefine("Tau_pt", "Tau_pt * Tau_pt_unc_toapply")
+                     .Redefine("Tau_mass", "Tau_mass * Tau_pt_unc_toapply");
+        }
+    }
 
     auto overlap_removal_mutau = [](FourVectorVec &muon4vecs, FourVectorVec &tau4vecs) {
         ints out;
@@ -1540,9 +1514,9 @@ void NanoAODAnalyzerrdframe::selectTaus() {
 
     _rlm = _rlm.Define("tau4vecs", ::gen4vec, {"Tau_pt", "Tau_eta", "Tau_phi", "Tau_mass"});
     if (_ch.find("muon") != std::string::npos) {
-        _rlm = _rlm.Define("mutauoverlap", overlap_removal_mutau, {"muon4vecs","tau4vecs"});
+        _rlm = _rlm.Define("leptauoverlap", overlap_removal_mutau, {"muon4vecs","tau4vecs"});
     } else if (_ch.find("electron") != std::string::npos) {
-        _rlm = _rlm.Define("mutauoverlap", overlap_removal_mutau, {"ele4vecs", "tau4vecs"});
+        _rlm = _rlm.Define("leptauoverlap", overlap_removal_mutau, {"ele4vecs", "tau4vecs"});
     }
 
     // input vector: vec[pt][vars]
@@ -1558,12 +1532,12 @@ void NanoAODAnalyzerrdframe::selectTaus() {
 
     // Fake factor study - loose but not tight
     // Hadronic Tau Object Selections
-    _rlm = _rlm.Define("taucuts", "Tau_pt>30.0 && abs(Tau_eta)<2.3  && Tau_idDecayModeNewDMs")
-               .Define("deeptauidcuts","Tau_idDeepTau2017v2p1VSmu >= 4 && Tau_idDeepTau2017v2p1VSe >= 6 && Tau_idDeepTau2017v2p1VSjet >= 8")
-               .Define("deeptauidcuts_loose","Tau_idDeepTau2017v2p1VSmu >= 4 && Tau_idDeepTau2017v2p1VSe >= 2 && Tau_idDeepTau2017v2p1VSjet >= 4");
+    _rlm = _rlm.Define("taucuts", "Tau_pt>30.0 && abs(Tau_eta)<2.5  && Tau_idDecayModeNewDMs && Tau_decayMode != 5 && Tau_decayMode != 6")
+               .Define("deeptauidcuts","Tau_idDeepTau2018v2p5VSmu >= 4 && Tau_idDeepTau2018v2p5VSe >= 6 && Tau_idDeepTau2018v2p5VSjet >= 7")
+               .Define("deeptauidcuts_loose","Tau_idDeepTau2018v2p5VSmu >= 4 && Tau_idDeepTau2018v2p5VSe >= 2 && Tau_idDeepTau2018v2p5VSjet >= 4");
 
     // Hadronic Tau Selection
-    _rlm = _rlm.Define("seltaucuts_loose","taucuts && deeptauidcuts_loose && mutauoverlap")
+    _rlm = _rlm.Define("seltaucuts_loose","taucuts && deeptauidcuts_loose && leptauoverlap")
                .Define("Tau_pt_loose", "Tau_pt[seltaucuts_loose]")
                .Define("Tau_pt_loose_gen", "Tau_pt[seltaucuts_loose]")
                .Define("Tau_eta_loose", "Tau_eta[seltaucuts_loose]")
@@ -1574,16 +1548,8 @@ void NanoAODAnalyzerrdframe::selectTaus() {
                .Define("nloosetaupass", "int(Tau_pt_loose.size())")
                .Define("cleanloosetau4vecs", ::gen4vec, {"Tau_pt_loose", "Tau_eta_loose", "Tau_phi_loose", "Tau_mass_loose"});
 
-    //if (!_isData) {
-    //    _rlm = _rlm.Define("Tau_genPartFlav_loose","Tau_genPartFlav[seltaucuts_loose]")
-    //               .Define("taugencut_loose","Tau_genPartFlav_loose == 5")
-    //               .Redefine("Tau_pt_loose_gen", "Tau_pt_loose_gen[taugencut_loose]")
-    //               .Redefine("tauWeightIdVsJet_loose", skimCol, {"tauWeightIdVsJet_loose", "seltaucuts_loose"})
-    //               .Define("tauWeightIdVsEl_loose", skimCol, {"tauWeightIdVsEl", "seltaucuts_loose"})
-    //               .Define("tauWeightIdVsMu_loose", skimCol, {"tauWeightIdVsMu", "seltaucuts_loose"});
-    //}
 
-    _rlm = _rlm.Define("seltaucuts","taucuts && deeptauidcuts && mutauoverlap")
+    _rlm = _rlm.Define("seltaucuts","taucuts && deeptauidcuts && leptauoverlap")
                .Define("Tau_pt_gen", "Tau_pt[seltaucuts]")
                .Redefine("Tau_pt", "Tau_pt[seltaucuts]")
                .Redefine("Tau_eta", "Tau_eta[seltaucuts]")
@@ -1595,14 +1561,119 @@ void NanoAODAnalyzerrdframe::selectTaus() {
                .Define("ncleantaupass", "int(Tau_pt.size())")
                .Define("cleantau4vecs", ::gen4vec, {"Tau_pt", "Tau_eta", "Tau_phi", "Tau_mass"});
 
-    //if (!_isData) {
-    //    _rlm = _rlm.Redefine("Tau_genPartFlav","Tau_genPartFlav[seltaucuts]")
-    //               .Define("taugencut","Tau_genPartFlav == 5")
-    //               .Redefine("Tau_pt_gen", "Tau_pt[taugencut]")
-    //               .Redefine("tauWeightIdVsJet", skimCol, {"tauWeightIdVsJet", "seltaucuts"})
-    //               .Redefine("tauWeightIdVsEl", skimCol, {"tauWeightIdVsEl", "seltaucuts"})
-    //               .Redefine("tauWeightIdVsMu", skimCol, {"tauWeightIdVsMu", "seltaucuts"});
-    //}
+    if (!_isData) {
+        // Tau SF
+        cout << "Loading Tau SF" << endl;
+        std::string tauid_vsjet = "VTight";
+        std::string tauid_vse   = "Tight";
+        std::string tauid_vsmu  = "Tight";
+
+        cout << "Tau ID WP vsJet : " << tauid_vsjet << endl;
+        cout << "Tau ID WP vsMuon : " << tauid_vsmu << endl;
+        cout << "Tau ID WP vsElectron : " << tauid_vse << endl;
+
+        std::string tauYear = "";
+        if (_isRun22) {
+            tauYear = "2022_preEE";
+        }
+        if (_isRun22EE) {
+            tauYear = "2022_postEE";
+        }
+        if (_isRun23) {
+            tauYear = "2023_preBPix";
+        }
+        if (_isRun23BPix) {
+            tauYear = "2023_postBPix";
+        }
+
+        auto tauSFreader = correction::CorrectionSet::from_file("data/TauIDSFs/tau_DeepTau2018v2p5_" + tauYear + ".json.gz");
+        auto _tauidSFjet = tauSFreader->at("DeepTau2018v2p5VSjet");
+        auto _tauidSFele = tauSFreader->at("DeepTau2018v2p5VSe");
+        auto _tauidSFmu  = tauSFreader->at("DeepTau2018v2p5VSmu");
+
+        auto tauSFIdVsJet = [this, _tauidSFjet, tauid_vsjet, tauid_vse](floats &pt, uchars &dm, uchars &genmatch)->floatsVec {
+            //std::cout << "tauSFIdVsJet vsjet_wp: "<< tauid_vsjet << std::endl;
+
+            floats uncSources;
+            uncSources.reserve(3);
+            floatsVec wVec;
+            wVec.reserve(pt.size());
+
+            if (pt.size() > 0) {
+                for (unsigned int i=0; i<pt.size(); i++) {
+                    uncSources.emplace_back(_tauidSFjet->evaluate({pt[i], int(dm[i]), int(genmatch[i]), tauid_vsjet, tauid_vse, "nom", "dm"}));
+                    uncSources.emplace_back(_tauidSFjet->evaluate({pt[i], int(dm[i]), int(genmatch[i]), tauid_vsjet, tauid_vse, "up", "dm"}));
+                    uncSources.emplace_back(_tauidSFjet->evaluate({pt[i], int(dm[i]), int(genmatch[i]), tauid_vsjet, tauid_vse, "down", "dm"}));
+                    wVec.emplace_back(uncSources);
+                    uncSources.clear();
+                }
+            }
+            return wVec;
+        };
+
+
+        auto tauSFIdVsEl = [this, _tauidSFele, tauid_vse](floats &eta, uchars &dm, uchars &genmatch)->floatsVec {
+
+            //std::cout << "tauSFIdVsEl" << std::endl;
+            floats uncSources;
+            uncSources.reserve(3);
+            floatsVec wVec;
+            wVec.reserve(eta.size());
+
+            //std::cout << "size eta: " << eta.size() << " dm: " << dm.size() << " genmatch: " << genmatch.size() << std::endl;
+            if (eta.size() > 0) {
+                for (unsigned int i=0; i<eta.size(); i++) {
+                    //std::cout << "eta: " << eta[i] << " dm: " << int(dm[i]) << " genmatch: " << int(genmatch[i]) << std::endl;
+                    uncSources.emplace_back(_tauidSFele->evaluate({eta[i], int(dm[i]), int(genmatch[i]), tauid_vse, "nom"}));
+                    uncSources.emplace_back(_tauidSFele->evaluate({eta[i], int(dm[i]), int(genmatch[i]), tauid_vse, "up"}));
+                    uncSources.emplace_back(_tauidSFele->evaluate({eta[i], int(dm[i]), int(genmatch[i]), tauid_vse, "down"}));
+                    wVec.emplace_back(uncSources);
+                    uncSources.clear();
+                }
+            }
+            return wVec;
+        };
+
+        auto tauSFIdVsMu = [this, _tauidSFmu, tauid_vsmu](floats &eta, uchars &genmatch)->floatsVec {
+
+            floats uncSources;
+            uncSources.reserve(3);
+            floatsVec wVec;
+            wVec.reserve(eta.size());
+
+            if (eta.size() > 0) {
+                for (unsigned int i=0; i<eta.size(); i++) {
+                    uncSources.emplace_back(_tauidSFmu->evaluate({eta[i], int(genmatch[i]), tauid_vsmu, "nom"}));
+                    uncSources.emplace_back(_tauidSFmu->evaluate({eta[i], int(genmatch[i]), tauid_vsmu, "up"}));
+                    uncSources.emplace_back(_tauidSFmu->evaluate({eta[i], int(genmatch[i]), tauid_vsmu, "down"}));
+                    wVec.emplace_back(uncSources);
+                    uncSources.clear();
+                }
+            }
+            return wVec;
+        };
+
+        _rlm = _rlm.Define("tauWeightIdVsJet", tauSFIdVsJet, {"Tau_pt","Tau_decayMode","Tau_genPartFlav"})
+                   .Define("tauWeightIdVsEl", tauSFIdVsEl, {"Tau_eta","Tau_decayMode", "Tau_genPartFlav"})
+                   .Define("tauWeightIdVsMu", tauSFIdVsMu, {"Tau_eta","Tau_genPartFlav"});
+
+        tauid_vsjet = "Loose";
+
+        _rlm = _rlm.Define("tauWeightIdVsJet_loose", tauSFIdVsJet, {"Tau_pt","Tau_decayMode","Tau_genPartFlav"});
+        _rlm = _rlm.Define("Tau_genPartFlav_loose","Tau_genPartFlav[seltaucuts_loose]")
+                   .Define("taugencut_loose","Tau_genPartFlav_loose == 5")
+                   .Redefine("Tau_pt_loose_gen", "Tau_pt_loose_gen[taugencut_loose]")
+                   .Redefine("tauWeightIdVsJet_loose", skimCol, {"tauWeightIdVsJet_loose", "seltaucuts_loose"})
+                   .Define("tauWeightIdVsEl_loose", skimCol, {"tauWeightIdVsEl", "seltaucuts_loose"})
+                   .Define("tauWeightIdVsMu_loose", skimCol, {"tauWeightIdVsMu", "seltaucuts_loose"});
+
+        _rlm = _rlm.Redefine("Tau_genPartFlav","Tau_genPartFlav[seltaucuts]")
+                   .Define("taugencut","Tau_genPartFlav == 5")
+                   .Redefine("Tau_pt_gen", "Tau_pt[taugencut]")
+                   .Redefine("tauWeightIdVsJet", skimCol, {"tauWeightIdVsJet", "seltaucuts"})
+                   .Redefine("tauWeightIdVsEl", skimCol, {"tauWeightIdVsEl", "seltaucuts"})
+                   .Redefine("tauWeightIdVsMu", skimCol, {"tauWeightIdVsMu", "seltaucuts"});
+    }
 
 }
 
@@ -1748,7 +1819,7 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     // Tau SF
     cout << "Loading Tau SF" << endl;
     std::string tauid_vsjet = "VTight";
-    std::string tauid_vse   = "VVLoose";
+    std::string tauid_vse   = "Tight";
     std::string tauid_vsmu  = "Tight";
 
     cout << "Tau ID WP vsJet : " << tauid_vsjet << endl;
@@ -1756,18 +1827,28 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     cout << "Tau ID WP vsElectron : " << tauid_vse << endl;
 
     std::string tauYear = "";
+    if (_isRun22) {
+        tauYear = "2022_preEE";
+    }
+    if (_isRun22EE) {
+        tauYear = "2022_postEE";
+    }
+    if (_isRun23) {
+        tauYear = "2023_preBPix";
+    }
+    if (_isRun23BPix) {
+        tauYear = "2023_postBPix";
+    }
 
-    tauYear = "UL" + _year;
-
-    auto tauSFreader = correction::CorrectionSet::from_file("data/TauIDSFs/tau_" + tauYear + ".json.gz");
-    //auto _tauidSFjet = tauSFreader->at("DeepTau2017v2p1VSjet");
-    auto _tauidSFele = tauSFreader->at("DeepTau2017v2p1VSe");
-    auto _tauidSFmu  = tauSFreader->at("DeepTau2017v2p1VSmu");
+    auto tauSFreader = correction::CorrectionSet::from_file("data/TauIDSFs/tau_DeepTau2018v2p5_" + tauYear + ".json.gz");
+    //auto _tauidSFjet = tauSFreader->at("DeepTau2018v2p5VSjet");
+    //auto _tauidSFele = tauSFreader->at("DeepTau2018v2p5VSe");
+    //auto _tauidSFmu  = tauSFreader->at("DeepTau2018v2p5VSmu");
     auto _testool    = tauSFreader->at("tau_energy_scale");
 
     // Tau ES
     cout<<"Applying TauES on Genuine taus"<<endl;
-    auto tauES = [this, _testool](floats &pt, floats &eta, ints &dm, uchars &genid, floats &x)->floats {
+    auto tauES = [this, _testool, tauid_vsjet, tauid_vse](floats &pt, floats &eta, uchars &dm, uchars &genid, floats &x)->floats {
 
         floats xout;
 
@@ -1775,14 +1856,14 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
             float es = 1.0;
             if (int(genid[i])==1 || int(genid[i])==3 || int(genid[i])==5) {
                 if (dm[i]!=5 and dm[i]!=6)
-                    es = _testool->evaluate({pt[i], eta[i], dm[i], int(genid[i]), "DeepTau2017v2p1", "nom"});
+                    es = _testool->evaluate({pt[i], eta[i], dm[i], int(genid[i]), "DeepTau2018v2p5", tauid_vsjet, tauid_vse, "nom"});
             }
             xout.emplace_back(x[i]*es);
         }
         return xout;
     };
 
-    auto tauESUnc = [this, _testool](floats &pt, floats &eta, ints &dm, uchars &genid, floats &x)->floatsVec {
+    auto tauESUnc = [this, _testool, tauid_vsjet, tauid_vse](floats &pt, floats &eta, uchars &dm, uchars &genid, floats &x)->floatsVec {
 
         floats uncSources;
         uncSources.reserve(2);
@@ -1790,10 +1871,10 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
         xout.reserve(pt.size());
 
         for (unsigned int i=0; i<pt.size(); i++) {
-            if (int(genid[i])==1 || int(genid[i])==3 || int(genid[i])==5) {
+          if (int(genid[i])==1 || int(genid[i])==3 || int(genid[i])==5) {
                 if (dm[i]!=5 and dm[i]!=6) {
-                    uncSources.emplace_back(_testool->evaluate({pt[i], eta[i], dm[i], int(genid[i]), "DeepTau2017v2p1", "up"}));
-                    uncSources.emplace_back(_testool->evaluate({pt[i], eta[i], dm[i], int(genid[i]), "DeepTau2017v2p1", "down"}));
+                    uncSources.emplace_back(_testool->evaluate({pt[i], eta[i], dm[i], int(genid[i]), "DeepTau2018v2p5", tauid_vsjet, tauid_vse, "up"}));
+                    uncSources.emplace_back(_testool->evaluate({pt[i], eta[i], dm[i], int(genid[i]), "DeepTau2018v2p5", tauid_vsjet, tauid_vse, "down"}));
                 }
             }
             else uncSources = {1.0f, 1.0f};
@@ -1803,14 +1884,14 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
         return xout;
     };
 
-        _rlm = _rlm.Define("Tau_pt_uncor", "Tau_pt")
-               .Redefine("Tau_pt", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"})
-               .Redefine("Tau_mass", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"})
-               .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"});
+    _rlm = _rlm.Define("Tau_pt_uncor", "Tau_pt")
+           .Redefine("Tau_pt", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"})
+           .Redefine("Tau_mass", tauES, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_mass"})
+           .Define("Tau_pt_unc", tauESUnc, {"Tau_pt_uncor", "Tau_eta", "Tau_decayMode", "Tau_genPartFlav", "Tau_pt_uncor"});
 
 
     // ID SFs
-    /* For correctionlib -> json is not ready
+    /*
     auto tauSFIdVsJet = [this, _tauidSFjet, tauYear, tauid_vsjet, tauid_vse](floats &pt, floats &eta, uchars &genid, ints &dm)->floatsVec {
 
         floats uncSources;
@@ -1843,8 +1924,7 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
         }
         return wVec;
     };
-    */
-
+    
     TauIDSFTool* _tauidSFjet;
     TauIDSFTool* _tauidSFjetHighPt;
     _tauidSFjet = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet, tauid_vse, false, true, false, false);
@@ -1901,28 +1981,10 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
             }
         }
         return wVec;
-    };
+    };*/
 
-    auto tauSFIdVsEl = [this, _tauidSFele, tauid_vse](floats &pt, floats &eta, uchars &genid)->floatsVec {
-
-        floats uncSources;
-        uncSources.reserve(3);
-        floatsVec wVec;
-        wVec.reserve(pt.size());
-
-        if (pt.size() > 0) {
-            for (unsigned int i=0; i<pt.size(); i++) {
-                uncSources.emplace_back(_tauidSFele->evaluate({abs(eta[i]), int(genid[i]), tauid_vse, "nom"}));
-                uncSources.emplace_back(_tauidSFele->evaluate({abs(eta[i]), int(genid[i]), tauid_vse, "up"}));
-                uncSources.emplace_back(_tauidSFele->evaluate({abs(eta[i]), int(genid[i]), tauid_vse, "down"}));
-                wVec.emplace_back(uncSources);
-                uncSources.clear();
-            }
-        }
-        return wVec;
-    };
-
-    auto tauSFIdVsMu = [this, _tauidSFmu, tauid_vsmu](floats &pt, floats &eta, uchars &genid)->floatsVec {
+    /*
+    auto tauSFIdVsJet = [this, _tauidSFjet, tauid_vsjet, tauid_vse](floats &pt, uchars &dm, uchars &genmatch)->floatsVec {
 
         floats uncSources;
         uncSources.reserve(3);
@@ -1931,9 +1993,9 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
 
         if (pt.size() > 0) {
             for (unsigned int i=0; i<pt.size(); i++) {
-                uncSources.emplace_back(_tauidSFmu->evaluate({abs(eta[i]), int(genid[i]), tauid_vsmu, "nom"}));
-                uncSources.emplace_back(_tauidSFmu->evaluate({abs(eta[i]), int(genid[i]), tauid_vsmu, "up"}));
-                uncSources.emplace_back(_tauidSFmu->evaluate({abs(eta[i]), int(genid[i]), tauid_vsmu, "down"}));
+                uncSources.emplace_back(_tauidSFjet->evaluate({pt[i], int(dm[i]), int(genmatch[i]), tauid_vsjet, tauid_vse, "nom", "dm"}));
+                uncSources.emplace_back(_tauidSFjet->evaluate({pt[i], int(dm[i]), int(genmatch[i]), tauid_vsjet, tauid_vse, "up", "dm"}));
+                uncSources.emplace_back(_tauidSFjet->evaluate({pt[i], int(dm[i]), int(genmatch[i]), tauid_vsjet, tauid_vse, "down", "dm"}));
                 wVec.emplace_back(uncSources);
                 uncSources.clear();
             }
@@ -1941,16 +2003,58 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
         return wVec;
     };
 
-    _rlm = _rlm.Define("tauWeightIdVsJet", tauSFIdVsJet, {"Tau_pt","Tau_eta","Tau_genPartFlav", "Tau_decayMode"})
-               .Define("tauWeightIdVsEl", tauSFIdVsEl, {"Tau_pt","Tau_eta","Tau_genPartFlav"})
-               .Define("tauWeightIdVsMu", tauSFIdVsMu, {"Tau_pt","Tau_eta","Tau_genPartFlav"});
 
-    tauid_vsjet = "Loose";
-    _tauidSFjet = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet, tauid_vse, false, true, false, false);
-    _tauidSFjetHighPt = new TauIDSFTool(tauYear, "DeepTau2017v2p1VSjet", tauid_vsjet, tauid_vse, false, false, false, true);
+    auto tauSFIdVsEl = [this, _tauidSFele, tauid_vse](floats &eta, uchars &dm, uchars &genmatch)->floatsVec {
 
-    _rlm = _rlm.Define("tauWeightIdVsJet_loose", tauSFIdVsJet, {"Tau_pt","Tau_eta","Tau_genPartFlav", "Tau_decayMode"});
+        std::cout << "tauSFIdVsEl" << std::endl;
+        floats uncSources;
+        uncSources.reserve(3);
+        floatsVec wVec;
+        wVec.reserve(eta.size());
 
+        std::cout << "size eta: " << eta.size() << " dm: " << dm.size() << " genmatch: " << genmatch.size() << std::endl;
+        if (eta.size() > 0) {
+            for (unsigned int i=0; i<eta.size(); i++) {
+                std::cout << "eta: " << eta[i] << " dm: " << int(dm[i]) << " genmatch: " << int(genmatch[i]) << std::endl;
+                uncSources.emplace_back(_tauidSFele->evaluate({eta[i], int(dm[i]), int(genmatch[i]), tauid_vse, "nom"}));
+                uncSources.emplace_back(_tauidSFele->evaluate({eta[i], int(dm[i]), int(genmatch[i]), tauid_vse, "up"}));
+                uncSources.emplace_back(_tauidSFele->evaluate({eta[i], int(dm[i]), int(genmatch[i]), tauid_vse, "down"}));
+                wVec.emplace_back(uncSources);
+                uncSources.clear();
+            }
+        }
+        return wVec;
+    };
+
+    auto tauSFIdVsMu = [this, _tauidSFmu, tauid_vsmu](floats &eta, uchars &genmatch)->floatsVec {
+
+        floats uncSources;
+        uncSources.reserve(3);
+        floatsVec wVec;
+        wVec.reserve(eta.size());
+
+        if (eta.size() > 0) {
+            for (unsigned int i=0; i<eta.size(); i++) {
+                uncSources.emplace_back(_tauidSFmu->evaluate({eta[i], int(genmatch[i]), tauid_vsmu, "nom"}));
+                uncSources.emplace_back(_tauidSFmu->evaluate({eta[i], int(genmatch[i]), tauid_vsmu, "up"}));
+                uncSources.emplace_back(_tauidSFmu->evaluate({eta[i], int(genmatch[i]), tauid_vsmu, "down"}));
+                wVec.emplace_back(uncSources);
+                uncSources.clear();
+            }
+        }
+        return wVec;
+    };
+
+    _rlm = _rlm.Define("tauWeightIdVsJet", tauSFIdVsJet, {"Tau_pt","Tau_decayMode","Tau_genPartFlav"})
+               .Define("tauWeightIdVsEl", tauSFIdVsEl, {"Tau_eta","Tau_decayMode", "Tau_genPartFlav"})
+               .Define("tauWeightIdVsMu", tauSFIdVsMu, {"Tau_eta","Tau_genPartFlav"});
+
+    //tauid_vsjet = "Loose";
+    //_tauidSFjet = new TauIDSFTool(tauYear, "DeepTau2018v2p5VSjet", tauid_vsjet, tauid_vse, false, true, false, false);
+    //_tauidSFjetHighPt = new TauIDSFTool(tauYear, "DeepTau2018v2p5VSjet", tauid_vsjet, tauid_vse, false, false, false, true);
+
+    //_rlm = _rlm.Define("tauWeightIdVsJet_loose", tauSFIdVsJet, {"Tau_pt","Tau_decayMode","Tau_genPartFlav"});
+    */
 }
 
 

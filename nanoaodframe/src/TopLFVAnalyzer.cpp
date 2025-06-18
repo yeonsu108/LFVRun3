@@ -217,16 +217,13 @@ void TopLFVAnalyzer::defineMoreVars() {
         addVar({"eventWeight_mu", "1"});
         addVar({"eventWeight_pumu", "1"});
         addVar({"eventWeight_elec", "1"});
+        addVar({"eventWeight_tau", "1.0"});
         addVar({"eventWeight_puelec", "1"});
+        addVar({"eventWeight_pumutau", "1"});
+        addVar({"eventWeight_puelectau", "1"});
     } else {
         if (_syst == "" or _syst == "nosyst") { //TODO
-            addVar({"eventWeight_pu", "puWeight[0]"});
-            addVar({"eventWeight_mu", "muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0]"});
-            addVar({"eventWeight_elec", "elecWeightId[0] * elecWeightTrg[0]"});
-            addVar({"eventWeight_pumu", "eventWeight_pu * eventWeight_mu"});
-            addVar({"eventWeight_puelec", "eventWeight_pu * eventWeight_elec"});
             addVar({"eventWeight_genpu", "1.0"});
-            addVar({"eventWeight_tau", "1.0"});
             addVar({"eventWeight_genpumu", "1.0"});
             addVar({"eventWeight_notau_nobtag", "1.0"}); //didn't want to duplicate entry...
             addVar({"eventWeight_genputau", "1.0"});
@@ -250,8 +247,21 @@ void TopLFVAnalyzer::defineMoreVars() {
         if (_syst == "" or _syst == "nosyst" or ext_syst) {
             // for external syst, we only need nominal weight
             if (_syst == "" or _syst == "nosyst") {
-                addVar({"eventWeight", "1.0"});
-                addVar({"eventWeight_notau", "1.0"});
+                //if (_outfilename.find("WtoLNu-2Jets") != std::string::npos){
+                //    addVar({"eventWeight", "lhereweight"});
+                //} else{
+                //    addVar({"eventWeight", "1.0"});
+                //}
+                addVar({"eventWeight", "unitGenWeight"});
+                addVar({"eventWeight_pu", "eventWeight*puWeight[0]"});
+                addVar({"eventWeight_mu", "eventWeight*muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0]"});
+                addVar({"eventWeight_elec", "eventWeight*elecWeightId[0] * elecWeightTrg[0]"});
+                addVar({"eventWeight_pumu", "eventWeight*eventWeight_pu * eventWeight_mu"});
+                addVar({"eventWeight_puelec", "eventWeight*eventWeight_pu * eventWeight_elec"});
+                addVar({"eventWeight_notau", "eventWeight"});
+                addVar({"eventWeight_tau", "tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
+                addVar({"eventWeight_pumutau", "eventWeight_pumu*eventWeight_tau"});
+                addVar({"eventWeight_puelectau", "eventWeight_puelec*eventWeight_tau"});
             } else if (_syst.find("jesAbsoluteup") != std::string::npos) {
                 addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[0]"});
                 addVar({"eventWeight_notau", "eventWeight_genpumu * btagWeight_DeepFlavB_jes[0]"});
@@ -493,6 +503,7 @@ void TopLFVAnalyzer::defineMoreVars() {
     addVartoStore("TopPtWeight");
     addVartoStore("LHEPart_pt");
     addVartoStore("LHEPart_pdgId");
+    addVartoStore("tauWeight.*");
     addVartoStore("tauFF.*");
     addVartoStore("isFakeTau");
 }
@@ -518,11 +529,11 @@ void TopLFVAnalyzer::bookHists() {
     //               "__btaglfstats1up", "__btaglfstats1down", "__btaglfstats2up", "__btaglfstats2down",
     //               "__btagcferr1up", "__btagcferr1down", "__btagcferr2up", "__btagcferr2down",
     //               };
-    std::vector<std::string> sf_weight = {"", "_pu"};
+    std::vector<std::string> sf_weight = {"", "_pu", "_tau"};
     if (_ch.find("muon") != std::string::npos){
-        sf_weight = {"", "_pu", "_mu", "_pumu"};
+        sf_weight = {"", "_pu", "_mu", "_pumu", "_pumutau"};
     } else if (_ch.find("electron") != std::string::npos){
-        sf_weight = {"", "_pu", "_elec", "_puelec"};
+        sf_weight = {"", "_pu", "_elec", "_puelec", "_puelectau"};
     }
 
     //std::vector<std::string> sf_weight_tau = {"__tauidjetUncert0up", "__tauidjetUncert0down",

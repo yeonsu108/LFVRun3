@@ -49,6 +49,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("event");
         addVartoStore("puWeight.*");
         addVartoStore("unitGenWeight.*");
+        addVartoStore("lhereweight.*");
         addVartoStore("muonWeight.*");
         addVartoStore("elecWeight.*");
         addVartoStore("tauWeight.*");
@@ -97,7 +98,10 @@ void SkimEvents::defineMoreVars()
         addVartoStore("MET_p.*");
         addVartoStore("MET_sumEt");
         addVartoStore("MET_MetUnclust.*");
-        addVartoStore("RawMET.*");
+        addVartoStore("PuppiMET_p.*");
+        addVartoStore("PuppiMET_sumEt");
+        addVartoStore("PuppiMET_MetUnclust.*");
+        addVartoStore("RawPuppiMET.*");
         addVartoStore("LHE_HT");
         addVartoStore("nElectron");
         addVartoStore("Electron_charge");
