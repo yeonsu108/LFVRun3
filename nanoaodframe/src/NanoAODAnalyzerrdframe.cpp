@@ -46,8 +46,10 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
     // Channel(electron/muon) switch  // Default is electron channel
     if (_ch.find("muon") != std::string::npos) {
         cout << _ch << " channel" << endl;
+        _isMuonCh = true;
     } else {
         cout << _ch << " channel" << endl;
+        _isMuonCh = false;
     }
 
     // Year switch
@@ -234,9 +236,9 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
     // Selected objects will be stored in new vectors.
     if (_isSkim) {
         JetVetoMap();
-        if (_ch.find("muon") != std::string::npos){
+        if (_isMuonCh){
             selectMuons();
-        } else if (_ch.find("electron") != std::string::npos){
+        } else {
             selectElectrons();
         }
         setupJetMETCorrection(_globaltag, jes_var, jes_var_flav, "AK4PFPuppi", _isData);
@@ -247,9 +249,10 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
         }
     }
     else {
-        if (_ch.find("muon") != std::string::npos){
+        calculateSF();
+        if (_isMuonCh){
             selectElectrons();
-        } else if (_ch.find("electron") != std::string::npos){
+        } else {
             selectMuons();
         }
         selectTaus();
@@ -314,186 +317,21 @@ bool NanoAODAnalyzerrdframe::readjson() {
     }
 }
 
-void NanoAODAnalyzerrdframe::selectElectrons() {
-
-    std::string muonYear = "";
-
-    muonYear = _year + "_UL";
-
-    auto muonhighscaleup = [muonYear](floats &pts, floats &etas, floats &phis, ints &charges)->floats {
-        floats out;
-        out.reserve(pts.size());
-        for (unsigned int i=0; i<pts.size(); i++) {
-            float pt_tmp = pts[i];
-            float pt_out = pt_tmp;
-            if (pt_tmp > 200) {
-                float eta_tmp = etas[i];
-                float phi_tmp = phis[i];
-                int charge_tmp = charges[i];
-                GEScaleSyst GE(muonYear);
-                GE.SetVerbose(0);
-                pt_out = GE.GEScaleCorrPt(pt_tmp, eta_tmp, phi_tmp, charge_tmp, 0, 1);
-            }
-            out.emplace_back(pt_out);
-        }
-        return out;
-    };
-
-    auto muonhighscaledn = [muonYear](floats &pts, floats &etas, floats &phis, ints &charges)->floats {
-        floats out;
-        out.reserve(pts.size());
-        for (unsigned int i=0; i<pts.size(); i++) {
-            float pt_tmp = pts[i];
-            float pt_out = pt_tmp;
-            if (pt_tmp > 200) {
-                float eta_tmp = etas[i];
-                float phi_tmp = phis[i];
-                int charge_tmp = charges[i];
-                GEScaleSyst GE(muonYear);
-                GE.SetVerbose(0);
-                pt_out = GE.GEScaleCorrPt(pt_tmp, eta_tmp, phi_tmp, charge_tmp, 0, 2);
-            }
-            out.emplace_back(pt_out);
-        }
-        return out;
-    };
-
-    auto muonhighscalemet = [](floats &pts, floats &ptcors, float met)->float {
-        float out = met;
-        for (unsigned int i=0; i<pts.size(); i++) {
-            out -= ptcors[i] - pts[i];
-        }
-        return out;
-    };
-
-    auto muonhighscalemetphi = [](floats &pts, floats &ptcors, floats &phis, float met, float metphi)->float {
-        float out = 0.;
-        auto metx = met * cos(metphi);
-        auto mety = met * sin(metphi);
-        for (unsigned int i=0; i<pts.size(); i++) {
-            metx -= (ptcors[i] - pts[i]) * cos(phis[i]);
-            mety -= (ptcors[i] - pts[i]) * sin(phis[i]);
-        }
-        out = float(atan2(mety, metx));
-        return out;
-    };
-
-
-    if (_syst.find("muonhighscaleup") != std::string::npos) {
-        _rlm = _rlm.Define("Muon_pt_scale", muonhighscaleup, {"Muon_pt", "Muon_eta", "Muon_phi", "Muon_charge"})
-                   .Redefine("MET_phi", muonhighscalemetphi, {"Muon_pt", "Muon_pt_scale", "Muon_phi", "MET_pt", "MET_phi"})
-                   .Redefine("MET_pt", muonhighscalemet, {"Muon_pt", "Muon_pt_scale", "MET_pt"})
-                   .Redefine("Muon_pt", "Muon_pt_scale"); //order matters
-    } else if (_syst.find("muonhighscaledown") != std::string::npos) {
-        _rlm = _rlm.Define("Muon_pt_scale", muonhighscaledn, {"Muon_pt", "Muon_eta", "Muon_phi", "Muon_charge"})
-                   .Redefine("MET_phi", muonhighscalemetphi, {"Muon_pt", "Muon_pt_scale", "Muon_phi", "MET_pt", "MET_phi"})
-                   .Redefine("MET_pt", muonhighscalemet, {"Muon_pt", "Muon_pt_scale", "MET_pt"})
-                   .Redefine("Muon_pt", "Muon_pt_scale"); //order matters
-    }
-    
-    if (_ch.find("muon") != std::string::npos) {
-        cout<<"selectElectrons muon channel vetoelecuts"<<endl;
-        _rlm = _rlm.Define("elecuts", "Electron_pt>50 && abs(Electron_eta)<2.5");
-        _rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1");
-    } else if (_ch.find("electron") != std::string::npos) {
-        cout<<"selectElectrons electron channel vetoelecuts"<<endl;
-        _rlm = _rlm.Define("elecuts", "Electron_pt>50 && abs(Electron_eta)<2.5 && Electron_mvaIso_WP90");
-        _rlm = _rlm.Define("vetoelecuts", "!elecuts && Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1");
-    }
-
-    _rlm = _rlm.Define("nvetoelepass","Sum(vetoelecuts)")
-               .Redefine("Electron_pt", "Electron_pt[elecuts]")
-               .Redefine("Electron_eta", "Electron_eta[elecuts]")
-               .Redefine("Electron_phi", "Electron_phi[elecuts]")
-               .Redefine("Electron_mass", "Electron_mass[elecuts]")
-               .Redefine("Electron_charge", "Electron_charge[elecuts]")
-               //.Define("Electron_Id", "Electron_looseId[elecuts]")
-               .Redefine("Electron_pfRelIso03_all", "Electron_pfRelIso03_all[elecuts]")
-               .Define("Sel_eleidx", ::good_idx, {"elecuts"})
-               .Define("nelepass", "int(Electron_pt.size())")
-               .Define("ele4vecs", ::gen4vec, {"Electron_pt", "Electron_eta", "Electron_phi", "Electron_mass"});
-
-    //Electron SF
-    cout << "Loading Electron SF" << endl;
-    std::string elecFile = _year;
-    std::string elecYear = "";
-    if (_isRun22) {
-        elecFile = "2022_Summer22";
-        elecYear = "2022Re-recoBCD";
-    }
-    if (_isRun22EE) {
-        elecFile = "2022_Summer22EE";
-        elecYear = "2022Re-recoE+PromptFG";
-    }
-    if (_isRun23) {
-        elecFile = "2023_Summer23";
-        elecYear = "2023PromptC";
-    }
-    if (_isRun23BPix) {
-        elecFile = "2023_Summer23BPix";
-        elecYear = "2023PromptD";
-    }
-
-    auto elecSFreader = correction::CorrectionSet::from_file("data/ElectronSF/"+elecFile+"/electron.json.gz");
-    auto _elecid = elecSFreader->at("Electron-ID-SF");
-    auto elecSFId = [this, _elecid, elecYear](floats &pt, floats &eta, floats &phi)->floats {
-        floats wVec;
-        wVec.reserve(3); //cent, up, down
-        if (pt.size() == 1){
-            float sf=1.0; float sf_up=1.0; float sf_down=1.0;
-            if (elecYear.find("2022")!=std::string::npos){
-                sf = _elecid->evaluate({elecYear, "sf", "wp90iso", eta[0], pt[0]});
-                sf_up = _elecid->evaluate({elecYear, "sfup", "wp90iso", eta[0], pt[0]});
-                sf_down = _elecid->evaluate({elecYear, "sfdown", "wp90iso", eta[0], pt[0]});
-            } else if (elecYear.find("2023")!=std::string::npos){
-                sf = _elecid->evaluate({elecYear, "sf", "wp90iso", eta[0], pt[0], phi[0]});
-                sf_up = _elecid->evaluate({elecYear, "sfup", "wp90iso", eta[0], pt[0], phi[0]});
-                sf_down = _elecid->evaluate({elecYear, "sfdown", "wp90iso", eta[0], pt[0], phi[0]});
-            }
-            wVec.emplace_back(sf);
-            wVec.emplace_back(sf_up);
-            wVec.emplace_back(sf_down);
-        } else wVec = {1.0, 1.0, 1.0};
-        return wVec;
-    };
-
-    auto elecHltSFreader = correction::CorrectionSet::from_file("data/ElectronSF/"+elecFile+"/electronHlt.json.gz");
-    auto _elechlt = elecHltSFreader->at("Electron-HLT-SF");
-    auto elecSFTrg = [this, _elechlt, elecYear](floats &pt, floats &eta)->floats {
-        floats wVec;
-        wVec.reserve(3); //cent, up, down
-        if (pt.size() == 1){
-            float sf = _elechlt->evaluate({elecYear, "sf", "HLT_SF_Ele30_MVAiso90ID", eta[0], pt[0]});
-            float sf_up = _elechlt->evaluate({elecYear, "sfup", "HLT_SF_Ele30_MVAiso90ID", eta[0], pt[0]});
-            float sf_down = _elechlt->evaluate({elecYear, "sfdown", "HLT_SF_Ele30_MVAiso90ID", eta[0], pt[0]});
-            wVec.emplace_back(sf);
-            wVec.emplace_back(sf_up);
-            wVec.emplace_back(sf_down);
-        } else wVec = {1.0, 1.0, 1.0};
-        return wVec;
-    };
-
-    _rlm = _rlm.Define("elecWeightId", elecSFId, {"Electron_pt","Electron_eta","Electron_phi"})
-               .Define("elecWeightTrg", elecSFTrg, {"Electron_pt","Electron_eta"});
-
-}
-
 void NanoAODAnalyzerrdframe::JetVetoMap() {
     cout << "apply JetVetoMap" << endl;
     
     auto checkoverlap = [](FourVectorVec &seljets, FourVectorVec &sellep) {
-
-    ints mindrlepton;
-    for (auto ajet: seljets) {
-        auto mindr = 6.0;
-        for ( auto alepton : sellep ) {
-            auto dr = ROOT::Math::VectorUtil::DeltaR(ajet, alepton);
-            if (dr < mindr) mindr = dr;
+        ints mindrlepton;
+        for (auto ajet: seljets) {
+            auto mindr = 6.0;
+            for ( auto alepton : sellep ) {
+                auto dr = ROOT::Math::VectorUtil::DeltaR(ajet, alepton);
+                if (dr < mindr) mindr = dr;
+            }
+            int out = mindr >= 0.2 ? 1 : 0;
+            mindrlepton.emplace_back(out);
         }
-        int out = mindr >= 0.2 ? 1 : 0;
-        mindrlepton.emplace_back(out);
-    }
-    return mindrlepton;
+        return mindrlepton;
     };
     
     _rlm = _rlm.Define("loosejetcuts", "Jet_pt>15 && Jet_jetId >= 2 && (Jet_neEmEF+Jet_chEmEF)<0.9");
@@ -524,7 +362,6 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
                .Redefine("njetloose", "int(Jet_pt_loosejet.size())")
                .Redefine("loosejet4vecs", ::gen4vec, {"Jet_pt_loosejet", "Jet_eta_loosejet", "Jet_phi_loosejet", "Jet_mass_loosejet"});
     
-    //_rlm = _rlm.Redefine("Jet_phi_loose", [](const std::vector<float>& phis) {
     _rlm = _rlm.Redefine("Jet_phi_loosejet", [](floats phis) {
                     floats corrected(phis.size());
                     std::transform(phis.begin(), phis.end(), corrected.begin(), [](float phi) {
@@ -532,8 +369,6 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
                     });
                     return corrected;
                }, {"Jet_phi_loosejet"})
-
-               //.Redefine("Jet_eta_loosejet", [](const std::vector<float>& etas) {
                .Redefine("Jet_eta_loosejet", [](floats etas) {
                     floats corrected(etas.size());
                     std::transform(etas.begin(), etas.end(), corrected.begin(), [](float eta) {
@@ -551,16 +386,13 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
     if (_isRun22) {
         jetFile = "2022_Summer22";
         map = "Summer22_23Sep2023_RunCD_V1";
-    }
-    if (_isRun22EE) {
+    } else if (_isRun22EE) {
         jetFile = "2022_Summer22EE";
         map = "Summer22EE_23Sep2023_RunEFG_V1";
-    }
-    if (_isRun23) {
+    } else if (_isRun23) {
         jetFile = "2023_Summer23";
         map = "Summer23Prompt23_RunC_V1";
-    }
-    if (_isRun23BPix) {
+    } else if (_isRun23BPix) {
         jetFile = "2023_Summer23BPix";
         map = "Summer23BPixPrompt23_RunD_V1";
     }
@@ -583,118 +415,304 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
                .Define("events_isVeto","Sum(Jet_isVeto_loose)");
 }
 
+void NanoAODAnalyzerrdframe::selectElectrons() {
+    if (_isMuonCh) {
+        cout<<"selectElectrons muon channel vetoelecuts"<<endl;
+        _rlm = _rlm.Define("vetoelecuts", "Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1")
+                   .Define("nvetoelepass","Sum(vetoelecuts)");
+    } else  {
+        cout<<"selectElectrons electron channel vetoelecuts"<<endl;
+        _rlm = _rlm.Define("elecuts", "Electron_pt>50 && abs(Electron_eta)<2.5 && Electron_mvaIso_WP90")
+                   .Define("vetoelecuts", "!elecuts && Electron_pt>15.0 && abs(Electron_eta)<2.5 && Electron_cutBased == 1");
+
+        _rlm = _rlm.Define("nvetoelepass","Sum(vetoelecuts)")
+                   .Redefine("Electron_pt", "Electron_pt[elecuts]")
+                   .Redefine("Electron_eta", "Electron_eta[elecuts]")
+                   .Redefine("Electron_phi", "Electron_phi[elecuts]")
+                   .Redefine("Electron_mass", "Electron_mass[elecuts]")
+                   .Redefine("Electron_charge", "Electron_charge[elecuts]")
+                   //.Define("Electron_Id", "Electron_looseId[elecuts]")
+                   .Redefine("Electron_pfRelIso03_all", "Electron_pfRelIso03_all[elecuts]")
+                   .Define("Sel_eleidx", ::good_idx, {"elecuts"})
+                   .Define("nelepass", "int(Electron_pt.size())")
+                   .Define("lep4vecs", ::gen4vec, {"Electron_pt", "Electron_eta", "Electron_phi", "Electron_mass"});
+    }
+}
 
 void NanoAODAnalyzerrdframe::selectMuons() {
-    _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
-    if (_ch.find("muon" != std::string::npos)) {
-        cout<<"selectMuons " << _ch << " channel vetomuoncuts"<<endl;
+    if (_isMuonCh) {
+        cout<<"selectMuons muon channel vetomuoncuts"<<endl;
+        _rlm = _rlm.Define("muoncuts", "Muon_pt>50.0 && abs(Muon_eta)<2.4 && Muon_tightId && Muon_pfRelIso04_all<0.15");
         _rlm = _rlm.Define("vetomuoncuts", "!muoncuts && Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
-    } else if (_ch.find("electron" != std::string::npos)) {
-        cout<<"selectMuons " << _ch << " electron channel vetomuoncuts"<<endl;
-        _rlm = _rlm.Define("vetomuoncuts", "Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25");
+
+        _rlm = _rlm.Define("nvetomuons","Sum(vetomuoncuts)")
+                   .Redefine("Muon_pt", "Muon_pt[muoncuts]")
+                   .Redefine("Muon_eta", "Muon_eta[muoncuts]")
+                   .Redefine("Muon_phi", "Muon_phi[muoncuts]")
+                   .Redefine("Muon_mass", "Muon_mass[muoncuts]")
+                   .Redefine("Muon_charge", "Muon_charge[muoncuts]")
+                   .Redefine("Muon_looseId", "Muon_looseId[muoncuts]")
+                   .Redefine("Muon_pfRelIso04_all", "Muon_pfRelIso04_all[muoncuts]")
+                   .Define("Sel_muonidx", ::good_idx, {"muoncuts"})
+                   .Define("nmuonpass", "int(Muon_pt.size())")
+                   .Define("lep4vecs", ::gen4vec, {"Muon_pt", "Muon_eta", "Muon_phi", "Muon_mass"});
+    } else {
+        cout<<"selectMuons electron channel vetomuoncuts"<<endl;
+        _rlm = _rlm.Define("vetomuoncuts", "Muon_pt>15.0 && abs(Muon_eta)<2.4 && Muon_looseId && Muon_pfRelIso04_all<0.25")
+                   .Define("nvetomuons","Sum(vetomuoncuts)");
     }
+}
 
-    _rlm = _rlm.Define("nvetomuons","Sum(vetomuoncuts)")
-               .Redefine("Muon_pt", "Muon_pt[muoncuts]")
-               .Redefine("Muon_eta", "Muon_eta[muoncuts]")
-               .Redefine("Muon_phi", "Muon_phi[muoncuts]")
-               .Redefine("Muon_mass", "Muon_mass[muoncuts]")
-               .Redefine("Muon_charge", "Muon_charge[muoncuts]")
-               .Redefine("Muon_looseId", "Muon_looseId[muoncuts]")
-               .Redefine("Muon_pfRelIso04_all", "Muon_pfRelIso04_all[muoncuts]")
-               .Define("Sel_muonidx", ::good_idx, {"muoncuts"})
-               .Define("nmuonpass", "int(Muon_pt.size())")
-               .Define("muon4vecs", ::gen4vec, {"Muon_pt", "Muon_eta", "Muon_phi", "Muon_mass"});
+void NanoAODAnalyzerrdframe::calculateSF(){
+    if (_isMuonCh) {
+        //// Muon SF
+        cout<<"Loading Muon SF"<<endl;
+        std::string muonFile = _year;
 
-
-
-    //// Muon SF
-    cout<<"Loading Muon SF"<<endl;
-    std::string muonFile = _year;
-    std::string muonTrgHist = "NUM_IsoMu24_or_Mu50_or_CascadeMu100_or_HighPtTkMu100_DEN_CutBasedIdTight_and_PFIsoTight_abseta_pt";
-    TFile *muontrg;
-    TFile *muonid;
-    TFile *muoniso;
-
-    if (_isRun22) {
-        muonFile = "2022";
-    }
-    if (_isRun22EE) {
-        muonFile = "2022_EE";
-    }
-    if (_isRun23) {
-        muonFile = "2023";
-    }
-    if (_isRun23BPix) {
-        muonFile = "2023_BPix";
-    }
-    muontrg = TFile::Open(("data/MuonSF/ScaleFactors_Muon_Z_HLT_"+muonFile+"_abseta_pt.root").c_str());
-    TH2F* _hmuontrg = dynamic_cast<TH2F *>(muontrg->Get(muonTrgHist.c_str()));
-    _hmuontrg->SetDirectory(0);
-    muontrg->Close();
-    WeightCalculatorFromHistogram* _muontrg = new WeightCalculatorFromHistogram(_hmuontrg);
-
-
-    auto muonSFreader = correction::CorrectionSet::from_file("data/MuonSF/ScaleFactors_Muon_Z_ID_ISO_"+muonFile+"_schemaV2.json");
-    auto _muonid = muonSFreader->at("NUM_TightID_DEN_TrackerMuons");
-    auto _muoniso = muonSFreader->at("NUM_TightPFIso_DEN_TightID");
-
-    // We have only one muon!
-    auto muonSFId = [this, _muonid, muonFile](floats &pt, floats &eta)->floats {
-        floats wVec;
-        wVec.reserve(3); //cent, up, down
-
-        float tmp_eta = -1000;
-        if (pt.size() == 1){
-            tmp_eta = (muonFile.find("2022") != std::string::npos) ? std::abs(eta[0]) : eta[0];
-            float sf = _muonid->evaluate({tmp_eta, pt[0], "nominal"});
-            float sf_up = _muonid->evaluate({tmp_eta, pt[0], "systup"});
-            float sf_down = _muonid->evaluate({tmp_eta, pt[0], "systdown"});
-            wVec.emplace_back(sf);
-            wVec.emplace_back(sf_up);
-            wVec.emplace_back(sf_down);
-        } else wVec = {1.0, 1.0, 1.0};
-        return wVec;
-    };
-
-    // We have only one muon!
-    auto muonSFIso = [this, _muoniso, muonFile](floats &pt, floats &eta)->floats {
-        floats wVec;
-        wVec.reserve(3); //cent, up, down
-
-        if (pt.size() == 1){
-            float tmp_eta = (muonFile.find("2022") != std::string::npos) ? std::abs(eta[0]) : eta[0];
-            float sf = _muoniso->evaluate({tmp_eta, pt[0], "nominal"});
-            float sf_up = _muoniso->evaluate({tmp_eta, pt[0], "systup"});
-            float sf_down = _muoniso->evaluate({tmp_eta, pt[0], "systdown"});
-            wVec.emplace_back(sf);
-            wVec.emplace_back(sf_up);
-            wVec.emplace_back(sf_down);
-        } else wVec = {1.0, 1.0, 1.0};
-        return wVec;
-    };
-
-    auto muonSFTrg = [this, _muontrg](floats &pt, floats &eta)->floats {
-
-        floats wVec;
-        wVec.reserve(3); //cent, up, down
-
-        if (pt.size() == 1) {
-            for (unsigned int i=0; i<pt.size(); i++) {
-                float sf = _muontrg->getWeight(std::abs(eta[i]),pt[i]);
-                float err = _muontrg->getWeightErr(std::abs(eta[i]),pt[i]);
-                wVec.emplace_back(sf);
-                wVec.emplace_back(sf + err);
-                wVec.emplace_back(sf - err);
-            }
+        if (_isRun22) {
+            muonFile = "2022";
+        } else if (_isRun22EE) {
+            muonFile = "2022_EE";
+        } else if (_isRun23) {
+            muonFile = "2023";
+        } else if (_isRun23BPix) {
+            muonFile = "2023_BPix";
         }
-        else wVec = {1.0, 1.0, 1.0};
-        return wVec;
-    };
 
-    _rlm = _rlm.Define("muonWeightId", muonSFId, {"Muon_pt","Muon_eta"})
-               .Define("muonWeightIso", muonSFIso, {"Muon_pt","Muon_eta"})
-               .Define("muonWeightTrg", muonSFTrg, {"Muon_pt","Muon_eta"});
+        auto muonSFreader = correction::CorrectionSet::from_file("data/MuonSF/ScaleFactors_Muon_Z_ID_ISO_"+muonFile+"_schemaV2.json");
+        auto _muonid = muonSFreader->at("NUM_TightID_DEN_TrackerMuons");
+        auto _muoniso = muonSFreader->at("NUM_TightPFIso_DEN_TightID");
+        auto muonHltSFreader = correction::CorrectionSet::from_file("data/MuonSF/ScaleFactors_Muon_Z_HLT_"+muonFile+"_eta_pt_schemaV2.json");
+        auto _muontrg = muonHltSFreader->at("NUM_IsoMu24_or_Mu50_or_CascadeMu100_or_HighPtTkMu100_DEN_CutBasedIdTight_and_PFIsoTight");
+
+        // We have only one muon!
+        auto muonSFId = [this, _muonid, muonFile](floats &pt, floats &eta)->floats {
+            floats wVec;
+            wVec.reserve(3); //cent, up, down
+
+            float tmp_eta = -1000;
+            if (pt.size() == 1){
+                tmp_eta = (muonFile.find("2022") != std::string::npos) ? std::abs(eta[0]) : eta[0];
+                float sf = _muonid->evaluate({tmp_eta, pt[0], "nominal"});
+                float sf_up = _muonid->evaluate({tmp_eta, pt[0], "systup"});
+                float sf_down = _muonid->evaluate({tmp_eta, pt[0], "systdown"});
+                wVec.emplace_back(sf);
+                wVec.emplace_back(sf_up);
+                wVec.emplace_back(sf_down);
+            } else wVec = {1.0, 1.0, 1.0};
+            return wVec;
+        };
+
+        // We have only one muon!
+        auto muonSFIso = [this, _muoniso, muonFile](floats &pt, floats &eta)->floats {
+            floats wVec;
+            wVec.reserve(3); //cent, up, down
+
+            if (pt.size() == 1){
+                float tmp_eta = (muonFile.find("2022") != std::string::npos) ? std::abs(eta[0]) : eta[0];
+                float sf = _muoniso->evaluate({tmp_eta, pt[0], "nominal"});
+                float sf_up = _muoniso->evaluate({tmp_eta, pt[0], "systup"});
+                float sf_down = _muoniso->evaluate({tmp_eta, pt[0], "systdown"});
+                wVec.emplace_back(sf);
+                wVec.emplace_back(sf_up);
+                wVec.emplace_back(sf_down);
+            } else wVec = {1.0, 1.0, 1.0};
+            return wVec;
+        };
+
+        auto muonSFTrg = [this, _muontrg](floats &pt, floats &eta)->floats {
+
+            floats wVec;
+            wVec.reserve(3); //cent, up, down
+
+            if (pt.size() == 1) {
+                float sf = _muontrg->evaluate({eta[0], pt[0], "nominal"});
+                float sf_up = _muontrg->evaluate({eta[0], pt[0], "systup"});
+                float sf_down = _muontrg->evaluate({eta[0], pt[0], "systdown"});
+                wVec.emplace_back(sf);
+                wVec.emplace_back(sf_up);
+                wVec.emplace_back(sf_down);
+            }
+            else wVec = {1.0, 1.0, 1.0};
+            return wVec;
+        };
+
+        _rlm = _rlm.Define("muonWeightId", muonSFId, {"Muon_pt","Muon_eta"})
+                   .Define("muonWeightIso", muonSFIso, {"Muon_pt","Muon_eta"})
+                   .Define("muonWeightTrg", muonSFTrg, {"Muon_pt","Muon_eta"});
+        
+        std::string muonYear = "";
+
+        muonYear = _year + "_UL";
+
+        auto muonhighscaleup = [muonYear](floats &pts, floats &etas, floats &phis, ints &charges)->floats {
+            floats out;
+            out.reserve(pts.size());
+            for (unsigned int i=0; i<pts.size(); i++) {
+                float pt_tmp = pts[i];
+                float pt_out = pt_tmp;
+                if (pt_tmp > 200) {
+                    float eta_tmp = etas[i];
+                    float phi_tmp = phis[i];
+                    int charge_tmp = charges[i];
+                    GEScaleSyst GE(muonYear);
+                    GE.SetVerbose(0);
+                    pt_out = GE.GEScaleCorrPt(pt_tmp, eta_tmp, phi_tmp, charge_tmp, 0, 1);
+                }
+                out.emplace_back(pt_out);
+            }
+            return out;
+        };
+
+        auto muonhighscaledn = [muonYear](floats &pts, floats &etas, floats &phis, ints &charges)->floats {
+            floats out;
+            out.reserve(pts.size());
+            for (unsigned int i=0; i<pts.size(); i++) {
+                float pt_tmp = pts[i];
+                float pt_out = pt_tmp;
+                if (pt_tmp > 200) {
+                    float eta_tmp = etas[i];
+                    float phi_tmp = phis[i];
+                    int charge_tmp = charges[i];
+                    GEScaleSyst GE(muonYear);
+                    GE.SetVerbose(0);
+                    pt_out = GE.GEScaleCorrPt(pt_tmp, eta_tmp, phi_tmp, charge_tmp, 0, 2);
+                }
+                out.emplace_back(pt_out);
+            }
+            return out;
+        };
+
+        auto muonhighscalemet = [](floats &pts, floats &ptcors, float met)->float {
+            float out = met;
+            for (unsigned int i=0; i<pts.size(); i++) {
+                out -= ptcors[i] - pts[i];
+            }
+            return out;
+        };
+
+        auto muonhighscalemetphi = [](floats &pts, floats &ptcors, floats &phis, float met, float metphi)->float {
+            float out = 0.;
+            auto metx = met * cos(metphi);
+            auto mety = met * sin(metphi);
+            for (unsigned int i=0; i<pts.size(); i++) {
+                metx -= (ptcors[i] - pts[i]) * cos(phis[i]);
+                mety -= (ptcors[i] - pts[i]) * sin(phis[i]);
+            }
+            out = float(atan2(mety, metx));
+            return out;
+        };
+
+
+        if (_syst.find("muonhighscaleup") != std::string::npos) {
+            _rlm = _rlm.Define("Muon_pt_scale", muonhighscaleup, {"Muon_pt", "Muon_eta", "Muon_phi", "Muon_charge"})
+                       .Redefine("MET_phi", muonhighscalemetphi, {"Muon_pt", "Muon_pt_scale", "Muon_phi", "MET_pt", "MET_phi"})
+                       .Redefine("MET_pt", muonhighscalemet, {"Muon_pt", "Muon_pt_scale", "MET_pt"})
+                       .Redefine("Muon_pt", "Muon_pt_scale"); //order matters
+        } else if (_syst.find("muonhighscaledown") != std::string::npos) {
+            _rlm = _rlm.Define("Muon_pt_scale", muonhighscaledn, {"Muon_pt", "Muon_eta", "Muon_phi", "Muon_charge"})
+                       .Redefine("MET_phi", muonhighscalemetphi, {"Muon_pt", "Muon_pt_scale", "Muon_phi", "MET_pt", "MET_phi"})
+                       .Redefine("MET_pt", muonhighscalemet, {"Muon_pt", "Muon_pt_scale", "MET_pt"})
+                       .Redefine("Muon_pt", "Muon_pt_scale"); //order matters
+        }
+     
+    } else {
+        //Electron SF
+        cout << "Loading Electron SF" << endl;
+        std::string elecFile = _year;
+        std::string elecYear = "";
+        if (_isRun22) {
+            elecFile = "2022_Summer22";
+            elecYear = "2022Re-recoBCD";
+        } else if (_isRun22EE) {
+            elecFile = "2022_Summer22EE";
+            elecYear = "2022Re-recoE+PromptFG";
+        } else if (_isRun23) {
+            elecFile = "2023_Summer23";
+            elecYear = "2023PromptC";
+        } else if (_isRun23BPix) {
+            elecFile = "2023_Summer23BPix";
+            elecYear = "2023PromptD";
+        }
+
+        auto elecSFreader = correction::CorrectionSet::from_file("data/ElectronSF/"+elecFile+"/electron.json.gz");
+        auto _elecid = elecSFreader->at("Electron-ID-SF");
+
+        auto elecSFreco = [this, _elecid, elecYear](floats &pt, floats &eta, floats &phi)->floats {
+            floats wVec;
+            wVec.reserve(3); //cent, up, down
+            if (pt.size() == 1){
+                float sf=1.0; float sf_up=1.0; float sf_down=1.0;
+                if (elecYear.find("2022")!=std::string::npos){
+                    if (pt[0] >= 20 && pt[0] < 75){
+                        sf = _elecid->evaluate({elecYear, "sf", "Reco20to75", eta[0], pt[0]});
+                        sf_up = _elecid->evaluate({elecYear, "sfup", "Reco20to75", eta[0], pt[0]});
+                        sf_down = _elecid->evaluate({elecYear, "sfdown", "Reco20to75", eta[0], pt[0]});
+                    } else if (pt[0] >= 75){
+                        sf = _elecid->evaluate({elecYear, "sf", "RecoAbove75", eta[0], pt[0]});
+                        sf_up = _elecid->evaluate({elecYear, "sfup", "RecoAbove75", eta[0], pt[0]});
+                        sf_down = _elecid->evaluate({elecYear, "sfdown", "RecoAbove75", eta[0], pt[0]});
+                    }
+                } else if (elecYear.find("2023")!=std::string::npos){
+                    if (pt[0] >= 20 && pt[0] < 75){
+                        sf = _elecid->evaluate({elecYear, "sf", "Reco20to75", eta[0], pt[0], phi[0]});
+                        sf_up = _elecid->evaluate({elecYear, "sfup", "Reco20to75", eta[0], pt[0], phi[0]});
+                        sf_down = _elecid->evaluate({elecYear, "sfdown", "Reco20to75", eta[0], pt[0], phi[0]});
+                    } else if (pt[0] >= 75){
+                        sf = _elecid->evaluate({elecYear, "sf", "RecoAbove75", eta[0], pt[0], phi[0]});
+                        sf_up = _elecid->evaluate({elecYear, "sfup", "RecoAbove75", eta[0], pt[0], phi[0]});
+                        sf_down = _elecid->evaluate({elecYear, "sfdown", "RecoAbove75", eta[0], pt[0], phi[0]});
+                    }
+                }
+                wVec.emplace_back(sf);
+                wVec.emplace_back(sf_up);
+                wVec.emplace_back(sf_down);
+            } else wVec = {1.0, 1.0, 1.0};
+            return wVec;
+        };
+
+        auto elecSFId = [this, _elecid, elecYear](floats &pt, floats &eta, floats &phi)->floats {
+            floats wVec;
+            wVec.reserve(3); //cent, up, down
+            if (pt.size() == 1){
+                float sf=1.0; float sf_up=1.0; float sf_down=1.0;
+                if (elecYear.find("2022")!=std::string::npos){
+                    sf = _elecid->evaluate({elecYear, "sf", "wp90iso", eta[0], pt[0]});
+                    sf_up = _elecid->evaluate({elecYear, "sfup", "wp90iso", eta[0], pt[0]});
+                    sf_down = _elecid->evaluate({elecYear, "sfdown", "wp90iso", eta[0], pt[0]});
+                } else if (elecYear.find("2023")!=std::string::npos){
+                    sf = _elecid->evaluate({elecYear, "sf", "wp90iso", eta[0], pt[0], phi[0]});
+                    sf_up = _elecid->evaluate({elecYear, "sfup", "wp90iso", eta[0], pt[0], phi[0]});
+                    sf_down = _elecid->evaluate({elecYear, "sfdown", "wp90iso", eta[0], pt[0], phi[0]});
+                }
+                wVec.emplace_back(sf);
+                wVec.emplace_back(sf_up);
+                wVec.emplace_back(sf_down);
+            } else wVec = {1.0, 1.0, 1.0};
+            return wVec;
+        };
+
+
+        auto elecHltSFreader = correction::CorrectionSet::from_file("data/ElectronSF/"+elecFile+"/electronHlt.json.gz");
+        auto _elechlt = elecHltSFreader->at("Electron-HLT-SF");
+        auto elecSFTrg = [this, _elechlt, elecYear](floats &pt, floats &eta)->floats {
+            floats wVec;
+            wVec.reserve(3); //cent, up, down
+            if (pt.size() == 1){
+                float sf = _elechlt->evaluate({elecYear, "sf", "HLT_SF_Ele30_MVAiso90ID", eta[0], pt[0]});
+                float sf_up = _elechlt->evaluate({elecYear, "sfup", "HLT_SF_Ele30_MVAiso90ID", eta[0], pt[0]});
+                float sf_down = _elechlt->evaluate({elecYear, "sfdown", "HLT_SF_Ele30_MVAiso90ID", eta[0], pt[0]});
+                wVec.emplace_back(sf);
+                wVec.emplace_back(sf_up);
+                wVec.emplace_back(sf_down);
+            } else wVec = {1.0, 1.0, 1.0};
+            return wVec;
+        };
+
+        _rlm = _rlm.Define("elecWeightReco", elecSFId, {"Electron_pt","Electron_eta","Electron_phi"})
+                   .Define("elecWeightId", elecSFId, {"Electron_pt","Electron_eta","Electron_phi"})
+                   .Define("elecWeightTrg", elecSFTrg, {"Electron_pt","Electron_eta"});
+    }
 }
 
 /*
@@ -704,7 +722,6 @@ void NanoAODAnalyzerrdframe::selectMET()
 }*/
 
 void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector<std::string> jes_var, std::vector<std::string> jes_var_flav, std::string jetalgo, bool dataMc) {
-
     std::vector<JetCorrectionUncertainty*> regroupedUnc;
     std::vector<JetCorrectionUncertainty*> flavPureUnc;
     FactorizedJetCorrector* _jetCorrector;
@@ -828,15 +845,6 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
                 if (abs(unc) > 100.) unc = 0.;
                 uncSources.emplace_back(1.0f + unc);
                 uncSources.emplace_back(1.0f - unc);
-            }
-            // HEM - consider 2018 only
-            if (_year == "2018") {
-                if (jetphis[i] > -1.57 && jetphis[i] < -0.87 && jetetas[i] > -2.5 && jetetas[i] < -1.3) {
-                    uncSources.emplace_back(0.8);
-                    uncSources.emplace_back(1.0);
-                } else {
-                    uncSources.insert(uncSources.end(), 2, 1.0);
-                }
             }
             // FlavorPure *
             for (size_t j=0; j<flavPureUnc.size(); j++) {
@@ -1140,11 +1148,9 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     if (!dataMc) {
         _rlm = _rlm.Define("Jet_jer", applyJer, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass", "GenJet_pt", "GenJet_eta", "GenJet_phi", "GenJet_mass", "Jet_genJetIdx", "Rho_fixedGridRhoFastjetAll", "event"});
     }
-
 }
 
 void NanoAODAnalyzerrdframe::skimJets() {
-
     // input vector: vec[pt][vars]
     // Note: do not skim with exact value of pt!
     auto skimCol = [this](floatsVec toSkim, ints cut)->floatsVec {
@@ -1175,11 +1181,9 @@ void NanoAODAnalyzerrdframe::skimJets() {
     //               .Redefine("Jet_hadronFlavour","Jet_hadronFlavour[jetcuts]")
     //               .Redefine("Jet_genJetIdx","Jet_genJetIdx[jetcuts]");
     //}
-
 }
 
 void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
-
     cout << "Loading Btag SF" << endl;
     string btagpath = "data/btagSF/";
 
@@ -1274,8 +1278,6 @@ void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
 }
 
 void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::vector<std::string> jes_var_flav) {
-
-
     //// input vector: vec[pt][vars], for bSF
     //auto skimCol = [this](doublesVec toSkim, ints cut)->doublesVec {
 
@@ -1395,18 +1397,12 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
     };
 
     // Overlap removal with muon / electron (used for btagging SF)
-    if (_ch.find("muon") != std::string::npos) {
-        cout << "muon channel muon jet overlap" << endl;
-        _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","muon4vecs"});
-    } else if (_ch.find("electron") != std::string::npos) {
-        cout << "electron channel electron jet overlap" << endl;
-        _rlm = _rlm.Define("muonjetoverlap", checkoverlap, {"jet4vecs","ele4vecs"});
-    }
+    _rlm = _rlm.Define("lepjetoverlap", checkoverlap, {"jet4vecs","lep4vecs"});
 
     _rlm = _rlm.Define("taujetoverlap", checkoverlap, {"jet4vecs","cleantau4vecs"})
                .Define("loosetaujetoverlap", checkoverlap, {"jet4vecs","cleanloosetau4vecs"})
-               .Define("jetoverlap","muonjetoverlap && taujetoverlap")
-               .Define("jetoverlaploose","muonjetoverlap && loosetaujetoverlap");
+               .Define("jetoverlap","lepjetoverlap && taujetoverlap")
+               .Define("jetoverlaploose","lepjetoverlap && loosetaujetoverlap");
 
     _rlm = _rlm.Define("Jet_pt_loose", "Jet_pt[jetoverlaploose]")
                .Define("Jet_btagDeepFlavB_loose", "Jet_btagDeepFlavB[jetoverlaploose]")
@@ -1499,12 +1495,12 @@ void NanoAODAnalyzerrdframe::selectTaus() {
         }
     }
 
-    auto overlap_removal_mutau = [](FourVectorVec &muon4vecs, FourVectorVec &tau4vecs) {
+    auto overlap_removal_leptau = [](FourVectorVec &lep4vecs, FourVectorVec &tau4vecs) {
         ints out;
         for (auto tau: tau4vecs) {
             int check = 0;
-            for (auto mu: muon4vecs) {
-                auto dR = ROOT::Math::VectorUtil::DeltaR(mu, tau);
+            for (auto lep: lep4vecs) {
+                auto dR = ROOT::Math::VectorUtil::DeltaR(lep, tau);
                 if( dR >= 0.4 ) check = 1;
             }
             out.emplace_back(check);
@@ -1513,11 +1509,7 @@ void NanoAODAnalyzerrdframe::selectTaus() {
     };
 
     _rlm = _rlm.Define("tau4vecs", ::gen4vec, {"Tau_pt", "Tau_eta", "Tau_phi", "Tau_mass"});
-    if (_ch.find("muon") != std::string::npos) {
-        _rlm = _rlm.Define("leptauoverlap", overlap_removal_mutau, {"muon4vecs","tau4vecs"});
-    } else if (_ch.find("electron") != std::string::npos) {
-        _rlm = _rlm.Define("leptauoverlap", overlap_removal_mutau, {"ele4vecs", "tau4vecs"});
-    }
+    _rlm = _rlm.Define("leptauoverlap", overlap_removal_leptau, {"lep4vecs","tau4vecs"});
 
     // input vector: vec[pt][vars]
     auto skimCol = [this](floatsVec toSkim, ints cut)->floatsVec {
@@ -1699,10 +1691,10 @@ void NanoAODAnalyzerrdframe::matchGenReco() {
                .Define("Jet_SMW2_matched",::dRmatching_binary,{"GenPart_SMW2_idx","drmax2", "GenPart_pt","GenPart_eta","GenPart_phi","GenPart_mass","Jet_pt","Jet_eta","Jet_phi","Jet_mass"})
                .Define("Sel_muon_matched","Muon_matched[muoncuts]")
                .Define("Sel_tau_matched","Tau_matched[seltaucuts]")
-               .Define("Sel2_LFVupjet_matched","Jet_LFVup_matched[jetcuts][muonjetoverlap][taujetoverlap]")
-               .Define("Sel2_SMbjet_matched","Jet_SMb_matched[jetcuts][muonjetoverlap][taujetoverlap]")
-               .Define("Sel2_SMW1jet_matched","Jet_SMW1_matched[jetcuts][muonjetoverlap][taujetoverlap]")
-               .Define("Sel2_SMW2jet_matched","Jet_SMW2_matched[jetcuts][muonjetoverlap][taujetoverlap]")
+               .Define("Sel2_LFVupjet_matched","Jet_LFVup_matched[jetcuts][lepjetoverlap][taujetoverlap]")
+               .Define("Sel2_SMbjet_matched","Jet_SMb_matched[jetcuts][lepjetoverlap][taujetoverlap]")
+               .Define("Sel2_SMW1jet_matched","Jet_SMW1_matched[jetcuts][lepjetoverlap][taujetoverlap]")
+               .Define("Sel2_SMW2jet_matched","Jet_SMW2_matched[jetcuts][lepjetoverlap][taujetoverlap]")
                .Define("Sel_muonmatched_idx","ArgMax(Sel_muon_matched)")
                .Define("Sel_taumatched_idx","ArgMax(Sel_tau_matched)")
                .Define("Sel2_LFVupjet_matched_idx","ArgMax(Sel2_LFVupjet_matched)")
@@ -1841,9 +1833,6 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     }
 
     auto tauSFreader = correction::CorrectionSet::from_file("data/TauIDSFs/tau_DeepTau2018v2p5_" + tauYear + ".json.gz");
-    //auto _tauidSFjet = tauSFreader->at("DeepTau2018v2p5VSjet");
-    //auto _tauidSFele = tauSFreader->at("DeepTau2018v2p5VSe");
-    //auto _tauidSFmu  = tauSFreader->at("DeepTau2018v2p5VSmu");
     auto _testool    = tauSFreader->at("tau_energy_scale");
 
     // Tau ES

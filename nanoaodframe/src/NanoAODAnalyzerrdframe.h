@@ -60,6 +60,7 @@ public:
   void selectFatJets();
   void matchGenReco();
   void calculateEvWeight();
+  void calculateSF();
   void storeEvWeight();
   void topPtReweight();
   virtual void defineMoreVars() = 0; // define higher-level variables from basic ones, you must implement this in your subclassed analysis code
@@ -96,6 +97,7 @@ private:
   bool _isData;
   bool _jsonOK;
   std::string _year;
+  bool _isMuonCh = true;
   bool _isRun22 = false;
   bool _isRun22EE = false;
   bool _isRun23 = false;

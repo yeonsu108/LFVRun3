@@ -115,7 +115,6 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Electron_pf.*");
         addVartoStore("Electron_phi");
         addVartoStore("Electron_pt");
-        addVartoStore("ele4vecs");
         addVartoStore("nMuon");
         addVartoStore("Muon_charge");
         addVartoStore("Muon_eta");
@@ -129,7 +128,7 @@ void SkimEvents::defineMoreVars()
         addVartoStore("nelepass");
         addVartoStore("nvetomuons");
         addVartoStore("nvetoelepass");
-        addVartoStore("muon4vecs");
+        addVartoStore("lep4vecs");
         addVartoStore("Rho_fixedGridRhoFastjetAll");
         addVartoStore("L1PreFiringWeight_.*");
         addVartoStore("LHEPart_pt");
