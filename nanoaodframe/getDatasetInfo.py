@@ -3,7 +3,7 @@ from urllib.request import urlopen
 import pandas as pd
 
 if len(sys.argv) < 2:
-    print("Provide run era: 2016pre, 2016post, 2017, 2018, 2022, 2023_BPix")
+    print("Provide run era: 2016pre, 2016post, 2017, 2018, 2022, 2023_BPix, 2024")
     sys.exit()
 else: era = sys.argv[1]
 
