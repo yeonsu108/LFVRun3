@@ -112,6 +112,8 @@ ints LastGenPart_idx( int target_id, ints GenPart_pdgId, ints GenPart_genPartIdx
 
 int lastgenpart_idx(int target_i, ints GenPart_pdgId, ints GenPart_genPartIdxMother);
 
+ints FinalGenPart_idx_elec( ints GenPart_pdgId, ints GenPart_genPartIdxMother);
+
 ints FinalGenPart_idx( ints GenPart_pdgId, ints GenPart_genPartIdxMother);
 
 ints dRmatching_binary( int origin_i,float maxdR,  floats origin_pt, floats origin_eta, floats origin_phi, floats origin_mass, floats target_pt, floats target_eta, floats target_phi, floats target_mass);

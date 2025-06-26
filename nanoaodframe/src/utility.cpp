@@ -401,6 +401,53 @@ int lastgenpart_idx(int target_i, ints GenPart_pdgId, ints GenPart_genPartIdxMot
     return out;
 }
 
+ints FinalGenPart_idx_elec( ints GenPart_pdgId, ints GenPart_genPartIdxMother ){
+    ints out;
+    int LFVtop_idx = -1, SMtop_idx=-1;
+    int up_idx = -1, muon_idx = -1, tau_idx = -1;
+    int b_idx = -1, W_idx = -1;
+    int Wq1_idx=-1, Wq2_idx=-1;
+    ints Wds_i;
+    ints LastTop_idx = LastGenPart_idx(6, GenPart_pdgId, GenPart_genPartIdxMother);
+    for( int i : LastTop_idx ){
+        ints ds_idx = find_element(GenPart_genPartIdxMother, i);
+        for( int d_idx : ds_idx ){
+            int d_id = GenPart_pdgId[d_idx];
+            if( abs(d_id) == 4 || abs(d_id) == 2){
+                up_idx = lastgenpart_idx(d_idx, GenPart_pdgId, GenPart_genPartIdxMother);
+                LFVtop_idx=i;
+            }
+            if(abs(d_id)==11){
+                muon_idx = lastgenpart_idx(d_idx, GenPart_pdgId, GenPart_genPartIdxMother);
+            }
+            if(abs(d_id)==15){
+                tau_idx = lastgenpart_idx(d_idx, GenPart_pdgId, GenPart_genPartIdxMother);
+            }
+            if(abs(d_id)==5){
+                b_idx = lastgenpart_idx(d_idx, GenPart_pdgId, GenPart_genPartIdxMother);
+                SMtop_idx=i;
+            }
+            if(abs(d_id)==24){
+                W_idx = lastgenpart_idx(d_idx, GenPart_pdgId, GenPart_genPartIdxMother);
+                Wds_i = find_element(GenPart_genPartIdxMother, W_idx);
+                if( Wds_i.size() !=2 ) break;
+                Wq1_idx = lastgenpart_idx(Wds_i[0], GenPart_pdgId, GenPart_genPartIdxMother);
+                Wq2_idx = lastgenpart_idx(Wds_i[1], GenPart_pdgId, GenPart_genPartIdxMother);
+            }
+        }
+    }
+    out.emplace_back(up_idx);
+    out.emplace_back(muon_idx);
+    out.emplace_back(tau_idx);
+    out.emplace_back(b_idx);
+    out.emplace_back(Wq1_idx);
+    out.emplace_back(Wq2_idx);
+    out.emplace_back(LFVtop_idx);
+    out.emplace_back(SMtop_idx);
+
+    return out;
+}
+
 ints FinalGenPart_idx( ints GenPart_pdgId, ints GenPart_genPartIdxMother ){
     ints out;
     int LFVtop_idx = -1, SMtop_idx=-1;
