@@ -69,6 +69,10 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
         _isRun23BPix = true;
         cout << "Year : Run 2023 BPix" << endl;
     }
+    if (_year.find("2024") != std::string::npos){
+        _isRun24 = true;
+        cout << "Year : Run 2024" << endl;
+    }
 
     // Data/mc switch
     if (atree->GetBranch("genWeight") == nullptr) {
@@ -201,16 +205,17 @@ void NanoAODAnalyzerrdframe::setupAnalysis() {
             if (_isRun22) {
                 pileFile = "2022_Summer22";
                 map = "Collisions2022_355100_357900_eraBCD_GoldenJson";
-            }
-            if (_isRun22EE) {
+            } else if (_isRun22EE) {
                 pileFile = "2022_Summer22EE";
                 map = "Collisions2022_359022_362760_eraEFG_GoldenJson";
-            }
-            if (_isRun23) {
+            } else if (_isRun23) {
                 pileFile = "2023_Summer23";
                 map = "Collisions2023_366403_369802_eraBC_GoldenJson";
-            }
-            if (_isRun23BPix) {
+            } else if (_isRun23BPix) {
+                pileFile = "2023_Summer23BPix";
+                map = "Collisions2023_369803_370790_eraD_GoldenJson";
+            } else if (_isRun24) {
+                // TODO
                 pileFile = "2023_Summer23BPix";
                 map = "Collisions2023_369803_370790_eraD_GoldenJson";
             }
@@ -395,12 +400,16 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
     } else if (_isRun23BPix) {
         jetFile = "2023_Summer23BPix";
         map = "Summer23BPixPrompt23_RunD_V1";
+    } else if (_isRun24) {
+        //TODO
+        jetFile = "2023_Summer23BPix";
+        map = "Summer23BPixPrompt23_RunD_V1";
     }
     
     auto vetoMapreader = correction::CorrectionSet::from_file("data/JME/"+jetFile+"/jetvetomaps.json.gz");
     
     auto _vetomap = vetoMapreader->at(map);
-    
+ 
     auto vetomap = [this, _vetomap](floats &eta, floats &phi)->floats {
         floats xout;
         for (unsigned int i=0; i<eta.size(); i++) {
@@ -411,8 +420,23 @@ void NanoAODAnalyzerrdframe::JetVetoMap() {
         return xout;
     };
     
+    auto vetomap_fpix = [this, _vetomap](floats &eta, floats &phi)->floats {
+        floats xout;
+        for (unsigned int i=0; i<eta.size(); i++) {
+            float es = 0.0;
+            es = _vetomap->evaluate({std::string("jetvetomap_fpix"),eta[i],phi[i]});
+            xout.emplace_back(es);
+        }
+        return xout;
+    };
+    
     _rlm = _rlm.Define("Jet_isVeto_loose", vetomap, {"Jet_eta_loosejet","Jet_phi_loosejet"})
                .Define("events_isVeto","Sum(Jet_isVeto_loose)");
+
+    //if (_isRun24){
+    //    _rlm = _rlm.Define("Jet_isVeto_fpix", vetomap_fpix, {"Jet_eta_loosejet", "Jet_phi_loosejet"})
+    //               .Redefine("events_isVeto", "Sum(Jet_isVeto_loose)+Sum(Jet_isVeto_fpix)");
+    //}
 }
 
 void NanoAODAnalyzerrdframe::selectElectrons() {
@@ -476,6 +500,9 @@ void NanoAODAnalyzerrdframe::calculateSF(){
         } else if (_isRun23) {
             muonFile = "2023";
         } else if (_isRun23BPix) {
+            muonFile = "2023_BPix";
+        } else if (_isRun24){
+            // TODO
             muonFile = "2023_BPix";
         }
 
@@ -631,6 +658,10 @@ void NanoAODAnalyzerrdframe::calculateSF(){
             elecFile = "2023_Summer23";
             elecYear = "2023PromptC";
         } else if (_isRun23BPix) {
+            elecFile = "2023_Summer23BPix";
+            elecYear = "2023PromptD";
+        } else if (_isRun24){
+            // TODO
             elecFile = "2023_Summer23BPix";
             elecYear = "2023PromptD";
         }
@@ -1060,6 +1091,10 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
     } else if (_isRun23BPix) {
         jetResFilePath_ += "Summer23BPixPrompt23_RunD_JRV1_MC_PtResolution_AK4PFPuppi.txt";
         jetResSFFilePath_ += "Summer23BPixPrompt23_RunD_JRV1_MC_SF_AK4PFPuppi.txt";
+    } else if (_isRun24) {
+        //TODO
+        jetResFilePath_ += "Summer23BPixPrompt23_RunD_JRV1_MC_PtResolution_AK4PFPuppi.txt";
+        jetResSFFilePath_ += "Summer23BPixPrompt23_RunD_JRV1_MC_SF_AK4PFPuppi.txt";
     }
 
     
@@ -1436,19 +1471,20 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
     if (_isRun22) { 
         _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3086") //l: 0.0583, m: 0.3086, t: 0.7183
                    .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.0583");
-    }
-    if (_isRun22EE) { 
+    } else if (_isRun22EE) { 
         _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3196") //l: 0.0614, m: 0.3196, t: 0.73
                    .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.0614");
-    }
-    if (_isRun23) { 
+    } else if (_isRun23) { 
         _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2431") //l: 0.0479, m: 0.2431, t: 0.6553
                    .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.0479");
-    }
-    if (_isRun23BPix) { 
+    } else if (_isRun23BPix) { 
         //https://btv-wiki.docs.cern.ch/PerformanceCalibration/#important-links
         //_rlm = _rlm.Define("btagcuts", "Jet_btagPNetB>0.2450") //l: 0.0470, m: 0.2450, t: 0.6734 
         //           .Define("btagcuts_loose", "Jet_btagPNetB>0.0470");
+        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2435") //l: 0.048, m: 0.2435, t: 0.6563
+                   .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.048");
+    } else if (_isRun24){
+        // TODO: copy from 23BPix
         _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2435") //l: 0.048, m: 0.2435, t: 0.6563
                    .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.048");
     }
@@ -1567,14 +1603,14 @@ void NanoAODAnalyzerrdframe::selectTaus() {
         std::string tauYear = "";
         if (_isRun22) {
             tauYear = "2022_preEE";
-        }
-        if (_isRun22EE) {
+        } else if (_isRun22EE) {
             tauYear = "2022_postEE";
-        }
-        if (_isRun23) {
+        } else if (_isRun23) {
             tauYear = "2023_preBPix";
-        }
-        if (_isRun23BPix) {
+        } else if (_isRun23BPix) {
+            tauYear = "2023_postBPix";
+        } else if (_isRun24){
+            //TODO
             tauYear = "2023_postBPix";
         }
 
@@ -1671,8 +1707,12 @@ void NanoAODAnalyzerrdframe::selectTaus() {
 
 void NanoAODAnalyzerrdframe::matchGenReco() {
 
-    _rlm = _rlm.Define("FinalGenPart_idx", ::FinalGenPart_idx, {"GenPart_pdgId", "GenPart_genPartIdxMother"})
-               .Define("GenPart_LFVup_idx", "FinalGenPart_idx[0]")
+    if (_isMuonCh){
+        _rlm = _rlm.Define("FinalGenPart_idx", ::FinalGenPart_idx, {"GenPart_pdgId", "GenPart_genPartIdxMother"});
+    } else {
+        _rlm = _rlm.Define("FianlGenPart_idx", ::FianlGenPart_idx_elec, {"GenPart_pdgId", "GenPart_genPartIdxMother"});
+    }
+    _rlm = _rlm.Define("GenPart_LFVup_idx", "FinalGenPart_idx[0]")
                .Define("GenPart_LFVmuon_idx", "FinalGenPart_idx[1]")
                .Define("GenPart_LFVtau_idx", "FinalGenPart_idx[2]")
                .Define("GenPart_SMb_idx", "FinalGenPart_idx[3]")
@@ -1682,15 +1722,23 @@ void NanoAODAnalyzerrdframe::matchGenReco() {
                .Define("GenPart_SMtop_idx", "FinalGenPart_idx[7]");
 
     _rlm = _rlm.Define("drmax1", "float(0.15)")
-               .Define("drmax2", "float(0.4)")
-               .Define("Muon_matched", ::dRmatching_binary,{"GenPart_LFVmuon_idx","drmax1","GenPart_pt","GenPart_eta","GenPart_phi","GenPart_mass","Muon_pt","Muon_eta","Muon_phi","Muon_mass"})
-               .Define("Tau_matched",::dRmatching_binary,{"GenPart_LFVtau_idx","drmax2", "GenPart_pt","GenPart_eta","GenPart_phi","GenPart_mass","Tau_pt","Tau_eta","Tau_phi","Tau_mass"})
+               .Define("drmax2", "float(0.4)");
+    if (_isMuonCh){
+        _rlm = _rlm.Define("Muon_matched", ::dRmatching_binary,{"GenPart_LFVmuon_idx","drmax1","GenPart_pt","GenPart_eta","GenPart_phi","GenPart_mass","Muon_pt","Muon_eta","Muon_phi","Muon_mass"});
+    } else {
+        _rlm = _rlm.Define("Muon_matched", ::dRmatching_binary,{"GenPart_LFVmuon_idx","drmax1","GenPart_pt","GenPart_eta","GenPart_phi","GenPart_mass","Electron_pt","Electron_eta","Electron_phi","Electron_mass"});
+    }
+    _rlm = _rlm.Define("Tau_matched",::dRmatching_binary,{"GenPart_LFVtau_idx","drmax2", "GenPart_pt","GenPart_eta","GenPart_phi","GenPart_mass","Tau_pt","Tau_eta","Tau_phi","Tau_mass"})
                .Define("Jet_LFVup_matched",::dRmatching_binary,{"GenPart_LFVup_idx","drmax2","GenPart_pt","GenPart_eta","GenPart_phi","GenPart_mass","Jet_pt","Jet_eta","Jet_phi","Jet_mass"})
                .Define("Jet_SMb_matched",::dRmatching_binary,{"GenPart_SMb_idx","drmax2","GenPart_pt","GenPart_eta","GenPart_phi","GenPart_mass","Jet_pt","Jet_eta","Jet_phi","Jet_mass"})
                .Define("Jet_SMW1_matched",::dRmatching_binary,{"GenPart_SMW1_idx","drmax2","GenPart_pt","GenPart_eta","GenPart_phi","GenPart_mass","Jet_pt","Jet_eta","Jet_phi","Jet_mass"})
-               .Define("Jet_SMW2_matched",::dRmatching_binary,{"GenPart_SMW2_idx","drmax2", "GenPart_pt","GenPart_eta","GenPart_phi","GenPart_mass","Jet_pt","Jet_eta","Jet_phi","Jet_mass"})
-               .Define("Sel_muon_matched","Muon_matched[muoncuts]")
-               .Define("Sel_tau_matched","Tau_matched[seltaucuts]")
+               .Define("Jet_SMW2_matched",::dRmatching_binary,{"GenPart_SMW2_idx","drmax2", "GenPart_pt","GenPart_eta","GenPart_phi","GenPart_mass","Jet_pt","Jet_eta","Jet_phi","Jet_mass"});
+    if (_isMuonCh){
+        _rlm = _rlm.Define("Sel_muon_matched","Muon_matched[muoncuts]");
+    } else {
+        _rlm = _rlm.Define("Sel_muon_matched". "Muon_matched[elecuts]");
+    }
+    _rlm = _rlm.Define("Sel_tau_matched","Tau_matched[seltaucuts]")
                .Define("Sel2_LFVupjet_matched","Jet_LFVup_matched[jetcuts][lepjetoverlap][taujetoverlap]")
                .Define("Sel2_SMbjet_matched","Jet_SMb_matched[jetcuts][lepjetoverlap][taujetoverlap]")
                .Define("Sel2_SMW1jet_matched","Jet_SMW1_matched[jetcuts][lepjetoverlap][taujetoverlap]")
@@ -1787,7 +1835,7 @@ void NanoAODAnalyzerrdframe::topPtReweight() {
 
     // NLO ttbar: NLO to theory weight
     // https://twiki.cern.ch/twiki/bin/view/CMS/TopPtReweighting#TOP_PAG_corrections_based_on_the
-    if (_outfilename.find("TTTo") != std::string::npos) {
+    if (_outfilename.find("TTto") != std::string::npos) {
         _rlm = _rlm.Define("TopPtWeight", topPtNLOtoNNLO, {"GenPart_top_pt"});
     } else if (_outfilename.find("TT_LFV") != std::string::npos) {
         _rlm = _rlm.Define("TopPtWeight_LO", topPtLOtoNLO, {"GenPart_top_pt"})
@@ -1821,14 +1869,14 @@ void NanoAODAnalyzerrdframe::calculateEvWeight() {
     std::string tauYear = "";
     if (_isRun22) {
         tauYear = "2022_preEE";
-    }
-    if (_isRun22EE) {
+    } else if (_isRun22EE) {
         tauYear = "2022_postEE";
-    }
-    if (_isRun23) {
+    } else if (_isRun23) {
         tauYear = "2023_preBPix";
-    }
-    if (_isRun23BPix) {
+    } else if (_isRun23BPix) {
+        tauYear = "2023_postBPix";
+    } else if (_isRun24) {
+        //TODO
         tauYear = "2023_postBPix";
     }
 

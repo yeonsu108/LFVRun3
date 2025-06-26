@@ -102,6 +102,7 @@ private:
   bool _isRun22EE = false;
   bool _isRun23 = false;
   bool _isRun23BPix = false;
+  bool _isRun24 = false;
   // you MUST copy syst names from the output of 'python skimcsv.py'
   inline static std::vector<std::string> btag_var = {"central",
                 "hfup", "hfdown", "lfup", "lfdown", "hfstats1up", "hfstats1down",

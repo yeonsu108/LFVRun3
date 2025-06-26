@@ -214,6 +214,7 @@ void TopLFVAnalyzer::defineMoreVars() {
         addVar({"eventWeight_puelec", "1"});
         addVar({"eventWeight_pumutau", "1"});
         addVar({"eventWeight_puelectau", "1"});
+        addVar({"eventWeight_all", "1"});
     } else {
         if (_syst == "" or _syst == "nosyst") { //TODO
             addVar({"eventWeight_genpu", "1.0"});
@@ -246,6 +247,7 @@ void TopLFVAnalyzer::defineMoreVars() {
                 //    addVar({"eventWeight", "1.0"});
                 //}
                 addVar({"eventWeight", "unitGenWeight"});
+                addVar({"eventWeight_top", "TopPtWeight[0]"});
                 addVar({"eventWeight_notau", "eventWeight"});
                 addVar({"eventWeight_pu", "eventWeight * puWeight[0]"});
                 addVar({"eventWeight_tau", "tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
@@ -253,10 +255,12 @@ void TopLFVAnalyzer::defineMoreVars() {
                     addVar({"eventWeight_mu", "muonWeightId[0] * muonWeightIso[0] * muonWeightTrg[0]"});
                     addVar({"eventWeight_pumu", "eventWeight_pu * eventWeight_mu"});
                     addVar({"eventWeight_pumutau", "eventWeight_pumu * eventWeight_tau"});
+                    addVar({"eventWeight_all", "eventWeight_pumu * eventWeight_tau * eventWeight_top"});
                 } else {
                     addVar({"eventWeight_elec", "elecWeightReco[0] * elecWeightId[0] * elecWeightTrg[0]"});
                     addVar({"eventWeight_puelec", "eventWeight_pu * eventWeight_elec"});
                     addVar({"eventWeight_puelectau", "eventWeight_puelec * eventWeight_tau"});
+                    addVar({"eventWeight_all", "eventWeight_puelec * eventWeight_tau * eventWeight_top"});
                 }
             } else if (_syst.find("jesAbsoluteup") != std::string::npos) {
                 addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_jes[0]"});
@@ -519,7 +523,7 @@ void TopLFVAnalyzer::bookHists() {
     //               "__btaglfstats1up", "__btaglfstats1down", "__btaglfstats2up", "__btaglfstats2down",
     //               "__btagcferr1up", "__btagcferr1down", "__btagcferr2up", "__btagcferr2down",
     //               };
-    std::vector<std::string> sf_weight = {"", "_pu", "_tau"};
+    std::vector<std::string> sf_weight = {"", "_pu", "_tau", "_all"};
     if (_isMuonCh){
         sf_weight = {"", "_pu", "_mu", "_pumu", "_pumutau"};
     } else {
