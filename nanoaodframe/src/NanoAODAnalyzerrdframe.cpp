@@ -1710,7 +1710,7 @@ void NanoAODAnalyzerrdframe::matchGenReco() {
     if (_isMuonCh){
         _rlm = _rlm.Define("FinalGenPart_idx", ::FinalGenPart_idx, {"GenPart_pdgId", "GenPart_genPartIdxMother"});
     } else {
-        _rlm = _rlm.Define("FianlGenPart_idx", ::FianlGenPart_idx_elec, {"GenPart_pdgId", "GenPart_genPartIdxMother"});
+        _rlm = _rlm.Define("FinalGenPart_idx", ::FinalGenPart_idx_elec, {"GenPart_pdgId", "GenPart_genPartIdxMother"});
     }
     _rlm = _rlm.Define("GenPart_LFVup_idx", "FinalGenPart_idx[0]")
                .Define("GenPart_LFVmuon_idx", "FinalGenPart_idx[1]")
