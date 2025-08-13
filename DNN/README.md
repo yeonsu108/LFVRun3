@@ -1,7 +1,9 @@
 ## DNN with 3 features - Train, Evaluation, Draw Histograms
 ### 0. Presets
 ```{.Bash}
-  source /cvmfs/sft.cern.ch/lcg/views/LCG_103/x86_64-centos7-gcc12-opt/setup.sh
+  source /cvmfs/sft.cern.ch/lcg/views/LCG_108_cuda/x86_64-el9-gcc13-opt/setup.sh
+  module load cuda/12.5
+  module load cudnn/9.3
 ```
  
 ### 1. Train
