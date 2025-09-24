@@ -78,8 +78,10 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Jet_mass");
         addVartoStore("Jet_jetId");
         addVartoStore("Jet_rawFactor");
-        addVartoStore("Jet_btagDeepFlavB");
-        addVartoStore("btagWeight_DeepFlav.*");
+        addVartoStore("Jet_btagPNetB");
+        addVartoStore("Jet_muEF");
+        addVartoStore("Jet_chEmEF");
+        addVartoStore("btagWeight_PNet.*");
         addVartoStore("nTau");
         addVartoStore("Tau_charge");
         addVartoStore("Tau_d.*");

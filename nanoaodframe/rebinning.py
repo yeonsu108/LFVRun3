@@ -24,13 +24,15 @@ forceHadd = options.forceHadd
 #rebin_arr = array.array('d', [0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
 rebin_arr = array.array('d', [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.12, 0.16, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 5.0, 10.0, 30, 100.0])
 rebin_pt = array.array('d', [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 600])
+rebin_jetpt = array.array('d', [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 400])
+rebin_mass = array.array('d', [0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250, 275, 300, 325, 350, 375, 400, 425, 450, 475, 500, 1000])
 
 # Set to pre-approval binning if postfix is set, for histogramming
 if len(options.postfix) > 0:
     rebin_arr = array.array('d', [0.01, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
 
 #if year not in ['2016pre', '2016post', '2017', '2018']:
-if year not in ['v2022', 'v2022EE', 'v2023', 'v2023_BPix']:
+if year not in ['v2022', 'v2022EE', 'v2023', 'v2023_BPix', 'v2024']:
     print('Wrong year, check again')
     sys.exit()
 if forceHadd: print("Hadd all split MC!!")
@@ -45,8 +47,8 @@ else:
     print("Start postprocessing at '{}'.".format(nom_path))
 
 # Set output folders
-out_path = os.path.join(base_path, input, year + '_postprocess' + options.postfix)
-fig_path = os.path.join(base_path, input, 'figure_' + year + options.postfix)
+out_path = os.path.join(base_path, input, year + '_rebin' + options.postfix)
+fig_path = os.path.join(base_path, input, '../fig_mu/rebin_' + year + options.postfix)
 if not os.path.exists(out_path):
     os.makedirs(out_path)
 if not os.path.exists(fig_path):
@@ -100,6 +102,14 @@ for fname in file_list:
             h = h.Rebin(len(rebin_arr)-1, h.GetName(), rebin_arr)
         if ('muon1_pt' in hname) or ('electron1_pt' in hname):
             h_rebinned = h.Rebin(len(rebin_pt) - 1, hname+"_rebinned", rebin_pt)
+            h.Write()
+            h_rebinned.Write()
+        if ('tau1_pt' in hname) or ('jet1_pt' in hname):
+            h_rebinned = h.Rebin(len(rebin_jetpt) - 1, hname+"_rebinned", rebin_jetpt)
+            h.Write()
+            h_rebinned.Write()
+        if ('leptau_mass' in hname):
+            h_rebinned = h.Rebin(len(rebin_mass) - 1, hname+"_rebinned", rebin_mass)
             h.Write()
             h_rebinned.Write()
         if yield_name in hname:

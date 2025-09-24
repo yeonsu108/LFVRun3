@@ -71,12 +71,12 @@ void TauFakeFactorAnalyzer::defineMoreVars() {
         if (_mode == "lss" or _mode == "los") {
             addVar({"eventWeight_tau", "tauWeightIdVsJet_loose[0][0] * tauWeightIdVsEl_loose[0][0] * tauWeightIdVsMu_loose[0][0]"});
             addVar({"eventWeight_nobtag", "eventWeight_genpu * eventWeight_mu * eventWeight_tau"});
-            addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB_loose[0]"});
-            //addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight", "eventWeight_nobtag * btagWeight_PNetB_loose[0]"});
+            //addVar({"eventWeight", "eventWeight_nobtag * btagWeight_PNetB[0]"});
         } else {
             addVar({"eventWeight_tau", "tauWeightIdVsJet[0][0] * tauWeightIdVsEl[0][0] * tauWeightIdVsMu[0][0]"});
             addVar({"eventWeight_nobtag", "eventWeight_genpu * eventWeight_mu * eventWeight_tau"});
-            addVar({"eventWeight", "eventWeight_nobtag * btagWeight_DeepFlavB[0]"});
+            addVar({"eventWeight", "eventWeight_nobtag * btagWeight_PNetB[0]"});
         }
     }
 

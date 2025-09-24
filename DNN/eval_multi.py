@@ -22,25 +22,29 @@ if gpus:
 parser = argparse.ArgumentParser(usage="%prog [options]")
 parser.add_argument("-O", "--outdir", dest="outdir", type=str, default="test", help="Output folder in your working directory")
 parser.add_argument("-I", "--indir", dest="indir", type=str, default="test", help="Iput folder in your working directory")
+parser.add_argument("-C", "--ch", dest="ch", type=str, default="muon")
 options = parser.parse_args()
+ch = options.ch
 
 def min_max_scaling(series):
     return (series - series.min()) / (series.max() - series.min())
 
 
-#training_path = options.indir
-training_path = "top_lfv_multiClass_March2024_AfterPreAppTalk"
+training_path = options.indir
+#training_path = ""
 
-inputvars = ["Muon1_pt", "Muon1_eta",
-             "Tau1_pt", "Tau1_mass", "Tau1_eta",
-             "Jet1_pt", "Jet1_mass", "Jet1_eta", "Jet1_btagDeepFlavB",
-             "Jet2_pt", "Jet2_mass", "Jet2_eta", "Jet2_btagDeepFlavB",
-             "Jet3_pt", "Jet3_mass", "Jet3_eta", "Jet3_btagDeepFlavB",
-             "chi2", "chi2_SMW_mass", "chi2_SMTop_mass",
-             "chi2_wqq_dEta", "chi2_wqq_dPhi", "chi2_wqq_dR",
-             "mutau_mass", "mutau_dEta", "mutau_dPhi", "mutau_dR",
-             "MET_pt"
+inputvars = [#"Muon1_pt", "Muon1_eta",
+            "Tau1_pt","Tau1_mass","Tau1_eta",
+            "Jet1_mass","Jet1_eta","Jet1_btagPNetB",
+            "Jet2_pt","Jet2_mass","Jet2_eta","Jet2_btagPNetB",
+            "Jet3_pt","Jet3_mass","Jet3_eta","Jet3_btagPNetB",
+            "chi2","chi2_SMW_mass","chi2_SMTop_mass",
+            "chi2_wqq_dEta","chi2_wqq_dPhi","chi2_wqq_dR",
+            "leptau_mass","leptau_dEta","leptau_dPhi","leptau_dR",
+            "PuppiMET_pt"
             ]
+if ch == "muon": inputvars = ["Muon1_pt", "Muon1_eta"] + inputvars
+else: inputvars = ["Electron1_pt", "Electron1_eta"] + inputvars
 
 
 #discriminators = {"p_st" : 2, "p_tt" : 1 , "p_bkg" : 0 , "p_st_tt" : 999, "p_st_tt_ob" : 999 }
@@ -56,7 +60,7 @@ def run(inputs):
     #binedges = [0,1,2,3,5,10,30,60]
     binedges = [i for i in frange(0.0, 100.01, 0.01)]
 
-    model_dir = os.path.join(training_path, "nom/best_model.h5")
+    model_dir = os.path.join(training_path, ch+"/nom/best_model.keras")
     model = tf.keras.models.load_model(model_dir)
 
     hists_path = os.path.join(options.outdir, year)
@@ -82,17 +86,15 @@ def run(inputs):
     hist_nevents_S4_dict = {}
     hist_nevents_S5_dict = {}
     syst_extend = []
-        
+
     if not "SingleMuon" in input_file :
         infile_forS = uproot.open(input_file.replace("_FF", ""))
-        h_nevents_S4_nobtag = infile_forS["h_nevents_S4_nobtag"]  ### get it from removed FF 
-        h_nevents_S4 = infile_forS["h_nevents_S4"]	
-        h_nevents_S2_nobtag = infile_forS["h_nevents_S2_nobtag"]
-        h_nevents_S2 = infile_forS["h_nevents_S2"]	
-        if any(string in input_file for string in ["_LFV", "TTT", "_ST_t"]) and "__" not in input_file:
-            ScaleWeightSum = infile['ScaleWeightSum']
-            PSWeightSum = infile['PSWeightSum']
-            LHEPdfWeightSum = infile['LHEPdfWeightSum']
+        h_nevents_S4_nobtag = infile_forS["h_nevents_S4"]  ### get it from removed FF 
+        h_nevents_S4 = infile_forS["h_nevents_S4_all"]
+        #if any(string in input_file for string in ["_LFV", "TTt", "_ST_t"]) and "__" not in input_file:
+        #    ScaleWeightSum = infile['ScaleWeightSum']
+        #    PSWeightSum = infile['PSWeightSum']
+        #    LHEPdfWeightSum = infile['LHEPdfWeightSum']
 
     if nEvents == 0:
         #print("No events : "+input_file)
@@ -103,6 +105,7 @@ def run(inputs):
         pd_weight = []
         dnnhist_nom = np.histogram(pred, bins=binedges, weights=pd_weight, density=False)
         dnnhist_entries_nom = np.histogram(pred, bins=binedges, density=False)
+        print ("syst_list: ", syst_list)
         for syst in syst_list:
             syst_hist_dnn_dict["h_dnn_pred_S5__"+syst] = dnnhist_nom
             syst_hist_dnn_entries_dict["h_dnn_entries_S5__"+syst] = dnnhist_entries_nom
@@ -110,13 +113,15 @@ def run(inputs):
                 hist_nevents_S4_dict["h_nevents_S4__"+syst] = infile_forS["h_nevents_S4__"+syst]
                 hist_nevents_S5_dict["h_nevents_S5__"+syst] = infile["h_nevents_S5__"+syst]
     else:
-        muon_pt = tree["Muon1_pt"].array()
+        muon_pt = 0
+        if ch == "muon": muon_pt = tree["Muon1_pt"].array()
+        else: muon_pt = tree["Electron1_pt"].array()
         tau_pt = tree["Tau1_pt"].array()
         pd_data = tree.arrays(inputvars, library="pd")
         pd_weight = tree.arrays(weights, library="np")
         pred_data = np.array(pd_data.filter(items = inputvars))
 
-        pred = model.predict(pred_data, batch_size=128, workers=1, use_multiprocessing=False)
+        pred = model.predict(pred_data, batch_size=128)
         #pred_df = pd.DataFrame(pred, columns=['Prediction1', 'Prediction2', 'Prediction3'])
         #print("PRED SHAPE : ", pred.shape)
         #result_df = pd.concat([pd_data, pred_df], axis=1)
@@ -124,7 +129,7 @@ def run(inputs):
         #print("PRED COMB SHAPE : ", result_df.shape)
         #print("DF saved here: ", outf_dir.split(".root")[0]+'combined_data.csv')
 
-        rmzeros = pred[:,0] 
+        rmzeros = pred[:,0]
         rmzeros[rmzeros <= 0.001] = 0.001
         pred[:,0] = rmzeros
         pred = ( ((1 - alpha) * pred[:,2] + alpha * pred[:,1]) / pred[:,0])
@@ -135,6 +140,7 @@ def run(inputs):
         dnnhist_nom = np.histogram(pred, bins=binedges, weights=pd_weight, density=False)
         dnnhist_entries_nom = np.histogram(pred, bins=binedges, density=False)
 
+        print ("syst_list: ", syst_list)
         for syst in syst_list:
             pd_weight = tree.arrays(["eventWeight__"+syst], library="np")
             pd_weight = pd_weight["eventWeight__"+syst].tolist()
@@ -222,16 +228,15 @@ def run(inputs):
         if not "SingleMuon" in input_file:
             outf["h_nevents_S4_nobtag"] = h_nevents_S4_nobtag
             outf["h_nevents_S4"] = h_nevents_S4
-            outf["h_nevents_S2_nobtag"] = h_nevents_S2_nobtag
-            outf["h_nevents_S2"] = h_nevents_S2
 
-            if any(string in input_file for string in ["_LFV","TTT","_ST_t"]) and "__" not in input_file:
-                outf["ScaleWeightSum"] = ScaleWeightSum
-                outf["PSWeightSum"] = PSWeightSum
-                outf["LHEPdfWeightSum"] = LHEPdfWeightSum
+            #if any(string in input_file for string in ["_LFV","TTT","_ST_t"]) and "__" not in input_file:
+            #    outf["ScaleWeightSum"] = ScaleWeightSum
+            #    outf["PSWeightSum"] = PSWeightSum
+            #    outf["LHEPdfWeightSum"] = LHEPdfWeightSum
 
         if len(syst_extend) > 1:
             syst_list.extend(syst_extend)
+            print ("syst_list.extend ", syst_extend)
 
         for syst in syst_list:
             if 'pdf' in syst and not 'alphas' in syst:
@@ -259,11 +264,10 @@ if __name__ == '__main__':
     #discriminator = "p_st_tt_ob"
     alpha=0.1
     parameters = []
-    for year in ["2016pre", "2016post", "2017", "2018"]:
+    #for year in ["v2022", "v2022EE", "v2023", "v2023_BPix", "v2024"]:
+    for year in ["v2023_BPix"]:
         print(year)
-        project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_uforeweight_jesflav_v6_FF/" + year + "/"
-        #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_uforeweight_jesflav_genuineTau_FF/" + year + "/"
-        #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_uforeweight_jesflav_fakeTau_FF/" + year + "/"
+        project_dir = "/home/itseyes/github/LFVRun3/nanoaodframe/process_0807_11/" + ch + "/" + year + "/"
         flist = os.listdir(project_dir)
         flist = [i for i in flist if (".root" in i)]
         for curfile in flist:
@@ -272,6 +276,7 @@ if __name__ == '__main__':
 
     parameters_sorted = [tup for tup in parameters if '__' not in tup[1]]
     parameters_sorted.extend([tup for tup in parameters if '__' in tup[1]])
+    print ("params: ", parameters_sorted)
     pool = multiprocessing.get_context("spawn").Pool(12)
     pool.map(run, parameters_sorted)
     pool.close()

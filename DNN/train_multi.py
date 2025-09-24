@@ -8,16 +8,25 @@ import uproot
 import pandas as pd
 import numpy as np
 import tensorflow as tf
+import matplotlib
 import matplotlib.pyplot as plt
+matplotlib.use('Agg')
 import pickle
 from keras.callbacks import EarlyStopping, ModelCheckpoint
-from keras.utils.np_utils import to_categorical
+from keras.utils import to_categorical
 from utils.plots import *
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import roc_curve, roc_auc_score
 from sklearn.model_selection import KFold
-from keras.wrappers.scikit_learn import KerasClassifier
+#from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.model_selection import cross_val_score, GridSearchCV
+from datetime import datetime
+
+import argparse
+parser = argparse.ArgumentParser()
+parser.add_argument("-C", "--ch", dest="ch", type=str, default="muon")
+args = parser.parse_args()
+ch = args.ch
 
 def min_max_scaling(series):
     return (series - series.min()) / (series.max() - series.min())
@@ -27,45 +36,56 @@ root_dir = os.getcwd().replace("DNN","") # Upper directory
 # MODIFY !!!
 syst = "nom"
 label = "top_lfv_multiClass"
-class_names = ["bkg","sigTT", "sigST"]
+class_names = ["bkg", "sigTT", "sigST"]
+class_names = ["bkg", "sigST"]
 
 print("Start multi LFV Training")
 epochs = 1000
-inputvars_st = [ "Muon1_pt","Muon1_eta",
-        "Tau1_pt","Tau1_mass","Tau1_eta", 
-        "Jet1_mass","Jet1_eta","Jet1_btagDeepFlavB",
-        "Jet2_pt","Jet2_mass","Jet2_eta","Jet2_btagDeepFlavB",
-        "Jet3_pt","Jet3_mass","Jet3_eta","Jet3_btagDeepFlavB",
+inputvars_st = [ # "Muon1_pt","Muon1_eta",
+        "Tau1_pt","Tau1_mass","Tau1_eta",
+        "Jet1_mass","Jet1_eta","Jet1_btagPNetB",
+        "Jet2_pt","Jet2_mass","Jet2_eta","Jet2_btagPNetB",
+        "Jet3_pt","Jet3_mass","Jet3_eta","Jet3_btagPNetB",
         "chi2","chi2_SMW_mass","chi2_SMTop_mass",
         "chi2_wqq_dEta","chi2_wqq_dPhi","chi2_wqq_dR",
-        "mutau_mass","mutau_dEta","mutau_dPhi","mutau_dR",
-	"MET_pt"
+        "leptau_mass","leptau_dEta","leptau_dPhi","leptau_dR",
+        "PuppiMET_pt"
         ]
+if ch == "muon": inputvars_st = ["Muon1_pt", "Muon1_eta"] + inputvars_st
+else: inputvars_st = ["Electron1_pt", "Electron1_eta"] + inputvars_st
 
 #"Jet1_pt"
-processed = "April2024_AfterPreAppTalk_noJet1pt"
+processed = datetime.now().strftime("%m%d")
 
 #"MET_pt" : helps to the expected limits, do not remove from the input vars.
 sbratio = 1 # sig:bkg = 1:1
 
-train_outdir = label+"_"+processed+"/"+syst
+train_outdir = label+"_"+processed+"/"+ch+"_"+syst+"/"
 os.makedirs(train_outdir, exist_ok=True)
 
-siglist_st = ["ST_LFV_TCMuTau_Scalar","ST_LFV_TCMuTau_Vector","ST_LFV_TCMuTau_Tensor","ST_LFV_TUMuTau_Vector","ST_LFV_TUMuTau_Scalar","ST_LFV_TUMuTau_Tensor"]
-siglist_tt = ['TT_LFV_TCMuTau_Scalar', 'TT_LFV_TCMuTau_Tensor', 'TT_LFV_TCMuTau_Vector', 'TT_LFV_TUMuTau_Scalar', 'TT_LFV_TUMuTau_Tensor', 'TT_LFV_TUMuTau_Vector']
-years = ["2017","2018","2016pre","2016post"]
+print ("output dir: ", train_outdir)
+
+#siglist_st = ["ST_LFV_TCMuTau_Scalar","ST_LFV_TCMuTau_Vector","ST_LFV_TCMuTau_Tensor","ST_LFV_TUMuTau_Vector","ST_LFV_TUMuTau_Scalar","ST_LFV_TUMuTau_Tensor"]
+#siglist_tt = ['TT_LFV_TCMuTau_Scalar', 'TT_LFV_TCMuTau_Tensor', 'TT_LFV_TCMuTau_Vector', 'TT_LFV_TUMuTau_Scalar', 'TT_LFV_TUMuTau_Tensor', 'TT_LFV_TUMuTau_Vector']
+siglist_st = []
+if ch == "muon": siglist_st = ["ST_TUMuTau_Scalar"]
+else: siglist_st = ["ST_TUElTau_Scalar"]
+siglist_tt = []
+#years = ["2017","2018","2016pre","2016post"]
+#years = ["v2022", "v2022EE", "v2023", "v2023_BPix", "v2024"]
+years = ["v2023_BPix"]
 #project_dir = "/data1/users/itseyes/LFV/processed_LFV/v9test2_theory/"
 #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/old/v9_06xx/v9_0608_fixtau/"
 #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_FF/"
 #project_dir = "/data1/users/minerva1993/work/lfv_production/LFVRun2/nanoaodframe/v9_0714_1010_FF/"
-project_dir = "/data1/users/ecasilar/v9_0714_1010/"
+project_dir = "/home/itseyes/github/LFVRun3/nanoaodframe/process_0807_11/"
 
 df_sig_st_list = []
 df_sig_tt_list = []
 df_bkg_tt_list = []
 #We use all the years together
 for year in years:
-   project_dir_y = project_dir+"/"+year+"/"
+   project_dir_y = project_dir+"/"+ch+"/"+year+"/"
 
    #Concatinate ST signals
    for sig_tree in siglist_st:
@@ -79,8 +99,8 @@ for year in years:
       df_sig_ = sig_tree_.arrays(inputvars_st,library="pd")
       df_sig_tt_list.append(df_sig_)
 
-   bkg1_filedir_tt = project_dir_y+"hist_TTTo2L2Nu.root"
-   bkg2_filedir_tt = project_dir_y+"hist_TTToSemiLeptonic.root"
+   bkg1_filedir_tt = project_dir_y+"hist_TTto2L2Nu.root"
+   bkg2_filedir_tt = project_dir_y+"hist_TTtoLNu2Q.root"
    bkg1_tree_tt = uproot.open(bkg1_filedir_tt)["Events"]
    bkg2_tree_tt = uproot.open(bkg2_filedir_tt)["Events"]
    df_bkg1_tt = bkg1_tree_tt.arrays(inputvars_st,library="pd")
@@ -89,23 +109,24 @@ for year in years:
    df_bkg_tt_list.append(df_bkg2_tt)
 
 df_sig_st = pd.concat(df_sig_st_list)
-df_sig_tt = pd.concat(df_sig_tt_list)
+#df_sig_tt = pd.concat(df_sig_tt_list)
 df_bkg = pd.concat(df_bkg_tt_list)
 
-ntotsig_tt = len(df_sig_st)
-ntotsig_st = len(df_sig_tt)
+ntotsig_st = len(df_sig_st)
+#ntotsig_tt = len(df_sig_tt)
 ntotbkg = len(df_bkg)
 print(df_bkg.replace(np.nan, 0))
 print(df_sig_st.replace(np.nan, 0))
-print(df_sig_tt.replace(np.nan, 0))
-print("sig tt:", ntotsig_tt)
+#print(df_sig_tt.replace(np.nan, 0))
+#print("sig tt:", ntotsig_tt)
 print("sig st:",ntotsig_st)
 print("tot bkg:",ntotbkg)
 nsig_st = ntotsig_st
-nsig_tt = ntotsig_tt
+#nsig_tt = ntotsig_tt
 nbkg = ntotbkg
-nsig = min(nsig_st,nsig_tt)
-print(nsig)
+#nsig = min(nsig_st,nsig_tt)
+#print(nsig)
+nsig = nsig_st
 
 if nsig >= nbkg:
     if sbratio == 1: nsig = nbkg
@@ -121,13 +142,14 @@ else:
 print("Take LFV : "+str(nsig)+" events")
 print("Take TT  : "+str(nbkg)+" events")
 df_sig_st = df_sig_st.sample(n=nsig)
-df_sig_tt = df_sig_tt.sample(n=nsig)
+#df_sig_tt = df_sig_tt.sample(n=nsig)
 df_bkg = df_bkg.sample(n=nbkg)
-df_sig_st["category"] = 2
-df_sig_tt["category"] = 1
+df_sig_st["category"] = 1
+#df_sig_tt["category"] = 1
 df_bkg["category"] = 0
 
-pd_data = pd.concat([df_sig_tt,df_sig_st,df_bkg])
+#pd_data = pd.concat([df_sig_tt,df_sig_st,df_bkg])
+pd_data = pd.concat([df_sig_st,df_bkg])
 pd_data = abs(pd_data)
 colnames = pd_data.columns
 print(pd_data.head())
@@ -140,8 +162,8 @@ print("Col names:",colnames)
 #print(pd_data.head())
 
 
-pd_sig_st = pd_data[pd_data['category'] == 2]
-pd_sig_tt = pd_data[pd_data['category'] == 1]
+pd_sig_st = pd_data[pd_data['category'] == 1]
+#pd_sig_tt = pd_data[pd_data['category'] == 1]
 pd_bkg = pd_data[pd_data['category'] == 0]
 
 #print("Plotting corr_matrix total")
@@ -173,7 +195,7 @@ print(len(x_train),len(x_val),len(y_train),len(y_val))
 patience_epoch = 30
 # Early Stopping with Validation Loss for Best Model
 es = EarlyStopping(monitor='val_loss', mode='min', verbose=1, patience=patience_epoch)
-mc = ModelCheckpoint(train_outdir+'/best_model.h5', monitor='val_loss', mode='min', save_best_only=True)
+mc = ModelCheckpoint(train_outdir+'/best_model.keras', monitor='val_loss', mode='min', save_best_only=True)
 print("xtrain shape:",x_train.shape)
 ###################################################
 #                      Model                      #
@@ -202,7 +224,8 @@ model.add(tf.keras.layers.Dense(50, activation=activation_function, kernel_initi
 
     
 ###############    Output Layer     ###############
-model.add(tf.keras.layers.Dense(3, activation="softmax"))
+#model.add(tf.keras.layers.Dense(3, activation="softmax"))
+model.add(tf.keras.layers.Dense(2, activation="sigmoid"))
 batch_size = 1024
 model.compile(optimizer=tf.keras.optimizers.Adam(clipvalue=0.5), loss="categorical_crossentropy", metrics = ["accuracy"])
 
@@ -220,25 +243,27 @@ plt.plot(loss_val, 'b', label='Validation loss')
 plt.savefig(train_outdir+"/train_val_loss.png")
 plt.close()
 
-accuracy_training = hist.history['acc']
-accuracy_validation = hist.history['val_acc']
+accuracy_training = hist.history['accuracy']
+accuracy_validation = hist.history['val_accuracy']
 
 plt.plot(accuracy_training, 'g', label='Training loss')
 plt.plot(accuracy_validation, 'b', label='Validation loss')
-plt.savefig(train_outdir+'acc_vs_epochs.png')   
+plt.savefig(train_outdir+'/acc_vs_epochs.png')   
 plt.close()
 
-pred_train = model.predict_classes(x_train)
+y_pred = model.predict(x_train)
+pred_train = np.argmax(y_pred, axis=1)
 #pred_train = model.predict(x_train)
 print("pred_train", pred_train)
 print("orig train", y_train)
 y_train = np.argmax(y_train, axis=1)
 from sklearn.metrics import confusion_matrix
 #train_result = pd.DataFrame(np.array([y_train.T[0], pred_train.T[1]]).T, columns=["True", "Pred"])
-pred_val = model.predict_classes(x_val)
+y_pred_val = model.predict(x_val)
+pred_val = np.argmax(y_pred_val, axis=1)
 y_val = np.argmax(y_val, axis=1)
 print("pred_val", pred_val)
-print("orig train", y_val)
+print("orig val", y_val)
 print("conf matrix on train set ")
 print(confusion_matrix(y_train, pred_train))
 print("conf matrix on val set ")
@@ -260,7 +285,7 @@ print(y_val)
 print(y_val.T)
 val_result = pd.DataFrame(np.array([y_val.T, pred_val.T[1]]).T, columns=["True", "Pred"])
 train_result = pd.DataFrame(np.array([y_train.T, pred_train.T[1]]).T, columns=["True", "Pred"])
-plot_output_dist(train_result, val_result, sig="tt",savedir=train_outdir)
-val_result = pd.DataFrame(np.array([y_val.T, pred_val.T[2]]).T, columns=["True", "Pred"])
-train_result = pd.DataFrame(np.array([y_train.T, pred_train.T[2]]).T, columns=["True", "Pred"])
 plot_output_dist(train_result, val_result, sig="st",savedir=train_outdir)
+#val_result = pd.DataFrame(np.array([y_val.T, pred_val.T[2]]).T, columns=["True", "Pred"])
+#train_result = pd.DataFrame(np.array([y_train.T, pred_train.T[2]]).T, columns=["True", "Pred"])
+#plot_output_dist(train_result, val_result, sig="st",savedir=train_outdir)

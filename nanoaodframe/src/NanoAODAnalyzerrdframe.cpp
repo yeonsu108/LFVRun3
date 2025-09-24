@@ -75,7 +75,7 @@ NanoAODAnalyzerrdframe::NanoAODAnalyzerrdframe(TTree *atree, std::string outfile
     }
 
     // Data/mc switch
-    if (atree->GetBranch("genWeight") == nullptr) {
+    if (_outfilename.find("TTto") == std::string::npos && atree->GetBranch("genWeight") == nullptr || _outfilename.find("LFV") != std::string::npos) {
         _isData = true;
         cout << "Input file is data" <<endl;
     } else {
@@ -1066,7 +1066,7 @@ void NanoAODAnalyzerrdframe::setupJetMETCorrection(string globaltag, std::vector
 	               .Redefine("Jet_mass", applyJes, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor", "Rho_fixedGridRhoFastjetAll", "Jet_mass"});
 	  //.Redefine("MET_pt", metCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi","PV_npvsGood", "run"})
 	  //.Redefine("MET_phi", metPhiCorr, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_corr", "Jet_phi", "PV_npvsGood", "run"});
-        if (!dataMc) {
+        if (!_isData) {
 	        _rlm = _rlm.Define("Jet_pt_unc", jesUnc, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_area", "Jet_rawFactor", "Rho_fixedGridRhoFastjetAll", "Jet_partonFlavour"});
 	                   //.Define("MET_pt_unc", metUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"})
                        //.Define("MET_phi_unc", metPhiUnc, {"MET_pt", "MET_phi", "Jet_pt", "Jet_pt_unc", "Jet_phi"});
@@ -1198,7 +1198,9 @@ void NanoAODAnalyzerrdframe::skimJets() {
     };
 
     // skim jet collection
-    _rlm = _rlm.Define("jetcuts", "Jet_pt>30.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6")
+    // https://twiki.cern.ch/twiki/bin/view/CMS/JetID13p6TeV
+    // nanoAOD Flags
+    _rlm = _rlm.Define("jetcuts", "Jet_pt>30.0 && abs(Jet_eta)<2.6 && Jet_jetId == 6 && Jet_muEF<0.8 && Jet_chEmEF<0.8")
                .Redefine("Jet_pt", "Jet_pt[jetcuts]")
                .Redefine("Jet_eta", "Jet_eta[jetcuts]")
                .Redefine("Jet_phi", "Jet_phi[jetcuts]")
@@ -1208,7 +1210,7 @@ void NanoAODAnalyzerrdframe::skimJets() {
                .Redefine("Jet_rawFactor", "Jet_rawFactor[jetcuts]")
                //.Redefine("Jet_pt_uncorr", "Jet_pt_uncorr[jetcuts]")
                //.Redefine("Jet_rawFactor", "Jet_rawFactor[jetcuts]")
-               .Redefine("Jet_btagDeepFlavB", "Jet_btagDeepFlavB[jetcuts]")
+               .Redefine("Jet_btagPNetB", "Jet_btagPNetB[jetcuts]")
                .Redefine("nJet", "int(Jet_pt.size())");
     //if (!_isData) {
     //    _rlm = _rlm.Redefine("Jet_pt_unc", skimCol, {"Jet_pt_unc", "jetcuts"})
@@ -1220,96 +1222,62 @@ void NanoAODAnalyzerrdframe::skimJets() {
 
 void NanoAODAnalyzerrdframe::applyBSFs(std::vector<string> jes_var) {
     cout << "Loading Btag SF" << endl;
-    string btagpath = "data/btagSF/";
-
-    if (_year == "2018") {
-        jes_var.erase(std::remove(jes_var.begin(), jes_var.end(), "jesHEMup"), jes_var.end());
-        jes_var.erase(std::remove(jes_var.begin(), jes_var.end(), "jesHEMdown"), jes_var.end());
+    std::string btagYear = "";
+    if (_isRun22) {
+        btagYear = "2022_Summer22";
+    } else if (_isRun22EE) {
+        btagYear = "2022_Summer22EE";
+    } else if (_isRun23) {
+        btagYear = "2023_Summer23";
+    } else if (_isRun23BPix) {
+        btagYear = "2023_Summer23BPix";
+    } else if (_isRun24){
+        //TODO
+        btagYear = "2023_Summer23BPix";
     }
-
-    BTagCalibration _btagcalib = {"DeepJet", btagpath + "skimmed_btag_" + _year + ".csv"};
-    cout << "    Loaded file : " << btagpath + "skimmed_btag_" + _year + ".csv" << endl;
-    BTagCalibration _btagcalibJes = {"DeepJet", btagpath + "skimmed_jes_" + _year + ".csv"};
-    cout << "    Loaded file : " << btagpath + "skimmed_jes_" + _year + ".csv" << endl;
 
     _rlm = _rlm.Define("btag_var", [](){return strings(btag_var);})
                .Define("btag_jes_var", [jes_var](){return strings(jes_var);});
 
-    BTagCalibrationReader _btagcalibreader = {BTagEntry::OP_RESHAPING, "central", btag_var};
-    BTagCalibrationReader _btagcalibreaderJes = {BTagEntry::OP_RESHAPING, "central", jes_var};
-
-    // load the formulae b flavor tagging
-    _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_B, "iterativefit");
-    _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_C, "iterativefit");
-    _btagcalibreader.load(_btagcalib, BTagEntry::FLAV_UDSG, "iterativefit");
-    _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_B, "iterativefit");
-    _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_C, "iterativefit");
-    _btagcalibreaderJes.load(_btagcalibJes, BTagEntry::FLAV_UDSG, "iterativefit");
-
-    // function to calculate event weight for MC events based on DeepJet algorithm
-    auto btagweightgenerator = [this, _btagcalibreader](floats &pts, floats &etas, ints &hadflav, floats &btags, strings &var, floatsVec &jer)->doublesVec {
-
-        doubles bSFs;
-        bSFs.reserve(var.size());
-        doublesVec out;
-        out.reserve(pts.size());
-
-        for (unsigned int j=0; j<pts.size(); j++) {
-            for (size_t i=0; i<var.size(); i++) {
-                double bweight = 1.0;
-                auto newpt = pts[j]*jer[j][0];
-                if (newpt > 40) {
-                    std::string unc = var[i];
-                    if (unc.find("cferr") != std::string::npos and hadflav[j] != 4) unc = "central";
-                    if (unc.find("cferr") == std::string::npos and hadflav[j] == 4) unc = "central";
-
-                    BTagEntry::JetFlavor hadfconv;
-                    if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
-                    else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
-                    else                    hadfconv=BTagEntry::FLAV_UDSG;
-                    bweight = _btagcalibreader.eval_auto_bounds(unc, hadfconv, fabs(etas[j]), newpt, btags[j]);
-                }
-                bSFs.emplace_back(bweight);
+    //case3 - Shape correction
+    //If you are interested in using the whole b-tagging discriminant distribution in your analysis,
+    //e.g. using b-tagging variables to separate signal and background, then this method is for you
+    auto bSFreader = correction::CorrectionSet::from_file("data/BTV/" + btagYear + "/btagging.json.gz");
+    auto _PNetSF = bSFreader->at("particleNet_shape");
+    auto btagweightgenerator= [this, _PNetSF](floats &pts, floats &etas, ints &hadflav, floats &btags)->floats{
+        floats uncSources;
+        uncSources.reserve(3);
+        floats wVec;
+        wVec.reserve(pts.size());
+    
+        for (auto i=0; i<int(pts.size()); i++){
+            if(std::abs(etas[i])>2.5 || pts[i]<30) continue;
+            uncSources.emplace_back(_PNetSF->evaluate({"central", hadflav[i], abs(etas[i]), pts[i], btags[i]}));
+            if (hadflav[i] != 4) {
+                uncSources.emplace_back(_PNetSF->evaluate({"up_hfstats2", hadflav[i], abs(etas[i]), pts[i], btags[i]}));
+                uncSources.emplace_back(_PNetSF->evaluate({"down_hfstats2", hadflav[i], abs(etas[i]), pts[i], btags[i]}));
             }
-            out.emplace_back(bSFs);
-            bSFs.clear();
-        }
-        return out;
-    };
-
-    auto btagweightgeneratorJes = [this, _btagcalibreaderJes](floats &pts, floats &etas, ints &hadflav,
-                                  floats &btags, floatsVec jes, strings &var, floatsVec &jer)->doublesVec {
-
-        doubles bSFs;
-        bSFs.reserve(var.size());
-        doublesVec out;
-        out.reserve(pts.size());
-
-        for (unsigned int j=0; j<pts.size(); j++) {
-            for (size_t i=0; i<var.size(); i++) {
-                double bweight = 1.0;
-                auto newpt = pts[j] * jes[j][i] * jer[j][0];
-                if (newpt > 40) {
-                    std::string unc = var[i];
-                    if (hadflav[j] == 4) unc = "central";
-
-                    BTagEntry::JetFlavor hadfconv;
-                    if      (hadflav[j]==5) hadfconv=BTagEntry::FLAV_B;
-                    else if (hadflav[j]==4) hadfconv=BTagEntry::FLAV_C;
-                    else                    hadfconv=BTagEntry::FLAV_UDSG;
-                    bweight = _btagcalibreaderJes.eval_auto_bounds(unc, hadfconv, fabs(etas[j]), newpt, btags[j]);
-                }
-                bSFs.emplace_back(bweight);
+            else {
+                uncSources.emplace_back(_PNetSF->evaluate({"up_cferr1", hadflav[i], abs(etas[i]), pts[i], btags[i]}));
+                uncSources.emplace_back(_PNetSF->evaluate({"down_cferr1", hadflav[i], abs(etas[i]), pts[i], btags[i]}));
             }
-            out.emplace_back(bSFs);
-            bSFs.clear();
+            //wVec.emplace_back(uncSources);
+            uncSources.clear();
         }
-        return out;
+        return wVec;
     };
+    
+    //TODO: apply b-tagging SF
+    //cout<<"Generate case3 b-tagging weight"<<endl;
+    //std::string column_name = output_var + "case3";
+    //_rlm = _rlm.Define(column_name, btagweightgenerator3, Jets_vars_names);
+    //Total event weight after shape correction
+    //_rlm = _rlm.Define("evWeight", "pugenWeight*btagWeight_case3");
+    //std::cout<< "BJet SF column name: " << column_name << std::endl;
 
-    cout << "Generate b-tagging weight" << endl;
-    _rlm = _rlm.Define("btagWeight_DeepFlavB_perJet", btagweightgenerator, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "btag_var", "Jet_jer"})
-               .Define("btagWeight_DeepFlavB_jes_perJet", btagweightgeneratorJes, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagDeepFlavB", "Jet_pt_unc", "btag_jes_var", "Jet_jer"});
+    //cout << "Generate b-tagging weight" << endl;
+    //_rlm = _rlm.Define("btagWeight_PNetB_perJet", btagweightgenerator, {"Jet_pt", "Jet_eta", "Jet_hadronFlavour", "Jet_btagPNetB"})
+    //           .Define("btagWeight_PNetB_jes_perJet", btagweightgenerator, {"Jet_pt_unc", "Jet_eta", "Jet_hadronFlavour", "Jet_btagPNetB"});
 }
 
 void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::vector<std::string> jes_var_flav) {
@@ -1402,17 +1370,19 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
     //    }
     //}
 
-    _rlm = _rlm.Define("jetcuts", "Jet_pt>40.0 && abs(Jet_eta)<2.4 && Jet_jetId == 6");
+    //https://twiki.cern.ch/twiki/bin/view/CMS/JetID13p6TeV
+    //nanoAOD Flags
+    _rlm = _rlm.Define("jetcuts", "Jet_pt>40.0 && abs(Jet_eta)<2.5 && Jet_jetId == 6 && Jet_muEF < 0.8 && Jet_chEmEF < 0.8");
     _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetcuts]")
                .Redefine("Jet_eta", "Jet_eta[jetcuts]")
                .Redefine("Jet_phi", "Jet_phi[jetcuts]")
                .Redefine("Jet_mass", "Jet_mass[jetcuts]")
-               .Redefine("Jet_btagDeepFlavB", "Jet_btagDeepFlavB[jetcuts]")
+               .Redefine("Jet_btagPNetB", "Jet_btagPNetB[jetcuts]")
                .Define("jet4vecs", ::gen4vec, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass"});
 
     //if (!_isData) {
-    //    _rlm = _rlm.Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetcuts"})
-    //               .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetcuts"});
+    //    _rlm = _rlm.Redefine("btagWeight_PNetB_perJet", skimCol, {"btagWeight_PNetB_perJet", "jetcuts"})
+    //               .Redefine("btagWeight_PNetB_jes_perJet", skimCol, {"btagWeight_PNetB_jes_perJet", "jetcuts"});
     //}
 
     // for checking overlapped jets with leptons
@@ -1440,14 +1410,14 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
                .Define("jetoverlaploose","lepjetoverlap && loosetaujetoverlap");
 
     _rlm = _rlm.Define("Jet_pt_loose", "Jet_pt[jetoverlaploose]")
-               .Define("Jet_btagDeepFlavB_loose", "Jet_btagDeepFlavB[jetoverlaploose]")
+               .Define("Jet_btagPNetB_loose", "Jet_btagPNetB[jetoverlaploose]")
                .Define("ncleanjetsloosepass", "int(Jet_pt_loose.size())");
 
     _rlm = _rlm.Redefine("Jet_pt", "Jet_pt[jetoverlap]")
                .Redefine("Jet_eta", "Jet_eta[jetoverlap]")
                .Redefine("Jet_phi", "Jet_phi[jetoverlap]")
                .Redefine("Jet_mass", "Jet_mass[jetoverlap]")
-               .Redefine("Jet_btagDeepFlavB", "Jet_btagDeepFlavB[jetoverlap]")
+               .Redefine("Jet_btagPNetB", "Jet_btagPNetB[jetoverlap]")
                .Define("ncleanjetspass", "int(Jet_pt.size())")
                .Define("cleanjet4vecs", ::gen4vec, {"Jet_pt", "Jet_eta", "Jet_phi", "Jet_mass"})
                .Define("Jet_HT", "Sum(Jet_pt)");
@@ -1457,43 +1427,40 @@ void NanoAODAnalyzerrdframe::selectJets(std::vector<std::string> jes_var, std::v
     //    int njes_var = jes_var.size();
     //    _rlm = _rlm.Define("nbsf_var", [nbsf_var](){return int(nbsf_var);})
     //               .Define("njes_var", [njes_var](){return int(njes_var);})
-    //               .Define("btagWeight_DeepFlavB_perJet_loose", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlaploose"})
-    //               .Define("btagWeight_DeepFlavB_loose", calcBSF, {"btagWeight_DeepFlavB_perJet_loose", "nbsf_var"})
-    //               .Redefine("btagWeight_DeepFlavB_perJet", skimCol, {"btagWeight_DeepFlavB_perJet", "jetoverlap"})
-    //               .Redefine("btagWeight_DeepFlavB_jes_perJet", skimCol, {"btagWeight_DeepFlavB_jes_perJet", "jetoverlap"})
-    //               .Define("btagWeight_DeepFlavB", calcBSF, {"btagWeight_DeepFlavB_perJet", "nbsf_var"})
-    //               .Define("btagWeight_DeepFlavB_jes", calcBSF, {"btagWeight_DeepFlavB_jes_perJet", "njes_var"});
+    //               .Define("btagWeight_PNetB_perJet_loose", skimCol, {"btagWeight_PNetB_perJet", "jetoverlaploose"})
+    //               .Define("btagWeight_PNetB_loose", calcBSF, {"btagWeight_PNetB_perJet_loose", "nbsf_var"})
+    //               .Redefine("btagWeight_PNetB_perJet", skimCol, {"btagWeight_PNetB_perJet", "jetoverlap"})
+    //               .Redefine("btagWeight_PNetB_jes_perJet", skimCol, {"btagWeight_PNetB_jes_perJet", "jetoverlap"})
+    //               .Define("btagWeight_PNetB", calcBSF, {"btagWeight_PNetB_perJet", "nbsf_var"})
+    //               .Define("btagWeight_PNetB_jes", calcBSF, {"btagWeight_PNetB_jes_perJet", "njes_var"});
     //}
 
 
     // b-tagging
     // https://btv-wiki.docs.cern.ch/ScaleFactors/Run3Summer22/#ak4-b-tagging
     if (_isRun22) { 
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3086") //l: 0.0583, m: 0.3086, t: 0.7183
-                   .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.0583");
+        _rlm = _rlm.Define("btagcuts", "Jet_btagPNetB>0.245") //l: 0.047, m: 0.245, t: 0.6734
+                   .Define("btagcuts_loose", "Jet_btagPNetB>0.047");
     } else if (_isRun22EE) { 
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.3196") //l: 0.0614, m: 0.3196, t: 0.73
-                   .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.0614");
+        _rlm = _rlm.Define("btagcuts", "Jet_btagPNetB>0.2605") //l: 0.0499, m: 0.2605, t: 0.6915
+                   .Define("btagcuts_loose", "Jet_btagPNetB>0.0499");
     } else if (_isRun23) { 
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2431") //l: 0.0479, m: 0.2431, t: 0.6553
-                   .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.0479");
+        _rlm = _rlm.Define("btagcuts", "Jet_btagPNetB>0.1917") //l: 0.0358, m: 0.1917, t: 0.6172
+                   .Define("btagcuts_loose", "Jet_btagPNetB>0.0358");
     } else if (_isRun23BPix) { 
-        //https://btv-wiki.docs.cern.ch/PerformanceCalibration/#important-links
-        //_rlm = _rlm.Define("btagcuts", "Jet_btagPNetB>0.2450") //l: 0.0470, m: 0.2450, t: 0.6734 
-        //           .Define("btagcuts_loose", "Jet_btagPNetB>0.0470");
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2435") //l: 0.048, m: 0.2435, t: 0.6563
-                   .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.048");
+        _rlm = _rlm.Define("btagcuts", "Jet_btagPNetB>0.1919") //l: 0.0359, m: 0.1919, t: 0.6133
+                   .Define("btagcuts_loose", "Jet_btagPNetB>0.0359");
     } else if (_isRun24){
         // TODO: copy from 23BPix
-        _rlm = _rlm.Define("btagcuts", "Jet_btagDeepFlavB>0.2435") //l: 0.048, m: 0.2435, t: 0.6563
-                   .Define("btagcuts_loose", "Jet_btagDeepFlavB>0.048");
+        _rlm = _rlm.Define("btagcuts", "Jet_btagPNetB>0.1919") //l: 0.0359, m: 0.1919, t: 0.6133
+                   .Define("btagcuts_loose", "Jet_btagPNetB>0.0359");
     }
 
     _rlm = _rlm.Define("bJet_pt", "Jet_pt[btagcuts]")
                .Define("bJet_eta", "Jet_eta[btagcuts]")
                .Define("bJet_phi", "Jet_phi[btagcuts]")
                .Define("bJet_mass", "Jet_mass[btagcuts]")
-               .Define("bJet_btagDeepFlavB", "Jet_btagDeepFlavB[btagcuts]")
+               .Define("bJet_btagPNetB", "Jet_btagPNetB[btagcuts]")
                .Define("ncleanbjetspass", "int(bJet_pt.size())")
                .Define("bJet_HT", "Sum(bJet_pt)")
                .Define("cleanbjet4vecs", ::gen4vec, {"bJet_pt", "bJet_eta", "bJet_phi", "bJet_mass"})

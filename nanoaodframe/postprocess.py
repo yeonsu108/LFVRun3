@@ -10,7 +10,7 @@ import re
 from optparse import OptionParser
 parser = OptionParser(usage="%prog [options]")
 parser.add_option("-I", "--infile", dest="infile", type="string", default="", help="Input file name")
-parser.add_option("-Y", "--year", dest="year", type="string", default="", help="Select 2016pre/post, 2017, or 2018 for years")
+parser.add_option("-Y", "--year", dest="year", type="string", default="", help="Select v2022, v2022EE, v2023, or v2023_BPix  for years")
 parser.add_option("--postfix", dest="postfix", type="string", default="", help="Add postfix to output here, to have rebinning for histograms")
 parser.add_option("-F", "--forceHadd", dest="forceHadd", action="store_true", default=False, help="Force hadd split files")
 parser.add_option("-N", "--noHadd", dest="noHadd", action="store_true", default=False, help="Skip hadd split files")
@@ -23,12 +23,14 @@ forceHadd = options.forceHadd
 # starting bin -> 0.01, trick for logX
 #rebin_arr = array.array('d', [0.01, 0.05, 0.1, 0.2, 0.4, 0.6, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
 rebin_arr = array.array('d', [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.12, 0.16, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.5, 2.0, 5.0, 10.0, 30, 100.0])
+rebin_pt = array.array('d', [0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 600])
 
 # Set to pre-approval binning if postfix is set, for histogramming
 if len(options.postfix) > 0:
     rebin_arr = array.array('d', [0.01, 1.0, 2.0, 5.0, 10.0, 30, 100.0])
 
-if year not in ['2016pre', '2016post', '2017', '2018']:
+#if year not in ['2016pre', '2016post', '2017', '2018']:
+if year not in ['v2022', 'v2022EE', 'v2023', 'v2023_BPix']:
     print('Wrong year, check again')
     sys.exit()
 if forceHadd: print("Hadd all split MC!!")
@@ -67,7 +69,7 @@ if not os.path.exists(fig_path):
 #    os.makedirs(os.path.join(fig_path, 'dyincl', 'qcd'))
 
 file_list = [i.replace('.root', '') for i in os.listdir(nom_path) if '.root' in i]
-data_list = [i[:i.find('201')] for i in os.listdir(nom_path) if '.root' in i and '201' in i and 'jes' not in i]
+data_list = [i[:i.find('202')] for i in os.listdir(nom_path) if '.root' in i and '202' in i and 'jes' not in i]
 data_list = list(set(data_list))
 
 if not options.noHadd:
