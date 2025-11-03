@@ -1,4 +1,4 @@
-import os, sys, argparse
+import os, sys, argparse, time
 from subprocess import call
 
 parser = argparse.ArgumentParser(usage="%prog [options]")
@@ -26,9 +26,10 @@ os.makedirs(log, exist_ok=True)
 
 for fn in os.listdir("data/dataset/" + year):
     if 'json' in fn: continue
+    if 'dataset_' not in fn: continue
     fname = fn.replace('dataset_', '').replace('.txt', '')
-    if "Muon" in fname and "mu" not in ch: continue
-    if "Egamma" in fname and "ele" not in ch: continue
+    if "muon" in fname.lower() and "mu" not in ch: continue
+    if "egamma" in fname.lower() and "ele" not in ch: continue
     if "QCD" in fname and "EM" in fname and "ele" not in ch: continue
     if "QCD" in fname and "Mu" in fname and "mu" not in ch: continue
     test_list = options.dataset
@@ -36,9 +37,9 @@ for fn in os.listdir("data/dataset/" + year):
         if not any(i in fname for i in test_list): continue
     if len(sys.argv) > 3:
         if options.dataOrMC == 'data':
-            if 'Muon' not in fname and "Egamma" not in fname: continue
+            if 'muon' not in fname.lower() and "egamma" not in fname.lower(): continue
         elif options.dataOrMC == 'mc':
-            if 'Muon' in fname or "Egamma" in fname: continue
+            if 'muon' in fname.lower() or "egamma" in fname.lower(): continue
 
 
     with open(os.path.join("data/dataset/" + year, fn), 'r') as f:

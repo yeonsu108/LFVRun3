@@ -20,7 +20,8 @@ workdir = os.getcwd()
 indir = os.path.join('/data2/common/skimmed_NanoAOD/', options.version, ch)
 tgdir = os.path.join(workdir, options.outdir, ch, year)
 logdir = os.path.join(workdir, options.outdir, ch, year, 'log')
-splitList = ["TTTo2L2Nu", "TTToSemiLeptonic",
+splitList = ["TTto4Q",
+#splitList = ["TTto2L2Nu", "TTtoLNu2Q", "TTto4Q",
              #"ST_LFV_TCMuTau_Scalar", "ST_LFV_TCMuTau_Vector", "ST_LFV_TCMuTau_Tensor",
              #"ST_LFV_TUMuTau_Scalar", "ST_LFV_TUMuTau_Vector", "ST_LFV_TUMuTau_Tensor",
              #"TT_LFV_TCMuTau_Scalar", "TT_LFV_TCMuTau_Vector", "TT_LFV_TCMuTau_Tensor",
@@ -78,7 +79,7 @@ for ds in dataset_list:
 
     #Split TT2L2Nu and TTToSemilep into files
     toSplit = False
-    if any(name_ in ds for name_ in splitList) and '__' not in ds: toSplit = True
+    if any(name_ in ds for name_ in splitList) and '__' not in ds and "2024" in year and "muon" in ch: toSplit = True
     rootfilestoprocess = []
     fullnamelist =[]
     if toSplit:
@@ -122,7 +123,7 @@ for ds in dataset_list:
                     else:
                         parameters.append((year, ch, ds, outdir, outfname, "all"))
                 elif options.syst == "theory":
-                    if any(i in dataset_name for i in ["TTTo", "ST_t", "TT_LFV", "ST_LFV"]):
+                    if any(i in dataset_name for i in ["TTto", "ST_t", "TT_LFV", "ST_LFV"]):
                         if toSplit:
                             os.makedirs(tgdir.replace(year, year + '/' + "split"), exist_ok=True)
                             parameters.append([year, ch, rootfilestoprocess, outdir.replace(year, year + '/' + "split"), outfname, "theory"])

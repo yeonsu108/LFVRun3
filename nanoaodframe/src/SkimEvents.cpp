@@ -79,8 +79,11 @@ void SkimEvents::defineMoreVars()
         addVartoStore("Jet_jetId");
         addVartoStore("Jet_rawFactor");
         addVartoStore("Jet_btagPNetB");
+        addVartoStore("Jet_btagUParTAK4B");
         addVartoStore("Jet_muEF");
-        addVartoStore("Jet_chEmEF");
+        addVartoStore("Jet_ch.*");
+        addVartoStore("Jet_ne.*");
+        addVartoStore("Jet_pass.*");
         addVartoStore("btagWeight_PNet.*");
         addVartoStore("nTau");
         addVartoStore("Tau_charge");

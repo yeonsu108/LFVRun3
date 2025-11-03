@@ -22,7 +22,7 @@ TopLFVAnalyzer::TopLFVAnalyzer(TTree *t, std::string outfilename, std::string ye
 
     tauYear = "UL" + _year;
 
-    if (_outfilename.find("LFV") != std::string::npos ) {
+    if (_outfilename.find("ST_LFV") != std::string::npos || _outfilename.find("TT_LFV") != std::string::npos) {
         _isSignal = true;
         cout << "Input file is LFV signal" <<endl;
     } else {
